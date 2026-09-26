@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "design-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4173",
+        "--directory",
+        "packages/design-system/preview/dist"
+      ],
+      "port": 4173
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@movo/api", "dev"],
+      "port": 4000
+    },
+    {
+      "name": "metro",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@movo/mobile", "start"],
+      "port": 8081
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "title": "Notices",
+  "new": "New notice",
+  "empty": "No notices yet",
+  "emptyBody": "Notices from your committee will appear here.",
+  "pinned": "Pinned",
+  "draft": "Draft",
+  "drafts": "Drafts",
+  "important": "Important",
+  "emergency": "Emergency",
+  "form": {
+    "title": "Title",
+    "body": "Message",
+    "category": "Category",
+    "priority": "Priority",
+    "pin": "Pin to top",
+    "publish": "Publish",
+    "saveDraft": "Save as draft",
+    "published": "Notice published",
+    "audienceAll": "Everyone in the society"
+  },
+  "category": {
+    "GENERAL": "General",
+    "WATER": "Water",
+    "ELECTRICITY": "Electricity",
+    "MAINTENANCE": "Maintenance",
+    "SECURITY": "Security",
+    "EVENT": "Event",
+    "FINANCE": "Finance",
+    "EMERGENCY": "Emergency",
+    "OTHER": "Other"
+  },
+  "priority": { "NORMAL": "Normal", "IMPORTANT": "Important", "EMERGENCY": "Emergency" },
+  "readBy": "Read by {{count}}",
+  "archive": "Archive",
+  "archived": "Notice archived",
+  "unpin": "Unpin"
+}

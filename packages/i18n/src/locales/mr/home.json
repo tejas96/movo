@@ -1,0 +1,31 @@
+{
+  "greeting": { "morning": "सुप्रभात", "afternoon": "नमस्कार", "evening": "शुभ संध्याकाळ" },
+  "flatLabel": "फ्लॅट {{flat}}",
+  "searchPlaceholder": "सूचना, सदस्य, सेवा शोधा…",
+  "quick": {
+    "services": "सेवा",
+    "directory": "सदस्य",
+    "emergency": "आणीबाणी",
+    "market": "मार्केट",
+    "manage": "व्यवस्थापन"
+  },
+  "needsYou": "आज तुमच्यासाठी",
+  "allClear": "आज सर्व काही ठीक आहे",
+  "allClearBody": "थकबाकी नाही, जबाबदारी नाही, अलर्ट नाही.",
+  "upcoming": "आगामी",
+  "notices": "सूचना",
+  "attention": {
+    "JOIN_REQUESTS_PENDING": {
+      "title": "{{count}} सामील होण्याची विनंती प्रलंबित",
+      "title_other": "{{count}} सामील होण्याच्या विनंत्या प्रलंबित",
+      "sub": "सोसायटी व्यवस्थापनात मंजूर करा"
+    },
+    "INVITATIONS_PENDING": {
+      "title": "{{count}} आमंत्रण अजून वापरले नाही",
+      "title_other": "{{count}} आमंत्रणे अजून वापरली नाहीत",
+      "sub": "कोड पुन्हा शेअर करा"
+    },
+    "IMPORTANT_NOTICE": { "sub": "महत्त्वाची सूचना" },
+    "PROFILE_INCOMPLETE": { "title": "तुमचा ईमेल जोडा", "sub": "म्हणजे तुम्ही स्वतः पासवर्ड रीसेट करू शकाल" }
+  }
+}

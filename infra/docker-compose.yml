@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: movo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: movo
+      POSTGRES_PASSWORD: movo
+      POSTGRES_DB: movo
+    ports:
+      - "5433:5432"
+    volumes:
+      - movo-pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U movo -d movo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  movo-pgdata:

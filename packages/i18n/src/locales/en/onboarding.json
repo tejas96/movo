@@ -1,0 +1,23 @@
+{
+  "title": "Join your society",
+  "body": "Enter the invite code from your society admin, or the society code to request access.",
+  "inviteCode": "Invite code",
+  "inviteHelp": "8 characters, shared by your admin",
+  "societyCode": "Society code",
+  "orRequest": "No invite? Request to join",
+  "orInvite": "Have an invite code?",
+  "findSociety": "Find society",
+  "pickFlat": "Which flat do you live in?",
+  "building": "Wing or building",
+  "flat": "Flat",
+  "relation": "You are the",
+  "message": "Message to the admin (optional)",
+  "sendRequest": "Send request",
+  "pendingTitle": "Waiting for approval",
+  "pendingBody": "{{society}} will review your request for flat {{flat}}. We will notify you.",
+  "cancelRequest": "Withdraw request",
+  "joined": "Welcome to {{society}}",
+  "profileTitle": "Almost done",
+  "profileBody": "Check your name and pick your language.",
+  "noFlatsYet": "This society has not added flats yet. Ask your admin to set them up."
+}

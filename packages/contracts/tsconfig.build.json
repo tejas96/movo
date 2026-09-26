@@ -1,0 +1,6 @@
+{
+  "extends": "@movo/config/tsconfig/node-package.json",
+  "compilerOptions": { "outDir": "dist", "rootDir": "src", "types": [] },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Me",
+  "profile": "Profile",
+  "name": "Name",
+  "phone": "Mobile number",
+  "email": "Email",
+  "notSet": "Not set",
+  "societiesAndFlats": "My societies and flats",
+  "notifications": "Notifications",
+  "privacy": "Privacy",
+  "privacyShowPhone": "Show my number to members",
+  "privacyShowEmail": "Show my email to members",
+  "help": "Help and support",
+  "about": "About MOVO",
+  "manageSociety": "Manage society",
+  "deleteAccount": "Delete my account",
+  "deleteTitle": "Delete your account?",
+  "deleteBody": "Your personal details are removed. Society records like payments keep an anonymous reference. This cannot be undone.",
+  "deleteConfirm": "Enter your password to confirm",
+  "signOutConfirm": "Sign out of MOVO?",
+  "version": "Version {{version}}"
+}

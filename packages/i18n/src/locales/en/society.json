@@ -1,0 +1,34 @@
+{
+  "title": "Society",
+  "flatsAndWings": "{{flats}} flats · {{wings}} wings",
+  "modules": {
+    "notices": "Notices",
+    "meetings": "Meetings",
+    "events": "Events",
+    "directory": "Directory",
+    "vendors": "Services",
+    "parking": "Parking",
+    "tasks": "Tasks",
+    "responsibilities": "Duties",
+    "rewards": "Rewards",
+    "emergency": "Emergency",
+    "documents": "Documents",
+    "maintenance": "Dues",
+    "expenses": "Expenses",
+    "marketplace": "Market",
+    "manage": "Manage"
+  },
+  "comingSoon": "Coming soon",
+  "comingSoonBody": "{{module}} is on the way. Your committee will switch it on when it is ready.",
+  "committee": "Committee",
+  "switchSociety": "Switch society",
+  "mySocieties": "My societies",
+  "directory": {
+    "title": "Directory",
+    "search": "Search members…",
+    "empty": "No members yet",
+    "emptyBody": "Members appear here once they join.",
+    "phoneHidden": "Phone hidden",
+    "staff": "Staff"
+  }
+}

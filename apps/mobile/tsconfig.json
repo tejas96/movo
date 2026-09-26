@@ -1,0 +1,17 @@
+{
+  "extends": ["@movo/config/tsconfig/strict.json", "@react-native/typescript-config"],
+  "compilerOptions": {
+    "types": [],
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] }
+  },
+  "include": [
+    "App.tsx",
+    "index.js",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "nativewind-env.d.ts",
+    "*.d.ts"
+  ],
+  "exclude": ["node_modules", "ios", "android", "vendor"]
+}

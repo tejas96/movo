@@ -1,0 +1,100 @@
+{
+  "app": {
+    "name": "MOVO"
+  },
+  "actions": {
+    "continue": "Continue",
+    "save": "Save",
+    "cancel": "Cancel",
+    "done": "Done",
+    "retry": "Retry",
+    "seeAll": "See all",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "search": "Search",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied",
+    "call": "Call",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "approve": "Approve",
+    "reject": "Reject",
+    "signOut": "Sign out"
+  },
+  "tabs": {
+    "home": "Home",
+    "society": "Society",
+    "money": "Money",
+    "market": "Market",
+    "me": "Me"
+  },
+  "states": {
+    "loading": "Loading…",
+    "empty": "Nothing here yet",
+    "offline": "You are offline. Showing what we saved.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "Please try again.",
+    "updateRequiredTitle": "Update MOVO",
+    "updateRequiredBody": "This version is too old. Please update the app to continue."
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "ago": "{{time}} ago",
+    "in": "in {{time}}"
+  },
+  "relation": {
+    "OWNER": "Owner",
+    "TENANT": "Tenant",
+    "FAMILY": "Family",
+    "OTHER": "Other"
+  },
+  "status": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected",
+    "ACTIVE": "Active",
+    "SUSPENDED": "Suspended",
+    "LEFT": "Left",
+    "INVITED": "Invited",
+    "PENDING_APPROVAL": "Waiting for approval",
+    "EXPIRED": "Expired",
+    "REVOKED": "Revoked",
+    "ACCEPTED": "Accepted"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "hi": "हिन्दी",
+    "mr": "मराठी"
+  },
+  "validation": {
+    "required": "This is required",
+    "invalidIdentifier": "Enter a valid mobile number or email",
+    "passwordMin": "Use at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "nameMin": "Enter your full name",
+    "codeInvalid": "That code does not look right"
+  },
+  "push": {
+    "joinRequestReceived": {
+      "title": "New join request",
+      "body": "{{name}} asks to join flat {{flat}}."
+    },
+    "membershipApproved": {
+      "title": "Welcome to {{society}}",
+      "body": "Your request was approved. Open MOVO to see your society."
+    },
+    "membershipRejected": {
+      "title": "Request not approved by {{society}}",
+      "body": "Please contact your society office."
+    },
+    "noticePublished": {
+      "title": "{{title}}",
+      "body": "{{body}}"
+    }
+  }
+}

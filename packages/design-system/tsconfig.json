@@ -1,0 +1,5 @@
+{
+  "extends": "@movo/config/tsconfig/react-native.json",
+  "compilerOptions": { "types": ["node"], "customConditions": ["react-native"] },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

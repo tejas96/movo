@@ -1,0 +1,26 @@
+{
+  "name": "@movo/contracts",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Single source of truth for API routes, request and response schemas, enums and module settings. Shared by the API and the app.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "react-native": "./src/index.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@movo/config": "workspace:*",
+    "typescript": "5.9.3",
+    "vitest": "5.0.2"
+  }
+}

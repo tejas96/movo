@@ -1,0 +1,49 @@
+import { View } from 'react-native';
+import type { IconName } from '../icons';
+import { Button } from './Button';
+import { cn } from './cn';
+import { IconSquare } from './IconButtons';
+import { Text } from './Text';
+
+export interface EmptyStateProps {
+  icon: IconName;
+  title: string;
+  body?: string | undefined;
+  actionLabel?: string;
+  onAction?: () => void;
+  className?: string;
+}
+
+/** Icon square, title, one line of help, optional white button. */
+export function EmptyState({
+  icon,
+  title,
+  body,
+  actionLabel,
+  onAction,
+  className,
+}: EmptyStateProps) {
+  return (
+    <View className={cn('items-center px-5 py-7', className)}>
+      <IconSquare icon={icon} tone="gray" />
+      <Text variant="title" center className="mt-3.5">
+        {title}
+      </Text>
+      {body ? (
+        <Text variant="label" tone="secondary" center className="mt-1">
+          {body}
+        </Text>
+      ) : null}
+      {actionLabel && onAction ? (
+        <Button
+          label={actionLabel}
+          variant="white"
+          size="sm"
+          inline
+          onPress={onAction}
+          className="mt-3"
+        />
+      ) : null}
+    </View>
+  );
+}

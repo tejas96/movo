@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# env and secrets
+.env
+.env.*
+!.env.example
+!apps/api/.env.test
+*.pem
+*.p8
+*.keystore
+!debug.keystore
+google-services.json
+GoogleService-Info.plist
+firebase-service-account*.json
+
+# generated design preview (regenerate with: pnpm design:preview)
+packages/design-system/preview/dist/
+
+# logs and OS files
+*.log
+.DS_Store
+
+# editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# generated Prisma client (run: pnpm --filter @movo/api db:generate)
+apps/api/src/generated/

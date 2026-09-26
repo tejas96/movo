@@ -1,0 +1,38 @@
+{
+  "title": "सूचना",
+  "new": "नवीन सूचना",
+  "empty": "अजून सूचना नाहीत",
+  "emptyBody": "समितीच्या सूचना इथे दिसतील.",
+  "pinned": "पिन केलेली",
+  "draft": "मसुदा",
+  "drafts": "मसुदे",
+  "important": "महत्त्वाची",
+  "emergency": "आणीबाणी",
+  "form": {
+    "title": "शीर्षक",
+    "body": "संदेश",
+    "category": "प्रकार",
+    "priority": "प्राधान्य",
+    "pin": "वर पिन करा",
+    "publish": "प्रकाशित करा",
+    "saveDraft": "मसुदा जतन करा",
+    "published": "सूचना प्रकाशित झाली",
+    "audienceAll": "सोसायटीतील सर्वजण"
+  },
+  "category": {
+    "GENERAL": "सामान्य",
+    "WATER": "पाणी",
+    "ELECTRICITY": "वीज",
+    "MAINTENANCE": "देखभाल",
+    "SECURITY": "सुरक्षा",
+    "EVENT": "कार्यक्रम",
+    "FINANCE": "आर्थिक",
+    "EMERGENCY": "आणीबाणी",
+    "OTHER": "इतर"
+  },
+  "priority": { "NORMAL": "सामान्य", "IMPORTANT": "महत्त्वाची", "EMERGENCY": "आणीबाणी" },
+  "readBy": "{{count}} जणांनी वाचले",
+  "archive": "संग्रहित करा",
+  "archived": "सूचना संग्रहित झाली",
+  "unpin": "पिन काढा"
+}

@@ -1,0 +1,34 @@
+{
+  "title": "सोसायटी",
+  "flatsAndWings": "{{flats}} फ्लॅट · {{wings}} विंग",
+  "modules": {
+    "notices": "सूचना",
+    "meetings": "सभा",
+    "events": "कार्यक्रम",
+    "directory": "सदस्य",
+    "vendors": "सेवा",
+    "parking": "पार्किंग",
+    "tasks": "कामे",
+    "responsibilities": "जबाबदाऱ्या",
+    "rewards": "बक्षिसे",
+    "emergency": "आणीबाणी",
+    "documents": "कागदपत्रे",
+    "maintenance": "थकबाकी",
+    "expenses": "खर्च",
+    "marketplace": "मार्केट",
+    "manage": "व्यवस्थापन"
+  },
+  "comingSoon": "लवकरच येत आहे",
+  "comingSoonBody": "{{module}} लवकरच येईल. तयार झाल्यावर समिती ते सुरू करेल.",
+  "committee": "समिती",
+  "switchSociety": "सोसायटी बदला",
+  "mySocieties": "माझ्या सोसायट्या",
+  "directory": {
+    "title": "सदस्य",
+    "search": "सदस्य शोधा…",
+    "empty": "अजून सदस्य नाहीत",
+    "emptyBody": "सदस्य सामील झाल्यावर इथे दिसतील.",
+    "phoneHidden": "नंबर लपवला आहे",
+    "staff": "कर्मचारी"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@movo/i18n",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Translation resources (en, hi, mr), i18next setup, and Indian formatting helpers. Shared by the API and the app.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "react-native": "./src/index.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@movo/contracts": "workspace:*",
+    "i18next": "26.4.2"
+  },
+  "devDependencies": {
+    "@movo/config": "workspace:*",
+    "typescript": "5.9.3",
+    "vitest": "5.0.2"
+  }
+}

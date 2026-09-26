@@ -1,0 +1,5 @@
+{
+  "extends": "@movo/config/tsconfig/nest-app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node"], "baseUrl": "." },
+  "include": ["src/**/*.ts", "tests/**/*.ts", "prisma.config.ts", "vitest.config.ts"]
+}

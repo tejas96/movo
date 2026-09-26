@@ -1,0 +1,29 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "../../packages/design-system/assets/fonts/NOTICE.md",
+      "sha1": "3f8666975cfcef149b2659b3b000a7005c27fbaa"
+    },
+    {
+      "path": "../../packages/design-system/assets/fonts/OFL-Poppins.txt",
+      "sha1": "525d837a484cdc20696e1afea410d34c971432bf"
+    },
+    {
+      "path": "../../packages/design-system/assets/fonts/Poppins-Bold.ttf",
+      "sha1": "875cf0cecd647bcf22e79d633d868c1b1ec98dfa"
+    },
+    {
+      "path": "../../packages/design-system/assets/fonts/Poppins-Medium.ttf",
+      "sha1": "283f21b44efbdbf276ba802be2d949a36bbc4233"
+    },
+    {
+      "path": "../../packages/design-system/assets/fonts/Poppins-Regular.ttf",
+      "sha1": "fdd3002e7d814ee47c1c1b8487c72c6bbb3a2d00"
+    },
+    {
+      "path": "../../packages/design-system/assets/fonts/Poppins-SemiBold.ttf",
+      "sha1": "8a4ace9392d06bcb7f8ea2f5169b07e4c383a90d"
+    }
+  ]
+}

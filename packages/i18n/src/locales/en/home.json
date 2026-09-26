@@ -1,0 +1,38 @@
+{
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "flatLabel": "Flat {{flat}}",
+  "searchPlaceholder": "Search notices, members, vendors…",
+  "quick": {
+    "services": "Services",
+    "directory": "Directory",
+    "emergency": "Emergency",
+    "market": "Market",
+    "manage": "Manage"
+  },
+  "needsYou": "Needs you today",
+  "allClear": "All clear today",
+  "allClearBody": "No dues, no duties, no alerts.",
+  "upcoming": "Upcoming",
+  "notices": "Notices",
+  "attention": {
+    "JOIN_REQUESTS_PENDING": {
+      "title": "{{count}} join request waiting",
+      "title_other": "{{count}} join requests waiting",
+      "sub": "Approve residents in Manage society"
+    },
+    "INVITATIONS_PENDING": {
+      "title": "{{count}} invite not used yet",
+      "title_other": "{{count}} invites not used yet",
+      "sub": "Share the codes again"
+    },
+    "IMPORTANT_NOTICE": { "sub": "Important notice" },
+    "PROFILE_INCOMPLETE": {
+      "title": "Add your email",
+      "sub": "So you can reset your password yourself"
+    }
+  }
+}

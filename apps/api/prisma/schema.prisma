@@ -1,0 +1,529 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- enums ----------
+enum UserStatus {
+  ACTIVE
+  DELETED
+}
+
+enum CredentialType {
+  PASSWORD
+  OTP_PHONE
+  GOOGLE
+  APPLE
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+}
+
+enum ResetKind {
+  EMAIL_LINK
+  ADMIN_CODE
+}
+
+enum Locale {
+  en
+  hi
+  mr
+}
+
+enum SocietyStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum MembershipStatus {
+  INVITED
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+  LEFT
+}
+
+enum OccupancyRelation {
+  OWNER
+  TENANT
+  FAMILY
+  OTHER
+}
+
+enum FlatStatus {
+  OCCUPIED
+  VACANT
+  INACTIVE
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NoticeCategory {
+  GENERAL
+  WATER
+  ELECTRICITY
+  MAINTENANCE
+  SECURITY
+  EVENT
+  FINANCE
+  EMERGENCY
+  OTHER
+}
+
+enum NoticePriority {
+  NORMAL
+  IMPORTANT
+  EMERGENCY
+}
+
+enum NoticeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum NotificationCategory {
+  NOTICE
+  MEETING
+  EVENT
+  TASK
+  DUTY
+  MAINTENANCE
+  EXPENSE
+  EMERGENCY
+  MARKETPLACE
+  MEMBERSHIP
+  SYSTEM
+}
+
+enum DeliveryChannel {
+  PUSH
+  EMAIL
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+// ---------- identity (global) ----------
+model User {
+  id               String     @id @default(uuid(7)) @db.Uuid
+  email            String?    @unique
+  phone            String?    @unique
+  displayName      String
+  locale           Locale     @default(en)
+  avatarUrl        String?
+  status           UserStatus @default(ACTIVE)
+  failedLoginCount Int        @default(0)
+  lockedUntil      DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  credentials    UserCredential[]
+  sessions       RefreshSession[]
+  devices        DeviceToken[]
+  resets         PasswordReset[]
+  memberships    Membership[]
+  joinRequests   JoinRequest[]
+  notifications  Notification[]
+  platformAdmin  PlatformAdmin?
+  preferences    NotificationPreference[]
+}
+
+model UserCredential {
+  id              String         @id @default(uuid(7)) @db.Uuid
+  userId          String         @db.Uuid
+  type            CredentialType
+  secretHash      String?
+  providerSubject String?
+  verifiedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+}
+
+model RefreshSession {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  userId       String    @db.Uuid
+  tokenHash    String    @unique
+  familyId     String    @db.Uuid
+  deviceName   String?
+  platform     String?
+  ip           String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?   @db.Uuid
+  lastUsedAt   DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+model DeviceToken {
+  id         String         @id @default(uuid(7)) @db.Uuid
+  userId     String         @db.Uuid
+  token      String         @unique
+  platform   DevicePlatform
+  appVersion String?
+  lastSeenAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  userId         String    @db.Uuid
+  codeHash       String
+  kind           ResetKind
+  issuedByUserId String?   @db.Uuid
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PlatformAdmin {
+  userId    String   @id @db.Uuid
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------- tenancy ----------
+model Society {
+  id            String        @id @default(uuid(7)) @db.Uuid
+  name          String
+  slug          String        @unique
+  logoUrl       String?
+  addressLine   String?
+  city          String?
+  state         String?
+  pincode       String?
+  timezone      String        @default("Asia/Kolkata")
+  defaultLocale Locale        @default(en)
+  currency      String        @default("INR")
+  fyStartMonth  Int           @default(4)
+  joinCode      String?       @unique
+  settings      Json          @default("{}")
+  status        SocietyStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  buildings    Building[]
+  flats        Flat[]
+  memberships  Membership[]
+  roles        Role[]
+  invitations  Invitation[]
+  joinRequests JoinRequest[]
+  modules      SocietyModule[]
+  notices      Notice[]
+  occupancies  FlatOccupancy[]
+}
+
+model Building {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  societyId   String   @db.Uuid
+  name        String
+  floorsCount Int?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  flats   Flat[]
+
+  @@unique([societyId, name])
+}
+
+model Flat {
+  id         String     @id @default(uuid(7)) @db.Uuid
+  societyId  String     @db.Uuid
+  buildingId String?    @db.Uuid
+  number     String
+  floor      Int?
+  type       String?
+  areaSqft   Int?
+  status     FlatStatus @default(VACANT)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  society      Society         @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  building     Building?       @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  occupancies  FlatOccupancy[]
+  invitations  Invitation[]
+  joinRequests JoinRequest[]
+
+  @@unique([societyId, buildingId, number])
+  @@index([societyId])
+}
+
+model Membership {
+  id               String           @id @default(uuid(7)) @db.Uuid
+  societyId        String           @db.Uuid
+  userId           String           @db.Uuid
+  status           MembershipStatus @default(ACTIVE)
+  joinedAt         DateTime?
+  leftAt           DateTime?
+  privacyShowPhone Boolean          @default(false)
+  privacyShowEmail Boolean          @default(false)
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  society     Society          @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roles       MembershipRole[]
+  occupancies FlatOccupancy[]
+  noticeReads NoticeRead[]
+
+  @@unique([societyId, userId])
+  @@index([userId, status])
+  @@index([societyId, status])
+}
+
+model Role {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  societyId String   @db.Uuid
+  key       String
+  name      String
+  isSystem  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  society     Society          @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  permissions RolePermission[]
+  members     MembershipRole[]
+  invitations Invitation[]
+
+  @@unique([societyId, key])
+}
+
+model RolePermission {
+  roleId        String @db.Uuid
+  permissionKey String
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionKey])
+}
+
+model MembershipRole {
+  membershipId String @db.Uuid
+  roleId       String @db.Uuid
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([membershipId, roleId])
+}
+
+model FlatOccupancy {
+  id               String            @id @default(uuid(7)) @db.Uuid
+  societyId        String            @db.Uuid
+  flatId           String            @db.Uuid
+  membershipId     String            @db.Uuid
+  relation         OccupancyRelation
+  isPrimaryContact Boolean           @default(false)
+  fromDate         DateTime          @default(now())
+  toDate           DateTime?
+  createdAt        DateTime          @default(now())
+
+  society    Society    @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  flat       Flat       @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@index([flatId])
+  @@index([membershipId])
+}
+
+model Invitation {
+  id                    String            @id @default(uuid(7)) @db.Uuid
+  societyId             String            @db.Uuid
+  code                  String            @unique
+  inviteeName           String
+  email                 String?
+  phone                 String?
+  flatId                String?           @db.Uuid
+  roleId                String            @db.Uuid
+  relation              OccupancyRelation @default(OWNER)
+  invitedByMembershipId String            @db.Uuid
+  expiresAt             DateTime
+  status                InvitationStatus  @default(PENDING)
+  acceptedMembershipId  String?           @db.Uuid
+  acceptedAt            DateTime?
+  createdAt             DateTime          @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  flat    Flat?   @relation(fields: [flatId], references: [id], onDelete: SetNull)
+  role    Role    @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@index([societyId, status])
+  @@index([phone])
+  @@index([email])
+}
+
+model JoinRequest {
+  id                    String            @id @default(uuid(7)) @db.Uuid
+  societyId             String            @db.Uuid
+  userId                String            @db.Uuid
+  flatId                String            @db.Uuid
+  relationClaimed       OccupancyRelation
+  message               String?
+  status                JoinRequestStatus @default(PENDING)
+  decidedByMembershipId String?           @db.Uuid
+  decidedAt             DateTime?
+  decisionReason        String?
+  createdAt             DateTime          @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flat    Flat    @relation(fields: [flatId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, status])
+  @@index([userId, status])
+}
+
+model SocietyModule {
+  societyId       String   @db.Uuid
+  moduleKey       String
+  enabled         Boolean  @default(true)
+  settings        Json     @default("{}")
+  settingsVersion Int      @default(1)
+  updatedAt       DateTime @updatedAt
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@id([societyId, moduleKey])
+}
+
+// ---------- notices ----------
+model Notice {
+  id                    String         @id @default(uuid(7)) @db.Uuid
+  societyId             String         @db.Uuid
+  title                 String
+  body                  String
+  category              NoticeCategory @default(GENERAL)
+  priority              NoticePriority @default(NORMAL)
+  isPinned              Boolean        @default(false)
+  audience              Json
+  status                NoticeStatus   @default(DRAFT)
+  publishedAt           DateTime?
+  expiresAt             DateTime?
+  createdByMembershipId String         @db.Uuid
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  society Society      @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  reads   NoticeRead[]
+
+  @@index([societyId, status, isPinned, publishedAt])
+}
+
+model NoticeRead {
+  noticeId     String   @db.Uuid
+  membershipId String   @db.Uuid
+  readAt       DateTime @default(now())
+
+  notice     Notice     @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@id([noticeId, membershipId])
+}
+
+// ---------- notifications (user owned) ----------
+model Notification {
+  id        String               @id @default(uuid(7)) @db.Uuid
+  userId    String               @db.Uuid
+  societyId String?              @db.Uuid
+  category  NotificationCategory
+  title     String
+  body      String
+  data      Json                 @default("{}")
+  readAt    DateTime?
+  createdAt DateTime             @default(now())
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries NotificationDelivery[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, readAt])
+}
+
+model NotificationDelivery {
+  id             String          @id @default(uuid(7)) @db.Uuid
+  notificationId String          @db.Uuid
+  channel        DeliveryChannel
+  status         DeliveryStatus  @default(PENDING)
+  attempts       Int             @default(0)
+  lastError      String?
+  sentAt         DateTime?
+  createdAt      DateTime        @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+}
+
+model NotificationPreference {
+  userId      String               @db.Uuid
+  societyId   String               @db.Uuid
+  category    NotificationCategory
+  pushEnabled Boolean              @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, societyId, category])
+}
+
+// ---------- audit (append only) ----------
+model AuditLog {
+  id                String   @id @default(uuid(7)) @db.Uuid
+  societyId         String?  @db.Uuid
+  actorUserId       String?  @db.Uuid
+  actorMembershipId String?  @db.Uuid
+  action            String
+  entityType        String
+  entityId          String?
+  before            Json?
+  after             Json?
+  requestId         String?
+  ip                String?
+  createdAt         DateTime @default(now())
+
+  @@index([societyId, createdAt(sort: Desc)])
+}

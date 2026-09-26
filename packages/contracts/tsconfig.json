@@ -1,0 +1,5 @@
+{
+  "extends": "@movo/config/tsconfig/node-package.json",
+  "compilerOptions": { "noEmit": true, "types": [] },
+  "include": ["src/**/*.ts"]
+}

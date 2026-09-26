@@ -1,0 +1,100 @@
+{
+  "app": {
+    "name": "MOVO"
+  },
+  "actions": {
+    "continue": "पुढे जा",
+    "save": "जतन करा",
+    "cancel": "रद्द करा",
+    "done": "झाले",
+    "retry": "पुन्हा प्रयत्न करा",
+    "seeAll": "सर्व पहा",
+    "back": "मागे",
+    "next": "पुढील",
+    "close": "बंद करा",
+    "search": "शोधा",
+    "share": "शेअर करा",
+    "copy": "कॉपी करा",
+    "copied": "कॉपी झाले",
+    "call": "कॉल करा",
+    "edit": "बदला",
+    "delete": "हटवा",
+    "confirm": "निश्चित करा",
+    "approve": "मंजूर करा",
+    "reject": "नाकारा",
+    "signOut": "साइन आउट"
+  },
+  "tabs": {
+    "home": "होम",
+    "society": "सोसायटी",
+    "money": "पैसे",
+    "market": "मार्केट",
+    "me": "मी"
+  },
+  "states": {
+    "loading": "लोड होत आहे…",
+    "empty": "इथे अजून काही नाही",
+    "offline": "तुम्ही ऑफलाइन आहात. जतन केलेली माहिती दिसत आहे.",
+    "errorTitle": "काहीतरी चूक झाली",
+    "errorBody": "कृपया पुन्हा प्रयत्न करा.",
+    "updateRequiredTitle": "MOVO अपडेट करा",
+    "updateRequiredBody": "ही आवृत्ती जुनी आहे. पुढे जाण्यासाठी ॲप अपडेट करा."
+  },
+  "time": {
+    "today": "आज",
+    "yesterday": "काल",
+    "ago": "{{time}} पूर्वी",
+    "in": "{{time}} मध्ये"
+  },
+  "relation": {
+    "OWNER": "मालक",
+    "TENANT": "भाडेकरू",
+    "FAMILY": "कुटुंब",
+    "OTHER": "इतर"
+  },
+  "status": {
+    "PENDING": "प्रलंबित",
+    "APPROVED": "मंजूर",
+    "REJECTED": "नाकारले",
+    "ACTIVE": "सक्रिय",
+    "SUSPENDED": "निलंबित",
+    "LEFT": "सोडले",
+    "INVITED": "आमंत्रित",
+    "PENDING_APPROVAL": "मंजुरीची वाट",
+    "EXPIRED": "कालबाह्य",
+    "REVOKED": "रद्द",
+    "ACCEPTED": "स्वीकारले"
+  },
+  "language": {
+    "label": "भाषा",
+    "en": "English",
+    "hi": "हिन्दी",
+    "mr": "मराठी"
+  },
+  "validation": {
+    "required": "हे आवश्यक आहे",
+    "invalidIdentifier": "योग्य मोबाइल नंबर किंवा ईमेल लिहा",
+    "passwordMin": "किमान 8 अक्षरे वापरा",
+    "passwordMismatch": "पासवर्ड जुळत नाहीत",
+    "nameMin": "तुमचे पूर्ण नाव लिहा",
+    "codeInvalid": "हा कोड बरोबर वाटत नाही"
+  },
+  "push": {
+    "joinRequestReceived": {
+      "title": "नवीन सामील होण्याची विनंती",
+      "body": "{{name}} फ्लॅट {{flat}} मध्ये सामील होऊ इच्छितात."
+    },
+    "membershipApproved": {
+      "title": "{{society}} मध्ये स्वागत आहे",
+      "body": "तुमची विनंती मंजूर झाली. तुमची सोसायटी पाहण्यासाठी MOVO उघडा."
+    },
+    "membershipRejected": {
+      "title": "{{society}} ने विनंती मंजूर केली नाही",
+      "body": "कृपया सोसायटी कार्यालयाशी संपर्क साधा."
+    },
+    "noticePublished": {
+      "title": "{{title}}",
+      "body": "{{body}}"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Money",
+  "myDues": "My dues",
+  "society": "Society",
+  "noDues": "No dues yet",
+  "noDuesBody": "When your society starts billing, your dues and receipts will show here.",
+  "totalDue": "Total due · Flat {{flat}}",
+  "howToPay": "How to pay",
+  "history": "History"
+}

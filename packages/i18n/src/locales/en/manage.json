@@ -1,0 +1,63 @@
+{
+  "title": "Manage society",
+  "members": "Members",
+  "invitations": "Invitations",
+  "joinRequests": "Join requests",
+  "structure": "Wings and flats",
+  "roles": "Roles",
+  "modules": "Modules",
+  "settings": "Settings",
+  "joinCode": "Society join code",
+  "joinCodeHelp": "Residents enter this code to request access. Share it in your society group.",
+  "rotateJoinCode": "Get a new code",
+  "invite": {
+    "title": "Invite a resident",
+    "name": "Resident name",
+    "phone": "Mobile number (optional)",
+    "email": "Email (optional)",
+    "flat": "Flat",
+    "noFlat": "No flat (staff)",
+    "role": "Role",
+    "relation": "Relation to the flat",
+    "create": "Create invite",
+    "created": "Invite created",
+    "shareText": "Join {{society}} on MOVO. Install the app and enter invite code {{code}}.",
+    "expires": "Expires {{date}}",
+    "revoke": "Revoke",
+    "empty": "No invitations yet",
+    "emptyBody": "Invite residents by flat. They get a code to enter in the app."
+  },
+  "requests": {
+    "empty": "No join requests",
+    "emptyBody": "When a resident asks to join with the society code, it shows here.",
+    "asks": "asks to join flat {{flat}} as {{relation}}",
+    "approved": "Approved. {{name}} is now a member.",
+    "rejected": "Request rejected."
+  },
+  "structureForm": {
+    "addBuilding": "Add wing",
+    "buildingName": "Wing name (for example A)",
+    "addFlats": "Add flats",
+    "flatNumbers": "Flat numbers, comma separated",
+    "flatNumbersHelp": "For example 101, 102, 103, 201, 202",
+    "added": "{{count}} flat added",
+    "added_other": "{{count}} flats added",
+    "empty": "No flats yet",
+    "emptyBody": "Add your wings and flats so residents can join."
+  },
+  "member": {
+    "roles": "Roles",
+    "flats": "Flats",
+    "suspend": "Suspend",
+    "remove": "Remove from society",
+    "resetCode": "Give password reset code",
+    "resetCodeBody": "Share this code with the resident in person. It works once, for 15 minutes.",
+    "updated": "Member updated"
+  },
+  "tiles": {
+    "members": "Members",
+    "invitations": "Invites",
+    "requests": "Requests",
+    "structure": "Wings & flats"
+  }
+}
