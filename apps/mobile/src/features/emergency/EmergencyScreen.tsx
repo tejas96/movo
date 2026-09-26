@@ -14,6 +14,8 @@ import {
   EmptyState,
   HoldButton,
   Input,
+  ModuleHeader,
+  photos,
   Row,
   Screen,
   SectionHeader,
@@ -21,7 +23,6 @@ import {
   Skeleton,
   StatusPill,
   Text,
-  TitleBar,
   Toggle,
   useToast,
 } from '@movo/design-system';
@@ -94,7 +95,11 @@ export function EmergencyScreen() {
         void contacts.refetch();
       }}
     >
-      <TitleBar title={t('emergency:title')} onBack={() => nav.goBack()} />
+      <ModuleHeader
+        source={photos.emergency}
+        title={t('emergency:title')}
+        onBack={() => nav.goBack()}
+      />
 
       {activeAlerts.length > 0 ? (
         <>

@@ -72,7 +72,7 @@ export const light: SemanticColors = {
   },
   text: {
     primary: palette.black,
-    secondary: '#8A8A8A',
+    secondary: '#767676',
     tertiary: '#AFAFAF',
     disabled: '#C8C8C8',
     inverse: palette.white,

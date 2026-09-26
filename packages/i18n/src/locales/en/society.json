@@ -32,5 +32,12 @@
     "staff": "Staff",
     "vehicles": "Vehicles",
     "allWings": "All wings"
-  }
+  },
+  "explore": "Explore",
+  "wings_one": "{{count}} wing",
+  "wings_other": "{{count}} wings",
+  "flats_one": "{{count}} flat",
+  "flats_other": "{{count}} flats",
+  "members_one": "{{count}} member",
+  "members_other": "{{count}} members"
 }

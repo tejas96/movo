@@ -1,8 +1,8 @@
-import { Screen, Text } from '@movo/design-system';
+import { photos, Screen, Text } from '@movo/design-system';
 import type { ReactNode } from 'react';
-import { View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 
-/** Logo mark + title + subtitle above a form. */
+/** Photo with the logo mark on it, then title + subtitle above a form. */
 export function AuthShell({
   title,
   subtitle,
@@ -14,15 +14,20 @@ export function AuthShell({
 }) {
   return (
     <Screen>
-      <View className="mb-8 mt-6 items-start">
-        <View className="h-14 w-14 items-center justify-center rounded-md bg-ink">
+      <View className="mt-2 h-[190px] overflow-hidden rounded-xl bg-card">
+        <Image
+          source={photos.auth}
+          resizeMode="cover"
+          style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        />
+        <View className="m-3 h-14 w-14 items-center justify-center rounded-md bg-ink">
           <Text variant="h2" tone="inverse">
             M
           </Text>
         </View>
-        <Text variant="h1" className="mt-6">
-          {title}
-        </Text>
+      </View>
+      <View className="mb-6 mt-5 items-start">
+        <Text variant="h1">{title}</Text>
         {subtitle ? (
           <Text variant="body" tone="secondary" className="mt-1">
             {subtitle}

@@ -3,6 +3,7 @@ import {
   Card,
   EmptyState,
   PersonCard,
+  photos,
   Screen,
   Skeleton,
   Text,
@@ -44,6 +45,7 @@ export function JoinRequestsScreen() {
         </View>
       ) : !list.data || list.data.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="userAdd"
           title={t('manage:requests.empty')}
           body={t('manage:requests.emptyBody')}

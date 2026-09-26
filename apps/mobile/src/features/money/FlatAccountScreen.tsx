@@ -71,7 +71,7 @@ export function FlatAccountScreen() {
             {a.openBills.length > 0 ? (
               <>
                 <SectionHeader title={t('money:status.DUE')} />
-                <Card tight className="gap-1">
+                <Card tight className="gap-2">
                   {a.openBills.map((b) => (
                     <BillRow key={b.id} bill={b} />
                   ))}
@@ -84,7 +84,7 @@ export function FlatAccountScreen() {
               onAction={() => nav.navigate('Payments', { flatId })}
             />
             {a.recentPayments.length > 0 ? (
-              <Card tight className="gap-1">
+              <Card tight className="gap-2">
                 {a.recentPayments.map((p) => (
                   <PaymentRow key={p.id} payment={p} />
                 ))}

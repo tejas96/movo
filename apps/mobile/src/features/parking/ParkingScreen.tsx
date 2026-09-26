@@ -4,12 +4,13 @@ import {
   Card,
   EmptyState,
   IconSquare,
+  ModuleHeader,
+  photos,
   Row,
   Screen,
   SectionHeader,
   Skeleton,
   Text,
-  TitleBar,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -29,7 +30,8 @@ export function ParkingScreen() {
 
   return (
     <Screen refreshing={mine.isRefetching} onRefresh={() => void mine.refetch()}>
-      <TitleBar
+      <ModuleHeader
+        source={photos.parking}
         title={t('parking:title')}
         onBack={() => nav.goBack()}
         trailing={
@@ -49,7 +51,12 @@ export function ParkingScreen() {
           <Skeleton className="h-40 rounded-xl" />
         </View>
       ) : !data || data.flats.length === 0 ? (
-        <EmptyState icon="parking" title={t('parking:noFlat')} className="mt-10" />
+        <EmptyState
+          photo={photos.empty}
+          icon="parking"
+          title={t('parking:noFlat')}
+          className="mt-10"
+        />
       ) : (
         data.flats.map((f) => (
           <FlatParking key={f.flat.id} entry={f} showFlat={data.flats.length > 1} />

@@ -11,6 +11,7 @@ import {
   page,
 } from '../core/common';
 import {
+  AuditActionSchema,
   FlatStatusSchema,
   InvitationStatusSchema,
   JoinRequestStatusSchema,
@@ -145,6 +146,47 @@ export const RoleSchema = RoleSummarySchema.extend({
 });
 export type Role = z.infer<typeof RoleSchema>;
 export type SocietyProfile = z.infer<typeof SocietyProfileSchema>;
+
+const RoleInputSchema = z.object({
+  name: z.string().trim().min(2).max(40),
+  permissions: z.array(PermissionKeySchema).max(100),
+});
+
+/** Areas the audit log can be filtered by. Each area is a set of action prefixes. */
+export const AUDIT_AREAS = {
+  society: ['society.', 'building.', 'flat.', 'role.'],
+  members: ['member.', 'invitation.', 'join_request.', 'user.'],
+  notices: ['notice.'],
+  meetings: ['meeting.', 'event.'],
+  money: ['billing_plan.', 'bills.', 'bill.', 'payment.', 'payment_instruction.'],
+  expenses: ['expense.', 'income.'],
+  duties: ['duty.', 'task.', 'points.'],
+  services: ['vendor.', 'parking.', 'vehicle.', 'emergency.', 'alert.'],
+} as const;
+export const AuditAreaSchema = z.enum([
+  'society',
+  'members',
+  'notices',
+  'meetings',
+  'money',
+  'expenses',
+  'duties',
+  'services',
+]);
+export type AuditArea = z.infer<typeof AuditAreaSchema>;
+
+export const AuditEntrySchema = z.object({
+  id: IdSchema,
+  action: AuditActionSchema,
+  entityType: z.string(),
+  entityId: z.string().nullable(),
+  /** null for system jobs and platform actions. */
+  actor: z.object({ membershipId: IdSchema.nullable(), displayName: z.string() }).nullable(),
+  before: z.unknown().nullable(),
+  after: z.unknown().nullable(),
+  createdAt: IsoDateTimeSchema,
+});
+export type AuditEntry = z.infer<typeof AuditEntrySchema>;
 
 export const societyContract = {
   get: defineRoute({
@@ -321,6 +363,45 @@ export const societyContract = {
     summary: 'Roles of this society',
     params: societyParams,
     response: z.array(RoleSchema),
+  }),
+  createRole: defineRoute({
+    method: 'POST',
+    path: '/v1/societies/:societyId/roles',
+    summary: 'Add a role. You can only give permissions you hold yourself.',
+    permission: 'society.roles.manage',
+    params: societyParams,
+    body: RoleInputSchema.strict(),
+    response: RoleSchema,
+  }),
+  updateRole: defineRoute({
+    method: 'PATCH',
+    path: '/v1/societies/:societyId/roles/:roleId',
+    summary: 'Rename a role or change its permissions. The admin role keeps every permission.',
+    permission: 'society.roles.manage',
+    params: societyParams.extend({ roleId: IdSchema }),
+    body: RoleInputSchema.partial().strict(),
+    response: RoleSchema,
+  }),
+  deleteRole: defineRoute({
+    method: 'DELETE',
+    path: '/v1/societies/:societyId/roles/:roleId',
+    summary: 'Delete a role you added. It must have no members or invitations.',
+    permission: 'society.roles.manage',
+    params: societyParams.extend({ roleId: IdSchema }),
+    response: OkSchema,
+  }),
+
+  listAudit: defineRoute({
+    method: 'GET',
+    path: '/v1/societies/:societyId/audit',
+    summary: 'Audit log, newest first',
+    permission: 'audit.view',
+    params: societyParams,
+    query: CursorQuerySchema.extend({
+      area: AuditAreaSchema.optional(),
+      entityId: z.string().max(64).optional(),
+    }),
+    response: page(AuditEntrySchema),
   }),
 
   listInvitations: defineRoute({

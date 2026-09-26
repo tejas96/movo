@@ -21,10 +21,16 @@ import { ExpenseDetailScreen } from '../../features/expenses/ExpenseDetailScreen
 import { ExpenseEditorScreen } from '../../features/expenses/ExpenseEditorScreen';
 import { ExpensesScreen } from '../../features/expenses/ExpensesScreen';
 import { NotificationsScreen } from '../../features/home/NotificationsScreen';
+import { AuditLogScreen } from '../../features/manage/AuditLogScreen';
 import { InvitationsScreen } from '../../features/manage/InvitationsScreen';
 import { InviteMemberScreen } from '../../features/manage/InviteMemberScreen';
 import { JoinRequestsScreen } from '../../features/manage/JoinRequestsScreen';
 import { ManageHomeScreen } from '../../features/manage/ManageHomeScreen';
+import { ModuleSettingsScreen } from '../../features/manage/ModuleSettingsScreen';
+import { ModulesScreen } from '../../features/manage/ModulesScreen';
+import { RoleEditorScreen } from '../../features/manage/RoleEditorScreen';
+import { RolesScreen } from '../../features/manage/RolesScreen';
+import { SocietyProfileScreen } from '../../features/manage/SocietyProfileScreen';
 import { StructureScreen } from '../../features/manage/StructureScreen';
 import { ComingSoonScreen } from '../../features/market/ComingSoonScreen';
 import { ChangePasswordScreen } from '../../features/me/ChangePasswordScreen';
@@ -252,6 +258,12 @@ export function RootNavigator() {
             options={{ animation: 'slide_from_bottom' }}
           />
           <Stack.Screen name="Rewards" component={RewardsScreen} />
+          <Stack.Screen name="SocietyProfile" component={SocietyProfileScreen} />
+          <Stack.Screen name="Roles" component={RolesScreen} />
+          <Stack.Screen name="RoleEditor" component={RoleEditorScreen} />
+          <Stack.Screen name="Modules" component={ModulesScreen} />
+          <Stack.Screen name="ModuleSettings" component={ModuleSettingsScreen} />
+          <Stack.Screen name="AuditLog" component={AuditLogScreen} />
           <Stack.Screen name="Join" component={JoinScreen} />
           <Stack.Screen name="PickFlat" component={PickFlatScreen} />
           <Stack.Screen name="Pending" component={PendingScreen} />

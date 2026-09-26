@@ -40,6 +40,20 @@ function slugify(name: string): string {
   );
 }
 
+/** What the audit log keeps about a profile change. */
+function profileFields(s: Society) {
+  return {
+    name: s.name,
+    addressLine: s.addressLine,
+    city: s.city,
+    state: s.state,
+    pincode: s.pincode,
+    defaultLocale: s.defaultLocale,
+    fyStartMonth: s.fyStartMonth,
+    settings: s.settings,
+  };
+}
+
 @Injectable()
 export class SocietiesService {
   constructor(
@@ -235,8 +249,8 @@ export class SocietiesService {
           action: 'society.settings.updated',
           entityType: 'Society',
           entityId: ctx.societyId,
-          before: { name: before.name, settings: before.settings },
-          after: { name: updated.name, settings: nextSettings, joinCodeRotated: Boolean(joinCode) },
+          before: profileFields(before),
+          after: { ...profileFields(updated), joinCodeRotated: Boolean(joinCode) },
         },
         tx,
       );

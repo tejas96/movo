@@ -4,7 +4,9 @@ import {
   EmptyState,
   IconSquare,
   Input,
+  ModuleHeader,
   OptionSheet,
+  photos,
   Row,
   Screen,
   SectionHeader,
@@ -12,7 +14,6 @@ import {
   Sheet,
   Skeleton,
   Text,
-  TitleBar,
   useToast,
 } from '@movo/design-system';
 import { useState } from 'react';
@@ -65,7 +66,8 @@ export function RewardsScreen() {
 
   return (
     <Screen refreshing={mine.isRefetching} onRefresh={() => void mine.refetch()}>
-      <TitleBar
+      <ModuleHeader
+        source={photos.rewards}
         title={t('rewards:title')}
         onBack={() => nav.goBack()}
         trailing={
@@ -108,7 +110,7 @@ export function RewardsScreen() {
           {showBoard && leaders.data && leaders.data.rows.length > 0 ? (
             <>
               <SectionHeader title={t('rewards:leaderboard')} />
-              <Card tight className="gap-1">
+              <Card tight className="gap-2">
                 {leaders.data.rows.map((r) => (
                   <Row
                     key={r.membershipId}
@@ -134,7 +136,7 @@ export function RewardsScreen() {
           {m.entries.length === 0 ? (
             <EmptyState icon="rewards" title={t('rewards:empty')} body={t('rewards:emptyBody')} />
           ) : (
-            <Card tight className="gap-1">
+            <Card tight className="gap-2">
               {m.entries.map((e) => (
                 <Row
                   key={e.id}

@@ -27,12 +27,12 @@ Your section 33 listed marketplace and buy-and-sell as MVP candidates. I put the
 | M6 ✅ | Money | billing plans, bill generation, late fees, record payment with idempotency, receipts, collection status, how to pay, reminders |
 | M7 ✅ | Expenses and reports | expenses with receipts and approval, categories, FY summary, member visibility setting |
 | M8 ✅ | Duties, tasks, rewards | rotation engine, assignments and overrides, tasks with volunteering and verification, points ledger, rules |
-| M9 | Manage society and release | all admin screens, audit log view, Hindi and Marathi complete, privacy policy page, Play internal testing, backups and uptime checks live |
+| M9 ✅ | Manage society and release | all admin screens, audit log view, Hindi and Marathi complete, privacy policy page, Play internal testing, backups and uptime checks live |
 | M10 | Marketplace (1.5) | listings, orders, messages, reviews, moderation, network visibility flag |
 
 ## Done so far (2026-09-26)
 
-M0 to M8 are built and tested. The app runs on Android against the local API. See `07-dev-setup.md`.
+M0 to M9 are built and tested. The app runs on Android against the local API. See `07-dev-setup.md`.
 
 M4 added: Services (vendor categories, vendors, member suggestions the committee approves), Parking (slots, one active allocation per slot, vehicles per flat, member detail shows vehicles by the `directory.showVehicles` setting), Emergency (contacts with India's public numbers seeded, hold-to-confirm alerts, cooldown, push to the society or configured roles, resolve or false alarm, active alerts first on Home), and a wing filter in the directory.
 
@@ -48,10 +48,13 @@ M8 added: duties (rotations over flats or members, daily, weekly or monthly; 12 
 
 Also fixed in M8: scrolled content no longer slides under the status bar.
 
+M9 added: Manage society as a tile grid shown by permission (members, invites, requests, wings and flats, parking slots, society profile, modules, roles, audit log); society profile (name, address, default language, financial year start, join requests on or off); modules on or off with a settings page for each module; roles (add, rename, change permissions, delete unused custom roles; the admin role keeps every permission; nobody gives or removes a permission they do not hold); member page with several roles, flats and relation, and a confirm before suspend or remove; audit log by area with who, when and what changed; privacy policy link on Me and at sign-up; Hindi and Marathi complete; API Docker image, production compose with Caddy, nightly backups with a restore script, uptime checks, deploy workflow, Play release build and the privacy page on GitHub Pages. See `08-release-and-ops.md`.
+
 ## Next
 
-1. M9: all admin screens, audit log view, Hindi and Marathi review, privacy policy page, Play internal testing, backups and uptime checks.
+1. Create the accounts in `08-release-and-ops.md` (Oracle VM, Play Console, UptimeRobot, healthchecks.io), deploy, and send the AAB to Play internal testing.
 2. Firebase project for push (alerts are written to the outbox now; the transport logs until Firebase exists).
+3. M10: marketplace.
 
 ## Explicitly out of the MVP
 

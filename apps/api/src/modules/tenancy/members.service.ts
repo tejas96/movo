@@ -1,6 +1,7 @@
 import type {
   MemberCard,
   MemberDetail,
+  PermissionKey,
   RouteBody,
   RouteQuery,
   societyContract,
@@ -19,7 +20,7 @@ import { toVehicleDto } from '../parking/parking.service';
 import { seesAllVehicles } from '../parking/visibility';
 import { ContextService } from './context.service';
 import { isStaffMembership, memberInclude, toMemberCard } from './mappers';
-import { RolesService } from './roles.service';
+import { assertCanGrant, RolesService } from './roles.service';
 
 type ListQuery = RouteQuery<typeof societyContract.listMembers>;
 
@@ -115,6 +116,10 @@ export class MembersService {
 
     if (body.roleIds) {
       const roles = await this.roles.requireRoles(body.roleIds);
+      const added = roles.filter((r) => !before.roles.some((b) => b.roleId === r.id));
+      assertCanGrant(
+        added.flatMap((r) => r.permissions.map((p) => p.permissionKey as PermissionKey)),
+      );
       const keepsRoleManage = roles.some((r) => r.key === 'admin');
       if (!keepsRoleManage && before.roles.some((r) => r.role.key === 'admin'))
         await this.assertNotLastAdmin(membershipId);

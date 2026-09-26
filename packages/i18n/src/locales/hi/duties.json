@@ -36,8 +36,8 @@
   "order": "क्रम",
   "upcoming": "आगे की बारियाँ",
   "history": "इतिहास",
-  "pointsEach": "हर बारी पर {{count}} अंक",
-  "pointsEach_other": "हर बारी पर {{count}} अंक",
+  "pointsEach": "हर बारी पर {{count}} पॉइंट",
+  "pointsEach_other": "हर बारी पर {{count}} पॉइंट्स",
   "override": {
     "title": "यह बारी बदलें",
     "skip": "यह बारी छोड़ें",
@@ -63,12 +63,12 @@
     "description": "विवरण (वैकल्पिक)",
     "kind": "बारी किसकी",
     "kindOpt": {
-      "FLAT": "फ्लैट",
+      "FLAT": "फ़्लैट",
       "MEMBER": "सदस्य"
     },
     "participants": "इस क्रम में",
     "add": "जोड़ें",
-    "pickFlats": "फ्लैट चुनें",
+    "pickFlats": "फ़्लैट चुनें",
     "pickMembers": "सदस्य चुनें",
     "unit": "हर बारी",
     "unitOpt": {
@@ -83,7 +83,7 @@
       "MARK_MISSED": "छूटी दर्ज करें और आगे बढ़ें",
       "CARRY_OVER": "फिर वही व्यक्ति"
     },
-    "points": "हर बारी के अंक (वैकल्पिक)",
+    "points": "हर बारी के पॉइंट्स (वैकल्पिक)",
     "create": "ज़िम्मेदारी बनाएँ",
     "saved": "ज़िम्मेदारी सेव हुई",
     "up": "ऊपर",

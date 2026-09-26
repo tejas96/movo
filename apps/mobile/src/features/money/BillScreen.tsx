@@ -132,7 +132,7 @@ export function BillScreen() {
           {b.payments.length > 0 ? (
             <>
               <SectionHeader title={t('money:bill.payments')} />
-              <Card tight className="gap-1">
+              <Card tight className="gap-2">
                 {b.payments.map((p) => (
                   <Row
                     key={p.paymentId}

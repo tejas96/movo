@@ -66,6 +66,12 @@ export type RootStackParamList = {
   TaskDetail: { taskId: string };
   TaskEditor: { taskId?: string } | undefined;
   Rewards: undefined;
+  SocietyProfile: undefined;
+  Roles: undefined;
+  RoleEditor: { roleId?: string } | undefined;
+  Modules: undefined;
+  ModuleSettings: { moduleKey: ModuleKey };
+  AuditLog: undefined;
 };
 
 export type TabParamList = {

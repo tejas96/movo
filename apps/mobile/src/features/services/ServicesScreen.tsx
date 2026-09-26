@@ -4,13 +4,14 @@ import {
   Card,
   EmptyState,
   IconSquare,
+  ModuleHeader,
+  photos,
   Row,
   Screen,
   SearchBar,
   SectionHeader,
   Skeleton,
   Tile,
-  TitleBar,
 } from '@movo/design-system';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +49,8 @@ export function ServicesScreen() {
 
   return (
     <Screen refreshing={categories.isRefetching} onRefresh={() => void categories.refetch()}>
-      <TitleBar
+      <ModuleHeader
+        source={photos.services}
         title={t('services:title')}
         onBack={() => nav.goBack()}
         trailing={

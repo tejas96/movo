@@ -8,7 +8,7 @@ import { Text } from './Text';
 import { theme } from './theme';
 
 export interface CardProps extends ViewProps {
-  /** tight = 8px padding, for lists of white rows. */
+  /** tight = a plain stack of gray rows on the white screen. No fill, no padding. */
   tight?: boolean;
   /** white card on a gray canvas. */
   white?: boolean;
@@ -22,8 +22,7 @@ export function Card({ tight, white, className, ...rest }: CardProps) {
       {...rest}
       className={cn(
         'rounded-xl',
-        white ? 'bg-card-nested' : 'bg-card',
-        tight ? 'p-2' : 'p-5',
+        tight ? null : white ? 'bg-card-nested p-5' : 'bg-card p-5',
         className,
       )}
     />
@@ -39,12 +38,14 @@ export interface RowProps extends Omit<PressableProps, 'children' | 'style'> {
   leading?: ReactNode;
   /** Trailing node (amount, status pill). A chevron is shown when pressable and nothing else is given. */
   trailing?: ReactNode;
-  /** Row inside a white card sits on gray instead of white. */
+  /** The row sits inside a gray card, so it turns white. */
   onGray?: boolean;
+  /** danger = soft red, for active emergency alerts. */
+  tone?: 'default' | 'danger';
   className?: string;
 }
 
-/** White row inside a gray card. 68 min height. */
+/** Gray row on the white screen: white icon square, bold title, gray subtitle. 72 min height. */
 export function Row({
   title,
   subtitle,
@@ -52,6 +53,7 @@ export function Row({
   leading,
   trailing,
   onGray,
+  tone = 'default',
   onPress,
   className,
   ...rest
@@ -59,7 +61,7 @@ export function Row({
   const body = (
     <>
       {leading ??
-        (icon ? <IconSquare icon={icon} size="sm" tone={onGray ? 'white' : 'gray'} /> : null)}
+        (icon ? <IconSquare icon={icon} size="sm" tone={onGray ? 'gray' : 'white'} /> : null)}
       <View className="flex-1 min-w-0">
         <Text variant="bodyMedium" className="font-semibold" numberOfLines={2}>
           {title}
@@ -77,8 +79,8 @@ export function Row({
     </>
   );
   const cls = cn(
-    'flex-row items-center gap-3 rounded-md py-3 pl-3 pr-3.5 min-h-[68px]',
-    onGray ? 'bg-card' : 'bg-card-nested',
+    'flex-row items-center gap-3 rounded-lg py-3 pl-3 pr-4 min-h-[72px]',
+    tone === 'danger' ? 'bg-danger-soft' : onGray ? 'bg-card-nested' : 'bg-card',
     className,
   );
   if (!onPress) return <View className={cls}>{body}</View>;

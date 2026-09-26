@@ -4,6 +4,7 @@ import {
   CircleButton,
   EmptyState,
   PersonCard,
+  photos,
   Screen,
   SearchBar,
   Skeleton,
@@ -94,6 +95,7 @@ export function DirectoryScreen() {
         </View>
       ) : items.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="people"
           title={t('society:directory.empty')}
           body={t('society:directory.emptyBody')}

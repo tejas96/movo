@@ -1,0 +1,54 @@
+name: Pages
+
+# Publishes site/ (landing, privacy policy, account deletion page) to GitHub Pages:
+# https://tejas96.github.io/movo/privacy.html
+# One-time: repo Settings -> Pages -> Source: GitHub Actions. Until then this is skipped.
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - id: pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh api "repos/${{ github.repository }}/pages" --jq .build_type > /tmp/type 2>/dev/null; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            [ "$(cat /tmp/type)" = workflow ] || echo "::warning::Pages source is not 'GitHub Actions'."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GitHub Pages is not enabled for this repo yet. Skipping."
+          fi
+
+  deploy:
+    needs: check
+    if: needs.check.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

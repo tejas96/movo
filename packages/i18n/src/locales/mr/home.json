@@ -5,7 +5,7 @@
     "evening": "शुभ संध्याकाळ"
   },
   "flatLabel": "फ्लॅट {{flat}}",
-  "searchPlaceholder": "सूचना, सदस्य, सेवा शोधा…",
+  "searchPlaceholder": "नोटीस, सदस्य, सेवा शोधा…",
   "quick": {
     "services": "सेवा",
     "directory": "सदस्य",
@@ -15,9 +15,9 @@
   },
   "needsYou": "आज तुमच्यासाठी",
   "allClear": "आज सर्व काही ठीक आहे",
-  "allClearBody": "थकबाकी नाही, जबाबदारी नाही, अलर्ट नाही.",
+  "allClearBody": "देणी नाहीत, जबाबदारी नाही, अलर्ट नाही.",
   "upcoming": "आगामी",
-  "notices": "सूचना",
+  "notices": "नोटीस",
   "attention": {
     "JOIN_REQUESTS_PENDING": {
       "title": "{{count}} सामील होण्याची विनंती प्रलंबित",
@@ -30,7 +30,7 @@
       "sub": "कोड पुन्हा शेअर करा"
     },
     "IMPORTANT_NOTICE": {
-      "sub": "महत्त्वाची सूचना"
+      "sub": "महत्त्वाची नोटीस"
     },
     "PROFILE_INCOMPLETE": {
       "title": "तुमचा ईमेल जोडा",
@@ -41,9 +41,9 @@
       "sub": "{{place}} · {{time}}"
     },
     "VENDOR_SUGGESTIONS": {
-      "title": "{{count}} सेवेची सूचना",
-      "title_other": "{{count}} सेवांच्या सूचना",
-      "sub": "सेवा मध्ये पाहा"
+      "title": "{{count}} सुचवलेली सेवा",
+      "title_other": "{{count}} सुचवलेल्या सेवा",
+      "sub": "सेवा विभागात पाहा"
     },
     "DUES": {
       "title": "{{amount}} देय · {{flat}}",
@@ -68,7 +68,7 @@
     "TASKS_TO_VERIFY": {
       "title": "{{count}} काम तपासायचे आहे",
       "title_other": "{{count}} कामे तपासायची आहेत",
-      "sub": "काम स्वीकारा म्हणजे गुण मिळतील"
+      "sub": "काम स्वीकारा म्हणजे पॉइंट्स मिळतील"
     }
   },
   "upcomingKind": {
@@ -77,8 +77,8 @@
   },
   "contribution": {
     "title": "माझे योगदान",
-    "points": "या वर्षी {{count}} गुण",
-    "points_other": "या वर्षी {{count}} गुण",
+    "points": "या वर्षी {{count}} पॉइंट",
+    "points_other": "या वर्षी {{count}} पॉइंट्स",
     "openTasks": "{{count}} काम सुरू आहे",
     "openTasks_other": "{{count}} कामे सुरू आहेत"
   }

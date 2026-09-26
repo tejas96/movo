@@ -1,6 +1,9 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+// react-native-config: debug builds read apps/mobile/.env, release builds read
+// apps/mobile/.env.production (API_URL=https://<your api domain>). ENVFILE=... overrides both.
+project.ext.envConfigFiles = [debug: ".env", release: ".env.production"]
 apply from: project(":react-native-config").projectDir.getPath() + "/dotenv.gradle"
 
 /**
@@ -53,6 +56,12 @@ react {
 
     /* Autolinking */
     autolinkLibrariesWithApp()
+
+    // pnpm keeps hermes-compiler next to react-native in the store, not in apps/mobile/node_modules,
+    // so the plugin's default lookup fails for release builds. Resolve it through react-native.
+    hermesCommand = new File(["node", "--print",
+        "require.resolve('hermes-compiler/package.json', { paths: [require.resolve('react-native/package.json')] })"]
+        .execute(null, rootDir).text.trim()).getParentFile().getAbsolutePath() + "/hermesc/%OS-BIN%/hermesc"
 }
 
 /**
@@ -73,6 +82,38 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+/**
+ * MOVO release settings. Each value comes from a Gradle property (~/.gradle/gradle.properties or
+ * -P on the command line) or an environment variable of the same name. See docs/08-release-and-ops.md.
+ */
+def movoProp = { String name ->
+    def value = project.findProperty(name) ?: System.getenv(name)
+    return value ? value.toString().trim() : null
+}
+// versionName defaults to "version" in apps/mobile/package.json; bump MOVO_VERSION_CODE for every upload.
+def movoPackageJson = new groovy.json.JsonSlurper().parse(file("../../package.json"))
+def movoVersionCode = (movoProp("MOVO_VERSION_CODE") ?: "1").toInteger()
+def movoVersionName = movoProp("MOVO_VERSION_NAME") ?: movoPackageJson.version
+// Upload key for Google Play. Missing = release builds are signed with the debug key (local only).
+def movoUploadStoreFile = movoProp("MOVO_UPLOAD_STORE_FILE")
+def movoHasUploadKey = movoUploadStoreFile && file(movoUploadStoreFile).exists() &&
+    movoProp("MOVO_UPLOAD_STORE_PASSWORD") && movoProp("MOVO_UPLOAD_KEY_ALIAS") &&
+    movoProp("MOVO_UPLOAD_KEY_PASSWORD")
+def movoReleaseTask = gradle.startParameter.taskNames.any { it.toLowerCase().contains("release") }
+if (movoReleaseTask && !movoHasUploadKey) {
+    logger.warn("MOVO: no upload key configured (MOVO_UPLOAD_*); signing release with the DEBUG key. Play will reject it.")
+}
+// A Play build must talk to the real API over HTTPS, never the emulator's http://10.0.2.2.
+def movoReleaseEnv = System.getenv("ENVFILE") ?: ".env.production"
+def movoReleaseEnvFile = file("../../${movoReleaseEnv}")
+def movoReleaseApiUrl = movoReleaseEnvFile.exists() ?
+    movoReleaseEnvFile.readLines().find { it.trim().startsWith("API_URL=") }?.trim()?.substring(8) : null
+if (movoReleaseTask && !(movoReleaseApiUrl?.startsWith("https://"))) {
+    def message = "MOVO: release API_URL is '${movoReleaseApiUrl}' (from apps/mobile/${movoReleaseEnv}); it must be https://..."
+    if (movoHasUploadKey) throw new GradleException(message)
+    logger.warn(message + " Local test build only.")
+}
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -83,8 +124,8 @@ android {
         applicationId "com.movo.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode movoVersionCode
+        versionName movoVersionName
     }
     signingConfigs {
         debug {
@@ -93,15 +134,22 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        if (movoHasUploadKey) {
+            release {
+                storeFile file(movoUploadStoreFile)
+                storePassword movoProp("MOVO_UPLOAD_STORE_PASSWORD")
+                keyAlias movoProp("MOVO_UPLOAD_KEY_ALIAS")
+                keyPassword movoProp("MOVO_UPLOAD_KEY_PASSWORD")
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Upload key when MOVO_UPLOAD_* is set, else the debug key so local release builds work.
+            signingConfig movoHasUploadKey ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }

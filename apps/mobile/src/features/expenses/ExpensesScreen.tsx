@@ -8,7 +8,9 @@ import {
   EmptyState,
   IconSquare,
   Input,
+  ModuleHeader,
   OptionSheet,
+  photos,
   Row,
   Screen,
   SectionHeader,
@@ -75,7 +77,12 @@ export function ExpensesScreen() {
     return (
       <Screen>
         <TitleBar title={t('expenses:title')} onBack={() => nav.goBack()} />
-        <EmptyState icon="receipt" title={t('expenses:hidden')} className="mt-16" />
+        <EmptyState
+          photo={photos.empty}
+          icon="receipt"
+          title={t('expenses:hidden')}
+          className="mt-16"
+        />
       </Screen>
     );
 
@@ -86,7 +93,8 @@ export function ExpensesScreen() {
         refreshing={list.isRefetching}
         onRefresh={() => void list.refetch()}
       >
-        <TitleBar
+        <ModuleHeader
+          source={photos.expenses}
           title={t('expenses:title')}
           onBack={() => nav.goBack()}
           trailing={
@@ -134,13 +142,14 @@ export function ExpensesScreen() {
               <Skeleton className="mt-4 h-40 rounded-xl" />
             ) : items.length === 0 ? (
               <EmptyState
+                photo={photos.empty}
                 icon="receipt"
                 title={t('expenses:empty')}
                 body={t('expenses:emptyBody')}
                 className="mt-10"
               />
             ) : (
-              <Card tight className="mt-4 gap-1">
+              <Card tight className="mt-4 gap-2">
                 {items.map((e) => (
                   <ExpenseRow key={e.id} expense={e} />
                 ))}
@@ -234,7 +243,7 @@ function ReportView() {
           {t('expenses:report.noExpenses')}
         </Text>
       ) : (
-        <Card tight className="gap-1">
+        <Card tight className="gap-2">
           {r.expenses.byCategory.map((c) => (
             <Bar
               key={c.category.id}
@@ -279,10 +288,10 @@ function Bar({
 }) {
   const pct = total > 0 ? Math.max(2, Math.round((amount / total) * 100)) : 0;
   return (
-    <View className="rounded-md bg-card-nested px-4 py-3">
+    <View className="rounded-lg bg-card px-4 py-3">
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1 flex-row items-center gap-2">
-          <IconSquare icon={icon ?? 'receipt'} size="sm" tone="gray" />
+          <IconSquare icon={icon ?? 'receipt'} size="sm" tone="white" />
           <Text variant="bodyMedium" numberOfLines={1} className="flex-1">
             {label}
           </Text>
@@ -395,7 +404,7 @@ function OtherIncome({ report, fy }: { report: FinanceReport; fy: string | undef
         }}
       />
       {canView && rows.length > 0 ? (
-        <Card tight className="gap-1">
+        <Card tight className="gap-2">
           {rows.map((i) => (
             <Row
               key={i.id}
@@ -412,7 +421,7 @@ function OtherIncome({ report, fy }: { report: FinanceReport; fy: string | undef
           ))}
         </Card>
       ) : report.income.byKind.length > 0 ? (
-        <Card tight className="gap-1">
+        <Card tight className="gap-2">
           {report.income.byKind.map((k) => (
             <Row
               key={k.kind}

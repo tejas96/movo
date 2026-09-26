@@ -6,7 +6,7 @@
   "structure": "विंग और फ़्लैट",
   "roles": "भूमिकाएँ",
   "modules": "मॉड्यूल",
-  "settings": "सेटिंग",
+  "settings": "सेटिंग्स",
   "joinCode": "सोसायटी जॉइन कोड",
   "joinCodeHelp": "निवासी इस कोड से जुड़ने का अनुरोध करते हैं। इसे सोसायटी ग्रुप में साझा करें।",
   "rotateJoinCode": "नया कोड लें",
@@ -32,7 +32,7 @@
     "emptyBody": "जब कोई निवासी सोसायटी कोड से जुड़ने को कहेगा, यहाँ दिखेगा।",
     "asks": "फ़्लैट {{flat}} में {{relation}} के रूप में जुड़ना चाहते हैं",
     "approved": "मंज़ूर। {{name}} अब सदस्य हैं।",
-    "rejected": "अनुरोध अस्वीकार हुआ।"
+    "rejected": "अनुरोध नामंज़ूर किया गया।"
   },
   "structureForm": {
     "addBuilding": "विंग जोड़ें",
@@ -52,13 +52,370 @@
     "remove": "सोसायटी से हटाएँ",
     "resetCode": "पासवर्ड रीसेट कोड दें",
     "resetCodeBody": "यह कोड निवासी को सीधे दें। यह एक बार, 15 मिनट तक चलता है।",
-    "updated": "सदस्य अपडेट हुआ"
+    "updated": "सदस्य अपडेट हुआ",
+    "rolesHelp": "एक या ज़्यादा भूमिकाएँ चुनें। सदस्य को हर भूमिका की सभी अनुमतियाँ मिलती हैं।",
+    "editFlats": "फ़्लैट बदलें",
+    "flatsHelp": "वे फ़्लैट चुनें जिनमें यह सदस्य रहते हैं या जिनके मालिक हैं।",
+    "relation": "संबंध",
+    "noFlats": "कोई फ़्लैट नहीं",
+    "removeConfirm": "{{name}} को सोसायटी से हटाएँ?",
+    "removeConfirmBody": "उनका ऐक्सेस तुरंत बंद हो जाएगा। उनके भुगतान और पुराना रिकॉर्ड बना रहेगा।",
+    "suspendConfirm": "{{name}} को निलंबित करें?",
+    "suspendConfirmBody": "जब तक आप उन्हें फिर से सक्रिय नहीं करते, वे यह सोसायटी नहीं खोल पाएँगे।",
+    "activate": "सक्रिय करें"
   },
   "tiles": {
     "members": "सदस्य",
     "invitations": "आमंत्रण",
     "requests": "अनुरोध",
     "structure": "विंग व फ़्लैट",
-    "parking": "पार्किंग जगहें"
+    "parking": "पार्किंग जगहें",
+    "profile": "सोसायटी प्रोफ़ाइल",
+    "modules": "मॉड्यूल",
+    "roles": "भूमिकाएँ",
+    "audit": "ऑडिट लॉग"
+  },
+  "profile": {
+    "title": "सोसायटी प्रोफ़ाइल",
+    "name": "सोसायटी का नाम",
+    "address": "पता",
+    "city": "शहर",
+    "state": "राज्य",
+    "pincode": "पिन कोड",
+    "language": "डिफ़ॉल्ट भाषा",
+    "languageHelp": "जिन सदस्यों ने भाषा नहीं चुनी है, उन्हें संदेश इसी भाषा में जाएँगे।",
+    "fyStart": "वित्त वर्ष किस महीने से शुरू होता है",
+    "joinRequests": "जुड़ने के अनुरोध लें",
+    "joinRequestsHelp": "निवासी सोसायटी कोड से जुड़ने का अनुरोध कर सकते हैं। सिर्फ़ आमंत्रण से जोड़ना हो तो इसे बंद करें।",
+    "saved": "सोसायटी प्रोफ़ाइल सेव हो गई"
+  },
+  "rolesScreen": {
+    "title": "भूमिकाएँ",
+    "new": "नई भूमिका",
+    "edit": "भूमिका बदलें",
+    "name": "भूमिका का नाम",
+    "nameHint": "जैसे: सिक्योरिटी प्रमुख",
+    "members_one": "{{count}} सदस्य",
+    "members_other": "{{count}} सदस्य",
+    "permissionCount_one": "{{count}} अनुमति",
+    "permissionCount_other": "{{count}} अनुमतियाँ",
+    "builtIn": "पहले से बनी",
+    "adminLocked": "एडमिन भूमिका के पास हमेशा सभी अनुमतियाँ होती हैं। आप इसका नाम बदल सकते हैं।",
+    "onlyYours": "आप सिर्फ़ वही अनुमतियाँ चालू कर सकते हैं जो आपके पास ख़ुद हैं।",
+    "selected": "चालू अनुमतियाँ",
+    "saved": "भूमिका सेव हो गई",
+    "delete": "भूमिका हटाएँ",
+    "deleteConfirm": "{{name}} भूमिका हटाएँ?",
+    "deleted": "भूमिका हटा दी गई"
+  },
+  "permissionGroups": {
+    "society": "सोसायटी",
+    "members": "सदस्य",
+    "communication": "नोटिस, बैठकें और कार्यक्रम",
+    "work": "काम, ज़िम्मेदारियाँ और इनाम",
+    "money": "पैसा",
+    "services": "पार्किंग, सेवाएँ और आपातकाल",
+    "other": "अन्य"
+  },
+  "permissions": {
+    "society_settings_manage": "सोसायटी प्रोफ़ाइल, मॉड्यूल और सेटिंग्स बदलना",
+    "society_structure_manage": "विंग और फ़्लैट जोड़ना और बदलना",
+    "society_roles_manage": "भूमिकाएँ बनाना और अनुमतियाँ बदलना",
+    "member_manage": "सदस्यों को आमंत्रित करना, मंज़ूर करना, बदलना और हटाना",
+    "member_view_contact": "हर सदस्य का फ़ोन और ईमेल देखना",
+    "parking_manage": "पार्किंग जगहें और वाहन संभालना",
+    "notice_publish": "नोटिस प्रकाशित और पिन करना",
+    "notice_manage_all": "दूसरों के नोटिस बदलना या संग्रह में डालना",
+    "meeting_manage": "बैठकें तय करना और संभालना",
+    "event_manage": "कार्यक्रम बनाना और संभालना",
+    "task_manage": "काम बनाना और सौंपना",
+    "task_verify": "पूरे हुए काम जाँचना और पॉइंट्स देना",
+    "duty_manage": "बारी वाली ज़िम्मेदारियाँ बनाना और बदलना",
+    "duty_override": "किसी की बारी छोड़ना, दूसरे को देना या पूरी करना",
+    "reward_settings_manage": "इनाम के नियम बदलना",
+    "reward_adjust": "हाथ से पॉइंट्स जोड़ना या घटाना",
+    "reward_redeem_approve": "पॉइंट्स भुनाने को मंज़ूरी देना",
+    "maintenance_settings_manage": "बिलिंग योजनाएँ, विलंब शुल्क और भुगतान विवरण",
+    "maintenance_generate_bills": "बिल बनाना",
+    "maintenance_record_payment": "भुगतान दर्ज करना और रद्द करना",
+    "maintenance_waive": "बिल और विलंब शुल्क माफ़ करना",
+    "maintenance_view_all": "हर फ़्लैट के बिल और राशि देखना",
+    "expense_create": "खर्च और आय जोड़ना",
+    "expense_approve": "खर्च मंज़ूर या नामंज़ूर करना",
+    "expense_manage_categories": "खर्च की श्रेणियाँ संभालना",
+    "finance_reports_view": "हिसाब की रिपोर्ट देखना",
+    "vendor_manage": "सेवा देने वाले और श्रेणियाँ संभालना",
+    "emergency_contacts_manage": "आपातकालीन संपर्क संभालना",
+    "emergency_alert_resolve": "आपातकालीन अलर्ट बंद करना",
+    "marketplace_moderate": "मार्केट की लिस्टिंग पर नज़र रखना",
+    "marketplace_settings_manage": "मार्केट की सेटिंग्स बदलना",
+    "audit_view": "ऑडिट लॉग देखना"
+  },
+  "modulesScreen": {
+    "title": "मॉड्यूल",
+    "help": "जो चीज़ें आपकी सोसायटी इस्तेमाल नहीं करती, उन्हें बंद करें। डेटा सुरक्षित रहता है और चालू करने पर वापस आ जाता है। सेटिंग्स के लिए किसी मॉड्यूल पर टैप करें।",
+    "turnedOn": "चालू किया गया",
+    "turnedOff": "बंद किया गया"
+  },
+  "moduleHelp": {
+    "notices": "कमेटी की घोषणाएँ",
+    "meetings": "कमेटी और आम सभा की बैठकें, रिमाइंडर के साथ",
+    "events": "सोसायटी के कार्यक्रम, कौन आ रहा है यह पूछने के साथ",
+    "directory": "सदस्यों की सूची, गोपनीयता के साथ",
+    "vendors": "भरोसेमंद प्लंबर, इलेक्ट्रीशियन और दूसरी सेवाएँ",
+    "parking": "पार्किंग जगहें, किसे मिली और वाहन",
+    "tasks": "एक बार के काम जो सदस्य ख़ुद ले सकते हैं",
+    "responsibilities": "बारी-बारी की ज़िम्मेदारियाँ, जैसे गेट बंद करना",
+    "rewards": "मदद करने पर पॉइंट्स",
+    "emergency": "आपातकालीन संपर्क और अलर्ट",
+    "maintenance": "मेंटेनेंस बिल और भुगतान",
+    "expenses": "सोसायटी का खर्च और रिपोर्ट",
+    "marketplace": "सोसायटी के अंदर ख़रीदें और बेचें"
+  },
+  "moduleSettings": {
+    "saved": "सेटिंग्स सेव हो गईं",
+    "invalid": "नंबर जाँचें। एक नंबर तय सीमा से बाहर है।",
+    "hours_one": "{{count}} घंटा",
+    "hours_other": "{{count}} घंटे",
+    "notices": {
+      "maxPinned": {
+        "label": "ज़्यादा से ज़्यादा पिन किए नोटिस",
+        "help": "1 से 10 तक। पिन किए नोटिस सबसे ऊपर रहते हैं।"
+      }
+    },
+    "meetings": {
+      "reminderHoursBefore": {
+        "label": "बैठक से पहले सदस्यों को याद दिलाएँ",
+        "help": "ज़्यादा से ज़्यादा 3 चुनें।"
+      }
+    },
+    "events": {
+      "rsvpEnabledByDefault": {
+        "label": "नए कार्यक्रमों में पूछें कि कौन आ रहा है",
+        "help": "आयोजक हर कार्यक्रम के लिए इसे फिर भी बदल सकते हैं।"
+      }
+    },
+    "directory": {
+      "allowPhoneOptIn": {
+        "label": "सदस्य अपना नंबर दिखा सकते हैं",
+        "help": "बंद होने पर कमेटी के अलावा सबसे फ़ोन नंबर छिपे रहेंगे।"
+      },
+      "staffVisible": {
+        "label": "सदस्य सूची में स्टाफ़ दिखाएँ",
+        "help": "गार्ड, हाउसकीपिंग और दूसरे स्टाफ़।"
+      },
+      "showVehicles": {
+        "label": "सदस्य के वाहन कौन देख सकता है",
+        "help": "सदस्य के पेज पर दिखते हैं।",
+        "options": {
+          "OFF": "कोई नहीं",
+          "ADMINS": "सिर्फ़ कमेटी",
+          "ALL": "सभी सदस्य"
+        }
+      }
+    },
+    "parking": {
+      "membersSeeAllAllocations": {
+        "label": "सदस्य देख सकें कि कौन-सी जगह किसकी है",
+        "help": "बंद होने पर सदस्य सिर्फ़ अपनी जगहें देखेंगे।"
+      }
+    },
+    "tasks": {
+      "volunteeringEnabled": {
+        "label": "सदस्य ख़ुद काम ले सकते हैं",
+        "help": "खुले काम कोई भी सदस्य ले सकता है।"
+      }
+    },
+    "responsibilities": {
+      "defaultRequiresConfirmation": {
+        "label": "नई ज़िम्मेदारियों में 'हो गया' दर्ज करना ज़रूरी",
+        "help": "सदस्य अपनी बारी पूरी होने पर 'हो गया' दर्ज करते हैं। दर्ज न हुई बारी छूटी हुई दिखेगी।"
+      }
+    },
+    "rewards": {
+      "leaderboard": {
+        "label": "लीडरबोर्ड",
+        "help": "पॉइंट्स की सूची कौन देख सकता है।",
+        "options": {
+          "OFF": "छिपा हुआ",
+          "TOP_5": "टॉप 5",
+          "ALL": "सभी"
+        }
+      },
+      "dutiesEarnPoints": {
+        "label": "ज़िम्मेदारियों पर पॉइंट्स मिलें",
+        "help": "बंद होने पर सिर्फ़ काम पर पॉइंट्स मिलेंगे।"
+      },
+      "maxPointsPerMonth": {
+        "label": "एक सदस्य को महीने में ज़्यादा से ज़्यादा पॉइंट्स",
+        "help": "कोई सीमा न रखनी हो तो खाली छोड़ें।"
+      }
+    },
+    "maintenance": {
+      "transparency": {
+        "label": "सदस्य बकाया के बारे में क्या देखें",
+        "help": "दूसरे फ़्लैटों की वसूली की स्थिति।",
+        "options": {
+          "OFF": "सिर्फ़ अपना फ़्लैट",
+          "STATUS": "हर फ़्लैट का चुकाया या बाकी",
+          "STATUS_AND_AMOUNT": "हर फ़्लैट की स्थिति और राशि"
+        }
+      }
+    },
+    "expenses": {
+      "visibleToMembers": {
+        "label": "सदस्य खर्च के बारे में क्या देखें",
+        "help": "कमेटी हमेशा सब कुछ देखती है।",
+        "options": {
+          "NONE": "कुछ नहीं",
+          "SUMMARY": "सिर्फ़ कुल जोड़",
+          "DETAILED": "हर खर्च"
+        }
+      },
+      "approval": {
+        "label": "खर्च के लिए मंज़ूरी ज़रूरी",
+        "help": "खर्च जोड़ने वाले के अलावा कोई और मंज़ूर करता है।",
+        "options": {
+          "NEVER": "कभी नहीं",
+          "ABOVE_AMOUNT": "एक राशि से ज़्यादा होने पर",
+          "ALWAYS": "हमेशा"
+        }
+      },
+      "approvalThresholdPaise": {
+        "label": "इससे ज़्यादा पर मंज़ूरी ज़रूरी (₹)",
+        "help": "जब मंज़ूरी \"एक राशि से ज़्यादा होने पर\" चुनी हो।"
+      }
+    },
+    "vendors": {
+      "membersCanSuggest": {
+        "label": "सदस्य सेवा देने वालों का सुझाव दे सकते हैं",
+        "help": "हर सुझाव कमेटी मंज़ूर करती है।"
+      }
+    },
+    "emergency": {
+      "alertRecipients": {
+        "label": "आपातकालीन अलर्ट किसे मिलें",
+        "help": "अलर्ट ज़रूरी सूचना के रूप में भेजे जाते हैं।",
+        "options": {
+          "ALL": "सभी सदस्य",
+          "ROLES": "चुनी हुई भूमिकाएँ"
+        }
+      },
+      "roleIds": {
+        "label": "किन भूमिकाओं को अलर्ट मिलें",
+        "help": "कम से कम एक भूमिका चुनें।"
+      },
+      "cooldownMinutes": {
+        "label": "एक सदस्य के दो अलर्ट के बीच कितने मिनट",
+        "help": "1 से 60 तक। गलती से बार-बार अलर्ट जाने से रोकता है।"
+      }
+    }
+  },
+  "audit": {
+    "title": "ऑडिट लॉग",
+    "all": "सभी",
+    "areas": {
+      "society": "सोसायटी",
+      "members": "सदस्य",
+      "notices": "नोटिस",
+      "meetings": "बैठकें और कार्यक्रम",
+      "money": "बकाया",
+      "expenses": "खर्च",
+      "duties": "ज़िम्मेदारियाँ और काम",
+      "services": "पार्किंग और सेवाएँ"
+    },
+    "empty": "अभी यहाँ कुछ नहीं है",
+    "emptyBody": "कमेटी जो भी बदलाव करती है, वह यहाँ दिखता है — किसने किया और कब।",
+    "system": "MOVO (अपने-आप)",
+    "noDetails": "दिखाने के लिए कोई बदली हुई जानकारी नहीं है।",
+    "actions": {
+      "society_created": "सोसायटी बनाई गई",
+      "society_settings_updated": "सोसायटी प्रोफ़ाइल बदली गई",
+      "society_module_updated": "मॉड्यूल बदला गया",
+      "building_created": "विंग जोड़ी गई",
+      "building_updated": "विंग बदली गई",
+      "flat_created": "फ़्लैट जोड़ा गया",
+      "flat_updated": "फ़्लैट बदला गया",
+      "invitation_created": "आमंत्रण बनाया गया",
+      "invitation_revoked": "आमंत्रण रद्द किया गया",
+      "invitation_accepted": "आमंत्रण स्वीकार हुआ",
+      "join_request_approved": "जुड़ने का अनुरोध मंज़ूर हुआ",
+      "join_request_rejected": "जुड़ने का अनुरोध नामंज़ूर हुआ",
+      "member_roles_updated": "सदस्य की भूमिकाएँ बदली गईं",
+      "member_status_updated": "सदस्य की स्थिति बदली गई",
+      "member_occupancy_updated": "सदस्य के फ़्लैट बदले गए",
+      "member_reset_code_issued": "पासवर्ड रीसेट कोड दिया गया",
+      "role_created": "भूमिका बनाई गई",
+      "role_updated": "भूमिका बदली गई",
+      "role_deleted": "भूमिका हटाई गई",
+      "notice_published": "नोटिस प्रकाशित हुआ",
+      "notice_updated": "नोटिस बदला गया",
+      "notice_archived": "नोटिस संग्रह में डाला गया",
+      "notice_pinned": "नोटिस पिन किया गया",
+      "parking_slot_created": "पार्किंग जगह जोड़ी गई",
+      "parking_slot_updated": "पार्किंग जगह बदली गई",
+      "parking_allocated": "पार्किंग जगह दी गई",
+      "parking_released": "पार्किंग जगह खाली की गई",
+      "vehicle_created": "वाहन जोड़ा गया",
+      "vehicle_updated": "वाहन बदला गया",
+      "vehicle_deleted": "वाहन हटाया गया",
+      "vendor_category_created": "सेवा श्रेणी जोड़ी गई",
+      "vendor_category_updated": "सेवा श्रेणी बदली गई",
+      "vendor_category_deleted": "सेवा श्रेणी हटाई गई",
+      "vendor_created": "सेवा देने वाला जोड़ा गया",
+      "vendor_suggested": "सेवा देने वाले का सुझाव आया",
+      "vendor_updated": "सेवा देने वाला बदला गया",
+      "vendor_deleted": "सेवा देने वाला हटाया गया",
+      "emergency_contact_created": "आपातकालीन संपर्क जोड़ा गया",
+      "emergency_contact_updated": "आपातकालीन संपर्क बदला गया",
+      "emergency_contact_deleted": "आपातकालीन संपर्क हटाया गया",
+      "alert_raised": "आपातकालीन अलर्ट भेजा गया",
+      "alert_resolved": "आपातकालीन अलर्ट बंद हुआ",
+      "meeting_created": "बैठक तय हुई",
+      "meeting_updated": "बैठक बदली गई",
+      "meeting_rescheduled": "बैठक का समय बदला",
+      "meeting_note_added": "बैठक का अपडेट भेजा गया",
+      "meeting_cancelled": "बैठक रद्द हुई",
+      "meeting_completed": "बैठक हो चुकी दर्ज हुई",
+      "event_created": "कार्यक्रम प्रकाशित हुआ",
+      "event_updated": "कार्यक्रम बदला गया",
+      "event_cancelled": "कार्यक्रम रद्द हुआ",
+      "billing_plan_created": "बिलिंग योजना जोड़ी गई",
+      "billing_plan_updated": "बिलिंग योजना बदली गई",
+      "billing_plan_override_set": "फ़्लैट की राशि बदली गई",
+      "bills_generated": "बिल बनाए गए",
+      "bills_adhoc_created": "एक बार के बिल बनाए गए",
+      "bill_waived": "बिल माफ़ किया गया",
+      "bill_late_fee_waived": "विलंब शुल्क माफ़ किया गया",
+      "payment_recorded": "भुगतान दर्ज हुआ",
+      "payment_reversed": "भुगतान रद्द किया गया",
+      "payment_instruction_created": "भुगतान विवरण जोड़ा गया",
+      "payment_instruction_updated": "भुगतान विवरण बदला गया",
+      "payment_instruction_deleted": "भुगतान विवरण हटाया गया",
+      "expense_category_created": "खर्च की श्रेणी जोड़ी गई",
+      "expense_category_updated": "खर्च की श्रेणी बदली गई",
+      "expense_category_deleted": "खर्च की श्रेणी हटाई गई",
+      "expense_created": "खर्च जोड़ा गया",
+      "expense_updated": "खर्च बदला गया",
+      "expense_approved": "खर्च मंज़ूर हुआ",
+      "expense_rejected": "खर्च नामंज़ूर हुआ",
+      "expense_deleted": "खर्च हटाया गया",
+      "income_created": "आय जोड़ी गई",
+      "income_deleted": "आय हटाई गई",
+      "duty_created": "ज़िम्मेदारी बनाई गई",
+      "duty_updated": "ज़िम्मेदारी बदली गई",
+      "duty_participants_updated": "ज़िम्मेदारी का क्रम बदला गया",
+      "duty_status_updated": "ज़िम्मेदारी रोकी, फिर शुरू या बंद की गई",
+      "duty_confirmed": "बारी पूरी दर्ज हुई",
+      "duty_overridden": "कमेटी ने बारी बदली",
+      "task_created": "काम बनाया गया",
+      "task_updated": "काम बदला गया",
+      "task_assigned": "काम सौंपा गया",
+      "task_verified": "काम स्वीकार हुआ",
+      "task_returned": "काम वापस भेजा गया",
+      "task_cancelled": "काम रद्द हुआ",
+      "points_adjusted": "पॉइंट्स बदले गए",
+      "user_deleted": "खाता हटाया गया"
+    }
   }
 }

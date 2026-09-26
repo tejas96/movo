@@ -4,6 +4,7 @@ import {
   EmptyState,
   IconSquare,
   OptionSheet,
+  photos,
   Row,
   Screen,
   Skeleton,
@@ -74,6 +75,7 @@ export function InvitationsScreen() {
         </View>
       ) : items.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="send"
           title={t('manage:invite.empty')}
           body={t('manage:invite.emptyBody')}

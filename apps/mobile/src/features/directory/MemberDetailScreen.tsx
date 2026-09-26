@@ -2,9 +2,9 @@ import {
   Avatar,
   Button,
   Card,
+  Chip,
   CircleButton,
   Divider,
-  OptionSheet,
   Pill,
   Row,
   Screen,
@@ -19,12 +19,13 @@ import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, View } from 'react-native';
+import { Alert, Linking, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { formatRegistration, slotIcon } from '../parking/shared';
 import { useIssueResetCode, useMember, useRoles, useUpdateMember } from './api';
+import { MemberFlatsSheet } from './MemberFlatsSheet';
 
 export function MemberDetailScreen() {
   const { t } = useTranslation(['society', 'common', 'manage']);
@@ -40,14 +41,28 @@ export function MemberDetailScreen() {
   const reset = useIssueResetCode(societyId, membershipId);
   const canManage = useCan('member.manage');
   const [roleOpen, setRoleOpen] = useState(false);
+  const [roleIds, setRoleIds] = useState<Set<string>>(new Set());
+  const [flatsOpen, setFlatsOpen] = useState(false);
   const [code, setCode] = useState<{ code: string; expiresAt: string } | null>(null);
   const m = member.data;
   const isMe = m?.membershipId === tenant.id;
 
-  const setRole = async (roleId: string) => {
+  const openRoles = () => {
+    setRoleIds(new Set(m?.roles.map((r) => r.id)));
+    setRoleOpen(true);
+  };
+  const flipRole = (id: string) =>
+    setRoleIds((old) => {
+      const next = new Set(old);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < 5) next.add(id);
+      return next;
+    });
+  const saveRoles = async () => {
     try {
-      await update.mutateAsync({ roleIds: [roleId] });
+      await update.mutateAsync({ roleIds: [...roleIds] });
       toast.show(t('manage:member.updated'));
+      setRoleOpen(false);
     } catch (e) {
       toast.show(toMessage(e), 'error');
     }
@@ -60,6 +75,22 @@ export function MemberDetailScreen() {
     } catch (e) {
       toast.show(toMessage(e), 'error');
     }
+  };
+  const confirmStatus = (status: 'SUSPENDED' | 'LEFT') => {
+    if (!m) return;
+    const kind = status === 'LEFT' ? 'remove' : 'suspend';
+    Alert.alert(
+      t(`manage:member.${kind}Confirm`, { name: m.displayName }),
+      t(`manage:member.${kind}ConfirmBody`),
+      [
+        { text: t('common:actions.cancel'), style: 'cancel' },
+        {
+          text: t(`manage:member.${kind}`),
+          style: 'destructive',
+          onPress: () => void setStatus(status),
+        },
+      ],
+    );
   };
   const issueCode = async () => {
     try {
@@ -159,21 +190,22 @@ export function MemberDetailScreen() {
             <>
               <Divider className="my-6" />
               <View className="gap-3">
+                <Button label={t('manage:member.roles')} variant="gray" onPress={openRoles} />
                 <Button
-                  label={t('manage:member.roles')}
+                  label={t('manage:member.editFlats')}
                   variant="gray"
-                  onPress={() => setRoleOpen(true)}
+                  onPress={() => setFlatsOpen(true)}
                 />
                 {m.status === 'ACTIVE' ? (
                   <Button
                     label={t('manage:member.suspend')}
                     variant="gray"
-                    onPress={() => void setStatus('SUSPENDED')}
+                    onPress={() => confirmStatus('SUSPENDED')}
                     loading={update.isPending}
                   />
                 ) : (
                   <Button
-                    label={t('common:status.ACTIVE')}
+                    label={t('manage:member.activate')}
                     variant="gray"
                     onPress={() => void setStatus('ACTIVE')}
                     loading={update.isPending}
@@ -188,21 +220,48 @@ export function MemberDetailScreen() {
                 <Button
                   label={t('manage:member.remove')}
                   variant="danger"
-                  onPress={() => void setStatus('LEFT')}
+                  onPress={() => confirmStatus('LEFT')}
                 />
               </View>
             </>
           ) : null}
         </>
       )}
-      <OptionSheet
+      <Sheet
         visible={roleOpen}
         onClose={() => setRoleOpen(false)}
         title={t('manage:member.roles')}
-        options={(roles.data ?? []).map((r) => ({ value: r.id, label: r.name }))}
-        value={m?.roles[0]?.id}
-        onSelect={(id) => void setRole(id)}
-      />
+        footer={
+          <Button
+            label={t('common:actions.save')}
+            loading={update.isPending}
+            disabled={roleIds.size === 0}
+            onPress={() => void saveRoles()}
+          />
+        }
+      >
+        <Text variant="label" tone="secondary" className="mb-3">
+          {t('manage:member.rolesHelp')}
+        </Text>
+        <View className="flex-row flex-wrap gap-2">
+          {(roles.data ?? []).map((r) => (
+            <Chip
+              key={r.id}
+              label={r.name}
+              selected={roleIds.has(r.id)}
+              onPress={() => flipRole(r.id)}
+            />
+          ))}
+        </View>
+      </Sheet>
+      {m ? (
+        <MemberFlatsSheet
+          visible={flatsOpen}
+          onClose={() => setFlatsOpen(false)}
+          membershipId={m.membershipId}
+          current={m.flats}
+        />
+      ) : null}
       <Sheet
         visible={Boolean(code)}
         onClose={() => setCode(null)}

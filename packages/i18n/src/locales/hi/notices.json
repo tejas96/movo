@@ -1,9 +1,9 @@
 {
-  "title": "सूचनाएँ",
-  "new": "नई सूचना",
-  "empty": "अभी कोई सूचना नहीं",
-  "emptyBody": "समिति की सूचनाएँ यहाँ दिखेंगी।",
-  "pinned": "पिन की गई",
+  "title": "नोटिस",
+  "new": "नया नोटिस",
+  "empty": "अभी कोई नोटिस नहीं",
+  "emptyBody": "कमेटी के नोटिस यहाँ दिखेंगे।",
+  "pinned": "पिन किया गया",
   "draft": "ड्राफ़्ट",
   "drafts": "ड्राफ़्ट",
   "important": "ज़रूरी",
@@ -15,24 +15,28 @@
     "priority": "प्राथमिकता",
     "pin": "ऊपर पिन करें",
     "publish": "प्रकाशित करें",
-    "saveDraft": "ड्राफ़्ट सहेजें",
-    "published": "सूचना प्रकाशित हुई",
+    "saveDraft": "ड्राफ़्ट सेव करें",
+    "published": "नोटिस प्रकाशित हुआ",
     "audienceAll": "सोसायटी के सभी लोग"
   },
   "category": {
     "GENERAL": "सामान्य",
     "WATER": "पानी",
     "ELECTRICITY": "बिजली",
-    "MAINTENANCE": "रखरखाव",
+    "MAINTENANCE": "मेंटेनेंस",
     "SECURITY": "सुरक्षा",
     "EVENT": "कार्यक्रम",
     "FINANCE": "वित्त",
     "EMERGENCY": "आपातकाल",
     "OTHER": "अन्य"
   },
-  "priority": { "NORMAL": "सामान्य", "IMPORTANT": "ज़रूरी", "EMERGENCY": "आपातकाल" },
+  "priority": {
+    "NORMAL": "सामान्य",
+    "IMPORTANT": "ज़रूरी",
+    "EMERGENCY": "आपातकाल"
+  },
   "readBy": "{{count}} ने पढ़ा",
-  "archive": "संग्रह करें",
-  "archived": "सूचना संग्रहित हुई",
+  "archive": "संग्रह में डालें",
+  "archived": "नोटिस संग्रह में डाला गया",
   "unpin": "पिन हटाएँ"
 }

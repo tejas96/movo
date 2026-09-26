@@ -162,7 +162,7 @@ export function TaskDetailScreen() {
               />
             ) : null}
             <SectionHeader title={t('tasks:history')} />
-            <Card tight className="gap-1">
+            <Card tight className="gap-2">
               {x.events.map((e) => (
                 <Row
                   key={`${e.kind}-${e.createdAt}`}

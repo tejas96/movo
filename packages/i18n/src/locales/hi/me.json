@@ -4,13 +4,14 @@
   "name": "नाम",
   "phone": "मोबाइल नंबर",
   "email": "ईमेल",
-  "notSet": "सेट नहीं",
+  "notSet": "नहीं जोड़ा",
   "societiesAndFlats": "मेरी सोसायटियाँ और फ़्लैट",
   "notifications": "सूचनाएँ",
   "privacy": "गोपनीयता",
   "privacyShowPhone": "सदस्यों को मेरा नंबर दिखाएँ",
   "privacyShowEmail": "सदस्यों को मेरा ईमेल दिखाएँ",
-  "help": "मदद और सहायता",
+  "privacyPolicy": "गोपनीयता नीति",
+  "help": "मदद और सपोर्ट",
   "about": "MOVO के बारे में",
   "manageSociety": "सोसायटी प्रबंधन",
   "deleteAccount": "मेरा खाता हटाएँ",
@@ -18,5 +19,5 @@
   "deleteBody": "आपकी निजी जानकारी हटा दी जाएगी। भुगतान जैसे सोसायटी रिकॉर्ड में गुमनाम संदर्भ रहेगा। इसे वापस नहीं किया जा सकता।",
   "deleteConfirm": "पुष्टि के लिए पासवर्ड लिखें",
   "signOutConfirm": "MOVO से साइन आउट करें?",
-  "version": "संस्करण {{version}}"
+  "version": "वर्ज़न {{version}}"
 }

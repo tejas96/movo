@@ -1,5 +1,14 @@
 import type { Notification } from '@movo/contracts';
-import { Card, EmptyState, IconSquare, Row, Screen, Skeleton, TitleBar } from '@movo/design-system';
+import {
+  Card,
+  EmptyState,
+  IconSquare,
+  photos,
+  Row,
+  Screen,
+  Skeleton,
+  TitleBar,
+} from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { FlatList, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
@@ -75,7 +84,12 @@ export function NotificationsScreen() {
           <Skeleton className="h-[68px]" />
         </View>
       ) : items.length === 0 ? (
-        <EmptyState icon="bell" title={t('common:states.empty')} className="mt-10" />
+        <EmptyState
+          photo={photos.empty}
+          icon="bell"
+          title={t('common:states.empty')}
+          className="mt-10"
+        />
       ) : (
         <FlatList
           className="mt-4"

@@ -1,15 +1,15 @@
 {
   "title": "पैसे",
   "myDues": "मेरा बकाया",
-  "society": "सोसाइटी",
+  "society": "सोसायटी",
   "noDues": "अभी कोई बकाया नहीं",
-  "noDuesBody": "जब सोसाइटी बिल बनाना शुरू करेगी, तब आपका बकाया और रसीदें यहाँ दिखेंगी।",
-  "noFlat": "आप किसी फ्लैट से जुड़े नहीं हैं, इसलिए आपका कोई बकाया नहीं है।",
-  "totalDue": "कुल बकाया · फ्लैट {{flat}}",
+  "noDuesBody": "जब सोसायटी बिल बनाना शुरू करेगी, तब आपका बकाया और रसीदें यहाँ दिखेंगी।",
+  "noFlat": "आप किसी फ़्लैट से जुड़े नहीं हैं, इसलिए आपका कोई बकाया नहीं है।",
+  "totalDue": "कुल बकाया · फ़्लैट {{flat}}",
   "allPaid": "सब चुका दिया",
   "advance": "अग्रिम {{amount}}",
   "dueOn": "अंतिम तारीख {{date}}",
-  "overdueSince": "{{date}} से बकाया",
+  "overdueSince": "{{date}} से बकाया, तारीख निकल गई",
   "billCount": "{{count}} बिल",
   "billCount_other": "{{count}} बिल",
   "howToPay": "भुगतान कैसे करें",
@@ -20,14 +20,14 @@
   "status": {
     "DUE": "देय",
     "PARTIALLY_PAID": "आंशिक भुगतान",
-    "OVERDUE": "बकाया",
+    "OVERDUE": "तारीख निकल गई",
     "PAID": "चुकाया",
     "WAIVED": "माफ़"
   },
   "collectionStatus": {
     "PAID": "चुकाया",
     "DUE": "देय",
-    "OVERDUE": "बकाया",
+    "OVERDUE": "तारीख निकल गई",
     "NO_BILLS": "कोई बिल नहीं"
   },
   "method": {
@@ -53,20 +53,20 @@
   "receipt": {
     "title": "रसीद",
     "number": "रसीद {{no}}",
-    "flat": "फ्लैट",
+    "flat": "फ़्लैट",
     "paidOn": "भुगतान की तारीख",
     "method": "तरीका",
     "reference": "संदर्भ",
     "recordedBy": "दर्ज किया",
     "appliedTo": "किसके लिए",
     "advance": "अग्रिम के रूप में रखा",
-    "share": "रसीद भेजें",
+    "share": "रसीद शेयर करें",
     "reversed": "रद्द",
     "reverse": "भुगतान रद्द करें",
     "reverseTitle": "यह भुगतान रद्द करें?",
-    "reverseHint": "इसे केवल गलती से दर्ज भुगतान के लिए इस्तेमाल करें। फ्लैट को सूचना जाएगी।",
+    "reverseHint": "इसे केवल गलती से दर्ज भुगतान के लिए इस्तेमाल करें। फ़्लैट को सूचना जाएगी।",
     "reversedToast": "भुगतान रद्द किया गया",
-    "shareText": "{{society}}\nरसीद {{no}}\nफ्लैट {{flat}}\n{{date}} को {{method}} से {{amount}} चुकाया"
+    "shareText": "{{society}}\nरसीद {{no}}\nफ़्लैट {{flat}}\n{{date}} को {{method}} से {{amount}} चुकाया"
   },
   "collection": {
     "title": "वसूली",
@@ -89,16 +89,16 @@
     "generated": "{{count}} बिल बना",
     "generated_other": "{{count}} बिल बने",
     "generatedNone": "अभी कोई बिल देय नहीं है",
-    "skipped": "{{count}} फ्लैट का क्षेत्रफल नहीं है, इसलिए बिल नहीं बना",
-    "skipped_other": "{{count}} फ्लैटों का क्षेत्रफल नहीं है, इसलिए बिल नहीं बने",
+    "skipped": "{{count}} फ़्लैट का क्षेत्रफल नहीं है, इसलिए बिल नहीं बना",
+    "skipped_other": "{{count}} फ़्लैटों का क्षेत्रफल नहीं है, इसलिए बिल नहीं बने",
     "plans": "बिलिंग योजनाएँ",
     "adhoc": "एक बार का बिल",
     "instructions": "भुगतान विवरण"
   },
   "record": {
     "title": "भुगतान दर्ज करें",
-    "flat": "फ्लैट",
-    "pickFlat": "फ्लैट चुनें",
+    "flat": "फ़्लैट",
+    "pickFlat": "फ़्लैट चुनें",
     "amount": "राशि",
     "amountHint": "निवासी ने जितनी राशि दी, वह लिखें।",
     "paidOn": "भुगतान की तारीख",
@@ -107,7 +107,7 @@
     "referenceHint": "UPI ट्रांज़ैक्शन आईडी या चेक नंबर",
     "notes": "नोट (वैकल्पिक)",
     "save": "भुगतान सेव करें",
-    "saved": "भुगतान दर्ज हुआ। फ्लैट को सूचना भेजी गई।",
+    "saved": "भुगतान दर्ज हुआ। फ़्लैट को सूचना भेजी गई।",
     "owes": "बाकी {{amount}}",
     "nothingDue": "कुछ बाकी नहीं",
     "advanceHint": "यह बकाया से ज़्यादा है। बाकी राशि अग्रिम के रूप में रहेगी।"
@@ -129,10 +129,10 @@
     },
     "rule": "राशि",
     "ruleOpt": {
-      "FLAT_RATE": "हर फ्लैट के लिए समान",
+      "FLAT_RATE": "हर फ़्लैट के लिए समान",
       "PER_SQFT": "प्रति वर्ग फुट क्षेत्रफल"
     },
-    "amount": "प्रति फ्लैट राशि",
+    "amount": "प्रति फ़्लैट राशि",
     "rate": "प्रति वर्ग फुट दर",
     "dueDay": "महीने की अंतिम तारीख (1 से 28)",
     "generateBefore": "इतने दिन पहले बिल बनाएँ",
@@ -154,18 +154,18 @@
     "summary": "{{amount}} · {{freq}} · {{day}} तारीख तक",
     "perSqft": "{{amount}} प्रति वर्ग फुट",
     "paused": "रुकी हुई",
-    "overrides": "कुछ फ्लैटों के लिए अलग राशि",
-    "addOverride": "फ्लैट जोड़ें",
-    "overrideAmount": "इस फ्लैट की राशि",
+    "overrides": "कुछ फ़्लैटों के लिए अलग राशि",
+    "addOverride": "फ़्लैट जोड़ें",
+    "overrideAmount": "इस फ़्लैट की राशि",
     "remove": "हटाएँ"
   },
   "adhoc": {
     "title": "एक बार का बिल",
     "name": "किसके लिए",
     "nameHint": "जैसे: पेंटिंग फंड",
-    "amount": "प्रति फ्लैट राशि",
+    "amount": "प्रति फ़्लैट राशि",
     "dueDate": "अंतिम तारीख",
-    "allFlats": "हर फ्लैट को यह बिल मिलेगा।",
+    "allFlats": "हर फ़्लैट को यह बिल मिलेगा।",
     "create": "बिल बनाएँ",
     "created": "{{count}} बिल बना",
     "created_other": "{{count}} बिल बने"
@@ -173,7 +173,7 @@
   "instructions": {
     "title": "भुगतान विवरण",
     "empty": "अभी कोई भुगतान विवरण नहीं",
-    "emptyBody": "सोसाइटी का UPI आईडी या बैंक खाता जोड़ें ताकि निवासी जानें कि भुगतान कैसे करें।",
+    "emptyBody": "सोसायटी का UPI आईडी या बैंक खाता जोड़ें ताकि निवासी जानें कि भुगतान कैसे करें।",
     "add": "भुगतान विवरण जोड़ें",
     "kind": {
       "UPI": "UPI",
@@ -181,7 +181,7 @@
       "OTHER": "अन्य"
     },
     "label": "नाम",
-    "labelHint": "जैसे: सोसाइटी UPI",
+    "labelHint": "जैसे: सोसायटी UPI",
     "value": "UPI आईडी",
     "valueBank": "खाते का विवरण",
     "valueOther": "विवरण",
@@ -202,15 +202,15 @@
   },
   "push": {
     "billTitle": "नया बिल: {{amount}}",
-    "billBody": "{{name}} · फ्लैट {{flat}} · अंतिम तारीख {{date}}",
-    "reminderBefore": "{{amount}} का बकाया {{date}} तक",
-    "reminderDue": "{{amount}} का बकाया आज देय है",
-    "reminderOverdue": "{{amount}} का बकाया समय पर नहीं चुका",
+    "billBody": "{{name}} · फ़्लैट {{flat}} · अंतिम तारीख {{date}}",
+    "reminderBefore": "{{amount}} का बकाया {{date}} तक भरें",
+    "reminderDue": "{{amount}} का बकाया आज भरना है",
+    "reminderOverdue": "{{amount}} का बकाया, तारीख निकल गई है",
     "paymentTitle": "भुगतान मिला: {{amount}}",
-    "paymentBody": "रसीद {{receipt}} · फ्लैट {{flat}}",
+    "paymentBody": "रसीद {{receipt}} · फ़्लैट {{flat}}",
     "reversedTitle": "भुगतान रद्द: {{amount}}",
     "reversedBody": "रसीद {{receipt}} · {{reason}}",
     "waivedTitle": "बिल माफ़: {{name}}",
-    "waivedBody": "फ्लैट {{flat}} · {{reason}}"
+    "waivedBody": "फ़्लैट {{flat}} · {{reason}}"
   }
 }

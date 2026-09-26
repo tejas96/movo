@@ -5,6 +5,7 @@ import {
   CircleButton,
   EmptyState,
   IconSquare,
+  photos,
   Screen,
   Skeleton,
   Text,
@@ -60,7 +61,12 @@ export function HowToPayScreen() {
       {list.isLoading ? (
         <Skeleton className="mt-5 h-40 rounded-xl" />
       ) : items.length === 0 ? (
-        <EmptyState icon="bank" title={t('money:pay.none')} className="mt-10" />
+        <EmptyState
+          photo={photos.empty}
+          icon="bank"
+          title={t('money:pay.none')}
+          className="mt-10"
+        />
       ) : (
         <View className="mt-5 gap-3">
           {items.map((i) => (

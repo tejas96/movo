@@ -5,7 +5,7 @@
     "evening": "शुभ संध्या"
   },
   "flatLabel": "फ़्लैट {{flat}}",
-  "searchPlaceholder": "सूचनाएँ, सदस्य, सेवाएँ खोजें…",
+  "searchPlaceholder": "नोटिस, सदस्य, सेवाएँ खोजें…",
   "quick": {
     "services": "सेवाएँ",
     "directory": "सदस्य",
@@ -17,20 +17,20 @@
   "allClear": "आज सब ठीक है",
   "allClearBody": "कोई बकाया, ज़िम्मेदारी या अलर्ट नहीं।",
   "upcoming": "आगामी",
-  "notices": "सूचनाएँ",
+  "notices": "नोटिस",
   "attention": {
     "JOIN_REQUESTS_PENDING": {
-      "title": "{{count}} जुड़ने का अनुरोध लंबित",
-      "title_other": "{{count}} जुड़ने के अनुरोध लंबित",
-      "sub": "सोसायटी प्रबंधन में मंज़ूर करें"
+      "title": "{{count}} जुड़ने का अनुरोध बाकी",
+      "title_other": "{{count}} जुड़ने के अनुरोध बाकी",
+      "sub": "सोसायटी प्रबंधन में निवासियों को मंज़ूरी दें"
     },
     "INVITATIONS_PENDING": {
-      "title": "{{count}} आमंत्रण अभी उपयोग नहीं हुआ",
-      "title_other": "{{count}} आमंत्रण अभी उपयोग नहीं हुए",
+      "title": "{{count}} आमंत्रण अभी इस्तेमाल नहीं हुआ",
+      "title_other": "{{count}} आमंत्रण अभी इस्तेमाल नहीं हुए",
       "sub": "कोड फिर साझा करें"
     },
     "IMPORTANT_NOTICE": {
-      "sub": "ज़रूरी सूचना"
+      "sub": "ज़रूरी नोटिस"
     },
     "PROFILE_INCOMPLETE": {
       "title": "अपना ईमेल जोड़ें",
@@ -41,13 +41,13 @@
       "sub": "{{place}} · {{time}}"
     },
     "VENDOR_SUGGESTIONS": {
-      "title": "{{count}} सेवा का सुझाव",
-      "title_other": "{{count}} सेवाओं के सुझाव",
-      "sub": "सेवाएँ में देखें"
+      "title": "सेवा देने वाले का {{count}} सुझाव",
+      "title_other": "सेवा देने वालों के {{count}} सुझाव",
+      "sub": "सेवाएँ सेक्शन में देखें"
     },
     "DUES": {
       "title": "{{amount}} बाकी · {{flat}}",
-      "titleOverdue": "{{amount}} बकाया · {{flat}}",
+      "titleOverdue": "{{amount}} बकाया, तारीख निकल गई · {{flat}}",
       "sub": "अंतिम तारीख {{date}}"
     },
     "EXPENSES_TO_APPROVE": {
@@ -68,7 +68,7 @@
     "TASKS_TO_VERIFY": {
       "title": "{{count}} काम जाँचना है",
       "title_other": "{{count}} काम जाँचने हैं",
-      "sub": "काम स्वीकार करें ताकि अंक मिलें"
+      "sub": "काम स्वीकार करें ताकि पॉइंट्स मिलें"
     }
   },
   "upcomingKind": {
@@ -77,8 +77,8 @@
   },
   "contribution": {
     "title": "मेरा योगदान",
-    "points": "इस साल {{count}} अंक",
-    "points_other": "इस साल {{count}} अंक",
+    "points": "इस साल {{count}} पॉइंट",
+    "points_other": "इस साल {{count}} पॉइंट्स",
     "openTasks": "{{count}} काम चल रहा है",
     "openTasks_other": "{{count}} काम चल रहे हैं"
   }

@@ -5,6 +5,8 @@ import {
   HomeTopBar,
   Icon,
   IconSquare,
+  PhotoCard,
+  photos,
   Row,
   Screen,
   SearchBar,
@@ -20,14 +22,13 @@ import { useSessionStore } from '../../core/auth/session.store';
 import { useNav } from '../../core/navigation/types';
 import {
   formatFlat,
-  useCan,
+  useCanManageSociety,
   useMeContext,
   useModuleEnabled,
   useTenant,
 } from '../../core/tenant/hooks';
 import { day, money } from '../../core/util/money';
-import { greetingKey, relative } from '../../core/util/time';
-import { TimedCard } from '../calendar/shared';
+import { greetingKey, relative, whenRange } from '../../core/util/time';
 import { ALERT_ICON } from '../emergency/shared';
 import { EventPill } from '../events/EventsScreen';
 import { MeetingStatusPill } from '../meetings/MeetingsScreen';
@@ -40,7 +41,7 @@ export function HomeScreen() {
   const ctx = useMeContext();
   const user = useSessionStore((s) => s.user);
   const summary = useHomeSummary(tenant.society.id);
-  const canManage = useCan('member.manage');
+  const canManage = useCanManageSociety();
   const market = useModuleEnabled('marketplace');
   const services = useModuleEnabled('vendors');
   const emergency = useModuleEnabled('emergency');
@@ -72,7 +73,7 @@ export function HomeScreen() {
         }
       />
       {alerts.length > 0 ? (
-        <Card tight className="mt-5 gap-2 bg-danger-soft">
+        <Card tight className="mt-5 gap-2">
           {alerts.map((item) => (
             <AttentionRow key={attentionKey(item)} item={item} />
           ))}
@@ -140,25 +141,34 @@ export function HomeScreen() {
           ))}
         </Card>
       ) : alerts.length > 0 ? null : (
-        <Card className="flex-row items-center gap-4">
-          <IconSquare icon="check" tone="white" />
-          <View className="flex-1">
-            <Text variant="h3">{t('home:allClear')}</Text>
-            <Text variant="label" tone="secondary">
-              {t('home:allClearBody')}
-            </Text>
-          </View>
-        </Card>
+        <PhotoCard
+          source={photos.society2}
+          photoHeight={150}
+          badge={{ icon: 'check', label: t('home:allClear') }}
+        >
+          <Text variant="body" tone="secondary">
+            {t('home:allClearBody')}
+          </Text>
+        </PhotoCard>
       )}
 
       {summary.data && summary.data.upcoming.length > 0 ? (
         <>
           <SectionHeader title={t('home:upcoming')} />
-          <View className="gap-2">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="-mx-5"
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+          >
             {summary.data.upcoming.map((u) => (
-              <UpcomingCard key={`${u.kind}-${u.id}`} item={u} />
+              <UpcomingCard
+                key={`${u.kind}-${u.id}`}
+                item={u}
+                wide={summary.data?.upcoming.length === 1}
+              />
             ))}
-          </View>
+          </ScrollView>
         </>
       ) : null}
 
@@ -204,6 +214,7 @@ function AttentionRow({ item }: { item: AttentionItem }) {
     case 'ACTIVE_ALERT':
       return (
         <Row
+          tone="danger"
           icon={ALERT_ICON[item.alertType]}
           title={t('home:attention.ACTIVE_ALERT.title', {
             type: t(`emergency:type.${item.alertType}`),
@@ -343,30 +354,43 @@ function AttentionRow({ item }: { item: AttentionItem }) {
   }
 }
 
-function UpcomingCard({ item }: { item: UpcomingItem }) {
+function UpcomingCard({ item, wide }: { item: UpcomingItem; wide: boolean }) {
   const { t } = useTranslation('home');
   const nav = useNav();
+  const meeting = item.kind === 'MEETING';
   return (
-    <TimedCard
-      startsAt={item.startsAt}
-      endsAt={item.endsAt}
-      title={item.title}
-      location={item.location}
-      meta={t(`upcomingKind.${item.kind}`)}
-      dimmed={item.status === 'CANCELLED'}
-      pill={
-        item.kind === 'MEETING' ? (
-          <MeetingStatusPill status={item.status} />
-        ) : (
-          <EventPill event={item} />
-        )
-      }
+    <PhotoCard
+      source={meeting ? photos.meetings : photos.events}
+      photoHeight={150}
+      badge={{ icon: meeting ? 'meetings' : 'events', label: t(`upcomingKind.${item.kind}`) }}
+      action={meeting ? <MeetingStatusPill status={item.status} /> : <EventPill event={item} />}
+      className={item.status === 'CANCELLED' ? 'opacity-60' : undefined}
       onPress={() =>
-        item.kind === 'MEETING'
+        meeting
           ? nav.navigate('MeetingDetail', { meetingId: item.id })
           : nav.navigate('EventDetail', { eventId: item.id })
       }
-    />
+    >
+      <View style={{ width: wide ? undefined : 256 }}>
+        <Text variant="h3" numberOfLines={1}>
+          {item.title}
+        </Text>
+        <View className="mt-1.5 flex-row items-center gap-1.5">
+          <Icon name="calendar" variant="bold" size={16} color={theme.color.icon.secondary} />
+          <Text variant="label" tone="secondary" numberOfLines={1} className="shrink">
+            {whenRange(item.startsAt, item.endsAt)}
+          </Text>
+        </View>
+        {item.location ? (
+          <View className="mt-1 flex-row items-center gap-1.5">
+            <Icon name="location" variant="bold" size={16} color={theme.color.icon.secondary} />
+            <Text variant="label" tone="secondary" numberOfLines={1} className="shrink">
+              {item.location}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+    </PhotoCard>
   );
 }
 

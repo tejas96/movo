@@ -13,7 +13,7 @@
   "relation": "तुम्ही आहात",
   "message": "ॲडमिनसाठी संदेश (ऐच्छिक)",
   "sendRequest": "विनंती पाठवा",
-  "pendingTitle": "मंजुरीची वाट",
+  "pendingTitle": "मंजुरीची प्रतीक्षा",
   "pendingBody": "{{society}} फ्लॅट {{flat}} साठी तुमची विनंती तपासेल. आम्ही तुम्हाला कळवू.",
   "cancelRequest": "विनंती मागे घ्या",
   "joined": "{{society}} मध्ये स्वागत आहे",

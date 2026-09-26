@@ -1,0 +1,15 @@
+# HTTPS in front of the API. Caddy gets and renews the Let's Encrypt certificate by itself.
+# API_DOMAIN and ACME_EMAIL come from .env.prod through docker-compose.prod.yml.
+{
+	email {$ACME_EMAIL}
+}
+
+{$API_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy api:4000
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+}

@@ -345,7 +345,7 @@ function Overrides({
         onAction={() => setPick(true)}
       />
       {overrides.length > 0 ? (
-        <Card tight className="gap-1">
+        <Card tight className="gap-2">
           {overrides.map((o) => (
             <Row
               key={o.flat.id}

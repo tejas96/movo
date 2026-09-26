@@ -4,9 +4,10 @@ import {
   Chip,
   EmptyState,
   IconSquare,
+  ModuleHeader,
+  photos,
   Screen,
   Skeleton,
-  TitleBar,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
@@ -38,7 +39,8 @@ export function TasksScreen() {
 
   return (
     <Screen refreshing={list.isRefetching} onRefresh={() => void list.refetch()}>
-      <TitleBar
+      <ModuleHeader
+        source={photos.tasks}
         title={t('tasks:title')}
         onBack={() => nav.goBack()}
         trailing={
@@ -70,9 +72,14 @@ export function TasksScreen() {
       {list.isLoading ? (
         <Skeleton className="mt-4 h-40 rounded-xl" />
       ) : items.length === 0 ? (
-        <EmptyState icon="tasks" title={t(`tasks:empty.${view}`)} className="mt-10" />
+        <EmptyState
+          photo={photos.empty}
+          icon="tasks"
+          title={t(`tasks:empty.${view}`)}
+          className="mt-10"
+        />
       ) : (
-        <Card tight className="mt-4 gap-1">
+        <Card tight className="mt-4 gap-2">
           {items.map((task) => (
             <TaskRow key={task.id} task={task} />
           ))}

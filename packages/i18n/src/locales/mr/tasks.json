@@ -2,28 +2,28 @@
   "title": "कामे",
   "new": "नवीन काम",
   "views": {
-    "OPEN": "मोकळी",
+    "OPEN": "उपलब्ध",
     "MINE": "माझी",
     "ACTIVE": "सुरू",
     "DONE": "झालेली",
     "TO_VERIFY": "तपासायची"
   },
   "empty": {
-    "OPEN": "मोकळे काम नाही",
+    "OPEN": "उपलब्ध काम नाही",
     "MINE": "तुमच्याकडे काम नाही",
     "ACTIVE": "कोणतेही काम सुरू नाही",
     "DONE": "अजून काम पूर्ण नाही",
     "TO_VERIFY": "तपासायला काही नाही"
   },
   "status": {
-    "OPEN": "मोकळे",
+    "OPEN": "उपलब्ध",
     "IN_PROGRESS": "सुरू",
     "SUBMITTED": "तपासणी बाकी",
     "COMPLETED": "झाले",
     "CANCELLED": "रद्द"
   },
-  "points": "{{count}} गुण",
-  "points_other": "{{count}} गुण",
+  "points": "{{count}} पॉइंट",
+  "points_other": "{{count}} पॉइंट्स",
   "due": "{{date}} पर्यंत",
   "openForAll": "कोणीही घेऊ शकतो",
   "actions": {
@@ -44,7 +44,7 @@
     "cancel": "काम रद्द करा",
     "cancelled": "काम रद्द झाले",
     "assign": "सोपवा",
-    "openUp": "सर्वांसाठी मोकळे करा",
+    "openUp": "सर्वांसाठी खुले करा",
     "assigned": "काम सोपवले"
   },
   "event": {
@@ -63,7 +63,7 @@
     "title": "काम",
     "titleHint": "उदा.: पाण्याचे बिल PMC मध्ये भरणे",
     "description": "तपशील (ऐच्छिक)",
-    "points": "गुण",
+    "points": "पॉइंट्स",
     "due": "शेवटची तारीख",
     "noDue": "शेवटची तारीख नाही",
     "assignee": "कोण करणार",
@@ -75,8 +75,8 @@
     "assignedTitle": "नवीन काम: {{title}}",
     "submittedTitle": "काम तपासा: {{title}}",
     "verifiedTitle": "काम झाले: {{title}}",
-    "pointsBody": "+{{count}} गुण",
-    "pointsBody_other": "+{{count}} गुण",
+    "pointsBody": "+{{count}} पॉइंट",
+    "pointsBody_other": "+{{count}} पॉइंट्स",
     "returnedTitle": "काम परत पाठवले: {{title}}"
   }
 }

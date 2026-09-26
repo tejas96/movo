@@ -5,6 +5,7 @@ import {
   EmptyState,
   IconSquare,
   Input,
+  photos,
   Row,
   Screen,
   Segmented,
@@ -92,13 +93,14 @@ export function PaymentInstructionsScreen() {
         <Skeleton className="mt-6 h-24 rounded-xl" />
       ) : items.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="bank"
           title={t('money:instructions.empty')}
           body={t('money:instructions.emptyBody')}
           className="mt-10"
         />
       ) : (
-        <Card tight className="mt-6 gap-1">
+        <Card tight className="mt-6 gap-2">
           {items.map((i) => (
             <Row
               key={i.id}

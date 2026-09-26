@@ -22,8 +22,8 @@
     "COMPLETED": "पूरा",
     "CANCELLED": "रद्द"
   },
-  "points": "{{count}} अंक",
-  "points_other": "{{count}} अंक",
+  "points": "{{count}} पॉइंट",
+  "points_other": "{{count}} पॉइंट्स",
   "due": "{{date}} तक",
   "openForAll": "कोई भी ले सकता है",
   "actions": {
@@ -63,7 +63,7 @@
     "title": "काम",
     "titleHint": "जैसे: पानी का बिल PMC में जमा करना",
     "description": "विवरण (वैकल्पिक)",
-    "points": "अंक",
+    "points": "पॉइंट्स",
     "due": "अंतिम तारीख",
     "noDue": "कोई अंतिम तारीख नहीं",
     "assignee": "कौन करेगा",
@@ -75,8 +75,8 @@
     "assignedTitle": "नया काम: {{title}}",
     "submittedTitle": "काम जाँचें: {{title}}",
     "verifiedTitle": "काम पूरा: {{title}}",
-    "pointsBody": "+{{count}} अंक",
-    "pointsBody_other": "+{{count}} अंक",
+    "pointsBody": "+{{count}} पॉइंट",
+    "pointsBody_other": "+{{count}} पॉइंट्स",
     "returnedTitle": "काम वापस भेजा: {{title}}"
   }
 }

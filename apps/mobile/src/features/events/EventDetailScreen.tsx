@@ -187,7 +187,7 @@ export function EventDetailScreen() {
                 })}
               </Text>
               {rsvps.data && rsvps.data.length > 0 ? (
-                <Card tight className="gap-1">
+                <Card tight className="gap-2">
                   {rsvps.data.map((r) => (
                     <Row
                       key={r.membershipId}

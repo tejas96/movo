@@ -4,10 +4,11 @@ import { Button, Chip, Input, PasswordInput, Text, TitleBar } from '@movo/design
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 import { z } from 'zod';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { signUp } from '../../core/auth/auth';
+import { PRIVACY_POLICY_URL } from '../../core/env';
 import { currentLocale, setAppLocale } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
 import { AuthShell } from './AuthShell';
@@ -150,7 +151,13 @@ export function RegisterScreen() {
           loading={form.formState.isSubmitting}
           className="mt-2"
         />
-        <Text variant="micro" tone="tertiary" center className="mt-2 font-normal">
+        <Text
+          variant="micro"
+          tone="tertiary"
+          center
+          className="mt-2 font-normal underline"
+          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+        >
           {t('auth:termsNote')}
         </Text>
       </View>

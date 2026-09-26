@@ -1,0 +1,46 @@
+# The API Dockerfile copies the repo into its build stage, so this file decides what leaves
+# your machine. Secrets first: anything that reaches an image layer has leaked.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+firebase-service-account*.json
+
+# Installed and built output. pnpm install runs inside the image.
+node_modules
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+**/.turbo
+apps/api/src/generated
+
+# Native mobile trees and assets are never part of the server image.
+apps/mobile/ios
+apps/mobile/android
+apps/mobile/assets
+packages/design-system/assets
+packages/design-system/preview
+
+# History, tooling, docs and local state.
+.git
+.github
+.claude
+.vscode
+.idea
+**/.DS_Store
+coverage
+*.log
+docs
+site
+infra
+README.md

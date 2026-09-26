@@ -13,6 +13,8 @@ export const keys = {
     members: (q: string) => ['society', id, 'members', q] as const,
     member: (membershipId: string) => ['society', id, 'member', membershipId] as const,
     roles: ['society', id, 'roles'] as const,
+    modules: ['society', id, 'modules'] as const,
+    audit: (area: string) => ['society', id, 'audit', area] as const,
     buildings: ['society', id, 'buildings'] as const,
     flats: ['society', id, 'flats'] as const,
     invitations: ['society', id, 'invitations'] as const,

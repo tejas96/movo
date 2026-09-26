@@ -15,6 +15,7 @@ Read in this order:
 | 5 | [05-mvp-roadmap.md](05-mvp-roadmap.md) | Build order and phases |
 | 6 | [06-design-system.md](06-design-system.md) | Look and feel, tokens, components |
 | 7 | [07-dev-setup.md](07-dev-setup.md) | Run it on your Mac. Seed data, commands, troubleshooting |
+| 8 | [08-release-and-ops.md](08-release-and-ops.md) | Server, deploys, backups, uptime, privacy policy, Play release |
 
 Status words used in the docs:
 

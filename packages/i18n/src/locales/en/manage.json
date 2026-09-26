@@ -52,13 +52,370 @@
     "remove": "Remove from society",
     "resetCode": "Give password reset code",
     "resetCodeBody": "Share this code with the resident in person. It works once, for 15 minutes.",
-    "updated": "Member updated"
+    "updated": "Member updated",
+    "rolesHelp": "Pick one or more roles. A member gets every permission of every role.",
+    "editFlats": "Change flats",
+    "flatsHelp": "Pick the flats this member lives in or owns.",
+    "relation": "Relation",
+    "noFlats": "No flat",
+    "removeConfirm": "Remove {{name}} from the society?",
+    "removeConfirmBody": "They lose access at once. Their payments and history stay.",
+    "suspendConfirm": "Suspend {{name}}?",
+    "suspendConfirmBody": "They cannot open this society until you make them active again.",
+    "activate": "Make active"
   },
   "tiles": {
     "members": "Members",
     "invitations": "Invites",
     "requests": "Requests",
     "structure": "Wings & flats",
-    "parking": "Parking slots"
+    "parking": "Parking slots",
+    "profile": "Society profile",
+    "modules": "Modules",
+    "roles": "Roles",
+    "audit": "Audit log"
+  },
+  "profile": {
+    "title": "Society profile",
+    "name": "Society name",
+    "address": "Address",
+    "city": "City",
+    "state": "State",
+    "pincode": "PIN code",
+    "language": "Default language",
+    "languageHelp": "Used for messages to members who have not picked a language.",
+    "fyStart": "Financial year starts in",
+    "joinRequests": "Accept join requests",
+    "joinRequestsHelp": "Residents can ask to join with the society code. Turn off to allow invites only.",
+    "saved": "Society profile saved"
+  },
+  "rolesScreen": {
+    "title": "Roles",
+    "new": "New role",
+    "edit": "Edit role",
+    "name": "Role name",
+    "nameHint": "For example Security head",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "permissionCount_one": "{{count}} permission",
+    "permissionCount_other": "{{count}} permissions",
+    "builtIn": "Built-in",
+    "adminLocked": "The admin role always has every permission. You can rename it.",
+    "onlyYours": "You can switch on only the permissions you have yourself.",
+    "selected": "Permissions on",
+    "saved": "Role saved",
+    "delete": "Delete role",
+    "deleteConfirm": "Delete the role {{name}}?",
+    "deleted": "Role deleted"
+  },
+  "permissionGroups": {
+    "society": "Society",
+    "members": "Members",
+    "communication": "Notices, meetings and events",
+    "work": "Tasks, duties and rewards",
+    "money": "Money",
+    "services": "Parking, services and emergency",
+    "other": "Other"
+  },
+  "permissions": {
+    "society_settings_manage": "Change society profile, modules and settings",
+    "society_structure_manage": "Add and edit wings and flats",
+    "society_roles_manage": "Create roles and change permissions",
+    "member_manage": "Invite, approve, edit and remove members",
+    "member_view_contact": "See every member's phone and email",
+    "parking_manage": "Manage parking slots and vehicles",
+    "notice_publish": "Publish and pin notices",
+    "notice_manage_all": "Edit or archive notices by others",
+    "meeting_manage": "Schedule and manage meetings",
+    "event_manage": "Create and manage events",
+    "task_manage": "Create and assign tasks",
+    "task_verify": "Check finished tasks and give points",
+    "duty_manage": "Create and change duty rotations",
+    "duty_override": "Skip, reassign or complete a duty turn",
+    "reward_settings_manage": "Change reward rules",
+    "reward_adjust": "Add or remove points by hand",
+    "reward_redeem_approve": "Approve point redemptions",
+    "maintenance_settings_manage": "Billing plans, late fees and payment details",
+    "maintenance_generate_bills": "Make bills",
+    "maintenance_record_payment": "Record and reverse payments",
+    "maintenance_waive": "Waive bills and late fees",
+    "maintenance_view_all": "See every flat's bills and amounts",
+    "expense_create": "Add expenses and income",
+    "expense_approve": "Approve or reject expenses",
+    "expense_manage_categories": "Manage expense categories",
+    "finance_reports_view": "See financial reports",
+    "vendor_manage": "Manage vendors and categories",
+    "emergency_contacts_manage": "Manage emergency contacts",
+    "emergency_alert_resolve": "Close emergency alerts",
+    "marketplace_moderate": "Moderate market listings",
+    "marketplace_settings_manage": "Change market settings",
+    "audit_view": "Read the audit log"
+  },
+  "modulesScreen": {
+    "title": "Modules",
+    "help": "Switch off what your society does not use. Data is kept and comes back when you switch it on. Tap a module for its settings.",
+    "turnedOn": "Switched on",
+    "turnedOff": "Switched off"
+  },
+  "moduleHelp": {
+    "notices": "Announcements from the committee",
+    "meetings": "Committee and general body meetings with reminders",
+    "events": "Society events with RSVP",
+    "directory": "Members list, with privacy",
+    "vendors": "Trusted plumbers, electricians and other services",
+    "parking": "Slots, allocations and vehicles",
+    "tasks": "One-off jobs members can volunteer for",
+    "responsibilities": "Rotating duties like gate locking",
+    "rewards": "Points for help given",
+    "emergency": "Emergency contacts and alerts",
+    "maintenance": "Maintenance bills and payments",
+    "expenses": "Society spending and reports",
+    "marketplace": "Buy and sell inside the society"
+  },
+  "moduleSettings": {
+    "saved": "Settings saved",
+    "invalid": "Check the numbers. One is outside the allowed range.",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "notices": {
+      "maxPinned": {
+        "label": "Pinned notices at most",
+        "help": "From 1 to 10. Pinned notices stay at the top."
+      }
+    },
+    "meetings": {
+      "reminderHoursBefore": {
+        "label": "Remind members before a meeting",
+        "help": "Pick up to 3."
+      }
+    },
+    "events": {
+      "rsvpEnabledByDefault": {
+        "label": "Ask for RSVP on new events",
+        "help": "The organiser can still change it for each event."
+      }
+    },
+    "directory": {
+      "allowPhoneOptIn": {
+        "label": "Members may show their phone",
+        "help": "When off, phone numbers stay hidden for everyone except the committee."
+      },
+      "staffVisible": {
+        "label": "Show staff in the directory",
+        "help": "Guards, housekeeping and other staff members."
+      },
+      "showVehicles": {
+        "label": "Who sees a member's vehicles",
+        "help": "Shown on the member's page.",
+        "options": {
+          "OFF": "Nobody",
+          "ADMINS": "Committee only",
+          "ALL": "All members"
+        }
+      }
+    },
+    "parking": {
+      "membersSeeAllAllocations": {
+        "label": "Members see who has each slot",
+        "help": "When off, members see only their own slots."
+      }
+    },
+    "tasks": {
+      "volunteeringEnabled": {
+        "label": "Members can volunteer",
+        "help": "Open tasks can be taken by any member."
+      }
+    },
+    "responsibilities": {
+      "defaultRequiresConfirmation": {
+        "label": "New duties need a done mark",
+        "help": "Members mark their turn as done. Unmarked turns are shown as missed."
+      }
+    },
+    "rewards": {
+      "leaderboard": {
+        "label": "Leaderboard",
+        "help": "Who sees the points table.",
+        "options": {
+          "OFF": "Hidden",
+          "TOP_5": "Top 5",
+          "ALL": "Everyone"
+        }
+      },
+      "dutiesEarnPoints": {
+        "label": "Duties earn points",
+        "help": "When off, only tasks earn points."
+      },
+      "maxPointsPerMonth": {
+        "label": "Most points per member in a month",
+        "help": "Leave empty for no limit."
+      }
+    },
+    "maintenance": {
+      "transparency": {
+        "label": "What members see about dues",
+        "help": "Collection status of other flats.",
+        "options": {
+          "OFF": "Only their own flat",
+          "STATUS": "Paid or pending for each flat",
+          "STATUS_AND_AMOUNT": "Status and amounts for each flat"
+        }
+      }
+    },
+    "expenses": {
+      "visibleToMembers": {
+        "label": "What members see about spending",
+        "help": "The committee always sees everything.",
+        "options": {
+          "NONE": "Nothing",
+          "SUMMARY": "Totals only",
+          "DETAILED": "Every expense"
+        }
+      },
+      "approval": {
+        "label": "Expenses need approval",
+        "help": "Someone other than the person who added it approves.",
+        "options": {
+          "NEVER": "Never",
+          "ABOVE_AMOUNT": "Above an amount",
+          "ALWAYS": "Always"
+        }
+      },
+      "approvalThresholdPaise": {
+        "label": "Approval needed above (₹)",
+        "help": "Used when approval is \"Above an amount\"."
+      }
+    },
+    "vendors": {
+      "membersCanSuggest": {
+        "label": "Members can suggest vendors",
+        "help": "The committee approves each suggestion."
+      }
+    },
+    "emergency": {
+      "alertRecipients": {
+        "label": "Who gets emergency alerts",
+        "help": "Alerts are sent as high-priority notifications.",
+        "options": {
+          "ALL": "All members",
+          "ROLES": "Chosen roles"
+        }
+      },
+      "roleIds": {
+        "label": "Roles that get alerts",
+        "help": "Pick at least one role."
+      },
+      "cooldownMinutes": {
+        "label": "Minutes between alerts from one member",
+        "help": "From 1 to 60. Stops accidental repeats."
+      }
+    }
+  },
+  "audit": {
+    "title": "Audit log",
+    "all": "All",
+    "areas": {
+      "society": "Society",
+      "members": "Members",
+      "notices": "Notices",
+      "meetings": "Meetings and events",
+      "money": "Dues",
+      "expenses": "Expenses",
+      "duties": "Duties and tasks",
+      "services": "Parking and services"
+    },
+    "empty": "Nothing here yet",
+    "emptyBody": "Every change the committee makes shows here, with who made it and when.",
+    "system": "MOVO (automatic)",
+    "noDetails": "No changed values to show.",
+    "actions": {
+      "society_created": "Society created",
+      "society_settings_updated": "Society profile changed",
+      "society_module_updated": "Module changed",
+      "building_created": "Wing added",
+      "building_updated": "Wing changed",
+      "flat_created": "Flat added",
+      "flat_updated": "Flat changed",
+      "invitation_created": "Invite created",
+      "invitation_revoked": "Invite revoked",
+      "invitation_accepted": "Invite accepted",
+      "join_request_approved": "Join request approved",
+      "join_request_rejected": "Join request rejected",
+      "member_roles_updated": "Member roles changed",
+      "member_status_updated": "Member status changed",
+      "member_occupancy_updated": "Member flats changed",
+      "member_reset_code_issued": "Password reset code given",
+      "role_created": "Role created",
+      "role_updated": "Role changed",
+      "role_deleted": "Role deleted",
+      "notice_published": "Notice published",
+      "notice_updated": "Notice changed",
+      "notice_archived": "Notice archived",
+      "notice_pinned": "Notice pinned",
+      "parking_slot_created": "Parking slot added",
+      "parking_slot_updated": "Parking slot changed",
+      "parking_allocated": "Parking slot given",
+      "parking_released": "Parking slot freed",
+      "vehicle_created": "Vehicle added",
+      "vehicle_updated": "Vehicle changed",
+      "vehicle_deleted": "Vehicle removed",
+      "vendor_category_created": "Service category added",
+      "vendor_category_updated": "Service category changed",
+      "vendor_category_deleted": "Service category removed",
+      "vendor_created": "Vendor added",
+      "vendor_suggested": "Vendor suggested",
+      "vendor_updated": "Vendor changed",
+      "vendor_deleted": "Vendor removed",
+      "emergency_contact_created": "Emergency contact added",
+      "emergency_contact_updated": "Emergency contact changed",
+      "emergency_contact_deleted": "Emergency contact removed",
+      "alert_raised": "Emergency alert raised",
+      "alert_resolved": "Emergency alert closed",
+      "meeting_created": "Meeting scheduled",
+      "meeting_updated": "Meeting changed",
+      "meeting_rescheduled": "Meeting moved",
+      "meeting_note_added": "Meeting update posted",
+      "meeting_cancelled": "Meeting cancelled",
+      "meeting_completed": "Meeting marked held",
+      "event_created": "Event published",
+      "event_updated": "Event changed",
+      "event_cancelled": "Event cancelled",
+      "billing_plan_created": "Billing plan added",
+      "billing_plan_updated": "Billing plan changed",
+      "billing_plan_override_set": "Flat amount changed",
+      "bills_generated": "Bills made",
+      "bills_adhoc_created": "One-off bills made",
+      "bill_waived": "Bill waived",
+      "bill_late_fee_waived": "Late fee waived",
+      "payment_recorded": "Payment recorded",
+      "payment_reversed": "Payment reversed",
+      "payment_instruction_created": "Payment details added",
+      "payment_instruction_updated": "Payment details changed",
+      "payment_instruction_deleted": "Payment details removed",
+      "expense_category_created": "Expense category added",
+      "expense_category_updated": "Expense category changed",
+      "expense_category_deleted": "Expense category removed",
+      "expense_created": "Expense added",
+      "expense_updated": "Expense changed",
+      "expense_approved": "Expense approved",
+      "expense_rejected": "Expense rejected",
+      "expense_deleted": "Expense removed",
+      "income_created": "Income added",
+      "income_deleted": "Income removed",
+      "duty_created": "Duty created",
+      "duty_updated": "Duty changed",
+      "duty_participants_updated": "Duty order changed",
+      "duty_status_updated": "Duty paused, resumed or ended",
+      "duty_confirmed": "Duty turn marked done",
+      "duty_overridden": "Duty turn changed by committee",
+      "task_created": "Task created",
+      "task_updated": "Task changed",
+      "task_assigned": "Task assigned",
+      "task_verified": "Task accepted",
+      "task_returned": "Task sent back",
+      "task_cancelled": "Task cancelled",
+      "points_adjusted": "Points adjusted",
+      "user_deleted": "Account deleted"
+    }
   }
 }

@@ -1,0 +1,201 @@
+name: Deploy
+
+# Builds the API image (linux/arm64 + linux/amd64), pushes it to GHCR, then updates the VM over
+# SSH. Runs after CI passes on main, or by hand. Until the DEPLOY_* secrets exist every job is
+# skipped, so this workflow never fails on a repo that has no server yet.
+#
+# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY (private key, no passphrase)
+# Optional: DEPLOY_KNOWN_HOSTS (ssh-keyscan output; pinned host key), DEPLOY_PORT,
+#           GHCR_PULL_TOKEN (only if the GHCR package is private)
+# Optional variable: DEPLOY_PATH (default /opt/movo)
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/movo-api
+
+jobs:
+  gate:
+    name: Check deploy settings
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - id: check
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          RUN_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          echo "sha=$RUN_SHA" >> "$GITHUB_OUTPUT"
+          if [ -n "$DEPLOY_HOST" ] && [ -n "$DEPLOY_USER" ] && [ -n "$DEPLOY_SSH_KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deploy skipped: DEPLOY_HOST, DEPLOY_USER and DEPLOY_SSH_KEY are not all set."
+          fi
+
+  build:
+    name: Build image (${{ matrix.arch }})
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true'
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=api-${{ matrix.arch }}
+          cache-to: type=gha,scope=api-${{ matrix.arch }},mode=max
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+      - name: Save digest
+        run: |
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ matrix.arch }}
+          path: /tmp/digests/*
+          retention-days: 1
+
+  publish:
+    name: Publish multi-arch tag
+    needs: [gate, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: digest-*
+          merge-multiple: true
+          path: /tmp/digests
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create manifest (sha and latest)
+        working-directory: /tmp/digests
+        env:
+          SHA: ${{ needs.gate.outputs.sha }}
+        run: |
+          # shellcheck disable=SC2046
+          docker buildx imagetools create \
+            -t "$IMAGE:$SHA" -t "$IMAGE:latest" \
+            $(printf "$IMAGE@sha256:%s " *)
+          docker buildx imagetools inspect "$IMAGE:$SHA"
+
+  deploy:
+    name: Update the VM
+    needs: [gate, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/movo' }}
+      SHA: ${{ needs.gate.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          sparse-checkout: infra
+      - name: SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          if [ -n "$DEPLOY_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::DEPLOY_KNOWN_HOSTS is not set; trusting the host key on first use."
+            ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" > ~/.ssh/known_hosts
+          fi
+          printf 'Host movo\n  HostName %s\n  User %s\n  Port %s\n  IdentityFile ~/.ssh/id_deploy\n  ServerAliveInterval 30\n' \
+            "$DEPLOY_HOST" "$DEPLOY_USER" "$DEPLOY_PORT" > ~/.ssh/config
+      - name: Copy compose files
+        run: |
+          # shellcheck disable=SC2029
+          ssh movo "mkdir -p '$DEPLOY_PATH/backup'"
+          scp infra/docker-compose.prod.yml infra/Caddyfile "movo:$DEPLOY_PATH/"
+          scp infra/backup/Dockerfile infra/backup/*.sh "movo:$DEPLOY_PATH/backup/"
+      - name: Pull and restart
+        env:
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          # Values go over stdin, not the command line, so the token never shows in `ps` on the VM.
+          {
+            printf 'DEPLOY_PATH=%q\nAPI_IMAGE=%q\nOWNER=%q\nGHCR_PULL_TOKEN=%q\n' \
+              "$DEPLOY_PATH" "$IMAGE:$SHA" "$OWNER" "$GHCR_PULL_TOKEN"
+            cat <<'REMOTE'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          export API_IMAGE
+          if [ -n "$GHCR_PULL_TOKEN" ]; then
+            echo "$GHCR_PULL_TOKEN" | docker login ghcr.io -u "$OWNER" --password-stdin
+          fi
+          test -f .env.prod || { echo ".env.prod is missing in $PWD"; exit 1; }
+          # Remember the running tag so a later manual `up` uses the same image.
+          sed -i "s#^API_IMAGE=.*#API_IMAGE=$API_IMAGE#" .env.prod
+          dc() { docker compose -f docker-compose.prod.yml --env-file .env.prod "$@"; }
+          dc pull api caddy postgres
+          dc build backup
+          dc up -d --remove-orphans
+          for i in $(seq 1 30); do
+            s=$(docker inspect -f '{{.State.Health.Status}}' "$(dc ps -q api)")
+            if [ "$s" = healthy ]; then echo "api healthy on $API_IMAGE"; break; fi
+            if [ "$i" = 30 ]; then dc logs --tail 80 api; exit 1; fi
+            sleep 5
+          done
+          docker image prune -f
+          REMOTE
+          } | ssh movo bash -s

@@ -4,51 +4,55 @@ import {
   type IconName,
   IconSquare,
   PersonCard,
+  PhotoCard,
+  type PhotoName,
+  PhotoTile,
+  Pill,
+  photos,
   Screen,
   SectionHeader,
-  Tile,
+  Text,
   TitleBar,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
-import { formatFlat, useCan, useTenant } from '../../core/tenant/hooks';
+import { formatFlat, useCanManageSociety, useTenant } from '../../core/tenant/hooks';
 import { useMembers } from '../directory/api';
 import { useSocietyProfile } from './api';
 
 type HubKey = ModuleKey | 'manage';
-type ModuleTile = { key: HubKey; icon: IconName; labelKey: string };
+type ModuleTile = { key: HubKey; icon: IconName; photo: PhotoName; labelKey: string };
 
 const ORDER: ModuleTile[] = [
-  { key: 'notices', icon: 'notices', labelKey: 'notices' },
-  { key: 'meetings', icon: 'meetings', labelKey: 'meetings' },
-  { key: 'events', icon: 'events', labelKey: 'events' },
-  { key: 'directory', icon: 'directory', labelKey: 'directory' },
-  { key: 'vendors', icon: 'services', labelKey: 'vendors' },
-  { key: 'parking', icon: 'parking', labelKey: 'parking' },
-  { key: 'tasks', icon: 'tasks', labelKey: 'tasks' },
-  { key: 'responsibilities', icon: 'duties', labelKey: 'responsibilities' },
-  { key: 'rewards', icon: 'rewards', labelKey: 'rewards' },
-  { key: 'expenses', icon: 'receipt', labelKey: 'expenses' },
-  { key: 'emergency', icon: 'emergency', labelKey: 'emergency' },
+  { key: 'notices', icon: 'notices', photo: 'notices', labelKey: 'notices' },
+  { key: 'meetings', icon: 'meetings', photo: 'meetings', labelKey: 'meetings' },
+  { key: 'events', icon: 'events', photo: 'events', labelKey: 'events' },
+  { key: 'directory', icon: 'directory', photo: 'directory', labelKey: 'directory' },
+  { key: 'vendors', icon: 'services', photo: 'services', labelKey: 'vendors' },
+  { key: 'parking', icon: 'parking', photo: 'parking', labelKey: 'parking' },
+  { key: 'tasks', icon: 'tasks', photo: 'tasks', labelKey: 'tasks' },
+  { key: 'responsibilities', icon: 'duties', photo: 'duties', labelKey: 'responsibilities' },
+  { key: 'rewards', icon: 'rewards', photo: 'rewards', labelKey: 'rewards' },
+  { key: 'expenses', icon: 'receipt', photo: 'expenses', labelKey: 'expenses' },
+  { key: 'emergency', icon: 'emergency', photo: 'emergency', labelKey: 'emergency' },
 ];
 
 const COMMITTEE_ROLES = new Set(['admin', 'committee', 'treasurer']);
-const PADS = ['pad-a', 'pad-b'] as const;
 
 export function SocietyHubScreen() {
   const { t } = useTranslation(['society', 'common']);
   const nav = useNav();
   const tenant = useTenant();
   const profile = useSocietyProfile(tenant.society.id);
-  const canManageMembers = useCan('member.manage');
-  const canManageSettings = useCan('society.settings.manage');
-  const canManage = canManageMembers || canManageSettings;
+  const canManage = useCanManageSociety();
   const members = useMembers(tenant.society.id, '');
   const enabled = new Set(tenant.modules.filter((m) => m.enabled).map((m) => m.key));
   const tiles: ModuleTile[] = [
     ...ORDER.filter((m) => enabled.has(m.key as ModuleKey)),
-    ...(canManage ? [{ key: 'manage', icon: 'settings', labelKey: 'manage' } as ModuleTile] : []),
+    ...(canManage
+      ? [{ key: 'manage', icon: 'settings', photo: 'manage', labelKey: 'manage' } as ModuleTile]
+      : []),
   ];
   const committee = (members.data?.pages.flatMap((p) => p.items) ?? [])
     .filter((m) => m.roles.some((r) => COMMITTEE_ROLES.has(r.key)))
@@ -72,39 +76,60 @@ export function SocietyHubScreen() {
   };
 
   const rows: ModuleTile[][] = [];
-  for (let i = 0; i < tiles.length; i += 3) rows.push(tiles.slice(i, i + 3));
+  for (let i = 0; i < tiles.length; i += 2) rows.push(tiles.slice(i, i + 2));
+  const p = profile.data;
 
   return (
     <Screen tabBar refreshing={profile.isRefetching} onRefresh={() => void profile.refetch()}>
       <TitleBar
         large
-        title={tenant.society.name}
-        subtitle={
-          profile.data
-            ? t('society:flatsAndWings', {
-                flats: profile.data.counts.flats,
-                wings: profile.data.counts.buildings,
-              })
-            : (tenant.society.city ?? undefined)
-        }
+        title={t('common:tabs.society')}
         trailing={
           <IconSquare icon="search" variant="linear" onPress={() => nav.navigate('Directory')} />
         }
       />
-      <View className="mt-5 gap-3">
+      <PhotoCard
+        className="mt-5"
+        source={photos.society}
+        photoHeight={190}
+        badge={tenant.society.city ? { icon: 'location', label: tenant.society.city } : undefined}
+      >
+        <Text variant="h2" numberOfLines={2}>
+          {tenant.society.name}
+        </Text>
+        <View className="mt-3 flex-row flex-wrap gap-2">
+          {p ? (
+            <>
+              <Pill
+                icon="building"
+                size="sm"
+                label={t('society:wings', { count: p.counts.buildings })}
+              />
+              <Pill icon="flat" size="sm" label={t('society:flats', { count: p.counts.flats })} />
+              <Pill
+                icon="people"
+                size="sm"
+                label={t('society:members', { count: p.counts.members })}
+              />
+            </>
+          ) : null}
+        </View>
+      </PhotoCard>
+
+      <SectionHeader title={t('society:explore')} />
+      <View className="gap-3">
         {rows.map((row) => (
           <View key={row.map((r) => r.key).join('-')} className="flex-row gap-3">
             {row.map((tile) => (
-              <Tile
+              <PhotoTile
                 key={tile.key}
+                source={photos[tile.photo]}
                 icon={tile.icon}
                 label={t(`society:modules.${tile.labelKey}` as 'society:modules.notices')}
                 onPress={() => open(tile)}
               />
             ))}
-            {row.length < 3
-              ? PADS.slice(0, 3 - row.length).map((pad) => <View key={pad} className="flex-1" />)
-              : null}
+            {row.length < 2 ? <View className="flex-1" /> : null}
           </View>
         ))}
       </View>

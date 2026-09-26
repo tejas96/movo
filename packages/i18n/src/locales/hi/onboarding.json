@@ -13,7 +13,7 @@
   "relation": "आप हैं",
   "message": "एडमिन के लिए संदेश (वैकल्पिक)",
   "sendRequest": "अनुरोध भेजें",
-  "pendingTitle": "मंज़ूरी की प्रतीक्षा",
+  "pendingTitle": "मंज़ूरी का इंतज़ार",
   "pendingBody": "{{society}} फ़्लैट {{flat}} के लिए आपका अनुरोध देखेगी। हम आपको सूचित करेंगे।",
   "cancelRequest": "अनुरोध वापस लें",
   "joined": "{{society}} में स्वागत है",

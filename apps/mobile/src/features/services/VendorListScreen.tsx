@@ -1,4 +1,12 @@
-import { Card, EmptyState, IconSquare, Screen, Skeleton, TitleBar } from '@movo/design-system';
+import {
+  Card,
+  EmptyState,
+  IconSquare,
+  photos,
+  Screen,
+  Skeleton,
+  TitleBar,
+} from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +53,7 @@ export function VendorListScreen() {
         </View>
       ) : items.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="services"
           title={t('services:empty')}
           body={t('services:emptyBody')}

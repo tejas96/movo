@@ -2,11 +2,12 @@ import type { MeetingStatus, Timeframe } from '@movo/contracts';
 import {
   EmptyState,
   IconSquare,
+  ModuleHeader,
+  photos,
   Screen,
   Segmented,
   Skeleton,
   StatusPill,
-  TitleBar,
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -38,63 +39,70 @@ export function MeetingsScreen() {
 
   return (
     <Screen scroll={false}>
-      <TitleBar
-        title={t('meetings:title')}
-        onBack={() => nav.goBack()}
-        trailing={
-          canManage ? (
-            <IconSquare
-              icon="add"
-              variant="linear"
-              tone="ink"
-              onPress={() => nav.navigate('MeetingEditor')}
+      <FlatList
+        data={items}
+        keyExtractor={(m) => m.id}
+        onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
+        refreshing={list.isRefetching}
+        onRefresh={() => void list.refetch()}
+        contentContainerStyle={{ paddingBottom: 40, gap: 8 }}
+        renderItem={({ item }) => (
+          <TimedCard
+            startsAt={item.startsAt}
+            endsAt={item.endsAt}
+            title={item.title}
+            location={item.location}
+            dimmed={item.status === 'CANCELLED'}
+            pill={<MeetingStatusPill status={item.status} />}
+            onPress={() => nav.navigate('MeetingDetail', { meetingId: item.id })}
+          />
+        )}
+        ListHeaderComponent={
+          <View className="mb-4">
+            <ModuleHeader
+              source={photos.meetings}
+              title={t('meetings:title')}
+              onBack={() => nav.goBack()}
+              trailing={
+                canManage ? (
+                  <IconSquare
+                    icon="add"
+                    variant="linear"
+                    tone="ink"
+                    onPress={() => nav.navigate('MeetingEditor')}
+                  />
+                ) : undefined
+              }
             />
-          ) : undefined
+            <Segmented
+              className="mt-4"
+              value={when}
+              onChange={setWhen}
+              options={[
+                { value: 'UPCOMING', label: t('meetings:upcoming') },
+                { value: 'PAST', label: t('meetings:past') },
+              ]}
+            />
+            {list.isLoading ? (
+              <View className="mt-4 gap-3">
+                <Skeleton className="h-[84px]" />
+                <Skeleton className="h-[84px]" />
+              </View>
+            ) : null}
+          </View>
+        }
+        ListEmptyComponent={
+          list.isLoading ? undefined : (
+            <EmptyState
+              icon="meetings"
+              photo={photos.empty}
+              title={when === 'UPCOMING' ? t('meetings:empty') : t('meetings:emptyPast')}
+              body={when === 'UPCOMING' ? t('meetings:emptyBody') : undefined}
+              className="mt-6"
+            />
+          )
         }
       />
-      <Segmented
-        className="mt-4"
-        value={when}
-        onChange={setWhen}
-        options={[
-          { value: 'UPCOMING', label: t('meetings:upcoming') },
-          { value: 'PAST', label: t('meetings:past') },
-        ]}
-      />
-      {list.isLoading ? (
-        <View className="mt-4 gap-3">
-          <Skeleton className="h-[84px]" />
-          <Skeleton className="h-[84px]" />
-        </View>
-      ) : items.length === 0 ? (
-        <EmptyState
-          icon="meetings"
-          title={when === 'UPCOMING' ? t('meetings:empty') : t('meetings:emptyPast')}
-          body={when === 'UPCOMING' ? t('meetings:emptyBody') : undefined}
-          className="mt-10"
-        />
-      ) : (
-        <FlatList
-          className="mt-4"
-          data={items}
-          keyExtractor={(m) => m.id}
-          onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
-          refreshing={list.isRefetching}
-          onRefresh={() => void list.refetch()}
-          contentContainerStyle={{ paddingBottom: 40, gap: 8 }}
-          renderItem={({ item }) => (
-            <TimedCard
-              startsAt={item.startsAt}
-              endsAt={item.endsAt}
-              title={item.title}
-              location={item.location}
-              dimmed={item.status === 'CANCELLED'}
-              pill={<MeetingStatusPill status={item.status} />}
-              onPress={() => nav.navigate('MeetingDetail', { meetingId: item.id })}
-            />
-          )}
-        />
-      )}
     </Screen>
   );
 }

@@ -2,6 +2,7 @@ import { type RouteInput, type RouteResponse, societyContract } from '@movo/cont
 import { Controller } from '@nestjs/common';
 import { Input } from '../../common/route/input.decorator';
 import { Route } from '../../common/route/route.decorator';
+import { AuditLogService } from './audit-log.service';
 import { InvitationsService } from './invitations.service';
 import { JoinRequestsService } from './join-requests.service';
 import { MembersService } from './members.service';
@@ -24,6 +25,7 @@ export class SocietyController {
     private readonly invitations: InvitationsService,
     private readonly joinRequests: JoinRequestsService,
     private readonly modules: ModulesService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   @Route(c.get) get(): Out<'get'> {
@@ -92,6 +94,26 @@ export class SocietyController {
 
   @Route(c.listRoles) listRoles(): Out<'listRoles'> {
     return this.roles.list();
+  }
+  @Route(c.createRole) createRole(
+    @Input(c.createRole) { body }: In<'createRole'>,
+  ): Out<'createRole'> {
+    return this.roles.create(body);
+  }
+  @Route(c.updateRole) updateRole(
+    @Input(c.updateRole) { params, body }: In<'updateRole'>,
+  ): Out<'updateRole'> {
+    return this.roles.update(params.roleId, body);
+  }
+  @Route(c.deleteRole) async deleteRole(
+    @Input(c.deleteRole) { params }: In<'deleteRole'>,
+  ): Out<'deleteRole'> {
+    await this.roles.remove(params.roleId);
+    return { ok: true };
+  }
+
+  @Route(c.listAudit) listAudit(@Input(c.listAudit) { query }: In<'listAudit'>): Out<'listAudit'> {
+    return this.auditLog.list(query);
   }
 
   @Route(c.listInvitations) listInvitations(

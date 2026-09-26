@@ -19,6 +19,7 @@
   "TOKEN_INVALID": "Your session has expired. Please sign in again.",
   "PASSWORD_INCORRECT": "The current password is wrong.",
   "LAST_ADMIN": "A society must keep at least one admin.",
+  "ROLE_IN_USE": "This role still has members or invites. Move them to another role first.",
   "SLOT_TAKEN": "This slot already belongs to a flat. Free it first.",
   "VEHICLE_EXISTS": "This vehicle is already registered in your society.",
   "CATEGORY_NOT_EMPTY": "Move or delete the vendors in this category first.",

@@ -85,8 +85,9 @@ Staff is a membership without a flat. Staff do not appear in the resident direct
 ## 4. Rules the backend enforces
 
 1. A route declares its module and required permission in the contract. Guards read both.
-2. Nobody can grant a permission they do not hold themselves.
-3. The last member holding `society.roles.manage` cannot remove that role from themselves.
+2. Nobody can grant a permission they do not hold themselves. This covers adding or removing a permission on a role, and giving a member a role.
+3. The last member holding `society.roles.manage` cannot remove that role from themselves. In practice: the admin role always has every permission and the society keeps at least one active admin.
+   Built-in roles cannot be deleted. A custom role can be deleted only when no member or invite uses it (`ROLE_IN_USE`).
 4. The creator of an expense cannot approve it. A payment cannot be reversed by its recorder without `maintenance.waive` unless within 10 minutes (typo window). Both are configurable.
 5. `maintenance.view_all` shows amounts. Without it, a member sees the collection view only if the society's transparency setting allows, and never other flats' amounts unless the setting says so.
 6. Privacy is applied inside the directory query. `member.view_contact` bypasses it. The app never receives hidden fields.

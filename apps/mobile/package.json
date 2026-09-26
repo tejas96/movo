@@ -7,6 +7,8 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "bundle:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output /tmp/movo-android.bundle --assets-dest /tmp/movo-android-assets",
+    "android:bundle": "cd android && ./gradlew bundleRelease",
+    "android:apk-release": "cd android && ./gradlew assembleRelease",
     "typecheck": "tsc -p tsconfig.json",
     "fonts:link": "react-native-asset",
     "pods": "cd ios && bundle exec pod install"
@@ -44,6 +46,7 @@
   "devDependencies": {
     "@babel/core": "7.29.7",
     "@babel/plugin-transform-export-namespace-from": "7.29.7",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
     "@babel/preset-env": "7.29.7",
     "@babel/runtime": "7.29.7",
     "@movo/config": "workspace:*",

@@ -3,6 +3,7 @@ import {
   Card,
   EmptyState,
   IconSquare,
+  photos,
   Row,
   Screen,
   Skeleton,
@@ -55,13 +56,14 @@ export function BillingPlansScreen() {
         <Skeleton className="mt-6 h-24 rounded-xl" />
       ) : items.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="calendar"
           title={t('money:plan.empty')}
           body={t('money:plan.emptyBody')}
           className="mt-10"
         />
       ) : (
-        <Card tight className="mt-6 gap-1">
+        <Card tight className="mt-6 gap-2">
           {items.map((p) => (
             <Row
               key={p.id}

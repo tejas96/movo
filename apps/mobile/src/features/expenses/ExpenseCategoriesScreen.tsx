@@ -72,7 +72,7 @@ export function ExpenseCategoriesScreen() {
       {categories.isLoading ? (
         <Skeleton className="mt-6 h-64 rounded-xl" />
       ) : (
-        <Card tight className="mt-6 gap-1">
+        <Card tight className="mt-6 gap-2">
           {(categories.data ?? []).map((c) => (
             <Row
               key={c.id}

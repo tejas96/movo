@@ -51,6 +51,20 @@ export function useCan(permission: PermissionKey): boolean {
   return useActiveMembership()?.permissions.includes(permission) ?? false;
 }
 
+/** Anything under Manage society: members, structure, settings, roles or the audit log. */
+const MANAGE_PERMISSIONS: readonly PermissionKey[] = [
+  'member.manage',
+  'society.settings.manage',
+  'society.structure.manage',
+  'society.roles.manage',
+  'audit.view',
+];
+
+export function useCanManageSociety(): boolean {
+  const permissions = useActiveMembership()?.permissions ?? [];
+  return MANAGE_PERMISSIONS.some((p) => permissions.includes(p));
+}
+
 export function useModuleEnabled(key: ModuleKey): boolean {
   return useActiveMembership()?.modules.find((m) => m.key === key)?.enabled ?? false;
 }

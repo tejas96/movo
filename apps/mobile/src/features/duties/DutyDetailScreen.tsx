@@ -167,7 +167,7 @@ export function DutyDetailScreen() {
           </Card>
 
           <SectionHeader title={t('duties:order')} />
-          <Card tight className="gap-1">
+          <Card tight className="gap-2">
             {d.participants.map((p, i) => (
               <Row
                 key={p.id}
@@ -180,7 +180,7 @@ export function DutyDetailScreen() {
           {d.upcoming.length > 0 ? (
             <>
               <SectionHeader title={t('duties:upcoming')} />
-              <Card tight className="gap-1">
+              <Card tight className="gap-2">
                 {[...(d.current ? [d.current] : []), ...d.upcoming].map((a) => (
                   <TurnRow
                     key={a.id}
@@ -195,7 +195,7 @@ export function DutyDetailScreen() {
           {d.history.length > 0 ? (
             <>
               <SectionHeader title={t('duties:history')} />
-              <Card tight className="gap-1">
+              <Card tight className="gap-2">
                 {d.history.map((a) => (
                   <TurnRow
                     key={a.id}

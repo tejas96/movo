@@ -1,4 +1,4 @@
-import { EmptyState, Screen, Skeleton, TitleBar } from '@movo/design-system';
+import { EmptyState, photos, Screen, Skeleton, TitleBar } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +25,7 @@ export function PaymentsScreen() {
           <Skeleton className="h-[68px]" />
         </View>
       ) : items.length === 0 ? (
-        <EmptyState icon="receipt" title={t('noPayments')} className="mt-10" />
+        <EmptyState photo={photos.empty} icon="receipt" title={t('noPayments')} className="mt-10" />
       ) : (
         <FlatList
           className="mt-4"

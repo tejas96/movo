@@ -1,14 +1,15 @@
 # Design system
 
-Name: **MOVO DS**. Version 0.2. Light theme. Source of truth: `packages/design-system/src/tokens/` and `src/icons/`.
+Name: **MOVO DS**. Version 0.3. Light theme. Source of truth: `packages/design-system/src/tokens/` and `src/icons/`.
 Preview: run `pnpm design:preview` and open `packages/design-system/preview/dist/index.html`.
 
 ## 1. Feel
 
 A copy of the reference real-estate app's language, applied to society life:
 
-- **White canvas.** Screens are white. Cards are soft gray. Anything inside a gray card is white again. A tile inside a gray card is one shade deeper gray.
-- **No borders, no shadows.** Depth comes only from those alternating fills. The one exception is the floating tab bar (and sheets), which has a soft shadow and a blurred white background.
+- **Photos bring the colour.** The UI is white, gray and black; warm daylight photos carry the life. Home, the Society hub, every module screen, empty states and sign-in show a photo. Bundled stock photos live in `packages/design-system/assets/photos/` (free licences, credits in `CREDITS.md`) and are used through `photos.<name>`. A society's own photos replace them when uploads exist.
+- **White canvas, gray blocks.** Screens are white. Lists are gray rows (radius 24) straight on the white screen, with a white icon square. No white row inside a gray card inside a white screen. A white row appears only inside a real gray card (the dues card, the listing card).
+- **No borders, no shadows.** Depth comes from photos and fills. The floating tab bar and sheets are the only things with a shadow.
 - **Black is the only action color.** Filled buttons, the filter square, the active tab pill, and the call and chat circles are near-black. Everything else is gray or white.
 - **Big radii.** 20 for chips, tiles, icon squares and inputs. 24 for photos inside cards. 28 for cards and sheets. Full pills for buttons, info pills and the tab bar.
 - **Poppins.** Titles SemiBold, gray labels Regular, chips and buttons Medium. Poppins covers Devanagari, so Hindi and Marathi look identical in weight and rhythm.
@@ -31,7 +32,7 @@ A copy of the reference real-estate app's language, applied to society life:
 | bg.overlay | `rgba(255,255,255,0.92)` | pills over photos |
 | bg.tabBar | `rgba(255,255,255,0.88)` | floating tab bar, with 20px blur |
 | text.primary | `#151515` | titles, values |
-| text.secondary | `#8A8A8A` | labels, meta, "See all", placeholders |
+| text.secondary | `#767676` | labels, meta, "See all", placeholders |
 | text.tertiary | `#AFAFAF` | hints |
 | text.disabled | `#C8C8C8` | disabled |
 | text.onInk | `#FFFFFF` | text on black |
@@ -52,9 +53,9 @@ Family: **Poppins** (400, 500, 600, 700). One family for English, Hindi and Mara
 
 | Variant | Size / line | Weight | Use |
 | --- | --- | --- | --- |
-| display | 28 / 36 | 600 | prices, big numbers |
-| h1 | 24 / 32 | 600 | detail title |
-| h2 | 20 / 28 | 600 | section title ("Real estate suggestion") |
+| display | 30 / 38 | 600 | prices, big numbers |
+| h1 | 26 / 34 | 600 | detail and module title |
+| h2 | 21 / 29 | 600 | section title ("Real estate suggestion") |
 | h3 | 18 / 26 | 600 | card title, centred screen title |
 | title | 16 / 24 | 600 | header value ("New york city"), person name |
 | body | 15 / 22 | 400 | paragraphs, placeholders |
@@ -154,3 +155,13 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 4. Never show an action the user cannot perform.
 5. Every screen is reviewed in English, Hindi and Marathi before merge.
 6. Changing a token or an icon means running `pnpm design:preview` and checking the preview.
+
+## Photo components (v0.3)
+
+| Component | Use |
+| --- | --- |
+| `ModuleHeader` | module screens: 200 high photo, white back square and action on it, h1 title under it |
+| `PhotoHeader` | the photo part alone, with up to three stat pills along the bottom |
+| `PhotoCard` | the reference listing card: gray card, inset photo with a pill top left and an action top right, content under it (Home upcoming, Society hero, dues card) |
+| `PhotoTile` | Society hub grid, two per row, label in a white pill on the photo |
+| `EmptyState photo` | full-screen empty states show `photos.empty` above the text |

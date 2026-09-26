@@ -3,12 +3,13 @@ import {
   Card,
   EmptyState,
   IconSquare,
+  ModuleHeader,
+  photos,
   Screen,
   Segmented,
   Skeleton,
   StatusPill,
   Text,
-  TitleBar,
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +31,8 @@ export function DutiesScreen() {
 
   return (
     <Screen refreshing={list.isRefetching} onRefresh={() => void list.refetch()}>
-      <TitleBar
+      <ModuleHeader
+        source={photos.duties}
         title={t('duties:title')}
         onBack={() => nav.goBack()}
         trailing={
@@ -57,6 +59,7 @@ export function DutiesScreen() {
         <Skeleton className="mt-4 h-32 rounded-xl" />
       ) : items.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="duties"
           title={t('duties:empty')}
           body={t('duties:emptyBody')}

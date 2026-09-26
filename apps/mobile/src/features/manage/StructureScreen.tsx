@@ -6,6 +6,7 @@ import {
   Input,
   OptionSheet,
   Pill,
+  photos,
   Row,
   Screen,
   SelectField,
@@ -137,6 +138,7 @@ export function StructureScreen() {
         <Skeleton className="mt-4 h-40 rounded-xl" />
       ) : visible.length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="building"
           title={t('manage:structureForm.empty')}
           body={t('manage:structureForm.emptyBody')}

@@ -15,11 +15,11 @@ export const typography = {
   },
   scale: {
     /** Prices and big numbers. */
-    display: { size: 28, lineHeight: 36, weight: '600', letterSpacing: -0.3 },
+    display: { size: 30, lineHeight: 38, weight: '600', letterSpacing: -0.4 },
     /** Detail screen title. */
-    h1: { size: 24, lineHeight: 32, weight: '600', letterSpacing: -0.2 },
+    h1: { size: 26, lineHeight: 34, weight: '600', letterSpacing: -0.3 },
     /** Section title ("Real estate suggestion"). */
-    h2: { size: 20, lineHeight: 28, weight: '600', letterSpacing: -0.1 },
+    h2: { size: 21, lineHeight: 29, weight: '600', letterSpacing: -0.2 },
     /** Card title, screen header title. */
     h3: { size: 18, lineHeight: 26, weight: '600', letterSpacing: 0 },
     /** Header value, person name. */

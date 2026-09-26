@@ -13,3 +13,6 @@ export const API_URL: string =
     ? configured.replace('10.0.2.2', 'localhost')
     : (configured ?? FALLBACK);
 export const APP_VERSION = '0.1.0';
+
+/** Hosted on GitHub Pages from site/. Google Play links to the same page. */
+export const PRIVACY_POLICY_URL = 'https://tejas96.github.io/movo/privacy.html';

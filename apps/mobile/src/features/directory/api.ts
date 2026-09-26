@@ -51,3 +51,17 @@ export function useIssueResetCode(societyId: string, membershipId: string) {
     mutationFn: () => api(societyContract.issueResetCode, { params: { societyId, membershipId } }),
   });
 }
+
+export function useSetOccupancies(societyId: string, membershipId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: RouteBody<typeof societyContract.setOccupancies>) =>
+      api(societyContract.setOccupancies, { params: { societyId, membershipId }, body }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: keys.society(societyId).member(membershipId) });
+      void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'members'] });
+      void qc.invalidateQueries({ queryKey: keys.society(societyId).flats });
+      void invalidateContext();
+    },
+  });
+}

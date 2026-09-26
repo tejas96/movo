@@ -375,7 +375,7 @@ Firebase provisioning (you do this later, code is ready now)
 | --- | --- | --- |
 | Compute | one ARM VM (Oracle Always Free, Mumbai) or a small paid VPS | ₹0 or about ₹500 |
 | Database | PostgreSQL 17 in Docker on the same VM | ₹0 |
-| Backups | nightly `pg_dump` to R2, 30 days kept, monthly restore drill | ₹0 |
+| Backups | nightly `pg_dump` on the VM, 14 daily + 6 monthly kept, optional copy to R2, monthly restore drill | ₹0 |
 | Object storage | Cloudflare R2, 10 GB free | ₹0 |
 | TLS and proxy | Caddy with Let's Encrypt | ₹0 |
 | Domain | one domain, Cloudflare DNS | about ₹100 per month equivalent |
@@ -387,7 +387,7 @@ Firebase provisioning (you do this later, code is ready now)
 | iOS | Apple Developer | $99 per year, LATER |
 
 Deployment
-- `infra/docker-compose.yml`: `api`, `postgres`, `caddy`, `backup`.
+- `infra/docker-compose.prod.yml`: `api`, `postgres`, `caddy`, `backup`. Details in [08-release-and-ops.md](08-release-and-ops.md).
 - GitHub Actions on `main`: lint, typecheck, tests, build the API image, push to GHCR, SSH to the VM, `docker compose pull && up -d`. The API runs `prisma migrate deploy` on start.
 - Android release APK or AAB is built on tags. Debug builds are local.
 - Environments: `local` (Docker Postgres on your Mac) and `prod`. Staging is added when a second society arrives.

@@ -31,13 +31,13 @@ export function PrivacyScreen() {
     <Screen>
       <TitleBar title={t('privacy')} onBack={() => nav.goBack()} />
       <Card tight className="mt-6 gap-2">
-        <View className="flex-row items-center justify-between rounded-md bg-card-nested px-4 py-3.5">
+        <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
           <Text variant="body" className="flex-1 pr-3">
             {t('privacyShowPhone')}
           </Text>
           <Toggle value={showPhone} onValueChange={(v) => void change({ showPhone: v })} />
         </View>
-        <View className="flex-row items-center justify-between rounded-md bg-card-nested px-4 py-3.5">
+        <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
           <Text variant="body" className="flex-1 pr-3">
             {t('privacyShowEmail')}
           </Text>

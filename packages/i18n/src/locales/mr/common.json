@@ -4,7 +4,7 @@
   },
   "actions": {
     "continue": "पुढे जा",
-    "save": "जतन करा",
+    "save": "सेव्ह करा",
     "cancel": "रद्द करा",
     "done": "झाले",
     "retry": "पुन्हा प्रयत्न करा",
@@ -21,7 +21,7 @@
     "delete": "हटवा",
     "confirm": "निश्चित करा",
     "approve": "मंजूर करा",
-    "reject": "नाकारा",
+    "reject": "नामंजूर करा",
     "signOut": "साइन आउट"
   },
   "tabs": {
@@ -34,7 +34,7 @@
   "states": {
     "loading": "लोड होत आहे…",
     "empty": "इथे अजून काही नाही",
-    "offline": "तुम्ही ऑफलाइन आहात. जतन केलेली माहिती दिसत आहे.",
+    "offline": "तुम्ही ऑफलाइन आहात. सेव्ह केलेली माहिती दिसत आहे.",
     "errorTitle": "काहीतरी चूक झाली",
     "errorBody": "कृपया पुन्हा प्रयत्न करा.",
     "updateRequiredTitle": "MOVO अपडेट करा",
@@ -55,12 +55,12 @@
   "status": {
     "PENDING": "प्रलंबित",
     "APPROVED": "मंजूर",
-    "REJECTED": "नाकारले",
+    "REJECTED": "नामंजूर",
     "ACTIVE": "सक्रिय",
     "SUSPENDED": "निलंबित",
     "LEFT": "सोडले",
     "INVITED": "आमंत्रित",
-    "PENDING_APPROVAL": "मंजुरीची वाट",
+    "PENDING_APPROVAL": "मंजुरीची प्रतीक्षा",
     "EXPIRED": "कालबाह्य",
     "REVOKED": "रद्द",
     "ACCEPTED": "स्वीकारले"

@@ -6,7 +6,9 @@ import {
   EmptyState,
   Icon,
   IconSquare,
+  PhotoCard,
   Pill,
+  photos,
   Row,
   Screen,
   SectionHeader,
@@ -76,6 +78,7 @@ export function MoneyScreen() {
       {tab === 'mine' ? (
         !hasFlat ? (
           <EmptyState
+            photo={photos.empty}
             icon="wallet"
             title={t('money:noDues')}
             body={t('money:noFlat')}
@@ -102,7 +105,12 @@ function FlatDues({ account }: { account: FlatAccount }) {
   const paidUp = account.outstandingPaise === 0;
   return (
     <>
-      <Card className="mt-5">
+      <PhotoCard
+        className="mt-5"
+        source={photos.money}
+        photoHeight={130}
+        badge={{ icon: 'flat', label: flat }}
+      >
         <Text variant="label" tone="secondary">
           {t('totalDue', { flat })}
         </Text>
@@ -145,7 +153,7 @@ function FlatDues({ account }: { account: FlatAccount }) {
             }
           />
         ) : null}
-      </Card>
+      </PhotoCard>
       {account.recentPayments.length > 0 ? (
         <>
           <SectionHeader
@@ -153,7 +161,7 @@ function FlatDues({ account }: { account: FlatAccount }) {
             actionLabel={t('allPayments')}
             onAction={() => nav.navigate('Payments', { flatId: account.flat.id })}
           />
-          <Card tight className="gap-1">
+          <Card tight className="gap-2">
             {account.recentPayments.slice(0, 3).map((p) => (
               <PaymentRow key={p.id} payment={p} />
             ))}
@@ -195,7 +203,7 @@ function SocietyCollection({
           {`${t('collection.billed')} ${money(data.billedPaise ?? 0)} · ${t('collection.outstanding')} ${money(data.outstandingPaise)}`}
         </Text>
       ) : null}
-      <Card tight className="mt-4 gap-1">
+      <Card tight className="mt-4 gap-2">
         {data.rows.map((r) => (
           <Row
             key={r.flat.id}
@@ -280,7 +288,7 @@ function TreasurerTools() {
   return (
     <>
       <SectionHeader title={t('treasurer.title')} />
-      <Card tight className="gap-1">
+      <Card tight className="gap-2">
         {canRecord ? (
           <Row
             icon="moneyIn"

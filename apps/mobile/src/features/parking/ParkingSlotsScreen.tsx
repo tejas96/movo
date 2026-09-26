@@ -6,6 +6,7 @@ import {
   EmptyState,
   IconSquare,
   Input,
+  photos,
   Row,
   Screen,
   Segmented,
@@ -161,6 +162,7 @@ export function ParkingSlotsScreen() {
         </View>
       ) : (slots.data ?? []).length === 0 ? (
         <EmptyState
+          photo={photos.empty}
           icon="parking"
           title={t('parking:slots.empty')}
           body={canManage ? t('parking:slots.emptyBody') : undefined}
