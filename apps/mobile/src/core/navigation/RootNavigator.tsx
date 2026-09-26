@@ -8,6 +8,9 @@ import { RegisterScreen } from '../../features/auth/RegisterScreen';
 import { ResetPasswordScreen } from '../../features/auth/ResetPasswordScreen';
 import { DirectoryScreen } from '../../features/directory/DirectoryScreen';
 import { MemberDetailScreen } from '../../features/directory/MemberDetailScreen';
+import { DutiesScreen } from '../../features/duties/DutiesScreen';
+import { DutyDetailScreen } from '../../features/duties/DutyDetailScreen';
+import { DutyEditorScreen } from '../../features/duties/DutyEditorScreen';
 import { AlertDetailScreen } from '../../features/emergency/AlertDetailScreen';
 import { EmergencyScreen } from '../../features/emergency/EmergencyScreen';
 import { EventDetailScreen } from '../../features/events/EventDetailScreen';
@@ -52,11 +55,15 @@ import { PickFlatScreen } from '../../features/onboarding/PickFlatScreen';
 import { ParkingScreen } from '../../features/parking/ParkingScreen';
 import { ParkingSlotsScreen } from '../../features/parking/ParkingSlotsScreen';
 import { VehicleEditorScreen } from '../../features/parking/VehicleEditorScreen';
+import { RewardsScreen } from '../../features/rewards/RewardsScreen';
 import { ServicesScreen } from '../../features/services/ServicesScreen';
 import { VendorCategoriesScreen } from '../../features/services/VendorCategoriesScreen';
 import { VendorDetailScreen } from '../../features/services/VendorDetailScreen';
 import { VendorEditorScreen } from '../../features/services/VendorEditorScreen';
 import { VendorListScreen } from '../../features/services/VendorListScreen';
+import { TaskDetailScreen } from '../../features/tasks/TaskDetailScreen';
+import { TaskEditorScreen } from '../../features/tasks/TaskEditorScreen';
+import { TasksScreen } from '../../features/tasks/TasksScreen';
 import { signOut } from '../auth/auth';
 import { useSessionStore } from '../auth/session.store';
 import { useBootstrap } from '../auth/use-bootstrap';
@@ -230,6 +237,21 @@ export function RootNavigator() {
             options={{ animation: 'slide_from_bottom' }}
           />
           <Stack.Screen name="ExpenseCategories" component={ExpenseCategoriesScreen} />
+          <Stack.Screen name="Duties" component={DutiesScreen} />
+          <Stack.Screen name="DutyDetail" component={DutyDetailScreen} />
+          <Stack.Screen
+            name="DutyEditor"
+            component={DutyEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="Tasks" component={TasksScreen} />
+          <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
+          <Stack.Screen
+            name="TaskEditor"
+            component={TaskEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="Rewards" component={RewardsScreen} />
           <Stack.Screen name="Join" component={JoinScreen} />
           <Stack.Screen name="PickFlat" component={PickFlatScreen} />
           <Stack.Screen name="Pending" component={PendingScreen} />

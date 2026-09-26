@@ -1,5 +1,6 @@
 import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
+import enDuties from './locales/en/duties.json';
 import enEmergency from './locales/en/emergency.json';
 import enErrors from './locales/en/errors.json';
 import enEvents from './locales/en/events.json';
@@ -12,10 +13,13 @@ import enMoney from './locales/en/money.json';
 import enNotices from './locales/en/notices.json';
 import enOnboarding from './locales/en/onboarding.json';
 import enParking from './locales/en/parking.json';
+import enRewards from './locales/en/rewards.json';
 import enServices from './locales/en/services.json';
 import enSociety from './locales/en/society.json';
+import enTasks from './locales/en/tasks.json';
 import hiAuth from './locales/hi/auth.json';
 import hiCommon from './locales/hi/common.json';
+import hiDuties from './locales/hi/duties.json';
 import hiEmergency from './locales/hi/emergency.json';
 import hiErrors from './locales/hi/errors.json';
 import hiEvents from './locales/hi/events.json';
@@ -28,10 +32,13 @@ import hiMoney from './locales/hi/money.json';
 import hiNotices from './locales/hi/notices.json';
 import hiOnboarding from './locales/hi/onboarding.json';
 import hiParking from './locales/hi/parking.json';
+import hiRewards from './locales/hi/rewards.json';
 import hiServices from './locales/hi/services.json';
 import hiSociety from './locales/hi/society.json';
+import hiTasks from './locales/hi/tasks.json';
 import mrAuth from './locales/mr/auth.json';
 import mrCommon from './locales/mr/common.json';
+import mrDuties from './locales/mr/duties.json';
 import mrEmergency from './locales/mr/emergency.json';
 import mrErrors from './locales/mr/errors.json';
 import mrEvents from './locales/mr/events.json';
@@ -44,8 +51,10 @@ import mrMoney from './locales/mr/money.json';
 import mrNotices from './locales/mr/notices.json';
 import mrOnboarding from './locales/mr/onboarding.json';
 import mrParking from './locales/mr/parking.json';
+import mrRewards from './locales/mr/rewards.json';
 import mrServices from './locales/mr/services.json';
 import mrSociety from './locales/mr/society.json';
+import mrTasks from './locales/mr/tasks.json';
 
 /** English is the source of truth. The other locales must have the same shape. */
 export const en = {
@@ -65,6 +74,9 @@ export const en = {
   meetings: enMeetings,
   events: enEvents,
   expenses: enExpenses,
+  duties: enDuties,
+  tasks: enTasks,
+  rewards: enRewards,
 } as const;
 
 export type Resources = typeof en;
@@ -91,6 +103,9 @@ export const resources = {
     meetings: hiMeetings,
     events: hiEvents,
     expenses: hiExpenses,
+    duties: hiDuties,
+    tasks: hiTasks,
+    rewards: hiRewards,
   },
   mr: {
     common: mrCommon,
@@ -109,5 +124,8 @@ export const resources = {
     meetings: mrMeetings,
     events: mrEvents,
     expenses: mrExpenses,
+    duties: mrDuties,
+    tasks: mrTasks,
+    rewards: mrRewards,
   },
 } as const;

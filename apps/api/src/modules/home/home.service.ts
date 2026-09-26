@@ -4,6 +4,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
+import { DutiesService } from '../duties/duties.service';
 import { EmergencyService } from '../emergency/emergency.service';
 import { EventsService } from '../events/events.service';
 import { ExpensesService } from '../expenses/expenses.service';
@@ -11,6 +12,8 @@ import { AccountsService } from '../maintenance/accounts.service';
 import { MeetingsService } from '../meetings/meetings.service';
 import { NoticesService } from '../notices/notices.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { RewardsService } from '../rewards/rewards.service';
+import { TasksService } from '../tasks/tasks.service';
 import { VendorsService } from '../vendors/vendors.service';
 
 /** Home shows one or two upcoming meetings or events. */
@@ -30,15 +33,22 @@ export class HomeService {
     private readonly events: EventsService,
     private readonly accounts: AccountsService,
     private readonly expenses: ExpensesService,
+    private readonly duties: DutiesService,
+    private readonly tasks: TasksService,
+    private readonly rewards: RewardsService,
   ) {}
 
   async summary(): Promise<HomeSummary> {
     const ctx = requireTenant();
     const attention: AttentionItem[] = [];
 
-    // Money owed comes right after alerts and important notices, before admin items.
+    // Order: money owed, my duty, my tasks, then admin items. Alerts and important notices go on top below.
     if (ctx.enabledModules.has('maintenance'))
       attention.push(...(await this.accounts.attentionForHome(ctx)));
+    if (ctx.enabledModules.has('responsibilities'))
+      attention.push(...(await this.duties.attentionForHome(ctx)));
+    if (ctx.enabledModules.has('tasks'))
+      attention.push(...(await this.tasks.attentionForHome(ctx)));
 
     if (can(ctx, 'member.manage')) {
       const [joinRequests, invitations] = await Promise.all([
@@ -82,6 +92,15 @@ export class HomeService {
       .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
       .slice(0, UPCOMING_ON_HOME);
 
+    let contribution: HomeSummary['contribution'] = null;
+    if (ctx.enabledModules.has('rewards')) {
+      const [points, openTasks] = await Promise.all([
+        this.rewards.pointsThisYear(ctx),
+        ctx.enabledModules.has('tasks') ? this.tasks.openTaskCount(ctx) : Promise.resolve(0),
+      ]);
+      if (points !== 0 || openTasks > 0) contribution = { points, openTasks };
+    }
+
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: ctx.userId },
       select: { email: true, phone: true },
@@ -113,6 +132,7 @@ export class HomeService {
       upcoming,
       notices,
       unreadNotifications: await this.notifications.unreadCount(ctx.userId),
+      contribution,
     };
   }
 }

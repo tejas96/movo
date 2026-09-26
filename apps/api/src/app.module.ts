@@ -10,6 +10,7 @@ import { ResponseValidationInterceptor } from './common/route/response-validatio
 import { RouteGuard } from './common/route/route.guard';
 import { loadEnv } from './config/env';
 import { AppController } from './modules/app/app.controller';
+import { DutiesModule } from './modules/duties/duties.module';
 import { EmergencyModule } from './modules/emergency/emergency.module';
 import { EventsModule } from './modules/events/events.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
@@ -21,6 +22,8 @@ import { NoticesModule } from './modules/notices/notices.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ParkingModule } from './modules/parking/parking.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
+import { RewardsModule } from './modules/rewards/rewards.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 import { VendorsModule } from './modules/vendors/vendors.module';
 
@@ -58,6 +61,9 @@ const env = loadEnv();
     RemindersModule,
     MaintenanceModule,
     ExpensesModule,
+    DutiesModule,
+    TasksModule,
+    RewardsModule,
     HomeModule,
   ],
   controllers: [AppController],

@@ -7,6 +7,7 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { runWithStore } from '../common/request-store';
 import { newId } from '../common/util/ids';
 import { loadEnv } from '../config/env';
+import { DutiesService } from '../modules/duties/duties.service';
 import { defaultEmergencyContactRows } from '../modules/emergency/emergency.service';
 import { defaultExpenseCategoryRows } from '../modules/expenses/expenses.service';
 import { PasswordService } from '../modules/identity/password.service';
@@ -327,6 +328,80 @@ async function ensureM7Demo(
   log(`added ${rows.length} expenses and one income entry`);
 }
 
+/** A monthly gate-locking rotation, two tasks and some points. Safe to run again. */
+async function ensureM8Demo(
+  app: INestApplicationContext,
+  prisma: PrismaService,
+  societyId: string,
+  log: (msg: string) => void,
+): Promise<void> {
+  const admin = await prisma.membership.findFirst({
+    where: { societyId, roles: { some: { role: { key: 'admin' } } } },
+    orderBy: { createdAt: 'asc' },
+  });
+  if (!admin) return;
+  if ((await prisma.responsibility.count({ where: { societyId } })) > 0) return;
+  const today = todayIn('Asia/Kolkata');
+  const wingA = await prisma.flat.findMany({
+    where: { societyId, building: { name: 'A' } },
+    orderBy: { number: 'asc' },
+  });
+  await prisma.responsibility.create({
+    data: {
+      societyId,
+      title: 'Main gate locking',
+      description: 'Lock the main gate at 11 pm and open it at 5 am.',
+      participantKind: 'FLAT',
+      periodUnit: 'MONTH',
+      periodLength: 1,
+      startDate: dbDate(`${today.slice(0, 7)}-01`),
+      requiresConfirmation: true,
+      onMiss: 'MARK_MISSED',
+      createdByMembershipId: admin.id,
+      participants: {
+        create: wingA.map((f, position) => ({ societyId, position, flatId: f.id })),
+      },
+    },
+  });
+  await app.get(DutiesService).advance(new Date());
+  await prisma.task.create({
+    data: {
+      societyId,
+      title: 'Submit water bill at PMC',
+      description: 'Take the bill and the cheque to the PMC ward office.',
+      points: 3,
+      status: 'OPEN',
+      createdByMembershipId: admin.id,
+      events: { create: { societyId, kind: 'CREATED', byMembershipId: admin.id } },
+    },
+  });
+  const done = await prisma.task.create({
+    data: {
+      societyId,
+      title: 'Plant saplings near gate',
+      points: 5,
+      status: 'COMPLETED',
+      assigneeMembershipId: admin.id,
+      completedAt: new Date(),
+      createdByMembershipId: admin.id,
+      events: { create: { societyId, kind: 'CREATED', byMembershipId: admin.id } },
+    },
+  });
+  await prisma.pointsLedger.create({
+    data: {
+      societyId,
+      membershipId: admin.id,
+      delta: 5,
+      reason: 'TASK',
+      label: done.title,
+      refType: 'Task',
+      refId: done.id,
+      financialYear: fyLabel(today, 4),
+    },
+  });
+  log('added a duty rotation, two tasks and some points');
+}
+
 async function main(): Promise<void> {
   const env = loadEnv();
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
@@ -375,6 +450,7 @@ async function main(): Promise<void> {
         await ensureM5Demo(prisma, existing.id, log);
         await ensureM6Demo(app, prisma, existing.id, log);
         await ensureM7Demo(prisma, existing.id, log);
+        await ensureM8Demo(app, prisma, existing.id, log);
       } else {
         const result = await societies.create({
           name: 'Sunrise Residency',
@@ -466,6 +542,7 @@ async function main(): Promise<void> {
         await ensureM5Demo(prisma, societyId, log);
         await ensureM6Demo(app, prisma, societyId, log);
         await ensureM7Demo(prisma, societyId, log);
+        await ensureM8Demo(app, prisma, societyId, log);
       }
     }
   });

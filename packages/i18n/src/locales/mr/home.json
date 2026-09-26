@@ -54,10 +54,32 @@
       "title": "{{count}} खर्च मंजूर करायचा आहे",
       "title_other": "{{count}} खर्च मंजूर करायचे आहेत",
       "sub": "एकूण {{amount}}"
+    },
+    "MY_DUTY": {
+      "title": "तुमची पाळी: {{title}}",
+      "sub": "{{date}} पर्यंत",
+      "markDone": "झाले"
+    },
+    "MY_TASK": {
+      "sub": "काम · {{date}} पर्यंत",
+      "subNoDue": "काम",
+      "returned": "परत पाठवले"
+    },
+    "TASKS_TO_VERIFY": {
+      "title": "{{count}} काम तपासायचे आहे",
+      "title_other": "{{count}} कामे तपासायची आहेत",
+      "sub": "काम स्वीकारा म्हणजे गुण मिळतील"
     }
   },
   "upcomingKind": {
     "MEETING": "सभा",
     "EVENT": "कार्यक्रम"
+  },
+  "contribution": {
+    "title": "माझे योगदान",
+    "points": "या वर्षी {{count}} गुण",
+    "points_other": "या वर्षी {{count}} गुण",
+    "openTasks": "{{count}} काम सुरू आहे",
+    "openTasks_other": "{{count}} कामे सुरू आहेत"
   }
 }

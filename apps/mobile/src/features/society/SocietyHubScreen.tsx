@@ -60,6 +60,9 @@ export function SocietyHubScreen() {
     else if (tile.key === 'meetings') nav.navigate('Meetings');
     else if (tile.key === 'events') nav.navigate('Events');
     else if (tile.key === 'expenses') nav.navigate('Expenses');
+    else if (tile.key === 'tasks') nav.navigate('Tasks');
+    else if (tile.key === 'responsibilities') nav.navigate('Duties');
+    else if (tile.key === 'rewards') nav.navigate('Rewards');
     else if (tile.key === 'directory') nav.navigate('Directory');
     else if (tile.key === 'vendors') nav.navigate('Services');
     else if (tile.key === 'parking') nav.navigate('Parking');

@@ -1,0 +1,82 @@
+{
+  "title": "काम",
+  "new": "नया काम",
+  "views": {
+    "OPEN": "खुले",
+    "MINE": "मेरे",
+    "ACTIVE": "चल रहे",
+    "DONE": "पूरे",
+    "TO_VERIFY": "जाँचने हैं"
+  },
+  "empty": {
+    "OPEN": "कोई खुला काम नहीं",
+    "MINE": "आपके पास कोई काम नहीं",
+    "ACTIVE": "कोई काम नहीं चल रहा",
+    "DONE": "अभी कोई काम पूरा नहीं",
+    "TO_VERIFY": "जाँचने को कुछ नहीं"
+  },
+  "status": {
+    "OPEN": "खुला",
+    "IN_PROGRESS": "चल रहा",
+    "SUBMITTED": "जाँच बाकी",
+    "COMPLETED": "पूरा",
+    "CANCELLED": "रद्द"
+  },
+  "points": "{{count}} अंक",
+  "points_other": "{{count}} अंक",
+  "due": "{{date}} तक",
+  "openForAll": "कोई भी ले सकता है",
+  "actions": {
+    "volunteer": "मैं करूँगा",
+    "volunteered": "यह काम आपका है",
+    "withdraw": "वापस दें",
+    "withdrawn": "काम वापस दिया",
+    "submit": "हो गया",
+    "submitTitle": "यह काम पूरा दर्ज करें?",
+    "note": "आपने क्या किया? (वैकल्पिक)",
+    "submitted": "जाँच के लिए भेजा",
+    "verify": "स्वीकार करें",
+    "verified": "काम स्वीकार हुआ",
+    "sendBack": "वापस भेजें",
+    "sendBackTitle": "इसे वापस भेजें?",
+    "reason": "कारण",
+    "sentBack": "वापस भेजा",
+    "cancel": "काम रद्द करें",
+    "cancelled": "काम रद्द हुआ",
+    "assign": "सौंपें",
+    "openUp": "सबके लिए खोलें",
+    "assigned": "काम सौंपा गया"
+  },
+  "event": {
+    "CREATED": "बनाया",
+    "ASSIGNED": "सौंपा",
+    "VOLUNTEERED": "ख़ुद लिया",
+    "WITHDRAWN": "वापस दिया",
+    "SUBMITTED": "पूरा दर्ज",
+    "RETURNED": "वापस भेजा",
+    "VERIFIED": "स्वीकार",
+    "CANCELLED": "रद्द"
+  },
+  "history": "इतिहास",
+  "createdBy": "{{name}} ने बनाया",
+  "form": {
+    "title": "काम",
+    "titleHint": "जैसे: पानी का बिल PMC में जमा करना",
+    "description": "विवरण (वैकल्पिक)",
+    "points": "अंक",
+    "due": "अंतिम तारीख",
+    "noDue": "कोई अंतिम तारीख नहीं",
+    "assignee": "कौन करेगा",
+    "anyone": "कोई भी ले सकता है",
+    "create": "काम बनाएँ",
+    "saved": "काम सेव हुआ"
+  },
+  "push": {
+    "assignedTitle": "नया काम: {{title}}",
+    "submittedTitle": "काम जाँचें: {{title}}",
+    "verifiedTitle": "काम पूरा: {{title}}",
+    "pointsBody": "+{{count}} अंक",
+    "pointsBody_other": "+{{count}} अंक",
+    "returnedTitle": "काम वापस भेजा: {{title}}"
+  }
+}

@@ -1,4 +1,4 @@
-import type { ExpenseStatus, ModuleKey, Vehicle, VendorStatus } from '@movo/contracts';
+import type { ExpenseStatus, ModuleKey, TaskView, Vehicle, VendorStatus } from '@movo/contracts';
 import { type NavigatorScreenParams, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -59,6 +59,13 @@ export type RootStackParamList = {
   ExpenseDetail: { expenseId: string };
   ExpenseEditor: { expenseId?: string } | undefined;
   ExpenseCategories: undefined;
+  Duties: undefined;
+  DutyDetail: { dutyId: string };
+  DutyEditor: undefined;
+  Tasks: { view?: TaskView } | undefined;
+  TaskDetail: { taskId: string };
+  TaskEditor: { taskId?: string } | undefined;
+  Rewards: undefined;
 };
 
 export type TabParamList = {

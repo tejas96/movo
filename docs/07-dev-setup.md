@@ -33,10 +33,11 @@ The demo seed prints:
 | Parking | slots P-01 to P-20, T-01 to T-10, visitor V-01; P-01 and car MH12AB1234 belong to A-101 |
 | Emergency | gate, lift and office contacts plus 112, 100, 101, 108 |
 | Meetings and events | a committee meeting in 5 days, a garba night in 10 days |
+| Duties, tasks, rewards | "Main gate locking" monthly over wing A (A-101's turn now), an open task worth 3 points, 5 points for the admin |
 | Expenses | 10 categories, five approved expenses this month, one hall booking |
 | Money | plan "Maintenance" ₹2,500 monthly, due on the 10th, ₹100 late fee after 5 days; UPI `sunriseresidency@okaxis`; this month's bills; 16 flats paid, A-101 (the admin) not |
 
-Running the seed again on an existing demo society only adds the Services, Parking, Emergency, Meetings, Events, Money and Expenses data that is missing.
+Running the seed again on an existing demo society only adds the Services, Parking, Emergency, Meetings, Events, Money, Expenses, Duties, Tasks and Rewards data that is missing.
 
 ## 3. Run
 

@@ -1,0 +1,100 @@
+{
+  "title": "Duties",
+  "new": "New duty",
+  "empty": "No duties yet",
+  "emptyBody": "Rotations like gate locking or tank cleaning show here.",
+  "mine": "Mine",
+  "all": "All",
+  "yourTurn": "Your turn",
+  "turnOf": "{{name}}'s turn",
+  "till": "Till {{date}}",
+  "nextTurn": "Next: {{name}} from {{date}}",
+  "noCurrent": "No one this period",
+  "cadence": {
+    "DAY": "Every day",
+    "DAY_other": "Every {{count}} days",
+    "WEEK": "Every week",
+    "WEEK_other": "Every {{count}} weeks",
+    "MONTH": "Every month",
+    "MONTH_other": "Every {{count}} months"
+  },
+  "status": {
+    "UPCOMING": "Coming",
+    "ACTIVE": "Now",
+    "COMPLETED": "Done",
+    "MISSED": "Missed",
+    "SKIPPED": "Skipped"
+  },
+  "dutyStatus": {
+    "ACTIVE": "Active",
+    "PAUSED": "Paused",
+    "ENDED": "Ended"
+  },
+  "markDone": "Mark done",
+  "marked": "Marked done",
+  "confirmHint": "Mark it done when you finish.",
+  "order": "Order",
+  "upcoming": "Coming up",
+  "history": "History",
+  "pointsEach": "{{count}} point a turn",
+  "pointsEach_other": "{{count}} points a turn",
+  "override": {
+    "title": "Change this turn",
+    "skip": "Skip this turn",
+    "reassign": "Give to someone else",
+    "complete": "Mark done for them",
+    "reason": "Reason",
+    "pick": "Pick who",
+    "saved": "Turn changed"
+  },
+  "manage": {
+    "pause": "Pause",
+    "resume": "Resume",
+    "end": "End duty",
+    "endTitle": "End this duty?",
+    "paused": "Duty paused",
+    "resumed": "Duty resumed",
+    "ended": "Duty ended",
+    "editOrder": "Change order"
+  },
+  "form": {
+    "title": "Name",
+    "titleHint": "For example: Main gate locking",
+    "description": "Details (optional)",
+    "kind": "Who takes turns",
+    "kindOpt": {
+      "FLAT": "Flats",
+      "MEMBER": "Members"
+    },
+    "participants": "In this order",
+    "add": "Add",
+    "pickFlats": "Pick flats",
+    "pickMembers": "Pick members",
+    "unit": "Each turn is",
+    "unitOpt": {
+      "DAY": "A day",
+      "WEEK": "A week",
+      "MONTH": "A month"
+    },
+    "start": "First turn starts",
+    "confirm": "Ask them to mark it done",
+    "onMiss": "If a turn is missed",
+    "onMissOpt": {
+      "MARK_MISSED": "Mark missed and move on",
+      "CARRY_OVER": "Same person again"
+    },
+    "points": "Points for each turn (optional)",
+    "create": "Create duty",
+    "saved": "Duty saved",
+    "up": "Up",
+    "remove": "Remove"
+  },
+  "push": {
+    "startTitle": "Your turn: {{title}}",
+    "startBody": "Till {{date}}",
+    "remindTitle": "Mark done: {{title}}",
+    "remindBody": "Your turn ends {{date}}",
+    "missedTitle": "Missed: {{title}}",
+    "missedBody": "The turn ended {{date}}"
+  }
+}

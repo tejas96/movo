@@ -48,13 +48,15 @@ export function Screen({
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       className={cn('flex-1', bg)}
+      // The status bar area stays outside the scroll, so content never slides under the clock.
+      style={{ paddingTop: insets.top }}
     >
       <StatusBar barStyle="dark-content" />
       {scroll ? (
         <ScrollView
           className={cn('flex-1', bg)}
           contentContainerStyle={{
-            paddingTop: insets.top + 8,
+            paddingTop: 8,
             paddingBottom,
             paddingHorizontal: bleed ? 0 : theme.layout.gutter,
           }}
@@ -76,7 +78,7 @@ export function Screen({
         <View
           className={cn('flex-1', className)}
           style={{
-            paddingTop: insets.top + 8,
+            paddingTop: 8,
             paddingHorizontal: bleed ? 0 : theme.layout.gutter,
             paddingBottom: bottomBar || tabBar ? 0 : insets.bottom,
           }}

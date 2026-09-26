@@ -82,16 +82,15 @@ One user, many memberships. One membership, many flats through occupancy. One fl
 
 | Table | Key fields |
 | --- | --- |
-| task_category | society_id, name, icon, default_points, sort_order |
-| task | society_id, category_id, title, description, priority, due_at, assignee_membership_id (nullable = open for volunteers), status (`OPEN`, `IN_PROGRESS`, `SUBMITTED`, `COMPLETED`, `CANCELLED`), points (snapshot at creation, admin may override within rules), evidence (document ids), submitted_at, completed_at, verified_by_membership_id |
-| task_event | task_id, kind (`CREATED`, `VOLUNTEERED`, `ASSIGNED`, `SUBMITTED`, `VERIFIED`, `REJECTED`, `COMMENT`), body, by_membership_id |
-| responsibility | society_id, title, description, participant_kind (`FLAT`, `MEMBER`), period_unit (`DAY`, `WEEK`, `MONTH`), period_length, start_date, requires_confirmation, on_miss (`MARK_MISSED`, `CARRY_OVER`), reminder_policy, points (nullable), status (`ACTIVE`, `PAUSED`, `ENDED`) |
+| task | society_id, title, description, points, due_on, assignee_membership_id (nullable = open for volunteers), status (`OPEN`, `IN_PROGRESS`, `SUBMITTED`, `COMPLETED`, `CANCELLED`), submission_note, submitted_at, completed_at, verified_by_membership_id, created_by_membership_id. LATER: categories, evidence photos |
+| task_event | society_id, task_id, kind (`CREATED`, `ASSIGNED`, `VOLUNTEERED`, `WITHDRAWN`, `SUBMITTED`, `RETURNED`, `VERIFIED`, `CANCELLED`), note, by_membership_id |
+| responsibility | society_id, title, description, participant_kind (`FLAT`, `MEMBER`), period_unit (`DAY`, `WEEK`, `MONTH`), period_length, start_date, requires_confirmation, on_miss (`MARK_MISSED`, `CARRY_OVER`), points (nullable), status (`ACTIVE`, `PAUSED`, `ENDED`), created_by_membership_id |
 | responsibility_participant | responsibility_id, position, flat_id or membership_id, active |
 | responsibility_assignment | society_id, responsibility_id, period_index, period_start, period_end, flat_id or membership_id, status (`UPCOMING`, `ACTIVE`, `COMPLETED`, `MISSED`, `SKIPPED`, `OVERRIDDEN`), confirmed_at, confirmed_by_membership_id, override_reason. Unique (responsibility_id, period_index) |
-| points_ledger | society_id, membership_id, delta, reason (`TASK`, `DUTY`, `ADJUSTMENT`, `REDEEMED`, `EXPIRED`), ref_type, ref_id, financial_year (`2026-27`), note, created_by_membership_id. Append-only. Balance = sum |
+| points_ledger | society_id, membership_id, delta, reason (`TASK`, `DUTY`, `ADJUSTMENT`; `REDEEMED`, `EXPIRED` in 1.5), label, ref_type, ref_id, financial_year (`2026-27`), created_by_membership_id. Append-only. Balance = sum |
 | redemption | society_id, membership_id, flat_id, points, credit_paise, status (`REQUESTED`, `APPROVED`, `REJECTED`, `APPLIED`), applied_bill_id, decided_by_membership_id |
 
-Rotation rule: assignments are materialised 12 periods ahead. Changing participants regenerates only `UPCOMING` rows. Overrides write the affected rows explicitly. The hourly job flips `UPCOMING → ACTIVE` at `period_start` and `ACTIVE → COMPLETED or MISSED` at `period_end`.
+Rotation rule: assignments are materialised 12 periods ahead, continuing the order after whoever had the last turn. Changing participants, resuming or carrying a missed turn over regenerates only `UPCOMING` rows. Overrides write the affected rows explicitly. The hourly job flips `UPCOMING → ACTIVE` at `period_start` and `ACTIVE → COMPLETED or MISSED` after `period_end`. Marking a turn done completes it at once.
 
 ## 7. Money: maintenance
 

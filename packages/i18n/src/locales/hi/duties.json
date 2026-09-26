@@ -1,0 +1,100 @@
+{
+  "title": "ज़िम्मेदारियाँ",
+  "new": "नई ज़िम्मेदारी",
+  "empty": "अभी कोई ज़िम्मेदारी नहीं",
+  "emptyBody": "गेट बंद करना या टंकी सफ़ाई जैसी बारी वाली ज़िम्मेदारियाँ यहाँ दिखेंगी।",
+  "mine": "मेरी",
+  "all": "सभी",
+  "yourTurn": "आपकी बारी",
+  "turnOf": "{{name}} की बारी",
+  "till": "{{date}} तक",
+  "nextTurn": "अगली: {{name}}, {{date}} से",
+  "noCurrent": "इस अवधि में किसी की बारी नहीं",
+  "cadence": {
+    "DAY": "हर दिन",
+    "DAY_other": "हर {{count}} दिन",
+    "WEEK": "हर हफ़्ते",
+    "WEEK_other": "हर {{count}} हफ़्ते",
+    "MONTH": "हर महीने",
+    "MONTH_other": "हर {{count}} महीने"
+  },
+  "status": {
+    "UPCOMING": "आने वाली",
+    "ACTIVE": "अभी",
+    "COMPLETED": "हो गई",
+    "MISSED": "छूट गई",
+    "SKIPPED": "छोड़ी गई"
+  },
+  "dutyStatus": {
+    "ACTIVE": "चालू",
+    "PAUSED": "रुकी हुई",
+    "ENDED": "बंद"
+  },
+  "markDone": "हो गया",
+  "marked": "पूरा दर्ज हुआ",
+  "confirmHint": "काम पूरा होने पर 'हो गया' दबाएँ।",
+  "order": "क्रम",
+  "upcoming": "आगे की बारियाँ",
+  "history": "इतिहास",
+  "pointsEach": "हर बारी पर {{count}} अंक",
+  "pointsEach_other": "हर बारी पर {{count}} अंक",
+  "override": {
+    "title": "यह बारी बदलें",
+    "skip": "यह बारी छोड़ें",
+    "reassign": "किसी और को दें",
+    "complete": "उनकी ओर से पूरा करें",
+    "reason": "कारण",
+    "pick": "किसे चुनें",
+    "saved": "बारी बदली गई"
+  },
+  "manage": {
+    "pause": "रोकें",
+    "resume": "फिर शुरू करें",
+    "end": "ज़िम्मेदारी बंद करें",
+    "endTitle": "यह ज़िम्मेदारी बंद करें?",
+    "paused": "ज़िम्मेदारी रोकी गई",
+    "resumed": "ज़िम्मेदारी फिर शुरू हुई",
+    "ended": "ज़िम्मेदारी बंद हुई",
+    "editOrder": "क्रम बदलें"
+  },
+  "form": {
+    "title": "नाम",
+    "titleHint": "जैसे: मुख्य गेट बंद करना",
+    "description": "विवरण (वैकल्पिक)",
+    "kind": "बारी किसकी",
+    "kindOpt": {
+      "FLAT": "फ्लैट",
+      "MEMBER": "सदस्य"
+    },
+    "participants": "इस क्रम में",
+    "add": "जोड़ें",
+    "pickFlats": "फ्लैट चुनें",
+    "pickMembers": "सदस्य चुनें",
+    "unit": "हर बारी",
+    "unitOpt": {
+      "DAY": "एक दिन",
+      "WEEK": "एक हफ़्ता",
+      "MONTH": "एक महीना"
+    },
+    "start": "पहली बारी कब से",
+    "confirm": "उनसे 'हो गया' दर्ज करवाएँ",
+    "onMiss": "अगर बारी छूट जाए",
+    "onMissOpt": {
+      "MARK_MISSED": "छूटी दर्ज करें और आगे बढ़ें",
+      "CARRY_OVER": "फिर वही व्यक्ति"
+    },
+    "points": "हर बारी के अंक (वैकल्पिक)",
+    "create": "ज़िम्मेदारी बनाएँ",
+    "saved": "ज़िम्मेदारी सेव हुई",
+    "up": "ऊपर",
+    "remove": "हटाएँ"
+  },
+  "push": {
+    "startTitle": "आपकी बारी: {{title}}",
+    "startBody": "{{date}} तक",
+    "remindTitle": "पूरा दर्ज करें: {{title}}",
+    "remindBody": "आपकी बारी {{date}} को ख़त्म होगी",
+    "missedTitle": "छूट गई: {{title}}",
+    "missedBody": "बारी {{date}} को ख़त्म हुई"
+  }
+}

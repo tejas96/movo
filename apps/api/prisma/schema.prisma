@@ -271,6 +271,61 @@ enum IncomeKind {
   OTHER
 }
 
+enum DutyPeriodUnit {
+  DAY
+  WEEK
+  MONTH
+}
+
+enum DutyParticipantKind {
+  FLAT
+  MEMBER
+}
+
+enum DutyStatus {
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum DutyOnMiss {
+  MARK_MISSED
+  CARRY_OVER
+}
+
+enum AssignmentStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  MISSED
+  SKIPPED
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  SUBMITTED
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskEventKind {
+  CREATED
+  ASSIGNED
+  VOLUNTEERED
+  WITHDRAWN
+  SUBMITTED
+  RETURNED
+  VERIFIED
+  CANCELLED
+}
+
+enum PointsReason {
+  TASK
+  DUTY
+  ADJUSTMENT
+}
+
 model User {
   id               String     @id @default(uuid(7)) @db.Uuid
   email            String?    @unique
@@ -397,29 +452,35 @@ model Society {
   notices      Notice[]
   occupancies  FlatOccupancy[]
 
-  parkingSlots        ParkingSlot[]
-  parkingAllocations  ParkingAllocation[]
-  vehicles            Vehicle[]
-  vendorCategories    VendorCategory[]
-  vendors             Vendor[]
-  emergencyContacts   EmergencyContact[]
-  alerts              Alert[]
-  meetings            Meeting[]
-  meetingUpdates      MeetingUpdate[]
-  events              SocietyEvent[]
-  eventRsvps          EventRsvp[]
-  remindersSent       ReminderSent[]
-  billingPlans        BillingPlan[]
-  chargeOverrides     FlatChargeOverride[]
-  bills               Bill[]
-  billLines           BillLine[]
-  payments            Payment[]
-  allocations         PaymentAllocation[]
-  receiptCounters     ReceiptCounter[]
-  paymentInstructions PaymentInstruction[]
-  expenseCategories   ExpenseCategory[]
-  expenses            Expense[]
-  incomeEntries       IncomeEntry[]
+  parkingSlots               ParkingSlot[]
+  parkingAllocations         ParkingAllocation[]
+  vehicles                   Vehicle[]
+  vendorCategories           VendorCategory[]
+  vendors                    Vendor[]
+  emergencyContacts          EmergencyContact[]
+  alerts                     Alert[]
+  meetings                   Meeting[]
+  meetingUpdates             MeetingUpdate[]
+  events                     SocietyEvent[]
+  eventRsvps                 EventRsvp[]
+  remindersSent              ReminderSent[]
+  billingPlans               BillingPlan[]
+  chargeOverrides            FlatChargeOverride[]
+  bills                      Bill[]
+  billLines                  BillLine[]
+  payments                   Payment[]
+  allocations                PaymentAllocation[]
+  receiptCounters            ReceiptCounter[]
+  paymentInstructions        PaymentInstruction[]
+  expenseCategories          ExpenseCategory[]
+  expenses                   Expense[]
+  incomeEntries              IncomeEntry[]
+  responsibilities           Responsibility[]
+  responsibilityParticipants ResponsibilityParticipant[]
+  responsibilityAssignments  ResponsibilityAssignment[]
+  tasks                      Task[]
+  taskEvents                 TaskEvent[]
+  pointsLedgers              PointsLedger[]
 }
 
 model Building {
@@ -1075,6 +1136,128 @@ model IncomeEntry {
   society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
 
   @@index([societyId, financialYear])
+}
+
+// ---------- duties, tasks, rewards ----------
+/// A rotating duty ("Duties" in the app).
+model Responsibility {
+  id                    String              @id @default(uuid(7)) @db.Uuid
+  societyId             String              @db.Uuid
+  title                 String
+  description           String?
+  participantKind       DutyParticipantKind
+  periodUnit            DutyPeriodUnit
+  periodLength          Int
+  startDate             DateTime            @db.Date
+  requiresConfirmation  Boolean
+  onMiss                DutyOnMiss
+  points                Int?
+  status                DutyStatus          @default(ACTIVE)
+  createdByMembershipId String              @db.Uuid
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  society      Society                     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  participants ResponsibilityParticipant[]
+  assignments  ResponsibilityAssignment[]
+
+  @@index([societyId, status])
+}
+
+model ResponsibilityParticipant {
+  id               String  @id @default(uuid(7)) @db.Uuid
+  societyId        String  @db.Uuid
+  responsibilityId String  @db.Uuid
+  position         Int
+  flatId           String? @db.Uuid
+  membershipId     String? @db.Uuid
+
+  society        Society        @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  responsibility Responsibility @relation(fields: [responsibilityId], references: [id], onDelete: Cascade)
+
+  @@unique([responsibilityId, position])
+}
+
+model ResponsibilityAssignment {
+  id                      String           @id @default(uuid(7)) @db.Uuid
+  societyId               String           @db.Uuid
+  responsibilityId        String           @db.Uuid
+  periodIndex             Int
+  periodStart             DateTime         @db.Date
+  periodEnd               DateTime         @db.Date
+  flatId                  String?          @db.Uuid
+  membershipId            String?          @db.Uuid
+  status                  AssignmentStatus @default(UPCOMING)
+  confirmedAt             DateTime?
+  confirmedByMembershipId String?          @db.Uuid
+  overrideNote            String?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+
+  society        Society        @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  responsibility Responsibility @relation(fields: [responsibilityId], references: [id], onDelete: Cascade)
+
+  @@unique([responsibilityId, periodIndex])
+  @@index([societyId, status, periodEnd])
+}
+
+model Task {
+  id                     String     @id @default(uuid(7)) @db.Uuid
+  societyId              String     @db.Uuid
+  title                  String
+  description            String?
+  points                 Int        @default(0)
+  dueOn                  DateTime?  @db.Date
+  assigneeMembershipId   String?    @db.Uuid
+  status                 TaskStatus
+  submissionNote         String?
+  submittedAt            DateTime?
+  completedAt            DateTime?
+  verifiedByMembershipId String?    @db.Uuid
+  createdByMembershipId  String     @db.Uuid
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  society Society     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  events  TaskEvent[]
+
+  @@index([societyId, status])
+  @@index([assigneeMembershipId, status])
+}
+
+model TaskEvent {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  societyId      String        @db.Uuid
+  taskId         String        @db.Uuid
+  kind           TaskEventKind
+  note           String?
+  byMembershipId String        @db.Uuid
+  createdAt      DateTime      @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt(sort: Desc)])
+}
+
+/// Append-only. A member's points = the sum of their rows.
+model PointsLedger {
+  id                    String       @id @default(uuid(7)) @db.Uuid
+  societyId             String       @db.Uuid
+  membershipId          String       @db.Uuid
+  delta                 Int
+  reason                PointsReason
+  label                 String
+  refType               String?
+  refId                 String?      @db.Uuid
+  financialYear         String
+  createdByMembershipId String?      @db.Uuid
+  createdAt             DateTime     @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, financialYear, membershipId])
+  @@index([membershipId, createdAt(sort: Desc)])
 }
 
 // ---------- notifications (user owned) ----------

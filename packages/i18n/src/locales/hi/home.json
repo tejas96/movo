@@ -54,10 +54,32 @@
       "title": "{{count}} खर्च मंज़ूर करना है",
       "title_other": "{{count}} खर्च मंज़ूर करने हैं",
       "sub": "कुल {{amount}}"
+    },
+    "MY_DUTY": {
+      "title": "आपकी बारी: {{title}}",
+      "sub": "{{date}} तक",
+      "markDone": "हो गया"
+    },
+    "MY_TASK": {
+      "sub": "काम · {{date}} तक",
+      "subNoDue": "काम",
+      "returned": "वापस भेजा"
+    },
+    "TASKS_TO_VERIFY": {
+      "title": "{{count}} काम जाँचना है",
+      "title_other": "{{count}} काम जाँचने हैं",
+      "sub": "काम स्वीकार करें ताकि अंक मिलें"
     }
   },
   "upcomingKind": {
     "MEETING": "बैठक",
     "EVENT": "कार्यक्रम"
+  },
+  "contribution": {
+    "title": "मेरा योगदान",
+    "points": "इस साल {{count}} अंक",
+    "points_other": "इस साल {{count}} अंक",
+    "openTasks": "{{count}} काम चल रहा है",
+    "openTasks_other": "{{count}} काम चल रहे हैं"
   }
 }

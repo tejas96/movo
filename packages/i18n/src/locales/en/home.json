@@ -54,10 +54,32 @@
       "title": "{{count}} expense to approve",
       "title_other": "{{count}} expenses to approve",
       "sub": "{{amount}} in total"
+    },
+    "MY_DUTY": {
+      "title": "Your turn: {{title}}",
+      "sub": "Till {{date}}",
+      "markDone": "Mark done"
+    },
+    "MY_TASK": {
+      "sub": "Task · due {{date}}",
+      "subNoDue": "Task",
+      "returned": "Sent back"
+    },
+    "TASKS_TO_VERIFY": {
+      "title": "{{count}} task to check",
+      "title_other": "{{count}} tasks to check",
+      "sub": "Accept the work to give points"
     }
   },
   "upcomingKind": {
     "MEETING": "Meeting",
     "EVENT": "Event"
+  },
+  "contribution": {
+    "title": "My contribution",
+    "points": "{{count}} point this year",
+    "points_other": "{{count}} points this year",
+    "openTasks": "{{count}} task in progress",
+    "openTasks_other": "{{count}} tasks in progress"
   }
 }

@@ -1,0 +1,25 @@
+{
+  "title": "Rewards",
+  "thisYear": "My points · FY {{fy}}",
+  "allTime": "All time: {{count}}",
+  "rank": "#{{rank}} in the society",
+  "history": "History",
+  "empty": "No points yet",
+  "emptyBody": "Finish tasks to earn points.",
+  "reason": {
+    "TASK": "Task",
+    "DUTY": "Duty",
+    "ADJUSTMENT": "Adjustment"
+  },
+  "leaderboard": "Top contributors",
+  "pts": "{{count}} pts",
+  "adjust": {
+    "title": "Adjust points",
+    "member": "Member",
+    "pickMember": "Pick a member",
+    "delta": "Points (use − to take away)",
+    "note": "Reason",
+    "saved": "Points updated"
+  },
+  "redeemLater": "Using points against dues comes later."
+}

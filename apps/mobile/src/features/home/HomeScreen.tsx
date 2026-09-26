@@ -176,6 +176,23 @@ export function HomeScreen() {
           </Card>
         </>
       ) : null}
+      {summary.data?.contribution ? (
+        <>
+          <SectionHeader title={t('home:contribution.title')} />
+          <Card tight>
+            <Row
+              icon="rewards"
+              title={t('home:contribution.points', { count: summary.data.contribution.points })}
+              subtitle={
+                summary.data.contribution.openTasks > 0
+                  ? t('home:contribution.openTasks', { count: summary.data.contribution.openTasks })
+                  : undefined
+              }
+              onPress={() => nav.navigate('Rewards')}
+            />
+          </Card>
+        </>
+      ) : null}
     </Screen>
   );
 }
@@ -217,6 +234,47 @@ function AttentionRow({ item }: { item: AttentionItem }) {
             ) : undefined
           }
           onPress={() => nav.navigate('Tabs', { screen: 'Money' })}
+        />
+      );
+    case 'MY_DUTY':
+      return (
+        <Row
+          icon="duties"
+          title={t('home:attention.MY_DUTY.title', { title: item.title })}
+          subtitle={t('home:attention.MY_DUTY.sub', { date: day(item.periodEnd, 'short') })}
+          trailing={
+            item.canConfirm ? (
+              <StatusPill label={t('home:attention.MY_DUTY.markDone')} tone="ink" />
+            ) : undefined
+          }
+          onPress={() => nav.navigate('DutyDetail', { dutyId: item.dutyId })}
+        />
+      );
+    case 'MY_TASK':
+      return (
+        <Row
+          icon="tasks"
+          title={item.title}
+          subtitle={
+            item.dueOn
+              ? t('home:attention.MY_TASK.sub', { date: day(item.dueOn, 'short') })
+              : t('home:attention.MY_TASK.subNoDue')
+          }
+          trailing={
+            item.returned ? (
+              <StatusPill label={t('home:attention.MY_TASK.returned')} tone="warning" />
+            ) : undefined
+          }
+          onPress={() => nav.navigate('TaskDetail', { taskId: item.taskId })}
+        />
+      );
+    case 'TASKS_TO_VERIFY':
+      return (
+        <Row
+          icon="taskDone"
+          title={t('home:attention.TASKS_TO_VERIFY.title', { count: item.count })}
+          subtitle={t('home:attention.TASKS_TO_VERIFY.sub')}
+          onPress={() => nav.navigate('Tasks', { view: 'TO_VERIFY' })}
         />
       );
     case 'EXPENSES_TO_APPROVE':
@@ -344,6 +402,10 @@ function attentionKey(item: AttentionItem): string {
       return `${item.type}-${item.missing.join(',')}`;
     case 'DUES':
       return `${item.type}-${item.flat.id}`;
+    case 'MY_DUTY':
+      return `${item.type}-${item.assignmentId}`;
+    case 'MY_TASK':
+      return `${item.type}-${item.taskId}`;
     default:
       return item.type;
   }

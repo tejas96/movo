@@ -29,6 +29,24 @@ export const AttentionItemSchema = z.discriminatedUnion('type', [
     dueDate: IsoDateSchema,
     overdue: z.boolean(),
   }),
+  /** My turn on a duty right now. */
+  z.object({
+    type: z.literal('MY_DUTY'),
+    dutyId: IdSchema,
+    assignmentId: IdSchema,
+    title: z.string(),
+    periodEnd: IsoDateSchema,
+    canConfirm: z.boolean(),
+  }),
+  /** A task given to me that is not done yet. */
+  z.object({
+    type: z.literal('MY_TASK'),
+    taskId: IdSchema,
+    title: z.string(),
+    dueOn: IsoDateSchema.nullable(),
+    returned: z.boolean(),
+  }),
+  z.object({ type: z.literal('TASKS_TO_VERIFY'), count: z.number().int() }),
   z.object({ type: z.literal('JOIN_REQUESTS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('INVITATIONS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('VENDOR_SUGGESTIONS'), count: z.number().int() }),
@@ -80,6 +98,8 @@ export const HomeSummarySchema = z.object({
   upcoming: z.array(UpcomingItemSchema),
   notices: z.array(NoticeSummarySchema),
   unreadNotifications: z.number().int(),
+  /** Points this financial year, when rewards are on and the member has some or has tasks. */
+  contribution: z.object({ points: z.number().int(), openTasks: z.number().int() }).nullable(),
 });
 export type HomeSummary = z.infer<typeof HomeSummarySchema>;
 

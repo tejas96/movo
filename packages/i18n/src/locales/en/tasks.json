@@ -1,0 +1,82 @@
+{
+  "title": "Tasks",
+  "new": "New task",
+  "views": {
+    "OPEN": "Open",
+    "MINE": "Mine",
+    "ACTIVE": "In progress",
+    "DONE": "Done",
+    "TO_VERIFY": "To check"
+  },
+  "empty": {
+    "OPEN": "No open tasks",
+    "MINE": "Nothing on your plate",
+    "ACTIVE": "No tasks in progress",
+    "DONE": "No finished tasks yet",
+    "TO_VERIFY": "Nothing to check"
+  },
+  "status": {
+    "OPEN": "Open",
+    "IN_PROGRESS": "In progress",
+    "SUBMITTED": "To check",
+    "COMPLETED": "Done",
+    "CANCELLED": "Cancelled"
+  },
+  "points": "{{count}} point",
+  "points_other": "{{count}} points",
+  "due": "Due {{date}}",
+  "openForAll": "Open for volunteers",
+  "actions": {
+    "volunteer": "I'll do it",
+    "volunteered": "It's yours",
+    "withdraw": "Give it back",
+    "withdrawn": "Task given back",
+    "submit": "Mark done",
+    "submitTitle": "Mark this task done?",
+    "note": "What did you do? (optional)",
+    "submitted": "Sent for checking",
+    "verify": "Accept",
+    "verified": "Task accepted",
+    "sendBack": "Send back",
+    "sendBackTitle": "Send this back?",
+    "reason": "Reason",
+    "sentBack": "Sent back",
+    "cancel": "Cancel task",
+    "cancelled": "Task cancelled",
+    "assign": "Assign",
+    "openUp": "Open for volunteers",
+    "assigned": "Task assigned"
+  },
+  "event": {
+    "CREATED": "Created",
+    "ASSIGNED": "Assigned",
+    "VOLUNTEERED": "Volunteered",
+    "WITHDRAWN": "Given back",
+    "SUBMITTED": "Marked done",
+    "RETURNED": "Sent back",
+    "VERIFIED": "Accepted",
+    "CANCELLED": "Cancelled"
+  },
+  "history": "History",
+  "createdBy": "Created by {{name}}",
+  "form": {
+    "title": "Task",
+    "titleHint": "For example: Submit water bill at PMC",
+    "description": "Details (optional)",
+    "points": "Points",
+    "due": "Due date",
+    "noDue": "No due date",
+    "assignee": "Who does it",
+    "anyone": "Open for volunteers",
+    "create": "Create task",
+    "saved": "Task saved"
+  },
+  "push": {
+    "assignedTitle": "New task: {{title}}",
+    "submittedTitle": "Check task: {{title}}",
+    "verifiedTitle": "Task done: {{title}}",
+    "pointsBody": "+{{count}} point",
+    "pointsBody_other": "+{{count}} points",
+    "returnedTitle": "Task sent back: {{title}}"
+  }
+}
