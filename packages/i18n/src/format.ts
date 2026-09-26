@@ -67,6 +67,24 @@ export function formatDateTime(
   return `${formatDate(value, locale, 'weekday', timeZone)}, ${formatTime(value, locale, timeZone)}`;
 }
 
+/**
+ * Billing period label: "Oct 2026" for 2026-10, "Q1 2026-27" for 2026-27-Q1,
+ * "H2 2026-27" for 2026-27-H2, "2026-27" for a year.
+ */
+export function formatPeriod(key: string, locale: Locale = 'en'): string {
+  const month = /^(\d{4})-(\d{2})$/.exec(key);
+  if (month) {
+    const date = new Date(Date.UTC(Number(month[1]), Number(month[2]) - 1, 1));
+    return new Intl.DateTimeFormat(INTL_TAG[locale], {
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(date);
+  }
+  const part = /^(\d{4}-\d{2})-([QH]\d)$/.exec(key);
+  return part ? `${part[2]} ${part[1]}` : key;
+}
+
 type RelUnit = 'now' | 'minute' | 'hour' | 'day' | 'month';
 
 /**

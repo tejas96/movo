@@ -44,6 +44,11 @@
       "title": "{{count}} सेवेची सूचना",
       "title_other": "{{count}} सेवांच्या सूचना",
       "sub": "सेवा मध्ये पाहा"
+    },
+    "DUES": {
+      "title": "{{amount}} देय · {{flat}}",
+      "titleOverdue": "{{amount}} थकीत · {{flat}}",
+      "sub": "शेवटची तारीख {{date}}"
     }
   },
   "upcomingKind": {

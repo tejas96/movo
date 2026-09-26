@@ -14,6 +14,7 @@ import { EmergencyModule } from './modules/emergency/emergency.module';
 import { EventsModule } from './modules/events/events.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
 import { NoticesModule } from './modules/notices/notices.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -54,6 +55,7 @@ const env = loadEnv();
     MeetingsModule,
     EventsModule,
     RemindersModule,
+    MaintenanceModule,
     HomeModule,
   ],
   controllers: [AppController],

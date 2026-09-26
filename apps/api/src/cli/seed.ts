@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import 'reflect-metadata';
+import type { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { PrismaService } from '../common/prisma/prisma.service';
@@ -9,6 +10,9 @@ import { loadEnv } from '../config/env';
 import { defaultEmergencyContactRows } from '../modules/emergency/emergency.service';
 import { PasswordService } from '../modules/identity/password.service';
 import { UsersService } from '../modules/identity/users.service';
+import { fyLabel, receiptNo, todayIn } from '../modules/maintenance/billing';
+import { BillsService } from '../modules/maintenance/bills.service';
+import { dbDate, refreshBills } from '../modules/maintenance/ledger';
 import { SocietiesService } from '../modules/tenancy/societies.service';
 import { defaultVendorCategoryRows } from '../modules/vendors/vendors.service';
 
@@ -189,6 +193,81 @@ async function ensureM5Demo(
   }
 }
 
+/** A monthly plan, a UPI id, this month's bills and a few paid flats. Safe to run again. */
+async function ensureM6Demo(
+  app: INestApplicationContext,
+  prisma: PrismaService,
+  societyId: string,
+  log: (msg: string) => void,
+): Promise<void> {
+  const admin = await prisma.membership.findFirst({
+    where: { societyId, roles: { some: { role: { key: 'admin' } } } },
+    orderBy: { createdAt: 'asc' },
+  });
+  if (!admin) return;
+  if ((await prisma.paymentInstruction.count({ where: { societyId } })) === 0) {
+    await prisma.paymentInstruction.create({
+      data: {
+        societyId,
+        kind: 'UPI',
+        label: 'Society UPI',
+        value: 'sunriseresidency@okaxis',
+        payeeName: 'Sunrise Residency CHS',
+      },
+    });
+  }
+  if ((await prisma.billingPlan.count({ where: { societyId } })) > 0) return;
+  const today = todayIn('Asia/Kolkata');
+  await prisma.billingPlan.create({
+    data: {
+      societyId,
+      name: 'Maintenance',
+      frequency: 'MONTHLY',
+      amountRule: 'FLAT_RATE',
+      amountPaise: 250_000,
+      dueDay: 10,
+      generateDaysBefore: 7,
+      lateFee: { type: 'FIXED', amountPaise: 10_000, graceDays: 5 },
+      activeFrom: dbDate(`${today.slice(0, 7)}-01`),
+    },
+  });
+  const { created } = await app.get(BillsService).generateForSociety(societyId, new Date());
+  // Most flats have paid, so the collection view has a mix. A-101 (the admin) still owes.
+  const paid = await prisma.bill.findMany({
+    where: { societyId, flat: { NOT: { number: '101', building: { name: 'A' } } } },
+    orderBy: [{ flat: { building: { name: 'asc' } } }, { flat: { number: 'asc' } }],
+    take: 16,
+  });
+  const fy = fyLabel(today, 4);
+  let n = 0;
+  await prisma.$transaction(async (tx) => {
+    for (const b of paid) {
+      n += 1;
+      await tx.payment.create({
+        data: {
+          societyId,
+          flatId: b.flatId,
+          amountPaise: b.totalPaise,
+          paidOn: dbDate(today),
+          method: n % 3 === 0 ? 'CASH' : 'UPI',
+          receiptNo: receiptNo(fy, n),
+          financialYear: fy,
+          recordedByMembershipId: admin.id,
+          idempotencyKey: `seed-${b.id}`,
+          allocations: { create: { societyId, billId: b.id, amountPaise: b.totalPaise } },
+        },
+      });
+    }
+    await tx.receiptCounter.create({ data: { societyId, financialYear: fy, lastNo: n } });
+    await refreshBills(
+      tx,
+      paid.map((b) => b.id),
+      today,
+    );
+  });
+  log(`added a billing plan, ${created} bills and ${n} payments`);
+}
+
 async function main(): Promise<void> {
   const env = loadEnv();
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
@@ -235,6 +314,7 @@ async function main(): Promise<void> {
         log(`demo society exists: joinCode=${existing.joinCode}`);
         await ensureM4Demo(prisma, existing.id, log);
         await ensureM5Demo(prisma, existing.id, log);
+        await ensureM6Demo(app, prisma, existing.id, log);
       } else {
         const result = await societies.create({
           name: 'Sunrise Residency',
@@ -324,6 +404,7 @@ async function main(): Promise<void> {
         log('  invite code for flat A-102: DEMO1234');
         await ensureM4Demo(prisma, societyId, log);
         await ensureM5Demo(prisma, societyId, log);
+        await ensureM6Demo(app, prisma, societyId, log);
       }
     }
   });

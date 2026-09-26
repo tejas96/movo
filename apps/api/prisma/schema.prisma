@@ -208,6 +208,55 @@ enum RsvpResponse {
   NOT_GOING
 }
 
+enum BillingFrequency {
+  MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+  YEARLY
+}
+
+enum AmountRule {
+  FLAT_RATE
+  PER_SQFT
+}
+
+enum BillKind {
+  MAINTENANCE
+  ADHOC
+}
+
+enum BillStatus {
+  DUE
+  PARTIALLY_PAID
+  OVERDUE
+  PAID
+  WAIVED
+}
+
+enum BillLineType {
+  BASE
+  LATE_FEE
+}
+
+enum PaymentMethod {
+  UPI
+  CASH
+  BANK_TRANSFER
+  CHEQUE
+  OTHER
+}
+
+enum PaymentStatus {
+  RECORDED
+  REVERSED
+}
+
+enum PaymentInstructionKind {
+  UPI
+  BANK
+  OTHER
+}
+
 model User {
   id               String     @id @default(uuid(7)) @db.Uuid
   email            String?    @unique
@@ -334,18 +383,26 @@ model Society {
   notices      Notice[]
   occupancies  FlatOccupancy[]
 
-  parkingSlots       ParkingSlot[]
-  parkingAllocations ParkingAllocation[]
-  vehicles           Vehicle[]
-  vendorCategories   VendorCategory[]
-  vendors            Vendor[]
-  emergencyContacts  EmergencyContact[]
-  alerts             Alert[]
-  meetings           Meeting[]
-  meetingUpdates     MeetingUpdate[]
-  events             SocietyEvent[]
-  eventRsvps         EventRsvp[]
-  remindersSent      ReminderSent[]
+  parkingSlots        ParkingSlot[]
+  parkingAllocations  ParkingAllocation[]
+  vehicles            Vehicle[]
+  vendorCategories    VendorCategory[]
+  vendors             Vendor[]
+  emergencyContacts   EmergencyContact[]
+  alerts              Alert[]
+  meetings            Meeting[]
+  meetingUpdates      MeetingUpdate[]
+  events              SocietyEvent[]
+  eventRsvps          EventRsvp[]
+  remindersSent       ReminderSent[]
+  billingPlans        BillingPlan[]
+  chargeOverrides     FlatChargeOverride[]
+  bills               Bill[]
+  billLines           BillLine[]
+  payments            Payment[]
+  allocations         PaymentAllocation[]
+  receiptCounters     ReceiptCounter[]
+  paymentInstructions PaymentInstruction[]
 }
 
 model Building {
@@ -375,14 +432,17 @@ model Flat {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  society      Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
-  building     Building?           @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  society      Society              @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  building     Building?            @relation(fields: [buildingId], references: [id], onDelete: SetNull)
   occupancies  FlatOccupancy[]
   invitations  Invitation[]
   joinRequests JoinRequest[]
   allocations  ParkingAllocation[]
   vehicles     Vehicle[]
   alerts       Alert[]
+  overrides    FlatChargeOverride[]
+  bills        Bill[]
+  payments     Payment[]
 
   @@unique([societyId, buildingId, number])
   @@index([societyId])
@@ -784,6 +844,159 @@ model ReminderSent {
   society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
 
   @@unique([entityType, entityId, kind])
+}
+
+// ---------- money: maintenance ----------
+model BillingPlan {
+  id                 String           @id @default(uuid(7)) @db.Uuid
+  societyId          String           @db.Uuid
+  name               String
+  frequency          BillingFrequency
+  amountRule         AmountRule
+  amountPaise        Int
+  dueDay             Int
+  generateDaysBefore Int
+  lateFee            Json
+  activeFrom         DateTime         @db.Date
+  activeTo           DateTime?        @db.Date
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  society   Society              @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  overrides FlatChargeOverride[]
+  bills     Bill[]
+
+  @@index([societyId, isActive])
+}
+
+model FlatChargeOverride {
+  planId      String @db.Uuid
+  flatId      String @db.Uuid
+  societyId   String @db.Uuid
+  amountPaise Int
+
+  society Society     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  plan    BillingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  flat    Flat        @relation(fields: [flatId], references: [id], onDelete: Cascade)
+
+  @@id([planId, flatId])
+}
+
+model Bill {
+  id            String     @id @default(uuid(7)) @db.Uuid
+  societyId     String     @db.Uuid
+  flatId        String     @db.Uuid
+  planId        String?    @db.Uuid
+  kind          BillKind
+  title         String
+  periodKey     String?
+  dueDate       DateTime   @db.Date
+  financialYear String
+  totalPaise    Int
+  paidPaise     Int        @default(0)
+  status        BillStatus @default(DUE)
+  lateFeeWaived Boolean    @default(false)
+  waivedReason  String?
+  waivedAt      DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  society     Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  flat        Flat                @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  plan        BillingPlan?        @relation(fields: [planId], references: [id], onDelete: SetNull)
+  lines       BillLine[]
+  allocations PaymentAllocation[]
+
+  @@unique([planId, flatId, periodKey])
+  @@index([societyId, flatId, status])
+  @@index([societyId, status, dueDate])
+}
+
+model BillLine {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  societyId   String       @db.Uuid
+  billId      String       @db.Uuid
+  type        BillLineType
+  label       String
+  amountPaise Int
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  bill    Bill    @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@unique([billId, type])
+}
+
+model Payment {
+  id                     String        @id @default(uuid(7)) @db.Uuid
+  societyId              String        @db.Uuid
+  flatId                 String        @db.Uuid
+  amountPaise            Int
+  paidOn                 DateTime      @db.Date
+  method                 PaymentMethod
+  reference              String?
+  receiptNo              String
+  notes                  String?
+  financialYear          String
+  recordedByMembershipId String        @db.Uuid
+  status                 PaymentStatus @default(RECORDED)
+  reversedReason         String?
+  reversedAt             DateTime?
+  idempotencyKey         String
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  society     Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  flat        Flat                @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  allocations PaymentAllocation[]
+
+  @@unique([societyId, receiptNo])
+  @@unique([societyId, idempotencyKey])
+  @@index([societyId, flatId, paidOn(sort: Desc)])
+}
+
+model PaymentAllocation {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  societyId   String   @db.Uuid
+  paymentId   String   @db.Uuid
+  billId      String   @db.Uuid
+  amountPaise Int
+  createdAt   DateTime @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  bill    Bill    @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([billId])
+}
+
+/// Next receipt number per society and financial year.
+model ReceiptCounter {
+  societyId     String @db.Uuid
+  financialYear String
+  lastNo        Int    @default(0)
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@id([societyId, financialYear])
+}
+
+model PaymentInstruction {
+  id        String                 @id @default(uuid(7)) @db.Uuid
+  societyId String                 @db.Uuid
+  kind      PaymentInstructionKind
+  label     String
+  value     String
+  payeeName String?
+  isActive  Boolean                @default(true)
+  sortOrder Int                    @default(0)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, sortOrder])
 }
 
 // ---------- notifications (user owned) ----------

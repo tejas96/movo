@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EmergencyModule } from '../emergency/emergency.module';
 import { EventsModule } from '../events/events.module';
+import { MaintenanceModule } from '../maintenance/maintenance.module';
 import { MeetingsModule } from '../meetings/meetings.module';
 import { NoticesModule } from '../notices/notices.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -16,6 +17,7 @@ import { HomeService } from './home.service';
     VendorsModule,
     MeetingsModule,
     EventsModule,
+    MaintenanceModule,
   ],
   controllers: [HomeController],
   providers: [HomeService],

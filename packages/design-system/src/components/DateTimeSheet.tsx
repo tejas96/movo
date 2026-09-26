@@ -23,6 +23,10 @@ export interface DateTimeSheetProps {
   labels: { date: string; time: string; minutes: string; done: string };
   /** How many days from today can be picked. */
   days?: number;
+  /** How many days before today can be picked, for dates in the past. */
+  pastDays?: number;
+  /** 'date' hides the hour and minute rows. */
+  mode?: 'datetime' | 'date';
 }
 
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -40,6 +44,8 @@ export function DateTimeSheet({
   localeTag,
   labels,
   days = 180,
+  pastDays = 0,
+  mode = 'datetime',
 }: DateTimeSheetProps) {
   const [draft, setDraft] = useState(value);
   const dayRef = useRef<ScrollViewInstance>(null);
@@ -57,15 +63,18 @@ export function DateTimeSheet({
   const dayList = useMemo(() => {
     const t = new Date(todayKey);
     return Array.from(
-      { length: days },
-      (_, i) => new Date(t.getFullYear(), t.getMonth(), t.getDate() + i),
+      { length: pastDays + days },
+      (_, i) => new Date(t.getFullYear(), t.getMonth(), t.getDate() + i - pastDays),
     );
-  }, [days, todayKey]);
+  }, [days, pastDays, todayKey]);
 
   useEffect(() => {
     if (!visible) return;
     setDraft(value);
-    const dayIndex = Math.max(0, Math.round((startOfDay(value).getTime() - todayKey) / 86_400_000));
+    const dayIndex = Math.max(
+      0,
+      Math.round((startOfDay(value).getTime() - todayKey) / 86_400_000) + pastDays,
+    );
     // Wait for the sheet to lay out before scrolling the strips to the current value.
     const id = setTimeout(() => {
       dayRef.current?.scrollTo({ x: Math.max(0, (dayIndex - 1) * DAY_W), animated: false });
@@ -75,7 +84,7 @@ export function DateTimeSheet({
       });
     }, 50);
     return () => clearTimeout(id);
-  }, [visible, value, todayKey]);
+  }, [visible, value, todayKey, pastDays]);
 
   const set = (patch: { day?: Date; hour?: number; minute?: number }) => {
     const base = patch.day ?? draft;
@@ -143,47 +152,51 @@ export function DateTimeSheet({
         })}
       </ScrollView>
 
-      <Text variant="label" tone="secondary" className="mb-2 mt-5">
-        {labels.time}
-      </Text>
-      <ScrollView
-        ref={hourRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8 }}
-      >
-        {HOURS.map((hour) => {
-          const on = draft.getHours() === hour;
-          return (
-            <Pressable
-              key={hour}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: on }}
-              onPress={() => set({ hour })}
-              style={{ width: HOUR_W - 8 }}
-              className={cn(
-                'h-12 items-center justify-center rounded-full',
-                on ? 'bg-ink' : 'bg-card-nested active:bg-card',
-              )}
-            >
-              <Text variant="bodyMedium" tone={on ? 'inverse' : 'primary'}>
-                {fmt.hour.format(new Date(2000, 0, 1, hour))}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {mode === 'datetime' ? (
+        <>
+          <Text variant="label" tone="secondary" className="mb-2 mt-5">
+            {labels.time}
+          </Text>
+          <ScrollView
+            ref={hourRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8 }}
+          >
+            {HOURS.map((hour) => {
+              const on = draft.getHours() === hour;
+              return (
+                <Pressable
+                  key={hour}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: on }}
+                  onPress={() => set({ hour })}
+                  style={{ width: HOUR_W - 8 }}
+                  className={cn(
+                    'h-12 items-center justify-center rounded-full',
+                    on ? 'bg-ink' : 'bg-card-nested active:bg-card',
+                  )}
+                >
+                  <Text variant="bodyMedium" tone={on ? 'inverse' : 'primary'}>
+                    {fmt.hour.format(new Date(2000, 0, 1, hour))}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
 
-      <Text variant="label" tone="secondary" className="mb-2 mt-5">
-        {labels.minutes}
-      </Text>
-      <View>
-        <Segmented
-          value={minute}
-          onChange={(m) => set({ minute: Number(m) })}
-          options={MINUTES.map((m) => ({ value: m, label: `:${m}` }))}
-        />
-      </View>
+          <Text variant="label" tone="secondary" className="mb-2 mt-5">
+            {labels.minutes}
+          </Text>
+          <View>
+            <Segmented
+              value={minute}
+              onChange={(m) => set({ minute: Number(m) })}
+              options={MINUTES.map((m) => ({ value: m, label: `:${m}` }))}
+            />
+          </View>
+        </>
+      ) : null}
     </Sheet>
   );
 }

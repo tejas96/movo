@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { FlatRefSchema, IdSchema, IsoDateTimeSchema } from '../core/common';
+import { FlatRefSchema, IdSchema, IsoDateSchema, IsoDateTimeSchema } from '../core/common';
 import { defineRoute } from '../core/route';
 import { AlertTypeSchema } from '../emergency/emergency.contract';
 import { EventStatusSchema, MyRsvpSchema } from '../events/events.contract';
@@ -20,6 +20,14 @@ export const AttentionItemSchema = z.discriminatedUnion('type', [
     flat: FlatRefSchema.nullable(),
     raisedByName: z.string().nullable(),
     createdAt: IsoDateTimeSchema,
+  }),
+  /** One per flat with money owed. */
+  z.object({
+    type: z.literal('DUES'),
+    flat: FlatRefSchema,
+    amountPaise: z.number().int(),
+    dueDate: IsoDateSchema,
+    overdue: z.boolean(),
   }),
   z.object({ type: z.literal('JOIN_REQUESTS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('INVITATIONS_PENDING'), count: z.number().int() }),

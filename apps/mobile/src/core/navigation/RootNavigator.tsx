@@ -29,6 +29,16 @@ import { SocietySwitcherScreen } from '../../features/me/SocietySwitcherScreen';
 import { MeetingDetailScreen } from '../../features/meetings/MeetingDetailScreen';
 import { MeetingEditorScreen } from '../../features/meetings/MeetingEditorScreen';
 import { MeetingsScreen } from '../../features/meetings/MeetingsScreen';
+import { AdhocBillScreen } from '../../features/money/AdhocBillScreen';
+import { BillingPlansScreen } from '../../features/money/BillingPlansScreen';
+import { BillScreen } from '../../features/money/BillScreen';
+import { FlatAccountScreen } from '../../features/money/FlatAccountScreen';
+import { HowToPayScreen } from '../../features/money/HowToPayScreen';
+import { PaymentInstructionsScreen } from '../../features/money/PaymentInstructionsScreen';
+import { PaymentsScreen } from '../../features/money/PaymentsScreen';
+import { PlanEditorScreen } from '../../features/money/PlanEditorScreen';
+import { ReceiptScreen } from '../../features/money/ReceiptScreen';
+import { RecordPaymentScreen } from '../../features/money/RecordPaymentScreen';
 import { NoticeDetailScreen } from '../../features/notices/NoticeDetailScreen';
 import { NoticeEditorScreen } from '../../features/notices/NoticeEditorScreen';
 import { NoticesScreen } from '../../features/notices/NoticesScreen';
@@ -186,6 +196,28 @@ export function RootNavigator() {
             component={EventEditorScreen}
             options={{ animation: 'slide_from_bottom' }}
           />
+          <Stack.Screen name="Bill" component={BillScreen} />
+          <Stack.Screen name="Receipt" component={ReceiptScreen} />
+          <Stack.Screen name="Payments" component={PaymentsScreen} />
+          <Stack.Screen name="HowToPay" component={HowToPayScreen} />
+          <Stack.Screen
+            name="RecordPayment"
+            component={RecordPaymentScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="FlatAccount" component={FlatAccountScreen} />
+          <Stack.Screen name="BillingPlans" component={BillingPlansScreen} />
+          <Stack.Screen
+            name="PlanEditor"
+            component={PlanEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="AdhocBill"
+            component={AdhocBillScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="PaymentInstructions" component={PaymentInstructionsScreen} />
           <Stack.Screen name="Join" component={JoinScreen} />
           <Stack.Screen name="PickFlat" component={PickFlatScreen} />
           <Stack.Screen name="Pending" component={PendingScreen} />

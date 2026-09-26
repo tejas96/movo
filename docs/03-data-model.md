@@ -97,16 +97,17 @@ Rotation rule: assignments are materialised 12 periods ahead. Changing participa
 
 | Table | Key fields |
 | --- | --- |
-| billing_plan | society_id, name, frequency (`MONTHLY`, `QUARTERLY`, `HALF_YEARLY`, `YEARLY`), amount_rule (JSONB: `FLAT_RATE` / `PER_SQFT` / `PER_FLAT_TYPE` / `PER_FLAT`), base_amount_paise, due_day, generate_days_before, late_fee_rule (JSONB: none / fixed / percent / per_day, grace_days, cap_paise), active_from, active_to |
+| billing_plan | society_id, name, frequency (`MONTHLY`, `QUARTERLY`, `HALF_YEARLY`, `YEARLY`; longer periods line up with the financial year), amount_rule (`FLAT_RATE`, `PER_SQFT`), amount_paise (per bill, or per sq ft), due_day (1-28), generate_days_before, late_fee (JSONB: `NONE` / `FIXED` / `PERCENT` in basis points / `PER_DAY`, grace_days, cap_paise), active_from, active_to, is_active. A per-flat amount is a flat_charge_override |
 | flat_charge_override | plan_id, flat_id, amount_paise |
-| bill | society_id, flat_id, plan_id (nullable for ad hoc), kind (`MAINTENANCE`, `ADHOC`), title, period_key (`2026-10`), period_start, period_end, due_date, financial_year, total_paise, paid_paise, status (`DUE`, `PARTIALLY_PAID`, `PAID`, `OVERDUE`, `WAIVED`), generated_at. Unique (plan_id, flat_id, period_key) |
-| bill_line | bill_id, type (`BASE`, `LATE_FEE`, `CREDIT`, `ADJUSTMENT`), label, amount_paise |
-| payment | society_id, flat_id, amount_paise, paid_on, method (`CASH`, `UPI`, `BANK_TRANSFER`, `CHEQUE`, `OTHER`), reference, receipt_no (society sequence), receipt_document_id, notes, recorded_by_membership_id, status (`RECORDED`, `REVERSED`), reversed_reason, idempotency_key |
-| payment_allocation | payment_id, bill_id, amount_paise. Oldest bill first by default, treasurer may choose |
-| flat_adjustment | society_id, flat_id, amount_paise (negative = credit), reason (`REWARD_REDEMPTION`, `WAIVER`, `CORRECTION`), applied_bill_id (nullable until consumed), created_by_membership_id |
-| payment_instruction | society_id, kind (`UPI`, `BANK`), label, value, is_active. Shown under "How to pay" |
+| bill | society_id, flat_id, plan_id (nullable for ad hoc), kind (`MAINTENANCE`, `ADHOC`), title, period_key (`2026-10`, `2026-27-Q1`, `2026-27-H1`, `2026-27`), due_date, financial_year, total_paise, paid_paise, status (`DUE`, `PARTIALLY_PAID`, `PAID`, `OVERDUE`, `WAIVED`), late_fee_waived, waived_reason. Unique (plan_id, flat_id, period_key) |
+| bill_line | society_id, bill_id, type (`BASE`, `LATE_FEE`), label, amount_paise. Unique (bill_id, type) |
+| payment | society_id, flat_id, amount_paise, paid_on, method (`CASH`, `UPI`, `BANK_TRANSFER`, `CHEQUE`, `OTHER`), reference, receipt_no (`R-2026-27-0001`, from receipt_counter), financial_year, notes, recorded_by_membership_id, status (`RECORDED`, `REVERSED`), reversed_reason, idempotency_key. Unique (society_id, receipt_no) and (society_id, idempotency_key). LATER: receipt_document_id |
+| payment_allocation | society_id, payment_id, bill_id, amount_paise. Oldest bill first by default, treasurer may choose. Money not allocated is advance and is used on the next bills |
+| receipt_counter | society_id, financial_year, last_no |
+| flat_adjustment | LATER (with reward redemption in 1.5). Waivers are a bill status, advance is unallocated payment |
+| payment_instruction | society_id, kind (`UPI`, `BANK`, `OTHER`), label, value, payee_name, is_active, sort_order. Shown under "How to pay"; UPI ones get a upi://pay link |
 
-Flat balance = sum(bill.total) − sum(bill.paid) + unapplied adjustments. Collection status per flat is derived from bills of the current period.
+Flat balance = sum of open bills' (total − paid). Advance = sum(payment.amount) − sum(allocations) over recorded payments. Collection status per flat is derived from bills of the current period.
 
 ## 8. Money: expenses
 

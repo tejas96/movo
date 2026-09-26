@@ -44,6 +44,11 @@
       "title": "{{count}} सेवा का सुझाव",
       "title_other": "{{count}} सेवाओं के सुझाव",
       "sub": "सेवाएँ में देखें"
+    },
+    "DUES": {
+      "title": "{{amount}} बाकी · {{flat}}",
+      "titleOverdue": "{{amount}} बकाया · {{flat}}",
+      "sub": "अंतिम तारीख {{date}}"
     }
   },
   "upcomingKind": {

@@ -25,6 +25,7 @@ import {
   useModuleEnabled,
   useTenant,
 } from '../../core/tenant/hooks';
+import { day, money } from '../../core/util/money';
 import { greetingKey, relative } from '../../core/util/time';
 import { TimedCard } from '../calendar/shared';
 import { ALERT_ICON } from '../emergency/shared';
@@ -180,7 +181,7 @@ export function HomeScreen() {
 }
 
 function AttentionRow({ item }: { item: AttentionItem }) {
-  const { t } = useTranslation(['home', 'emergency', 'services']);
+  const { t } = useTranslation(['home', 'emergency', 'services', 'money']);
   const nav = useNav();
   switch (item.type) {
     case 'ACTIVE_ALERT':
@@ -196,6 +197,26 @@ function AttentionRow({ item }: { item: AttentionItem }) {
           })}
           trailing={<StatusPill label={t('emergency:status.ACTIVE')} tone="danger" dot />}
           onPress={() => nav.navigate('AlertDetail', { alertId: item.alertId })}
+        />
+      );
+    case 'DUES':
+      return (
+        <Row
+          icon="wallet"
+          title={t(
+            item.overdue ? 'home:attention.DUES.titleOverdue' : 'home:attention.DUES.title',
+            {
+              amount: money(item.amountPaise),
+              flat: formatFlat(item.flat),
+            },
+          )}
+          subtitle={t('home:attention.DUES.sub', { date: day(item.dueDate, 'short') })}
+          trailing={
+            item.overdue ? (
+              <StatusPill label={t('money:status.OVERDUE')} tone="danger" />
+            ) : undefined
+          }
+          onPress={() => nav.navigate('Tabs', { screen: 'Money' })}
         />
       );
     case 'VENDOR_SUGGESTIONS':
@@ -310,6 +331,8 @@ function attentionKey(item: AttentionItem): string {
       return `${item.type}-${item.alertId}`;
     case 'PROFILE_INCOMPLETE':
       return `${item.type}-${item.missing.join(',')}`;
+    case 'DUES':
+      return `${item.type}-${item.flat.id}`;
     default:
       return item.type;
   }

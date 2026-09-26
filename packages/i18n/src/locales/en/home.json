@@ -44,6 +44,11 @@
       "title": "{{count}} vendor suggestion",
       "title_other": "{{count}} vendor suggestions",
       "sub": "Review them in Services"
+    },
+    "DUES": {
+      "title": "{{amount}} due · {{flat}}",
+      "titleOverdue": "{{amount}} overdue · {{flat}}",
+      "sub": "Due {{date}}"
     }
   },
   "upcomingKind": {

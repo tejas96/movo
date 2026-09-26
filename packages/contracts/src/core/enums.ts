@@ -190,6 +190,18 @@ export const AuditActionSchema = z.enum([
   'event.created',
   'event.updated',
   'event.cancelled',
+  'billing_plan.created',
+  'billing_plan.updated',
+  'billing_plan.override_set',
+  'bills.generated',
+  'bills.adhoc_created',
+  'bill.waived',
+  'bill.late_fee_waived',
+  'payment.recorded',
+  'payment.reversed',
+  'payment_instruction.created',
+  'payment_instruction.updated',
+  'payment_instruction.deleted',
   'user.deleted',
 ]);
 export type AuditAction = z.infer<typeof AuditActionSchema>;

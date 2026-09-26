@@ -1,5 +1,5 @@
 import type { ModuleKey, Vehicle, VendorStatus } from '@movo/contracts';
-import { useNavigation } from '@react-navigation/native';
+import { type NavigatorScreenParams, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
@@ -10,7 +10,7 @@ export type RootStackParamList = {
   Join: undefined;
   PickFlat: { joinCode: string };
   Pending: undefined;
-  Tabs: undefined;
+  Tabs: NavigatorScreenParams<TabParamList> | undefined;
   Notifications: undefined;
   Notices: undefined;
   NoticeDetail: { noticeId: string };
@@ -45,6 +45,16 @@ export type RootStackParamList = {
   Events: undefined;
   EventDetail: { eventId: string };
   EventEditor: { eventId?: string } | undefined;
+  Bill: { billId: string };
+  Receipt: { paymentId: string };
+  Payments: { flatId?: string } | undefined;
+  HowToPay: { amountPaise?: number; note?: string } | undefined;
+  RecordPayment: { flatId?: string } | undefined;
+  FlatAccount: { flatId: string };
+  BillingPlans: undefined;
+  PlanEditor: { planId?: string } | undefined;
+  AdhocBill: undefined;
+  PaymentInstructions: undefined;
 };
 
 export type TabParamList = {

@@ -6,6 +6,7 @@ import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
 import { EmergencyService } from '../emergency/emergency.service';
 import { EventsService } from '../events/events.service';
+import { AccountsService } from '../maintenance/accounts.service';
 import { MeetingsService } from '../meetings/meetings.service';
 import { NoticesService } from '../notices/notices.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -26,11 +27,16 @@ export class HomeService {
     private readonly vendors: VendorsService,
     private readonly meetings: MeetingsService,
     private readonly events: EventsService,
+    private readonly accounts: AccountsService,
   ) {}
 
   async summary(): Promise<HomeSummary> {
     const ctx = requireTenant();
     const attention: AttentionItem[] = [];
+
+    // Money owed comes right after alerts and important notices, before admin items.
+    if (ctx.enabledModules.has('maintenance'))
+      attention.push(...(await this.accounts.attentionForHome(ctx)));
 
     if (can(ctx, 'member.manage')) {
       const [joinRequests, invitations] = await Promise.all([

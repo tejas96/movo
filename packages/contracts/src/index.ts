@@ -7,6 +7,7 @@ export * from './core/route';
 export * from './emergency/emergency.contract';
 export * from './events/events.contract';
 export * from './home/home.contract';
+export * from './maintenance/maintenance.contract';
 export * from './me/me.contract';
 export * from './meetings/meetings.contract';
 export * from './notices/notices.contract';

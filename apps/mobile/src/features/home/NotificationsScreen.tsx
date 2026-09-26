@@ -34,6 +34,8 @@ export function NotificationsScreen() {
       alertId?: string;
       meetingId?: string;
       eventId?: string;
+      billId?: string;
+      paymentId?: string;
     };
     if (data.screen === 'notice' && data.noticeId)
       nav.navigate('NoticeDetail', { noticeId: data.noticeId });
@@ -43,6 +45,9 @@ export function NotificationsScreen() {
       nav.navigate('MeetingDetail', { meetingId: data.meetingId });
     else if (data.screen === 'event' && data.eventId)
       nav.navigate('EventDetail', { eventId: data.eventId });
+    else if (data.screen === 'bill' && data.billId) nav.navigate('Bill', { billId: data.billId });
+    else if (data.screen === 'payment' && data.paymentId)
+      nav.navigate('Receipt', { paymentId: data.paymentId });
     else if (data.screen === 'manage/join-requests') nav.navigate('JoinRequests');
   };
 
