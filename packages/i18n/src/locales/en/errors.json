@@ -19,6 +19,10 @@
   "TOKEN_INVALID": "Your session has expired. Please sign in again.",
   "PASSWORD_INCORRECT": "The current password is wrong.",
   "LAST_ADMIN": "A society must keep at least one admin.",
+  "SLOT_TAKEN": "This slot already belongs to a flat. Free it first.",
+  "VEHICLE_EXISTS": "This vehicle is already registered in your society.",
+  "CATEGORY_NOT_EMPTY": "Move or delete the vendors in this category first.",
+  "ALERT_COOLDOWN": "You just raised an alert. Please wait a few minutes before the next one.",
   "APP_UPDATE_REQUIRED": "Please update the app to continue.",
   "INTERNAL": "Something went wrong on our side. Please try again.",
   "NETWORK": "Cannot reach the server. Check your connection."

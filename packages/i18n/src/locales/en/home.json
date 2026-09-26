@@ -29,10 +29,21 @@
       "title_other": "{{count}} invites not used yet",
       "sub": "Share the codes again"
     },
-    "IMPORTANT_NOTICE": { "sub": "Important notice" },
+    "IMPORTANT_NOTICE": {
+      "sub": "Important notice"
+    },
     "PROFILE_INCOMPLETE": {
       "title": "Add your email",
       "sub": "So you can reset your password yourself"
+    },
+    "ACTIVE_ALERT": {
+      "title": "{{type}} alert",
+      "sub": "{{place}} · {{time}}"
+    },
+    "VENDOR_SUGGESTIONS": {
+      "title": "{{count}} vendor suggestion",
+      "title_other": "{{count}} vendor suggestions",
+      "sub": "Review them in Services"
     }
   }
 }

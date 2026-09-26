@@ -14,6 +14,13 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'JoinRequest',
   'SocietyModule',
   'Notice',
+  'ParkingSlot',
+  'ParkingAllocation',
+  'Vehicle',
+  'VendorCategory',
+  'Vendor',
+  'EmergencyContact',
+  'Alert',
 ]);
 
 const READ_OPS = new Set([

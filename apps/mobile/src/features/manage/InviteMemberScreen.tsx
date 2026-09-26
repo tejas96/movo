@@ -15,6 +15,7 @@ import { Share, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { normalizePhone } from '../../core/util/phone';
 import { useRoles } from '../directory/api';
 import { useCreateInvitation, useFlats } from './api';
 
@@ -175,12 +176,4 @@ export function InviteMemberScreen() {
       </Sheet>
     </Screen>
   );
-}
-
-function normalizePhone(raw: string): string {
-  const digits = raw.replace(/[\s\-().]/g, '');
-  if (digits.startsWith('+')) return digits;
-  if (digits.length === 10) return `+91${digits}`;
-  if (digits.length === 11 && digits.startsWith('0')) return `+91${digits.slice(1)}`;
-  return digits;
 }

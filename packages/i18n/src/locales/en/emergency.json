@@ -1,0 +1,70 @@
+{
+  "title": "Emergency",
+  "raise": "Raise an alert",
+  "raiseHelp": "Pick what is happening, then press and hold the button.",
+  "hold": "Hold to send alert",
+  "holding": "Keep holding…",
+  "sent": "Alert sent to your society",
+  "shareNote": "Your name, flat and mobile number go to everyone alerted.",
+  "message": "Short message (optional)",
+  "messageHint": "For example: smoke near the lift room",
+  "activeAlerts": "Active alerts",
+  "contacts": "Emergency contacts",
+  "publicNumbers": "Public numbers",
+  "societyContacts": "Society contacts",
+  "noContacts": "No contacts yet",
+  "noContactsBody": "Your committee has not added emergency contacts.",
+  "history": "Past alerts",
+  "noHistory": "No past alerts",
+  "societyPlace": "your society",
+  "type": {
+    "MEDICAL": "Medical",
+    "FIRE": "Fire",
+    "SECURITY": "Security",
+    "LIFT": "Stuck in lift",
+    "GAS": "Gas leak",
+    "OTHER": "Other"
+  },
+  "contactType": {
+    "MEDICAL": "Medical",
+    "FIRE": "Fire",
+    "POLICE": "Police",
+    "SECURITY": "Security",
+    "LIFT": "Lift",
+    "ADMIN": "Society office",
+    "OTHER": "Other"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "RESOLVED": "Resolved",
+    "FALSE_ALARM": "False alarm"
+  },
+  "alert": {
+    "title": "{{type}} alert",
+    "raisedBy": "Raised by {{name}}",
+    "callRaiser": "Call {{name}}",
+    "resolveTitle": "Close this alert",
+    "resolve": "Resolved",
+    "falseAlarm": "False alarm",
+    "note": "Note (optional)",
+    "closedBy": "Closed by {{name}}",
+    "closed": "Alert closed"
+  },
+  "contactForm": {
+    "add": "Add contact",
+    "edit": "Edit contact",
+    "label": "Name",
+    "phone": "Number",
+    "type": "Type",
+    "isPublic": "Public number (like 112 or 101)",
+    "saved": "Contact saved",
+    "deleted": "Contact removed"
+  },
+  "push": {
+    "raisedTitle": "🚨 {{type}} alert at {{place}}",
+    "raisedBody": "{{name}}: {{message}}",
+    "raisedBodyNoMessage": "Raised by {{name}}. Open MOVO to help or call.",
+    "closedTitle": "✅ {{type}} alert closed",
+    "closedBody": "{{place}} · {{outcome}}"
+  }
+}

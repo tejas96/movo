@@ -1,4 +1,4 @@
-import type { ModuleKey } from '@movo/contracts';
+import type { ModuleKey, Vehicle, VendorStatus } from '@movo/contracts';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -29,6 +29,16 @@ export type RootStackParamList = {
   InviteMember: undefined;
   JoinRequests: undefined;
   Structure: undefined;
+  Services: undefined;
+  VendorList: { categoryId?: string; status?: VendorStatus; title: string };
+  VendorDetail: { vendorId: string };
+  VendorEditor: { vendorId?: string; categoryId?: string } | undefined;
+  VendorCategories: undefined;
+  Parking: undefined;
+  VehicleEditor: { vehicle?: Vehicle; flatId?: string } | undefined;
+  ParkingSlots: undefined;
+  Emergency: undefined;
+  AlertDetail: { alertId: string };
 };
 
 export type TabParamList = {

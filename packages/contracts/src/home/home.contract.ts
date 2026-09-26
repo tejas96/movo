@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { IdSchema, IsoDateTimeSchema } from '../core/common';
+import { FlatRefSchema, IdSchema, IsoDateTimeSchema } from '../core/common';
 import { defineRoute } from '../core/route';
+import { AlertTypeSchema } from '../emergency/emergency.contract';
 import { MemberFlatSchema, SocietySummarySchema } from '../me/me.contract';
 import { NoticeSummarySchema } from '../notices/notices.contract';
 
@@ -9,8 +10,18 @@ import { NoticeSummarySchema } from '../notices/notices.contract';
  * so new types can ship on the server before the app updates.
  */
 export const AttentionItemSchema = z.discriminatedUnion('type', [
+  /** Always first. The app renders it in the danger style. */
+  z.object({
+    type: z.literal('ACTIVE_ALERT'),
+    alertId: IdSchema,
+    alertType: AlertTypeSchema,
+    flat: FlatRefSchema.nullable(),
+    raisedByName: z.string().nullable(),
+    createdAt: IsoDateTimeSchema,
+  }),
   z.object({ type: z.literal('JOIN_REQUESTS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('INVITATIONS_PENDING'), count: z.number().int() }),
+  z.object({ type: z.literal('VENDOR_SUGGESTIONS'), count: z.number().int() }),
   z.object({
     type: z.literal('IMPORTANT_NOTICE'),
     noticeId: IdSchema,

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Share, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
-import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { useCan, useModuleEnabled, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { useHomeSummary } from '../home/api';
 import { useSocietyProfile } from '../society/api';
 import { useRotateJoinCode } from './api';
@@ -18,6 +18,9 @@ export function ManageHomeScreen() {
   const profile = useSocietyProfile(societyId);
   const summary = useHomeSummary(societyId);
   const rotate = useRotateJoinCode(societyId);
+  const parkingOn = useModuleEnabled('parking');
+  const canParking = useCan('parking.manage');
+  const parking = parkingOn && canParking;
   const pending = summary.data?.attention.find((a) => a.type === 'JOIN_REQUESTS_PENDING');
   const joinCode = profile.data?.joinCode;
 
@@ -72,7 +75,15 @@ export function ManageHomeScreen() {
           }
           onPress={() => nav.navigate('Structure')}
         />
-        <View className="flex-1" />
+        {parking ? (
+          <Tile
+            icon="parking"
+            label={t('manage:tiles.parking')}
+            onPress={() => nav.navigate('ParkingSlots')}
+          />
+        ) : (
+          <View className="flex-1" />
+        )}
         <View className="flex-1" />
       </View>
 

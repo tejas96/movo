@@ -22,7 +22,7 @@ Your section 33 listed marketplace and buy-and-sell as MVP candidates. I put the
 | M1 ✅ | Auth and identity | register, login, refresh, logout, reset by email link and admin code, account deletion, rate limits, tests |
 | M2 ✅ | Tenancy | platform admin creates a society, buildings, flats; roles seeded; invite by code; join request; `GET /me/context`; society switcher; cross-tenant test suite |
 | M3 ✅ | Home shell and notices | Home summary endpoint, attention list, notification center, push outbox (transport is a no-op until Firebase exists), notices with audience and pins |
-| M4 | Directory, services, parking, emergency | privacy-aware directory, vendors, my parking, emergency contacts and alerts |
+| M4 ✅ | Directory, services, parking, emergency | privacy-aware directory, vendors, my parking, emergency contacts and alerts |
 | M5 | Meetings and events | schedule, reminders, RSVP, Home upcoming |
 | M6 | Money | billing plans, bill generation, late fees, record payment with idempotency, receipts, collection status, how to pay, reminders |
 | M7 | Expenses and reports | expenses with receipts and approval, categories, FY summary, member visibility setting |
@@ -32,14 +32,15 @@ Your section 33 listed marketplace and buy-and-sell as MVP candidates. I put the
 
 ## Done so far (2026-09-26)
 
-M0 to M3 are built and tested. The app runs on Android against the local API. See `07-dev-setup.md`.
+M0 to M4 are built and tested. The app runs on Android against the local API. See `07-dev-setup.md`.
+
+M4 added: Services (vendor categories, vendors, member suggestions the committee approves), Parking (slots, one active allocation per slot, vehicles per flat, member detail shows vehicles by the `directory.showVehicles` setting), Emergency (contacts with India's public numbers seeded, hold-to-confirm alerts, cooldown, push to the society or configured roles, resolve or false alarm, active alerts first on Home), and a wing filter in the directory.
 
 ## Next
 
-1. M4: directory polish, vendors ("Services"), parking, emergency contacts and alerts.
-2. M5: meetings and events with reminders.
-3. M6: money — billing plans, bills, manual payments, receipts, collection view.
-4. iOS pod install and simulator run, Firebase project for push, GitHub repo and CI.
+1. M5: meetings and events with reminders.
+2. M6: money — billing plans, bills, manual payments, receipts, collection view.
+3. Firebase project for push (alerts are written to the outbox now; the transport logs until Firebase exists).
 
 ## Explicitly out of the MVP
 

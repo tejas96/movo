@@ -4,8 +4,10 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
+import { EmergencyService } from '../emergency/emergency.service';
 import { NoticesService } from '../notices/notices.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { VendorsService } from '../vendors/vendors.service';
 
 /** The server decides what matters today. The app only renders. */
 @Injectable()
@@ -15,6 +17,8 @@ export class HomeService {
     private readonly prisma: PrismaService,
     private readonly notices: NoticesService,
     private readonly notifications: NotificationsService,
+    private readonly emergency: EmergencyService,
+    private readonly vendors: VendorsService,
   ) {}
 
   async summary(): Promise<HomeSummary> {
@@ -31,6 +35,10 @@ export class HomeService {
       if (joinRequests > 0) attention.push({ type: 'JOIN_REQUESTS_PENDING', count: joinRequests });
       if (invitations > 0) attention.push({ type: 'INVITATIONS_PENDING', count: invitations });
     }
+    if (ctx.enabledModules.has('vendors') && can(ctx, 'vendor.manage')) {
+      const suggestions = await this.vendors.countSuggestions();
+      if (suggestions > 0) attention.push({ type: 'VENDOR_SUGGESTIONS', count: suggestions });
+    }
 
     const noticesEnabled = ctx.enabledModules.has('notices');
     const { notices, unreadImportant } = noticesEnabled
@@ -44,6 +52,10 @@ export class HomeService {
         priority: n.priority === 'EMERGENCY' ? 'EMERGENCY' : 'IMPORTANT',
       });
     }
+
+    // Active alerts go above everything else, including important notices.
+    if (ctx.enabledModules.has('emergency'))
+      attention.unshift(...(await this.emergency.attentionForHome()));
 
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: ctx.userId },

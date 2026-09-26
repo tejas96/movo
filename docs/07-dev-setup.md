@@ -29,6 +29,11 @@ The demo seed prints:
 | Invite code for flat A-102 | `DEMO1234` |
 | Society join code | printed at the end of the seed output |
 | Platform admin | from `PLATFORM_ADMIN_EMAIL` / `PLATFORM_ADMIN_PASSWORD` in `.env` |
+| Services | 12 categories, 6 sample vendors |
+| Parking | slots P-01 to P-20, T-01 to T-10, visitor V-01; P-01 and car MH12AB1234 belong to A-101 |
+| Emergency | gate, lift and office contacts plus 112, 100, 101, 108 |
+
+Running the seed again on an existing demo society only adds the Services, Parking and Emergency data that is missing.
 
 ## 3. Run
 

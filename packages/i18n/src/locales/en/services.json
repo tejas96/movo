@@ -1,0 +1,70 @@
+{
+  "title": "Services",
+  "search": "Search vendors…",
+  "categoriesTitle": "Categories",
+  "vendorCount": "{{count}} vendor",
+  "vendorCount_other": "{{count}} vendors",
+  "empty": "No vendors yet",
+  "emptyBody": "Your committee has not added vendors here yet.",
+  "noResults": "No vendors match",
+  "add": "Add vendor",
+  "suggest": "Suggest a vendor",
+  "suggestHelp": "The committee checks your suggestion before others see it.",
+  "suggested": "Thanks. The committee will review it.",
+  "saved": "Vendor saved",
+  "deleted": "Vendor deleted",
+  "suggestions": "{{count}} suggestion to review",
+  "suggestions_other": "{{count}} suggestions to review",
+  "status": {
+    "SUGGESTED": "Suggested",
+    "APPROVED": "Approved",
+    "TRIAL": "On trial",
+    "BLOCKED": "Blocked"
+  },
+  "detail": {
+    "call": "Call",
+    "altCall": "Call other number",
+    "availability": "Timings",
+    "about": "About",
+    "notes": "Committee notes",
+    "addedBy": "Added by {{name}}",
+    "approve": "Approve",
+    "block": "Block",
+    "unblock": "Approve again"
+  },
+  "form": {
+    "category": "Category",
+    "name": "Name",
+    "phone": "Mobile number",
+    "altPhone": "Other number (optional)",
+    "description": "What they do (optional)",
+    "availability": "Timings (optional)",
+    "availabilityHelp": "For example 9 AM to 7 PM, Sunday off",
+    "status": "Status",
+    "adminNotes": "Committee notes (only the committee sees these)"
+  },
+  "categories": {
+    "title": "Categories",
+    "manage": "Edit categories",
+    "add": "Add category",
+    "edit": "Edit category",
+    "name": "Name",
+    "icon": "Icon",
+    "saved": "Category saved",
+    "deleted": "Category deleted"
+  },
+  "category": {
+    "plumber": "Plumber",
+    "electrician": "Electrician",
+    "carpenter": "Carpenter",
+    "painter": "Painter",
+    "cleaning": "Cleaning",
+    "pestControl": "Pest control",
+    "appliance": "AC and appliances",
+    "internet": "Internet and cable",
+    "gas": "Gas",
+    "waterTanker": "Water tanker",
+    "laundry": "Laundry",
+    "lift": "Lift service"
+  }
+}

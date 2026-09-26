@@ -1,0 +1,78 @@
+{
+  "title": "पार्किंग",
+  "mySlots": "मेरी पार्किंग जगह",
+  "myVehicles": "मेरे वाहन",
+  "noSlot": "इस फ़्लैट के लिए अभी कोई जगह नहीं",
+  "noSlotBody": "पार्किंग जगह के लिए अपनी समिति से पूछें।",
+  "noVehicles": "अभी कोई वाहन नहीं जोड़ा",
+  "addVehicle": "वाहन जोड़ें",
+  "editVehicle": "वाहन बदलें",
+  "removeVehicle": "वाहन हटाएँ",
+  "vehicleSaved": "वाहन सहेजा गया",
+  "vehicleRemoved": "वाहन हटाया गया",
+  "since": "{{date}} से",
+  "level": "लेवल {{level}}",
+  "free": "खाली",
+  "allSlots": "सभी जगहें",
+  "noFlat": "आप किसी फ़्लैट से जुड़े नहीं हैं, इसलिए दिखाने को पार्किंग नहीं है।",
+  "slotType": {
+    "TWO_WHEELER": "दोपहिया",
+    "FOUR_WHEELER": "चारपहिया",
+    "EV": "EV चार्जिंग",
+    "OTHER": "अन्य"
+  },
+  "vehicleType": {
+    "TWO_WHEELER": "दोपहिया",
+    "FOUR_WHEELER": "चारपहिया",
+    "EV": "इलेक्ट्रिक",
+    "OTHER": "अन्य"
+  },
+  "slotStatus": {
+    "ACTIVE": "नियमित",
+    "BLOCKED": "बंद",
+    "VISITOR": "मेहमान"
+  },
+  "filter": {
+    "all": "सभी",
+    "free": "खाली",
+    "taken": "दी गई"
+  },
+  "form": {
+    "flat": "फ़्लैट",
+    "registrationNo": "रजिस्ट्रेशन नंबर",
+    "registrationHelp": "जैसे MH 12 AB 1234",
+    "type": "प्रकार",
+    "makeModel": "कंपनी और मॉडल (वैकल्पिक)",
+    "color": "रंग (वैकल्पिक)"
+  },
+  "slots": {
+    "title": "पार्किंग जगहें",
+    "add": "जगहें जोड़ें",
+    "prefix": "कोड की शुरुआत (वैकल्पिक)",
+    "prefixHelp": "जैसे P- या B1-",
+    "from": "शुरू नंबर",
+    "to": "आख़िरी नंबर",
+    "preview": "{{first}} से {{last}} तक बनेंगी",
+    "previewOne": "{{first}} बनेगी",
+    "level": "लेवल (वैकल्पिक)",
+    "added": "{{count}} जगह जोड़ी गई",
+    "added_other": "{{count}} जगहें जोड़ी गईं",
+    "empty": "अभी कोई जगह नहीं",
+    "emptyBody": "सोसायटी की पार्किंग जगहें जोड़ें, फिर उन्हें फ़्लैट को दें।",
+    "allocate": "फ़्लैट को दें",
+    "allocated": "जगह {{flat}} को दी गई",
+    "release": "यह जगह खाली करें",
+    "released": "जगह अब खाली है",
+    "notes": "नोट (वैकल्पिक)",
+    "block": "जगह बंद करें",
+    "unblock": "नियमित जगह बनाएँ",
+    "markVisitor": "मेहमान जगह बनाएँ",
+    "updated": "जगह अपडेट हुई",
+    "summary": "{{total}} में से {{taken}} दी गईं"
+  },
+  "vehicles": {
+    "title": "वाहन",
+    "search": "नंबर से खोजें…",
+    "empty": "कोई वाहन नहीं मिला"
+  }
+}

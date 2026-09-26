@@ -17,8 +17,10 @@ import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
 import { readableCode } from '../../common/util/codes';
 import type { Prisma, Society } from '../../generated/prisma/client';
+import { defaultEmergencyContactRows } from '../emergency/emergency.service';
 import { PasswordService } from '../identity/password.service';
 import { UsersService } from '../identity/users.service';
+import { defaultVendorCategoryRows } from '../vendors/vendors.service';
 import { ContextService } from './context.service';
 import { toSocietySummary } from './mappers';
 import { rolePermissionRows, roleTemplateRows } from './roles.service';
@@ -132,6 +134,8 @@ export class SocietiesService {
           settings: {},
         })),
       });
+      await tx.vendorCategory.createMany({ data: defaultVendorCategoryRows(society.id) });
+      await tx.emergencyContact.createMany({ data: defaultEmergencyContactRows(society.id) });
       const adminRoleId = byKey.admin;
       if (!adminRoleId) throw new Error('admin role missing');
       const membership = await tx.membership.create({

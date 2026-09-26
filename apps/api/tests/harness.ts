@@ -55,7 +55,7 @@ export async function createHarness(): Promise<Harness> {
   };
 
   const makePlatformAdmin = async () => {
-    const email = `platform-${newId().slice(0, 8)}@movo.test`;
+    const email = `platform-${newId().slice(-12)}@movo.test`;
     const user = await prisma.user.create({
       data: {
         email,

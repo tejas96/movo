@@ -59,6 +59,10 @@ export const ERROR_CODES = [
   'TOKEN_INVALID',
   'PASSWORD_INCORRECT',
   'LAST_ADMIN',
+  'SLOT_TAKEN',
+  'VEHICLE_EXISTS',
+  'CATEGORY_NOT_EMPTY',
+  'ALERT_COOLDOWN',
   'APP_UPDATE_REQUIRED',
   'INTERNAL',
 ] as const;
@@ -72,6 +76,18 @@ export const ApiErrorSchema = z.object({
   requestId: z.string().optional(),
 });
 export type ApiError = z.infer<typeof ApiErrorSchema>;
+
+/** A flat as other records refer to it: "A-101". */
+export const FlatRefSchema = z.object({
+  id: IdSchema,
+  number: z.string(),
+  buildingName: z.string().nullable(),
+});
+export type FlatRef = z.infer<typeof FlatRefSchema>;
+
+/** Who did something, by name. */
+export const ActorSchema = z.object({ membershipId: IdSchema, displayName: z.string() });
+export type Actor = z.infer<typeof ActorSchema>;
 
 export const OkSchema = z.object({ ok: z.literal(true) });
 export const EmptySchema = z.object({}).strict();

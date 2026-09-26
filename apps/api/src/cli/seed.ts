@@ -6,9 +6,133 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { runWithStore } from '../common/request-store';
 import { newId } from '../common/util/ids';
 import { loadEnv } from '../config/env';
+import { defaultEmergencyContactRows } from '../modules/emergency/emergency.service';
 import { PasswordService } from '../modules/identity/password.service';
 import { UsersService } from '../modules/identity/users.service';
 import { SocietiesService } from '../modules/tenancy/societies.service';
+import { defaultVendorCategoryRows } from '../modules/vendors/vendors.service';
+
+/** Services, emergency contacts and parking for the demo society. Safe to run again. */
+async function ensureM4Demo(
+  prisma: PrismaService,
+  societyId: string,
+  log: (msg: string) => void,
+): Promise<void> {
+  const admin = await prisma.membership.findFirst({
+    where: { societyId, roles: { some: { role: { key: 'admin' } } } },
+    orderBy: { createdAt: 'asc' },
+  });
+  if (!admin) return;
+  const flatA101 = await prisma.flat.findFirst({
+    where: { societyId, number: '101', building: { name: 'A' } },
+  });
+
+  if ((await prisma.vendorCategory.count({ where: { societyId } })) === 0)
+    await prisma.vendorCategory.createMany({ data: defaultVendorCategoryRows(societyId) });
+  if ((await prisma.vendor.count({ where: { societyId } })) === 0) {
+    const cat = async (key: string) =>
+      (await prisma.vendorCategory.findFirstOrThrow({ where: { societyId, key } })).id;
+    const vendors = [
+      ['plumber', 'Ramesh Plumbing Works', '+919800000101', '9 AM to 7 PM, Sunday off', 'APPROVED'],
+      [
+        'plumber',
+        'Quick Fix Plumbers',
+        '+919800000102',
+        'Any time, extra charge at night',
+        'TRIAL',
+      ],
+      ['electrician', 'Sai Electricals', '+919800000103', '10 AM to 8 PM', 'APPROVED'],
+      ['carpenter', 'Mahesh Furniture Repair', '+919800000104', 'Weekdays', 'APPROVED'],
+      ['waterTanker', 'Shree Water Supply', '+919800000105', '6 AM to 10 PM', 'APPROVED'],
+      ['pestControl', 'Green Shield Pest Control', '+919800000106', 'By appointment', 'APPROVED'],
+    ] as const;
+    for (const [key, name, phone, availability, status] of vendors) {
+      await prisma.vendor.create({
+        data: {
+          societyId,
+          categoryId: await cat(key),
+          name,
+          phone,
+          availability,
+          status,
+          addedByMembershipId: admin.id,
+        },
+      });
+    }
+  }
+
+  // New societies already get the public numbers, so check each group on its own.
+  if ((await prisma.emergencyContact.count({ where: { societyId, isPublicNumber: true } })) === 0)
+    await prisma.emergencyContact.createMany({ data: defaultEmergencyContactRows(societyId) });
+  if (
+    (await prisma.emergencyContact.count({ where: { societyId, isPublicNumber: false } })) === 0
+  ) {
+    await prisma.emergencyContact.createMany({
+      data: [
+        {
+          societyId,
+          label: 'Main gate security',
+          phone: '+919800000201',
+          type: 'SECURITY',
+          sortOrder: 0,
+        },
+        { societyId, label: 'Lift AMC (Otis)', phone: '+919800000202', type: 'LIFT', sortOrder: 1 },
+        {
+          societyId,
+          label: 'Society office',
+          phone: '+919800000203',
+          type: 'ADMIN',
+          sortOrder: 2,
+        },
+      ],
+    });
+  }
+
+  if ((await prisma.parkingSlot.count({ where: { societyId } })) === 0) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    await prisma.parkingSlot.createMany({
+      data: [
+        ...Array.from({ length: 20 }, (_, i) => ({
+          societyId,
+          code: `P-${pad(i + 1)}`,
+          type: 'FOUR_WHEELER' as const,
+          level: 'Stilt',
+        })),
+        ...Array.from({ length: 10 }, (_, i) => ({
+          societyId,
+          code: `T-${pad(i + 1)}`,
+          type: 'TWO_WHEELER' as const,
+          level: 'Stilt',
+        })),
+        { societyId, code: 'V-01', type: 'FOUR_WHEELER' as const, status: 'VISITOR' as const },
+      ],
+    });
+    if (flatA101) {
+      const slot = await prisma.parkingSlot.findFirstOrThrow({
+        where: { societyId, code: 'P-01' },
+      });
+      await prisma.parkingAllocation.create({
+        data: {
+          societyId,
+          slotId: slot.id,
+          flatId: flatA101.id,
+          allocatedByMembershipId: admin.id,
+        },
+      });
+      await prisma.vehicle.create({
+        data: {
+          societyId,
+          flatId: flatA101.id,
+          registrationNo: 'MH12AB1234',
+          type: 'FOUR_WHEELER',
+          makeModel: 'Maruti Swift',
+          color: 'White',
+        },
+      });
+    }
+  }
+  log('demo services, emergency contacts and parking ready');
+}
 
 /**
  * pnpm seed          -> ensures the platform admin from .env exists
@@ -58,6 +182,7 @@ async function main(): Promise<void> {
       const existing = await prisma.society.findUnique({ where: { slug: 'sunrise-residency' } });
       if (existing) {
         log(`demo society exists: joinCode=${existing.joinCode}`);
+        await ensureM4Demo(prisma, existing.id, log);
       } else {
         const result = await societies.create({
           name: 'Sunrise Residency',
@@ -145,6 +270,7 @@ async function main(): Promise<void> {
         log(`  admin login: +919999900001 / demo-admin-1`);
         log(`  society join code: ${result.joinCode}`);
         log('  invite code for flat A-102: DEMO1234');
+        await ensureM4Demo(prisma, societyId, log);
       }
     }
   });

@@ -23,6 +23,7 @@ import { Linking, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { formatRegistration, slotIcon } from '../parking/shared';
 import { useIssueResetCode, useMember, useRoles, useUpdateMember } from './api';
 
 export function MemberDetailScreen() {
@@ -135,6 +136,25 @@ export function MemberDetailScreen() {
               />
             ) : null}
           </Card>
+          {m.vehicles && m.vehicles.length > 0 ? (
+            <>
+              <Text variant="h3" className="mb-3 mt-6">
+                {t('society:directory.vehicles')}
+              </Text>
+              <Card tight className="gap-2">
+                {m.vehicles.map((v) => (
+                  <Row
+                    key={v.id}
+                    icon={slotIcon(v.type)}
+                    title={formatRegistration(v.registrationNo)}
+                    subtitle={[formatFlat(v.flat), v.makeModel, v.color]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  />
+                ))}
+              </Card>
+            </>
+          ) : null}
           {canManage && !isMe ? (
             <>
               <Divider className="my-6" />

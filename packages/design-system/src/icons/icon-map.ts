@@ -113,6 +113,23 @@ export const iconMap = {
   bag: 'bag-2',
   cup: 'cup',
   security: 'security-safe',
+  // services categories (M4)
+  ac: 'ai-ac',
+  paint: 'paintbucket',
+  carpentry: 'ruler',
+  tools: 'ai-tools',
+  pest: 'bucket',
+  laundry: 'wind',
+  gas: 'gas-station',
+  mobile: 'mobile',
+  monitor: 'monitor',
+  health: 'health',
+  // emergency (M4)
+  hospital: 'hospital',
+  fire: 'fire',
+  alarm: 'alarm',
+  callCalling: 'call-calling',
+  evCharge: 'battery-charging',
 } as const;
 
 export type IconName = keyof typeof iconMap;

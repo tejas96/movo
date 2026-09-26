@@ -10,6 +10,7 @@ import {
   SearchBar,
   SectionHeader,
   Skeleton,
+  StatusPill,
   Text,
   theme,
 } from '@movo/design-system';
@@ -25,6 +26,7 @@ import {
   useTenant,
 } from '../../core/tenant/hooks';
 import { greetingKey, relative } from '../../core/util/time';
+import { ALERT_ICON } from '../emergency/shared';
 import { useHomeSummary } from './api';
 
 export function HomeScreen() {
@@ -36,6 +38,11 @@ export function HomeScreen() {
   const summary = useHomeSummary(tenant.society.id);
   const canManage = useCan('member.manage');
   const market = useModuleEnabled('marketplace');
+  const services = useModuleEnabled('vendors');
+  const emergency = useModuleEnabled('emergency');
+  const attention = summary.data?.attention ?? [];
+  const alerts = attention.filter((a) => a.type === 'ACTIVE_ALERT');
+  const others = attention.filter((a) => a.type !== 'ACTIVE_ALERT');
   const manySocieties =
     (ctx.data?.memberships.filter((m) => m.status === 'ACTIVE').length ?? 0) > 1;
   const flats = summary.data?.flats ?? tenant.flats;
@@ -60,6 +67,13 @@ export function HomeScreen() {
           />
         }
       />
+      {alerts.length > 0 ? (
+        <Card tight className="mt-5 gap-2 bg-danger-soft">
+          {alerts.map((item) => (
+            <AttentionRow key={attentionKey(item)} item={item} />
+          ))}
+        </Card>
+      ) : null}
       <SearchBar
         className="mt-5"
         placeholder={t('home:searchPlaceholder')}
@@ -71,25 +85,25 @@ export function HomeScreen() {
         className="mt-4 -mx-5"
         contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
       >
-        <Chip
-          label={t('home:quick.services')}
-          icon="services"
-          onPress={() =>
-            nav.navigate('ComingSoon', { moduleKey: 'vendors', title: t('home:quick.services') })
-          }
-        />
+        {services ? (
+          <Chip
+            label={t('home:quick.services')}
+            icon="services"
+            onPress={() => nav.navigate('Services')}
+          />
+        ) : null}
         <Chip
           label={t('home:quick.directory')}
           icon="directory"
           onPress={() => nav.navigate('Directory')}
         />
-        <Chip
-          label={t('home:quick.emergency')}
-          icon="emergency"
-          onPress={() =>
-            nav.navigate('ComingSoon', { moduleKey: 'emergency', title: t('home:quick.emergency') })
-          }
-        />
+        {emergency ? (
+          <Chip
+            label={t('home:quick.emergency')}
+            icon="emergency"
+            onPress={() => nav.navigate('Emergency')}
+          />
+        ) : null}
         {market ? (
           <Chip
             label={t('home:quick.market')}
@@ -110,16 +124,18 @@ export function HomeScreen() {
         ) : null}
       </ScrollView>
 
-      <SectionHeader title={t('home:needsYou')} />
+      {others.length > 0 || alerts.length === 0 ? (
+        <SectionHeader title={t('home:needsYou')} />
+      ) : null}
       {summary.isLoading ? (
         <Skeleton className="h-40 rounded-xl" />
-      ) : summary.data && summary.data.attention.length > 0 ? (
+      ) : others.length > 0 ? (
         <Card tight className="gap-2">
-          {summary.data.attention.map((item) => (
+          {others.map((item) => (
             <AttentionRow key={attentionKey(item)} item={item} />
           ))}
         </Card>
-      ) : (
+      ) : alerts.length > 0 ? null : (
         <Card className="flex-row items-center gap-4">
           <IconSquare icon="check" tone="white" />
           <View className="flex-1">
@@ -150,9 +166,38 @@ export function HomeScreen() {
 }
 
 function AttentionRow({ item }: { item: AttentionItem }) {
-  const { t } = useTranslation('home');
+  const { t } = useTranslation(['home', 'emergency', 'services']);
   const nav = useNav();
   switch (item.type) {
+    case 'ACTIVE_ALERT':
+      return (
+        <Row
+          icon={ALERT_ICON[item.alertType]}
+          title={t('home:attention.ACTIVE_ALERT.title', {
+            type: t(`emergency:type.${item.alertType}`),
+          })}
+          subtitle={t('home:attention.ACTIVE_ALERT.sub', {
+            place: item.flat ? formatFlat(item.flat) : t('emergency:societyPlace'),
+            time: relative(item.createdAt),
+          })}
+          trailing={<StatusPill label={t('emergency:status.ACTIVE')} tone="danger" dot />}
+          onPress={() => nav.navigate('AlertDetail', { alertId: item.alertId })}
+        />
+      );
+    case 'VENDOR_SUGGESTIONS':
+      return (
+        <Row
+          icon="services"
+          title={t('home:attention.VENDOR_SUGGESTIONS.title', { count: item.count })}
+          subtitle={t('home:attention.VENDOR_SUGGESTIONS.sub')}
+          onPress={() =>
+            nav.navigate('VendorList', {
+              status: 'SUGGESTED',
+              title: t('services:status.SUGGESTED'),
+            })
+          }
+        />
+      );
     case 'JOIN_REQUESTS_PENDING':
       return (
         <Row
@@ -220,6 +265,8 @@ function attentionKey(item: AttentionItem): string {
   switch (item.type) {
     case 'IMPORTANT_NOTICE':
       return `${item.type}-${item.noticeId}`;
+    case 'ACTIVE_ALERT':
+      return `${item.type}-${item.alertId}`;
     case 'PROFILE_INCOMPLETE':
       return `${item.type}-${item.missing.join(',')}`;
     default:

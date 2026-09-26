@@ -4,13 +4,13 @@ import { api } from '../../core/api/client';
 import { keys } from '../../core/api/keys';
 import { invalidateContext } from '../../core/auth/auth';
 
-export function useMembers(societyId: string, q: string) {
+export function useMembers(societyId: string, q: string, buildingId?: string) {
   return useInfiniteQuery({
-    queryKey: keys.society(societyId).members(q),
+    queryKey: keys.society(societyId).members(`${q}|${buildingId ?? ''}`),
     queryFn: ({ pageParam }) =>
       api(societyContract.listMembers, {
         params: { societyId },
-        query: { q: q || undefined, cursor: pageParam, limit: 30 },
+        query: { q: q || undefined, buildingId, cursor: pageParam, limit: 30 },
       }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,

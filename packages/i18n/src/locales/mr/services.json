@@ -1,0 +1,70 @@
+{
+  "title": "सेवा",
+  "search": "सेवा देणारे शोधा…",
+  "categoriesTitle": "प्रकार",
+  "vendorCount": "{{count}} सेवा देणारा",
+  "vendorCount_other": "{{count}} सेवा देणारे",
+  "empty": "अजून कोणी सेवा देणारे नाही",
+  "emptyBody": "तुमच्या समितीने इथे अजून कोणाला जोडले नाही.",
+  "noResults": "काहीच जुळले नाही",
+  "add": "सेवा देणारा जोडा",
+  "suggest": "कोणाचे तरी सुचवा",
+  "suggestHelp": "इतरांना दिसण्याआधी समिती तुमची सूचना तपासेल.",
+  "suggested": "धन्यवाद. समिती ते पाहील.",
+  "saved": "जतन केले",
+  "deleted": "हटवले",
+  "suggestions": "{{count}} सूचना पाहायची बाकी",
+  "suggestions_other": "{{count}} सूचना पाहायच्या बाकी",
+  "status": {
+    "SUGGESTED": "सुचवलेले",
+    "APPROVED": "मंजूर",
+    "TRIAL": "चाचणीवर",
+    "BLOCKED": "बंद"
+  },
+  "detail": {
+    "call": "कॉल करा",
+    "altCall": "दुसऱ्या क्रमांकावर कॉल करा",
+    "availability": "वेळ",
+    "about": "माहिती",
+    "notes": "समितीच्या नोंदी",
+    "addedBy": "{{name}} यांनी जोडले",
+    "approve": "मंजूर करा",
+    "block": "बंद करा",
+    "unblock": "पुन्हा मंजूर करा"
+  },
+  "form": {
+    "category": "प्रकार",
+    "name": "नाव",
+    "phone": "मोबाइल क्रमांक",
+    "altPhone": "दुसरा क्रमांक (ऐच्छिक)",
+    "description": "काय काम करतात (ऐच्छिक)",
+    "availability": "वेळ (ऐच्छिक)",
+    "availabilityHelp": "उदा. सकाळी 9 ते संध्याकाळी 7, रविवारी बंद",
+    "status": "स्थिती",
+    "adminNotes": "समितीच्या नोंदी (फक्त समिती पाहते)"
+  },
+  "categories": {
+    "title": "प्रकार",
+    "manage": "प्रकार बदला",
+    "add": "प्रकार जोडा",
+    "edit": "प्रकार बदला",
+    "name": "नाव",
+    "icon": "आयकॉन",
+    "saved": "प्रकार जतन केला",
+    "deleted": "प्रकार हटवला"
+  },
+  "category": {
+    "plumber": "प्लंबर",
+    "electrician": "इलेक्ट्रिशियन",
+    "carpenter": "सुतार",
+    "painter": "पेंटर",
+    "cleaning": "साफसफाई",
+    "pestControl": "कीटक नियंत्रण",
+    "appliance": "AC आणि उपकरणे",
+    "internet": "इंटरनेट आणि केबल",
+    "gas": "गॅस",
+    "waterTanker": "पाण्याचा टँकर",
+    "laundry": "लॉन्ड्री",
+    "lift": "लिफ्ट सर्व्हिस"
+  }
+}

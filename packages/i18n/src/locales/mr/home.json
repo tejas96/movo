@@ -1,5 +1,9 @@
 {
-  "greeting": { "morning": "सुप्रभात", "afternoon": "नमस्कार", "evening": "शुभ संध्याकाळ" },
+  "greeting": {
+    "morning": "सुप्रभात",
+    "afternoon": "नमस्कार",
+    "evening": "शुभ संध्याकाळ"
+  },
   "flatLabel": "फ्लॅट {{flat}}",
   "searchPlaceholder": "सूचना, सदस्य, सेवा शोधा…",
   "quick": {
@@ -25,7 +29,21 @@
       "title_other": "{{count}} आमंत्रणे अजून वापरली नाहीत",
       "sub": "कोड पुन्हा शेअर करा"
     },
-    "IMPORTANT_NOTICE": { "sub": "महत्त्वाची सूचना" },
-    "PROFILE_INCOMPLETE": { "title": "तुमचा ईमेल जोडा", "sub": "म्हणजे तुम्ही स्वतः पासवर्ड रीसेट करू शकाल" }
+    "IMPORTANT_NOTICE": {
+      "sub": "महत्त्वाची सूचना"
+    },
+    "PROFILE_INCOMPLETE": {
+      "title": "तुमचा ईमेल जोडा",
+      "sub": "म्हणजे तुम्ही स्वतः पासवर्ड रीसेट करू शकाल"
+    },
+    "ACTIVE_ALERT": {
+      "title": "{{type}} अलर्ट",
+      "sub": "{{place}} · {{time}}"
+    },
+    "VENDOR_SUGGESTIONS": {
+      "title": "{{count}} सेवेची सूचना",
+      "title_other": "{{count}} सेवांच्या सूचना",
+      "sub": "सेवा मध्ये पाहा"
+    }
   }
 }

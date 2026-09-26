@@ -28,9 +28,11 @@ export function NotificationsScreen() {
   const items = list.data?.pages.flatMap((p) => p.items) ?? [];
 
   const open = (n: Notification) => {
-    const data = n.data as { screen?: string; noticeId?: string };
+    const data = n.data as { screen?: string; noticeId?: string; alertId?: string };
     if (data.screen === 'notice' && data.noticeId)
       nav.navigate('NoticeDetail', { noticeId: data.noticeId });
+    else if (data.screen === 'alert' && data.alertId)
+      nav.navigate('AlertDetail', { alertId: data.alertId });
     else if (data.screen === 'manage/join-requests') nav.navigate('JoinRequests');
   };
 

@@ -1,0 +1,78 @@
+{
+  "title": "पार्किंग",
+  "mySlots": "माझ्या पार्किंग जागा",
+  "myVehicles": "माझी वाहने",
+  "noSlot": "या फ्लॅटसाठी अजून जागा नाही",
+  "noSlotBody": "पार्किंग जागेसाठी तुमच्या समितीला विचारा.",
+  "noVehicles": "अजून वाहन जोडले नाही",
+  "addVehicle": "वाहन जोडा",
+  "editVehicle": "वाहन बदला",
+  "removeVehicle": "वाहन काढा",
+  "vehicleSaved": "वाहन जतन केले",
+  "vehicleRemoved": "वाहन काढले",
+  "since": "{{date}} पासून",
+  "level": "लेव्हल {{level}}",
+  "free": "रिकामी",
+  "allSlots": "सर्व जागा",
+  "noFlat": "तुम्ही कोणत्याही फ्लॅटशी जोडलेले नाही, म्हणून दाखवण्यासाठी पार्किंग नाही.",
+  "slotType": {
+    "TWO_WHEELER": "दुचाकी",
+    "FOUR_WHEELER": "चारचाकी",
+    "EV": "EV चार्जिंग",
+    "OTHER": "इतर"
+  },
+  "vehicleType": {
+    "TWO_WHEELER": "दुचाकी",
+    "FOUR_WHEELER": "चारचाकी",
+    "EV": "इलेक्ट्रिक",
+    "OTHER": "इतर"
+  },
+  "slotStatus": {
+    "ACTIVE": "नियमित",
+    "BLOCKED": "बंद",
+    "VISITOR": "पाहुणे"
+  },
+  "filter": {
+    "all": "सर्व",
+    "free": "रिकामी",
+    "taken": "दिलेली"
+  },
+  "form": {
+    "flat": "फ्लॅट",
+    "registrationNo": "नोंदणी क्रमांक",
+    "registrationHelp": "उदा. MH 12 AB 1234",
+    "type": "प्रकार",
+    "makeModel": "कंपनी आणि मॉडेल (ऐच्छिक)",
+    "color": "रंग (ऐच्छिक)"
+  },
+  "slots": {
+    "title": "पार्किंग जागा",
+    "add": "जागा जोडा",
+    "prefix": "कोडची सुरुवात (ऐच्छिक)",
+    "prefixHelp": "उदा. P- किंवा B1-",
+    "from": "पहिला क्रमांक",
+    "to": "शेवटचा क्रमांक",
+    "preview": "{{first}} ते {{last}} तयार होतील",
+    "previewOne": "{{first}} तयार होईल",
+    "level": "लेव्हल (ऐच्छिक)",
+    "added": "{{count}} जागा जोडली",
+    "added_other": "{{count}} जागा जोडल्या",
+    "empty": "अजून जागा नाहीत",
+    "emptyBody": "सोसायटीच्या पार्किंग जागा जोडा, मग त्या फ्लॅटना द्या.",
+    "allocate": "फ्लॅटला द्या",
+    "allocated": "जागा {{flat}} ला दिली",
+    "release": "ही जागा रिकामी करा",
+    "released": "जागा आता रिकामी आहे",
+    "notes": "टीप (ऐच्छिक)",
+    "block": "जागा बंद करा",
+    "unblock": "नियमित जागा करा",
+    "markVisitor": "पाहुण्यांची जागा करा",
+    "updated": "जागा अपडेट झाली",
+    "summary": "{{total}} पैकी {{taken}} दिल्या"
+  },
+  "vehicles": {
+    "title": "वाहने",
+    "search": "क्रमांकाने शोधा…",
+    "empty": "वाहन सापडले नाही"
+  }
+}

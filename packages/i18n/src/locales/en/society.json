@@ -29,6 +29,8 @@
     "empty": "No members yet",
     "emptyBody": "Members appear here once they join.",
     "phoneHidden": "Phone hidden",
-    "staff": "Staff"
+    "staff": "Staff",
+    "vehicles": "Vehicles",
+    "allWings": "All wings"
   }
 }

@@ -1,0 +1,70 @@
+{
+  "title": "सेवाएँ",
+  "search": "सेवा देने वाले खोजें…",
+  "categoriesTitle": "श्रेणियाँ",
+  "vendorCount": "{{count}} सेवा देने वाला",
+  "vendorCount_other": "{{count}} सेवा देने वाले",
+  "empty": "अभी कोई सेवा देने वाला नहीं",
+  "emptyBody": "आपकी समिति ने यहाँ अभी किसी को नहीं जोड़ा है।",
+  "noResults": "कोई मेल नहीं मिला",
+  "add": "सेवा देने वाला जोड़ें",
+  "suggest": "किसी का सुझाव दें",
+  "suggestHelp": "दूसरों को दिखने से पहले समिति आपका सुझाव जाँचेगी।",
+  "suggested": "धन्यवाद। समिति इसे देखेगी।",
+  "saved": "सहेजा गया",
+  "deleted": "हटाया गया",
+  "suggestions": "{{count}} सुझाव देखना बाकी",
+  "suggestions_other": "{{count}} सुझाव देखने बाकी",
+  "status": {
+    "SUGGESTED": "सुझाया गया",
+    "APPROVED": "मंज़ूर",
+    "TRIAL": "आज़माइश पर",
+    "BLOCKED": "बंद"
+  },
+  "detail": {
+    "call": "कॉल करें",
+    "altCall": "दूसरे नंबर पर कॉल करें",
+    "availability": "समय",
+    "about": "जानकारी",
+    "notes": "समिति के नोट",
+    "addedBy": "{{name}} ने जोड़ा",
+    "approve": "मंज़ूर करें",
+    "block": "बंद करें",
+    "unblock": "फिर मंज़ूर करें"
+  },
+  "form": {
+    "category": "श्रेणी",
+    "name": "नाम",
+    "phone": "मोबाइल नंबर",
+    "altPhone": "दूसरा नंबर (वैकल्पिक)",
+    "description": "क्या काम करते हैं (वैकल्पिक)",
+    "availability": "समय (वैकल्पिक)",
+    "availabilityHelp": "जैसे सुबह 9 से शाम 7, रविवार बंद",
+    "status": "स्थिति",
+    "adminNotes": "समिति के नोट (सिर्फ़ समिति देखती है)"
+  },
+  "categories": {
+    "title": "श्रेणियाँ",
+    "manage": "श्रेणियाँ बदलें",
+    "add": "श्रेणी जोड़ें",
+    "edit": "श्रेणी बदलें",
+    "name": "नाम",
+    "icon": "आइकन",
+    "saved": "श्रेणी सहेजी गई",
+    "deleted": "श्रेणी हटाई गई"
+  },
+  "category": {
+    "plumber": "प्लंबर",
+    "electrician": "इलेक्ट्रीशियन",
+    "carpenter": "बढ़ई",
+    "painter": "पेंटर",
+    "cleaning": "सफ़ाई",
+    "pestControl": "कीट नियंत्रण",
+    "appliance": "AC और उपकरण",
+    "internet": "इंटरनेट और केबल",
+    "gas": "गैस",
+    "waterTanker": "पानी का टैंकर",
+    "laundry": "लॉन्ड्री",
+    "lift": "लिफ़्ट सर्विस"
+  }
+}

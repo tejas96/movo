@@ -1,4 +1,10 @@
-import type { MemberCard, RouteBody, RouteQuery, societyContract } from '@movo/contracts';
+import type {
+  MemberCard,
+  MemberDetail,
+  RouteBody,
+  RouteQuery,
+  societyContract,
+} from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
@@ -9,6 +15,8 @@ import { can } from '../../common/tenant/tenant.types';
 import { decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { AuthService } from '../identity/auth.service';
+import { toVehicleDto } from '../parking/parking.service';
+import { seesAllVehicles } from '../parking/visibility';
 import { ContextService } from './context.service';
 import { isStaffMembership, memberInclude, toMemberCard } from './mappers';
 import { RolesService } from './roles.service';
@@ -71,14 +79,27 @@ export class MembersService {
     };
   }
 
-  async get(membershipId: string): Promise<MemberCard> {
+  async get(membershipId: string): Promise<MemberDetail> {
     const ctx = requireTenant();
     const m = await this.db.membership.findUnique({
       where: { id: membershipId },
       include: memberInclude,
     });
     if (!m || m.status === 'LEFT') throw ApiException.notFound('Member not found');
-    return toMemberCard(m, this.viewerSeesContact() || m.id === ctx.membershipId);
+    const showVehicles =
+      ctx.enabledModules.has('parking') && (m.id === ctx.membershipId || seesAllVehicles(ctx));
+    const flatIds = m.occupancies.map((o) => o.flatId);
+    const vehicles = showVehicles
+      ? await this.db.vehicle.findMany({
+          where: { flatId: { in: flatIds } },
+          include: { flat: { include: { building: true } } },
+          orderBy: { createdAt: 'asc' },
+        })
+      : null;
+    return {
+      ...toMemberCard(m, this.viewerSeesContact() || m.id === ctx.membershipId),
+      vehicles: vehicles ? vehicles.map(toVehicleDto) : null,
+    };
   }
 
   async update(

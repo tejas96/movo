@@ -7,6 +7,7 @@ export * from './cn';
 export * from './DateBlock';
 export * from './EmptyState';
 export * from './FloatingTabBar';
+export * from './HoldButton';
 export * from './Icon';
 export * from './IconButtons';
 export * from './Input';

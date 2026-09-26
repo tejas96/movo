@@ -1,0 +1,78 @@
+{
+  "title": "Parking",
+  "mySlots": "My slots",
+  "myVehicles": "My vehicles",
+  "noSlot": "No slot for this flat yet",
+  "noSlotBody": "Ask your committee for a parking slot.",
+  "noVehicles": "No vehicles added yet",
+  "addVehicle": "Add vehicle",
+  "editVehicle": "Edit vehicle",
+  "removeVehicle": "Remove vehicle",
+  "vehicleSaved": "Vehicle saved",
+  "vehicleRemoved": "Vehicle removed",
+  "since": "Since {{date}}",
+  "level": "Level {{level}}",
+  "free": "Free",
+  "allSlots": "All slots",
+  "noFlat": "You are not linked to a flat, so there is no parking to show.",
+  "slotType": {
+    "TWO_WHEELER": "Two-wheeler",
+    "FOUR_WHEELER": "Four-wheeler",
+    "EV": "EV charging",
+    "OTHER": "Other"
+  },
+  "vehicleType": {
+    "TWO_WHEELER": "Two-wheeler",
+    "FOUR_WHEELER": "Four-wheeler",
+    "EV": "Electric",
+    "OTHER": "Other"
+  },
+  "slotStatus": {
+    "ACTIVE": "Regular",
+    "BLOCKED": "Blocked",
+    "VISITOR": "Visitor"
+  },
+  "filter": {
+    "all": "All",
+    "free": "Free",
+    "taken": "Taken"
+  },
+  "form": {
+    "flat": "Flat",
+    "registrationNo": "Registration number",
+    "registrationHelp": "For example MH 12 AB 1234",
+    "type": "Type",
+    "makeModel": "Make and model (optional)",
+    "color": "Colour (optional)"
+  },
+  "slots": {
+    "title": "Parking slots",
+    "add": "Add slots",
+    "prefix": "Code prefix (optional)",
+    "prefixHelp": "For example P- or B1-",
+    "from": "From number",
+    "to": "To number",
+    "preview": "Creates {{first}} to {{last}}",
+    "previewOne": "Creates {{first}}",
+    "level": "Level (optional)",
+    "added": "{{count}} slot added",
+    "added_other": "{{count}} slots added",
+    "empty": "No slots yet",
+    "emptyBody": "Add your society's parking slots, then give them to flats.",
+    "allocate": "Give to a flat",
+    "allocated": "Slot given to {{flat}}",
+    "release": "Free this slot",
+    "released": "Slot is free now",
+    "notes": "Notes (optional)",
+    "block": "Block slot",
+    "unblock": "Make regular slot",
+    "markVisitor": "Make visitor slot",
+    "updated": "Slot updated",
+    "summary": "{{taken}} of {{total}} taken"
+  },
+  "vehicles": {
+    "title": "Vehicles",
+    "search": "Search by number…",
+    "empty": "No vehicles found"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "title": "आपातकाल",
+  "raise": "अलर्ट भेजें",
+  "raiseHelp": "क्या हो रहा है चुनें, फिर बटन दबाकर रखें।",
+  "hold": "अलर्ट भेजने के लिए दबाकर रखें",
+  "holding": "दबाकर रखें…",
+  "sent": "अलर्ट आपकी सोसायटी को भेजा गया",
+  "shareNote": "आपका नाम, फ़्लैट और मोबाइल नंबर सभी अलर्ट पाने वालों को जाएगा।",
+  "message": "छोटा संदेश (वैकल्पिक)",
+  "messageHint": "जैसे: लिफ़्ट रूम के पास धुआँ",
+  "activeAlerts": "चालू अलर्ट",
+  "contacts": "आपातकालीन संपर्क",
+  "publicNumbers": "सरकारी नंबर",
+  "societyContacts": "सोसायटी के संपर्क",
+  "noContacts": "अभी कोई संपर्क नहीं",
+  "noContactsBody": "आपकी समिति ने अभी आपातकालीन संपर्क नहीं जोड़े हैं।",
+  "history": "पिछले अलर्ट",
+  "noHistory": "कोई पिछला अलर्ट नहीं",
+  "societyPlace": "आपकी सोसायटी",
+  "type": {
+    "MEDICAL": "मेडिकल",
+    "FIRE": "आग",
+    "SECURITY": "सुरक्षा",
+    "LIFT": "लिफ़्ट में फँसे",
+    "GAS": "गैस रिसाव",
+    "OTHER": "अन्य"
+  },
+  "contactType": {
+    "MEDICAL": "मेडिकल",
+    "FIRE": "फ़ायर",
+    "POLICE": "पुलिस",
+    "SECURITY": "सुरक्षा",
+    "LIFT": "लिफ़्ट",
+    "ADMIN": "सोसायटी दफ़्तर",
+    "OTHER": "अन्य"
+  },
+  "status": {
+    "ACTIVE": "चालू",
+    "RESOLVED": "सुलझ गया",
+    "FALSE_ALARM": "झूठा अलर्ट"
+  },
+  "alert": {
+    "title": "{{type}} अलर्ट",
+    "raisedBy": "{{name}} ने भेजा",
+    "callRaiser": "{{name}} को कॉल करें",
+    "resolveTitle": "यह अलर्ट बंद करें",
+    "resolve": "सुलझ गया",
+    "falseAlarm": "झूठा अलर्ट",
+    "note": "नोट (वैकल्पिक)",
+    "closedBy": "{{name}} ने बंद किया",
+    "closed": "अलर्ट बंद हुआ"
+  },
+  "contactForm": {
+    "add": "संपर्क जोड़ें",
+    "edit": "संपर्क बदलें",
+    "label": "नाम",
+    "phone": "नंबर",
+    "type": "प्रकार",
+    "isPublic": "सरकारी नंबर (जैसे 112 या 101)",
+    "saved": "संपर्क सहेजा गया",
+    "deleted": "संपर्क हटाया गया"
+  },
+  "push": {
+    "raisedTitle": "🚨 {{place}} पर {{type}} अलर्ट",
+    "raisedBody": "{{name}}: {{message}}",
+    "raisedBodyNoMessage": "{{name}} ने भेजा। मदद या कॉल के लिए MOVO खोलें।",
+    "closedTitle": "✅ {{type}} अलर्ट बंद",
+    "closedBody": "{{place}} · {{outcome}}"
+  }
+}

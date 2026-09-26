@@ -1,0 +1,70 @@
+{
+  "title": "आणीबाणी",
+  "raise": "अलर्ट पाठवा",
+  "raiseHelp": "काय घडत आहे ते निवडा, मग बटण दाबून धरा.",
+  "hold": "अलर्ट पाठवण्यासाठी दाबून धरा",
+  "holding": "दाबून धरा…",
+  "sent": "अलर्ट तुमच्या सोसायटीला पाठवला",
+  "shareNote": "तुमचे नाव, फ्लॅट आणि मोबाइल क्रमांक अलर्ट मिळणाऱ्या सर्वांना जाईल.",
+  "message": "छोटा संदेश (ऐच्छिक)",
+  "messageHint": "उदा. लिफ्ट रूमजवळ धूर",
+  "activeAlerts": "चालू अलर्ट",
+  "contacts": "आणीबाणी संपर्क",
+  "publicNumbers": "सरकारी क्रमांक",
+  "societyContacts": "सोसायटीचे संपर्क",
+  "noContacts": "अजून संपर्क नाहीत",
+  "noContactsBody": "तुमच्या समितीने अजून आणीबाणी संपर्क जोडलेले नाहीत.",
+  "history": "मागील अलर्ट",
+  "noHistory": "मागील अलर्ट नाहीत",
+  "societyPlace": "तुमची सोसायटी",
+  "type": {
+    "MEDICAL": "वैद्यकीय",
+    "FIRE": "आग",
+    "SECURITY": "सुरक्षा",
+    "LIFT": "लिफ्टमध्ये अडकले",
+    "GAS": "गॅस गळती",
+    "OTHER": "इतर"
+  },
+  "contactType": {
+    "MEDICAL": "वैद्यकीय",
+    "FIRE": "अग्निशमन",
+    "POLICE": "पोलीस",
+    "SECURITY": "सुरक्षा",
+    "LIFT": "लिफ्ट",
+    "ADMIN": "सोसायटी ऑफिस",
+    "OTHER": "इतर"
+  },
+  "status": {
+    "ACTIVE": "चालू",
+    "RESOLVED": "सुटले",
+    "FALSE_ALARM": "खोटा अलर्ट"
+  },
+  "alert": {
+    "title": "{{type}} अलर्ट",
+    "raisedBy": "{{name}} यांनी पाठवला",
+    "callRaiser": "{{name}} यांना कॉल करा",
+    "resolveTitle": "हा अलर्ट बंद करा",
+    "resolve": "सुटले",
+    "falseAlarm": "खोटा अलर्ट",
+    "note": "टीप (ऐच्छिक)",
+    "closedBy": "{{name}} यांनी बंद केला",
+    "closed": "अलर्ट बंद झाला"
+  },
+  "contactForm": {
+    "add": "संपर्क जोडा",
+    "edit": "संपर्क बदला",
+    "label": "नाव",
+    "phone": "क्रमांक",
+    "type": "प्रकार",
+    "isPublic": "सरकारी क्रमांक (उदा. 112 किंवा 101)",
+    "saved": "संपर्क जतन केला",
+    "deleted": "संपर्क काढला"
+  },
+  "push": {
+    "raisedTitle": "🚨 {{place}} येथे {{type}} अलर्ट",
+    "raisedBody": "{{name}}: {{message}}",
+    "raisedBodyNoMessage": "{{name}} यांनी पाठवला. मदतीसाठी किंवा कॉलसाठी MOVO उघडा.",
+    "closedTitle": "✅ {{type}} अलर्ट बंद",
+    "closedBody": "{{place}} · {{outcome}}"
+  }
+}

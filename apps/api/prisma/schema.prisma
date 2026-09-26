@@ -126,6 +126,63 @@ enum DeliveryStatus {
   SKIPPED
 }
 
+enum ParkingSlotType {
+  TWO_WHEELER
+  FOUR_WHEELER
+  EV
+  OTHER
+}
+
+enum ParkingSlotStatus {
+  ACTIVE
+  BLOCKED
+  VISITOR
+}
+
+enum VehicleType {
+  TWO_WHEELER
+  FOUR_WHEELER
+  EV
+  OTHER
+}
+
+enum VendorStatus {
+  SUGGESTED
+  APPROVED
+  TRIAL
+  BLOCKED
+}
+
+enum EmergencyContactType {
+  MEDICAL
+  FIRE
+  POLICE
+  SECURITY
+  LIFT
+  ADMIN
+  OTHER
+}
+
+enum AlertSource {
+  USER
+  DEVICE
+}
+
+enum AlertType {
+  MEDICAL
+  FIRE
+  SECURITY
+  LIFT
+  GAS
+  OTHER
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  FALSE_ALARM
+}
+
 // ---------- identity (global) ----------
 model User {
   id               String     @id @default(uuid(7)) @db.Uuid
@@ -141,15 +198,15 @@ model User {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  credentials    UserCredential[]
-  sessions       RefreshSession[]
-  devices        DeviceToken[]
-  resets         PasswordReset[]
-  memberships    Membership[]
-  joinRequests   JoinRequest[]
-  notifications  Notification[]
-  platformAdmin  PlatformAdmin?
-  preferences    NotificationPreference[]
+  credentials   UserCredential[]
+  sessions      RefreshSession[]
+  devices       DeviceToken[]
+  resets        PasswordReset[]
+  memberships   Membership[]
+  joinRequests  JoinRequest[]
+  notifications Notification[]
+  platformAdmin PlatformAdmin?
+  preferences   NotificationPreference[]
 }
 
 model UserCredential {
@@ -252,6 +309,14 @@ model Society {
   modules      SocietyModule[]
   notices      Notice[]
   occupancies  FlatOccupancy[]
+
+  parkingSlots       ParkingSlot[]
+  parkingAllocations ParkingAllocation[]
+  vehicles           Vehicle[]
+  vendorCategories   VendorCategory[]
+  vendors            Vendor[]
+  emergencyContacts  EmergencyContact[]
+  alerts             Alert[]
 }
 
 model Building {
@@ -281,11 +346,14 @@ model Flat {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  society      Society         @relation(fields: [societyId], references: [id], onDelete: Cascade)
-  building     Building?       @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  society      Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  building     Building?           @relation(fields: [buildingId], references: [id], onDelete: SetNull)
   occupancies  FlatOccupancy[]
   invitations  Invitation[]
   joinRequests JoinRequest[]
+  allocations  ParkingAllocation[]
+  vehicles     Vehicle[]
+  alerts       Alert[]
 
   @@unique([societyId, buildingId, number])
   @@index([societyId])
@@ -463,6 +531,138 @@ model NoticeRead {
   membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@id([noticeId, membershipId])
+}
+
+// ---------- parking ----------
+model ParkingSlot {
+  id        String            @id @default(uuid(7)) @db.Uuid
+  societyId String            @db.Uuid
+  code      String
+  type      ParkingSlotType   @default(FOUR_WHEELER)
+  level     String?
+  status    ParkingSlotStatus @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  society     Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  allocations ParkingAllocation[]
+
+  @@unique([societyId, code])
+}
+
+/// One active allocation per slot (toDate null), enforced by a partial unique index in the migration.
+model ParkingAllocation {
+  id                      String    @id @default(uuid(7)) @db.Uuid
+  societyId               String    @db.Uuid
+  slotId                  String    @db.Uuid
+  flatId                  String    @db.Uuid
+  fromDate                DateTime  @default(now())
+  toDate                  DateTime?
+  notes                   String?
+  allocatedByMembershipId String    @db.Uuid
+  createdAt               DateTime  @default(now())
+
+  society Society     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  slot    ParkingSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  flat    Flat        @relation(fields: [flatId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, flatId])
+  @@index([slotId])
+}
+
+model Vehicle {
+  id             String      @id @default(uuid(7)) @db.Uuid
+  societyId      String      @db.Uuid
+  flatId         String      @db.Uuid
+  registrationNo String
+  type           VehicleType @default(FOUR_WHEELER)
+  makeModel      String?
+  color          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  flat    Flat    @relation(fields: [flatId], references: [id], onDelete: Cascade)
+
+  @@unique([societyId, registrationNo])
+  @@index([societyId, flatId])
+}
+
+// ---------- services (vendors) ----------
+model VendorCategory {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  societyId String   @db.Uuid
+  key       String?
+  name      String
+  icon      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  society Society  @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  vendors Vendor[]
+
+  @@unique([societyId, name])
+}
+
+model Vendor {
+  id                  String       @id @default(uuid(7)) @db.Uuid
+  societyId           String       @db.Uuid
+  categoryId          String       @db.Uuid
+  name                String
+  phone               String
+  altPhone            String?
+  description         String?
+  availability        String?
+  status              VendorStatus @default(APPROVED)
+  adminNotes          String?
+  addedByMembershipId String       @db.Uuid
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  society  Society        @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  category VendorCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([societyId, categoryId, status])
+}
+
+// ---------- emergency ----------
+model EmergencyContact {
+  id             String               @id @default(uuid(7)) @db.Uuid
+  societyId      String               @db.Uuid
+  label          String
+  phone          String
+  type           EmergencyContactType @default(OTHER)
+  sortOrder      Int                  @default(0)
+  isPublicNumber Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, sortOrder])
+}
+
+model Alert {
+  id                     String      @id @default(uuid(7)) @db.Uuid
+  societyId              String      @db.Uuid
+  source                 AlertSource @default(USER)
+  type                   AlertType
+  raisedByMembershipId   String?     @db.Uuid
+  flatId                 String?     @db.Uuid
+  message                String?
+  status                 AlertStatus @default(ACTIVE)
+  resolvedByMembershipId String?     @db.Uuid
+  resolvedAt             DateTime?
+  resolutionNote         String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  flat    Flat?   @relation(fields: [flatId], references: [id], onDelete: SetNull)
+
+  @@index([societyId, status, createdAt(sort: Desc)])
+  @@index([raisedByMembershipId, createdAt])
 }
 
 // ---------- notifications (user owned) ----------

@@ -8,6 +8,8 @@ import { RegisterScreen } from '../../features/auth/RegisterScreen';
 import { ResetPasswordScreen } from '../../features/auth/ResetPasswordScreen';
 import { DirectoryScreen } from '../../features/directory/DirectoryScreen';
 import { MemberDetailScreen } from '../../features/directory/MemberDetailScreen';
+import { AlertDetailScreen } from '../../features/emergency/AlertDetailScreen';
+import { EmergencyScreen } from '../../features/emergency/EmergencyScreen';
 import { NotificationsScreen } from '../../features/home/NotificationsScreen';
 import { InvitationsScreen } from '../../features/manage/InvitationsScreen';
 import { InviteMemberScreen } from '../../features/manage/InviteMemberScreen';
@@ -27,6 +29,14 @@ import { NoticesScreen } from '../../features/notices/NoticesScreen';
 import { JoinScreen } from '../../features/onboarding/JoinScreen';
 import { PendingScreen } from '../../features/onboarding/PendingScreen';
 import { PickFlatScreen } from '../../features/onboarding/PickFlatScreen';
+import { ParkingScreen } from '../../features/parking/ParkingScreen';
+import { ParkingSlotsScreen } from '../../features/parking/ParkingSlotsScreen';
+import { VehicleEditorScreen } from '../../features/parking/VehicleEditorScreen';
+import { ServicesScreen } from '../../features/services/ServicesScreen';
+import { VendorCategoriesScreen } from '../../features/services/VendorCategoriesScreen';
+import { VendorDetailScreen } from '../../features/services/VendorDetailScreen';
+import { VendorEditorScreen } from '../../features/services/VendorEditorScreen';
+import { VendorListScreen } from '../../features/services/VendorListScreen';
 import { signOut } from '../auth/auth';
 import { useSessionStore } from '../auth/session.store';
 import { useBootstrap } from '../auth/use-bootstrap';
@@ -138,6 +148,24 @@ export function RootNavigator() {
           <Stack.Screen name="InviteMember" component={InviteMemberScreen} />
           <Stack.Screen name="JoinRequests" component={JoinRequestsScreen} />
           <Stack.Screen name="Structure" component={StructureScreen} />
+          <Stack.Screen name="Services" component={ServicesScreen} />
+          <Stack.Screen name="VendorList" component={VendorListScreen} />
+          <Stack.Screen name="VendorDetail" component={VendorDetailScreen} />
+          <Stack.Screen
+            name="VendorEditor"
+            component={VendorEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="VendorCategories" component={VendorCategoriesScreen} />
+          <Stack.Screen name="Parking" component={ParkingScreen} />
+          <Stack.Screen
+            name="VehicleEditor"
+            component={VehicleEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="ParkingSlots" component={ParkingSlotsScreen} />
+          <Stack.Screen name="Emergency" component={EmergencyScreen} />
+          <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
           <Stack.Screen name="Join" component={JoinScreen} />
           <Stack.Screen name="PickFlat" component={PickFlatScreen} />
           <Stack.Screen name="Pending" component={PendingScreen} />

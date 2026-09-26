@@ -58,6 +58,9 @@ export function SocietyHubScreen() {
     const title = t(`society:modules.${tile.labelKey}` as 'society:modules.notices');
     if (tile.key === 'notices') nav.navigate('Notices');
     else if (tile.key === 'directory') nav.navigate('Directory');
+    else if (tile.key === 'vendors') nav.navigate('Services');
+    else if (tile.key === 'parking') nav.navigate('Parking');
+    else if (tile.key === 'emergency') nav.navigate('Emergency');
     else if (tile.key === 'manage') nav.navigate('Manage');
     else nav.navigate('ComingSoon', { moduleKey: tile.key, title });
   };

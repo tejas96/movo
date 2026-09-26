@@ -64,8 +64,8 @@ One user, many memberships. One membership, many flats through occupancy. One fl
 | Table | Key fields |
 | --- | --- |
 | parking_slot | society_id, code, type (`TWO_WHEELER`, `FOUR_WHEELER`, `EV`, `OTHER`), level, status (`ACTIVE`, `BLOCKED`, `VISITOR`) |
-| parking_allocation | society_id, slot_id, flat_id, from_date, to_date, notes. One active allocation per slot |
-| vehicle | society_id, flat_id, registration_no, type, make_model, color |
+| parking_allocation | society_id, slot_id, flat_id, from_date, to_date, notes, allocated_by_membership_id. One active allocation per slot (partial unique index) |
+| vehicle | society_id, flat_id, registration_no (normalised `MH12AB1234`, unique per society), type, make_model, color |
 
 ## 5. Communication
 
@@ -122,10 +122,10 @@ Approval rule comes from settings: `NEVER`, `ABOVE_AMOUNT`, `ALWAYS`. The creato
 
 | Table | Key fields |
 | --- | --- |
-| vendor_category | society_id, name, icon, sort_order (seeded from platform defaults) |
-| vendor | society_id, category_id, name, phone, alt_phone, description, availability, status (`APPROVED`, `TRIAL`, `BLOCKED`), admin_notes, added_by_membership_id |
+| vendor_category | society_id, key (seeded ones only, for translated names), name, icon, sort_order (seeded from platform defaults) |
+| vendor | society_id, category_id, name, phone, alt_phone, description, availability, status (`SUGGESTED`, `APPROVED`, `TRIAL`, `BLOCKED`), admin_notes, added_by_membership_id. Members suggest, the committee approves |
 | emergency_contact | society_id, label, phone, type (`MEDICAL`, `FIRE`, `POLICE`, `SECURITY`, `LIFT`, `ADMIN`, `OTHER`), sort_order, is_public_number |
-| alert | society_id, source (`USER`, `DEVICE`), type, raised_by_membership_id, flat_id, message, status (`ACTIVE`, `RESOLVED`, `FALSE_ALARM`), resolved_by_membership_id, resolved_at |
+| alert | society_id, source (`USER`, `DEVICE`), type (`MEDICAL`, `FIRE`, `SECURITY`, `LIFT`, `GAS`, `OTHER`), raised_by_membership_id, flat_id, message, status (`ACTIVE`, `RESOLVED`, `FALSE_ALARM`), resolved_by_membership_id, resolved_at, resolution_note |
 | document | society_id (nullable for profile photos), owner_user_id, kind (`RECEIPT`, `EXPENSE_RECEIPT`, `NOTICE_ATTACHMENT`, `TASK_EVIDENCE`, `LISTING_IMAGE`, `AVATAR`, `LOGO`, `OTHER`), storage_key, mime, size_bytes, status (`PENDING`, `READY`, `DELETED`) |
 
 ## 10. Marketplace (phase 1.5)

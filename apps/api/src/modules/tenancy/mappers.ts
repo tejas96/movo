@@ -1,6 +1,6 @@
-import type { MemberCard, MemberFlat, SocietySummary } from '@movo/contracts';
+import type { FlatRef, MemberCard, MemberFlat, SocietySummary } from '@movo/contracts';
 import { iso } from '../../common/util/dates';
-import type { Prisma, Society } from '../../generated/prisma/client';
+import type { Building, Flat, Prisma, Society } from '../../generated/prisma/client';
 
 export function toSocietySummary(s: Society): SocietySummary {
   return {
@@ -12,6 +12,10 @@ export function toSocietySummary(s: Society): SocietySummary {
     defaultLocale: s.defaultLocale,
     timezone: s.timezone,
   };
+}
+
+export function toFlatRef(f: Flat & { building: Building | null }): FlatRef {
+  return { id: f.id, number: f.number, buildingName: f.building?.name ?? null };
 }
 
 export const memberInclude = {

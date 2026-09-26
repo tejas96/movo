@@ -26,6 +26,7 @@ import {
   RoleSummarySchema,
   SocietySummarySchema,
 } from '../me/me.contract';
+import { VehicleSchema } from '../parking/parking.contract';
 import { SocietySettingsSchema } from '../settings';
 
 const societyParams = z.object({ societyId: IdSchema });
@@ -96,6 +97,12 @@ export const MemberCardSchema = z.object({
   joinedAt: IsoDateTimeSchema.nullable(),
 });
 export type MemberCard = z.infer<typeof MemberCardSchema>;
+
+export const MemberDetailSchema = MemberCardSchema.extend({
+  /** null when the society's directory.showVehicles setting hides them from this viewer. */
+  vehicles: z.array(VehicleSchema).nullable(),
+});
+export type MemberDetail = z.infer<typeof MemberDetailSchema>;
 
 export const InvitationSchema = z.object({
   id: IdSchema,
@@ -249,10 +256,10 @@ export const societyContract = {
   getMember: defineRoute({
     method: 'GET',
     path: '/v1/societies/:societyId/members/:membershipId',
-    summary: 'One member',
+    summary: 'One member, with vehicles when the society shows them',
     module: 'directory',
     params: societyParams.extend({ membershipId: IdSchema }),
-    response: MemberCardSchema,
+    response: MemberDetailSchema,
   }),
   updateMember: defineRoute({
     method: 'PATCH',
