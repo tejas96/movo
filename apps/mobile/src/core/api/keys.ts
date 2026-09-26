@@ -41,6 +41,12 @@ export const keys = {
     collection: ['society', id, 'money', 'collection'] as const,
     plans: ['society', id, 'money', 'plans'] as const,
     instructions: ['society', id, 'money', 'instructions'] as const,
+    finance: ['society', id, 'finance'] as const,
+    expenses: (filter: string) => ['society', id, 'finance', 'expenses', filter] as const,
+    expense: (expenseId: string) => ['society', id, 'finance', 'expense', expenseId] as const,
+    expenseCategories: ['society', id, 'finance', 'categories'] as const,
+    report: (fy: string) => ['society', id, 'finance', 'report', fy] as const,
+    income: (fy: string) => ['society', id, 'finance', 'income', fy] as const,
   }),
   join: { preview: (code: string) => ['join', 'preview', code] as const },
 };

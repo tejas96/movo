@@ -36,6 +36,7 @@ export function NotificationsScreen() {
       eventId?: string;
       billId?: string;
       paymentId?: string;
+      expenseId?: string;
     };
     if (data.screen === 'notice' && data.noticeId)
       nav.navigate('NoticeDetail', { noticeId: data.noticeId });
@@ -48,6 +49,8 @@ export function NotificationsScreen() {
     else if (data.screen === 'bill' && data.billId) nav.navigate('Bill', { billId: data.billId });
     else if (data.screen === 'payment' && data.paymentId)
       nav.navigate('Receipt', { paymentId: data.paymentId });
+    else if (data.screen === 'expense' && data.expenseId)
+      nav.navigate('ExpenseDetail', { expenseId: data.expenseId });
     else if (data.screen === 'manage/join-requests') nav.navigate('JoinRequests');
   };
 

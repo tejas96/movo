@@ -49,6 +49,11 @@
       "title": "{{amount}} बाकी · {{flat}}",
       "titleOverdue": "{{amount}} बकाया · {{flat}}",
       "sub": "अंतिम तारीख {{date}}"
+    },
+    "EXPENSES_TO_APPROVE": {
+      "title": "{{count}} खर्च मंज़ूर करना है",
+      "title_other": "{{count}} खर्च मंज़ूर करने हैं",
+      "sub": "कुल {{amount}}"
     }
   },
   "upcomingKind": {

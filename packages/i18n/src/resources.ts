@@ -3,6 +3,7 @@ import enCommon from './locales/en/common.json';
 import enEmergency from './locales/en/emergency.json';
 import enErrors from './locales/en/errors.json';
 import enEvents from './locales/en/events.json';
+import enExpenses from './locales/en/expenses.json';
 import enHome from './locales/en/home.json';
 import enManage from './locales/en/manage.json';
 import enMe from './locales/en/me.json';
@@ -18,6 +19,7 @@ import hiCommon from './locales/hi/common.json';
 import hiEmergency from './locales/hi/emergency.json';
 import hiErrors from './locales/hi/errors.json';
 import hiEvents from './locales/hi/events.json';
+import hiExpenses from './locales/hi/expenses.json';
 import hiHome from './locales/hi/home.json';
 import hiManage from './locales/hi/manage.json';
 import hiMe from './locales/hi/me.json';
@@ -33,6 +35,7 @@ import mrCommon from './locales/mr/common.json';
 import mrEmergency from './locales/mr/emergency.json';
 import mrErrors from './locales/mr/errors.json';
 import mrEvents from './locales/mr/events.json';
+import mrExpenses from './locales/mr/expenses.json';
 import mrHome from './locales/mr/home.json';
 import mrManage from './locales/mr/manage.json';
 import mrMe from './locales/mr/me.json';
@@ -61,6 +64,7 @@ export const en = {
   emergency: enEmergency,
   meetings: enMeetings,
   events: enEvents,
+  expenses: enExpenses,
 } as const;
 
 export type Resources = typeof en;
@@ -86,6 +90,7 @@ export const resources = {
     emergency: hiEmergency,
     meetings: hiMeetings,
     events: hiEvents,
+    expenses: hiExpenses,
   },
   mr: {
     common: mrCommon,
@@ -103,5 +108,6 @@ export const resources = {
     emergency: mrEmergency,
     meetings: mrMeetings,
     events: mrEvents,
+    expenses: mrExpenses,
   },
 } as const;

@@ -8,6 +8,7 @@ import { runWithStore } from '../common/request-store';
 import { newId } from '../common/util/ids';
 import { loadEnv } from '../config/env';
 import { defaultEmergencyContactRows } from '../modules/emergency/emergency.service';
+import { defaultExpenseCategoryRows } from '../modules/expenses/expenses.service';
 import { PasswordService } from '../modules/identity/password.service';
 import { UsersService } from '../modules/identity/users.service';
 import { fyLabel, receiptNo, todayIn } from '../modules/maintenance/billing';
@@ -268,6 +269,64 @@ async function ensureM6Demo(
   log(`added a billing plan, ${created} bills and ${n} payments`);
 }
 
+/** Expense categories, this month's spending and one hall booking. Safe to run again. */
+async function ensureM7Demo(
+  prisma: PrismaService,
+  societyId: string,
+  log: (msg: string) => void,
+): Promise<void> {
+  const admin = await prisma.membership.findFirst({
+    where: { societyId, roles: { some: { role: { key: 'admin' } } } },
+    orderBy: { createdAt: 'asc' },
+  });
+  if (!admin) return;
+  if ((await prisma.expenseCategory.count({ where: { societyId } })) === 0)
+    await prisma.expenseCategory.createMany({ data: defaultExpenseCategoryRows(societyId) });
+  if ((await prisma.expense.count({ where: { societyId } })) > 0) return;
+  const today = todayIn('Asia/Kolkata');
+  const month = today.slice(0, 7);
+  const fy = fyLabel(today, 4);
+  const cat = async (key: string) =>
+    (await prisma.expenseCategory.findFirstOrThrow({ where: { societyId, key } })).id;
+  const rows: [string, number, string, string, string][] = [
+    ['electricity', 1_845_000, 'MSEDCL', 'Common area and pumps', '05'],
+    ['security', 2_400_000, 'Shield Security Services', 'Two guards, September', '03'],
+    ['housekeeping', 1_200_000, 'CleanPro', 'Daily cleaning', '03'],
+    ['lift', 450_000, 'Otis Elevators', 'Quarterly service', '12'],
+    ['water', 320_000, 'Pune Water Tankers', 'Two tankers', '18'],
+  ];
+  for (const [key, amountPaise, payeeName, description, dd] of rows) {
+    await prisma.expense.create({
+      data: {
+        societyId,
+        categoryId: await cat(key),
+        amountPaise,
+        // Never in the future, even when the seed runs early in the month.
+        incurredOn: dbDate(`${month}-${dd < today.slice(8) ? dd : today.slice(8)}`),
+        payeeName,
+        description,
+        method: 'BANK_TRANSFER',
+        status: 'APPROVED',
+        financialYear: fy,
+        createdByMembershipId: admin.id,
+        idempotencyKey: `seed-${key}`,
+      },
+    });
+  }
+  await prisma.incomeEntry.create({
+    data: {
+      societyId,
+      kind: 'HALL_BOOKING',
+      amountPaise: 300_000,
+      receivedOn: dbDate(`${month}-${'08' < today.slice(8) ? '08' : today.slice(8)}`),
+      description: 'Clubhouse booking, B-204',
+      financialYear: fy,
+      createdByMembershipId: admin.id,
+    },
+  });
+  log(`added ${rows.length} expenses and one income entry`);
+}
+
 async function main(): Promise<void> {
   const env = loadEnv();
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
@@ -315,6 +374,7 @@ async function main(): Promise<void> {
         await ensureM4Demo(prisma, existing.id, log);
         await ensureM5Demo(prisma, existing.id, log);
         await ensureM6Demo(app, prisma, existing.id, log);
+        await ensureM7Demo(prisma, existing.id, log);
       } else {
         const result = await societies.create({
           name: 'Sunrise Residency',
@@ -405,6 +465,7 @@ async function main(): Promise<void> {
         await ensureM4Demo(prisma, societyId, log);
         await ensureM5Demo(prisma, societyId, log);
         await ensureM6Demo(app, prisma, societyId, log);
+        await ensureM7Demo(prisma, societyId, log);
       }
     }
   });

@@ -113,9 +113,9 @@ Flat balance = sum of open bills' (total − paid). Advance = sum(payment.amount
 
 | Table | Key fields |
 | --- | --- |
-| expense_category | society_id, name, icon, is_system, sort_order |
-| expense | society_id, category_id, amount_paise, incurred_on, vendor_id (nullable), payee_name, description, payment_method, reference, receipts (document ids), status (`DRAFT`, `PENDING_APPROVAL`, `APPROVED`, `REJECTED`, `PAID`), financial_year, created_by_membership_id, approved_by_membership_id, approved_at, rejection_reason, idempotency_key |
-| income_entry | society_id, kind (`DONATION`, `INTEREST`, `HALL_BOOKING`, `OTHER`), amount_paise, received_on, description, financial_year. Small table so reports can show total income beyond maintenance |
+| expense_category | society_id, key (seeded ones, for translated names), name, icon, sort_order. Unique (society_id, name) |
+| expense | society_id, category_id, amount_paise, incurred_on, payee_name, description, method, reference, status (`PENDING`, `APPROVED`, `REJECTED`), financial_year, created_by_membership_id, decided_by_membership_id, decided_at, rejection_reason, idempotency_key. Unique (society_id, idempotency_key). LATER: receipts (document ids), vendor link |
+| income_entry | society_id, kind (`DONATION`, `INTEREST`, `HALL_BOOKING`, `PENALTY`, `OTHER`), amount_paise, received_on, description, financial_year, created_by_membership_id. Small table so reports can show total income beyond maintenance |
 
 Approval rule comes from settings: `NEVER`, `ABOVE_AMOUNT`, `ALWAYS`. The creator cannot approve their own expense.
 

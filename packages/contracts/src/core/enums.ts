@@ -202,6 +202,16 @@ export const AuditActionSchema = z.enum([
   'payment_instruction.created',
   'payment_instruction.updated',
   'payment_instruction.deleted',
+  'expense.category.created',
+  'expense.category.updated',
+  'expense.category.deleted',
+  'expense.created',
+  'expense.updated',
+  'expense.approved',
+  'expense.rejected',
+  'expense.deleted',
+  'income.created',
+  'income.deleted',
   'user.deleted',
 ]);
 export type AuditAction = z.infer<typeof AuditActionSchema>;

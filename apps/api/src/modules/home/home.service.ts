@@ -6,6 +6,7 @@ import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
 import { EmergencyService } from '../emergency/emergency.service';
 import { EventsService } from '../events/events.service';
+import { ExpensesService } from '../expenses/expenses.service';
 import { AccountsService } from '../maintenance/accounts.service';
 import { MeetingsService } from '../meetings/meetings.service';
 import { NoticesService } from '../notices/notices.service';
@@ -28,6 +29,7 @@ export class HomeService {
     private readonly meetings: MeetingsService,
     private readonly events: EventsService,
     private readonly accounts: AccountsService,
+    private readonly expenses: ExpensesService,
   ) {}
 
   async summary(): Promise<HomeSummary> {
@@ -48,6 +50,8 @@ export class HomeService {
       if (joinRequests > 0) attention.push({ type: 'JOIN_REQUESTS_PENDING', count: joinRequests });
       if (invitations > 0) attention.push({ type: 'INVITATIONS_PENDING', count: invitations });
     }
+    if (ctx.enabledModules.has('expenses'))
+      attention.push(...(await this.expenses.attentionForHome(ctx)));
     if (ctx.enabledModules.has('vendors') && can(ctx, 'vendor.manage')) {
       const suggestions = await this.vendors.countSuggestions();
       if (suggestions > 0) attention.push({ type: 'VENDOR_SUGGESTIONS', count: suggestions });

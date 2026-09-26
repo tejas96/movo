@@ -1,0 +1,109 @@
+{
+  "title": "Expenses",
+  "tabList": "Expenses",
+  "tabReport": "Report",
+  "new": "Add expense",
+  "edit": "Edit expense",
+  "empty": "No expenses yet",
+  "emptyBody": "Expenses your committee adds will show here.",
+  "summaryOnly": "Your committee shares a summary of the accounts, not each expense.",
+  "hidden": "Your committee has not shared the accounts.",
+  "filterAll": "All",
+  "filterPending": "Waiting",
+  "status": {
+    "PENDING": "Waiting",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected"
+  },
+  "category": {
+    "electricity": "Electricity",
+    "water": "Water",
+    "security": "Security",
+    "housekeeping": "Housekeeping",
+    "lift": "Lift maintenance",
+    "repairs": "Repairs",
+    "salaries": "Staff salaries",
+    "office": "Office and admin",
+    "events": "Events",
+    "other": "Other"
+  },
+  "incomeKind": {
+    "DONATION": "Donation",
+    "INTEREST": "Bank interest",
+    "HALL_BOOKING": "Hall booking",
+    "PENALTY": "Fines",
+    "OTHER": "Other"
+  },
+  "form": {
+    "category": "Category",
+    "pickCategory": "Pick a category",
+    "amount": "Amount",
+    "date": "Paid on",
+    "payee": "Paid to",
+    "payeeHint": "For example: MSEDCL",
+    "description": "What for (optional)",
+    "method": "Paid by",
+    "reference": "Reference (optional)",
+    "referenceHint": "Bill number or transaction id",
+    "saved": "Expense saved",
+    "needsApproval": "Someone else in the committee may need to approve this."
+  },
+  "detail": {
+    "title": "Expense",
+    "paidTo": "Paid to",
+    "paidOn": "Paid on",
+    "method": "Paid by",
+    "reference": "Reference",
+    "addedBy": "Added by {{name}}",
+    "approvedBy": "Approved by {{name}}",
+    "rejectedBy": "Rejected by {{name}}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "rejectTitle": "Reject this expense?",
+    "reason": "Reason",
+    "approved": "Expense approved",
+    "rejected": "Expense rejected",
+    "remove": "Remove expense",
+    "removed": "Expense removed",
+    "ownNote": "Someone else in the committee must approve this."
+  },
+  "report": {
+    "fy": "FY {{fy}}",
+    "income": "Income",
+    "spent": "Spent",
+    "net": "Balance",
+    "maintenance": "Maintenance collected",
+    "byCategory": "Where the money went",
+    "byMonth": "Month by month",
+    "pending": "{{count}} expense waiting · {{amount}}",
+    "pending_other": "{{count}} expenses waiting · {{amount}}",
+    "outstanding": "Dues not paid yet: {{amount}}",
+    "noExpenses": "No expenses this year",
+    "otherIncome": "Other income",
+    "addIncome": "Add income",
+    "noIncome": "No other income this year"
+  },
+  "income": {
+    "title": "Add income",
+    "kind": "Type",
+    "amount": "Amount",
+    "date": "Received on",
+    "description": "Note (optional)",
+    "saved": "Income saved",
+    "removed": "Income removed",
+    "remove": "Remove"
+  },
+  "categories": {
+    "title": "Expense categories",
+    "add": "Add category",
+    "name": "Name",
+    "saved": "Category saved",
+    "removed": "Category removed",
+    "remove": "Remove"
+  },
+  "push": {
+    "pendingTitle": "Approve expense: {{amount}}",
+    "approvedTitle": "Expense approved: {{amount}}",
+    "rejectedTitle": "Expense rejected: {{amount}}"
+  }
+}

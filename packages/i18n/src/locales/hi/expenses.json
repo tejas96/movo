@@ -1,0 +1,109 @@
+{
+  "title": "खर्च",
+  "tabList": "खर्च",
+  "tabReport": "रिपोर्ट",
+  "new": "खर्च जोड़ें",
+  "edit": "खर्च बदलें",
+  "empty": "अभी कोई खर्च नहीं",
+  "emptyBody": "कमेटी जो खर्च जोड़ेगी, वे यहाँ दिखेंगे।",
+  "summaryOnly": "कमेटी हिसाब का सारांश साझा करती है, हर खर्च नहीं।",
+  "hidden": "कमेटी ने हिसाब साझा नहीं किया है।",
+  "filterAll": "सभी",
+  "filterPending": "प्रतीक्षा में",
+  "status": {
+    "PENDING": "प्रतीक्षा में",
+    "APPROVED": "मंज़ूर",
+    "REJECTED": "नामंज़ूर"
+  },
+  "category": {
+    "electricity": "बिजली",
+    "water": "पानी",
+    "security": "सुरक्षा",
+    "housekeeping": "सफ़ाई",
+    "lift": "लिफ्ट रखरखाव",
+    "repairs": "मरम्मत",
+    "salaries": "कर्मचारी वेतन",
+    "office": "कार्यालय और प्रशासन",
+    "events": "कार्यक्रम",
+    "other": "अन्य"
+  },
+  "incomeKind": {
+    "DONATION": "दान",
+    "INTEREST": "बैंक ब्याज",
+    "HALL_BOOKING": "हॉल बुकिंग",
+    "PENALTY": "जुर्माना",
+    "OTHER": "अन्य"
+  },
+  "form": {
+    "category": "श्रेणी",
+    "pickCategory": "श्रेणी चुनें",
+    "amount": "राशि",
+    "date": "भुगतान की तारीख",
+    "payee": "किसे दिया",
+    "payeeHint": "जैसे: MSEDCL",
+    "description": "किसलिए (वैकल्पिक)",
+    "method": "कैसे दिया",
+    "reference": "संदर्भ (वैकल्पिक)",
+    "referenceHint": "बिल नंबर या ट्रांज़ैक्शन आईडी",
+    "saved": "खर्च सेव हुआ",
+    "needsApproval": "कमेटी में किसी और को इसे मंज़ूर करना पड़ सकता है।"
+  },
+  "detail": {
+    "title": "खर्च",
+    "paidTo": "किसे दिया",
+    "paidOn": "भुगतान की तारीख",
+    "method": "कैसे दिया",
+    "reference": "संदर्भ",
+    "addedBy": "{{name}} ने जोड़ा",
+    "approvedBy": "{{name}} ने मंज़ूर किया",
+    "rejectedBy": "{{name}} ने नामंज़ूर किया",
+    "approve": "मंज़ूर करें",
+    "reject": "नामंज़ूर करें",
+    "rejectTitle": "यह खर्च नामंज़ूर करें?",
+    "reason": "कारण",
+    "approved": "खर्च मंज़ूर हुआ",
+    "rejected": "खर्च नामंज़ूर हुआ",
+    "remove": "खर्च हटाएँ",
+    "removed": "खर्च हटाया गया",
+    "ownNote": "कमेटी में किसी और को इसे मंज़ूर करना होगा।"
+  },
+  "report": {
+    "fy": "वित्त वर्ष {{fy}}",
+    "income": "आय",
+    "spent": "खर्च",
+    "net": "शेष",
+    "maintenance": "मेंटेनेंस वसूली",
+    "byCategory": "पैसा कहाँ गया",
+    "byMonth": "महीनेवार",
+    "pending": "{{count}} खर्च प्रतीक्षा में · {{amount}}",
+    "pending_other": "{{count}} खर्च प्रतीक्षा में · {{amount}}",
+    "outstanding": "अभी न चुकाया बकाया: {{amount}}",
+    "noExpenses": "इस साल कोई खर्च नहीं",
+    "otherIncome": "अन्य आय",
+    "addIncome": "आय जोड़ें",
+    "noIncome": "इस साल कोई अन्य आय नहीं"
+  },
+  "income": {
+    "title": "आय जोड़ें",
+    "kind": "प्रकार",
+    "amount": "राशि",
+    "date": "प्राप्ति की तारीख",
+    "description": "नोट (वैकल्पिक)",
+    "saved": "आय सेव हुई",
+    "removed": "आय हटाई गई",
+    "remove": "हटाएँ"
+  },
+  "categories": {
+    "title": "खर्च की श्रेणियाँ",
+    "add": "श्रेणी जोड़ें",
+    "name": "नाम",
+    "saved": "श्रेणी सेव हुई",
+    "removed": "श्रेणी हटाई गई",
+    "remove": "हटाएँ"
+  },
+  "push": {
+    "pendingTitle": "खर्च मंज़ूर करें: {{amount}}",
+    "approvedTitle": "खर्च मंज़ूर: {{amount}}",
+    "rejectedTitle": "खर्च नामंज़ूर: {{amount}}"
+  }
+}

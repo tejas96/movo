@@ -34,6 +34,9 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'PaymentAllocation',
   'ReceiptCounter',
   'PaymentInstruction',
+  'ExpenseCategory',
+  'Expense',
+  'IncomeEntry',
 ]);
 
 const READ_OPS = new Set([

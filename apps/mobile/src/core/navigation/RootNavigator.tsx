@@ -13,6 +13,10 @@ import { EmergencyScreen } from '../../features/emergency/EmergencyScreen';
 import { EventDetailScreen } from '../../features/events/EventDetailScreen';
 import { EventEditorScreen } from '../../features/events/EventEditorScreen';
 import { EventsScreen } from '../../features/events/EventsScreen';
+import { ExpenseCategoriesScreen } from '../../features/expenses/ExpenseCategoriesScreen';
+import { ExpenseDetailScreen } from '../../features/expenses/ExpenseDetailScreen';
+import { ExpenseEditorScreen } from '../../features/expenses/ExpenseEditorScreen';
+import { ExpensesScreen } from '../../features/expenses/ExpensesScreen';
 import { NotificationsScreen } from '../../features/home/NotificationsScreen';
 import { InvitationsScreen } from '../../features/manage/InvitationsScreen';
 import { InviteMemberScreen } from '../../features/manage/InviteMemberScreen';
@@ -218,6 +222,14 @@ export function RootNavigator() {
             options={{ animation: 'slide_from_bottom' }}
           />
           <Stack.Screen name="PaymentInstructions" component={PaymentInstructionsScreen} />
+          <Stack.Screen name="Expenses" component={ExpensesScreen} />
+          <Stack.Screen name="ExpenseDetail" component={ExpenseDetailScreen} />
+          <Stack.Screen
+            name="ExpenseEditor"
+            component={ExpenseEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="ExpenseCategories" component={ExpenseCategoriesScreen} />
           <Stack.Screen name="Join" component={JoinScreen} />
           <Stack.Screen name="PickFlat" component={PickFlatScreen} />
           <Stack.Screen name="Pending" component={PendingScreen} />

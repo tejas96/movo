@@ -49,6 +49,11 @@
       "title": "{{amount}} देय · {{flat}}",
       "titleOverdue": "{{amount}} थकीत · {{flat}}",
       "sub": "शेवटची तारीख {{date}}"
+    },
+    "EXPENSES_TO_APPROVE": {
+      "title": "{{count}} खर्च मंजूर करायचा आहे",
+      "title_other": "{{count}} खर्च मंजूर करायचे आहेत",
+      "sub": "एकूण {{amount}}"
     }
   },
   "upcomingKind": {

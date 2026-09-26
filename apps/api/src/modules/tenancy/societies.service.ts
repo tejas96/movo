@@ -18,6 +18,7 @@ import { can } from '../../common/tenant/tenant.types';
 import { readableCode } from '../../common/util/codes';
 import type { Prisma, Society } from '../../generated/prisma/client';
 import { defaultEmergencyContactRows } from '../emergency/emergency.service';
+import { defaultExpenseCategoryRows } from '../expenses/expenses.service';
 import { PasswordService } from '../identity/password.service';
 import { UsersService } from '../identity/users.service';
 import { defaultVendorCategoryRows } from '../vendors/vendors.service';
@@ -136,6 +137,7 @@ export class SocietiesService {
       });
       await tx.vendorCategory.createMany({ data: defaultVendorCategoryRows(society.id) });
       await tx.emergencyContact.createMany({ data: defaultEmergencyContactRows(society.id) });
+      await tx.expenseCategory.createMany({ data: defaultExpenseCategoryRows(society.id) });
       const adminRoleId = byKey.admin;
       if (!adminRoleId) throw new Error('admin role missing');
       const membership = await tx.membership.create({

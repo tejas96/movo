@@ -249,7 +249,7 @@ function Stat({
 }
 
 function TreasurerTools() {
-  const { t } = useTranslation('money');
+  const { t } = useTranslation(['money', 'expenses']);
   const nav = useNav();
   const toast = useToast();
   const toMessage = useErrorMessage();
@@ -258,8 +258,9 @@ function TreasurerTools() {
   const canGenerate = useCan('maintenance.generate_bills');
   const canSettings = useCan('maintenance.settings.manage');
   const canPlans = useCan('maintenance.view_all') && (canSettings || canGenerate);
+  const canExpenses = useCan('expense.create');
   const generate = useGenerateBills(societyId);
-  if (!canRecord && !canGenerate && !canSettings) return null;
+  if (!canRecord && !canGenerate && !canSettings && !canExpenses) return null;
 
   const runGenerate = async () => {
     try {
@@ -301,6 +302,13 @@ function TreasurerTools() {
             icon="addCircle"
             title={t('treasurer.adhoc')}
             onPress={() => nav.navigate('AdhocBill')}
+          />
+        ) : null}
+        {canExpenses ? (
+          <Row
+            icon="moneyOut"
+            title={t('expenses:title')}
+            onPress={() => nav.navigate('Expenses')}
           />
         ) : null}
         {canPlans ? (

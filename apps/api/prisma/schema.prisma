@@ -257,6 +257,20 @@ enum PaymentInstructionKind {
   OTHER
 }
 
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum IncomeKind {
+  DONATION
+  INTEREST
+  HALL_BOOKING
+  PENALTY
+  OTHER
+}
+
 model User {
   id               String     @id @default(uuid(7)) @db.Uuid
   email            String?    @unique
@@ -403,6 +417,9 @@ model Society {
   allocations         PaymentAllocation[]
   receiptCounters     ReceiptCounter[]
   paymentInstructions PaymentInstruction[]
+  expenseCategories   ExpenseCategory[]
+  expenses            Expense[]
+  incomeEntries       IncomeEntry[]
 }
 
 model Building {
@@ -997,6 +1014,67 @@ model PaymentInstruction {
   society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
 
   @@index([societyId, sortOrder])
+}
+
+// ---------- money: expenses ----------
+model ExpenseCategory {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  societyId String   @db.Uuid
+  key       String?
+  name      String
+  icon      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  society  Society   @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  expenses Expense[]
+
+  @@unique([societyId, name])
+}
+
+model Expense {
+  id                    String        @id @default(uuid(7)) @db.Uuid
+  societyId             String        @db.Uuid
+  categoryId            String        @db.Uuid
+  amountPaise           Int
+  incurredOn            DateTime      @db.Date
+  payeeName             String
+  description           String?
+  method                PaymentMethod
+  reference             String?
+  status                ExpenseStatus
+  financialYear         String
+  createdByMembershipId String        @db.Uuid
+  decidedByMembershipId String?       @db.Uuid
+  decidedAt             DateTime?
+  rejectionReason       String?
+  idempotencyKey        String
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  society  Society         @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([societyId, idempotencyKey])
+  @@index([societyId, financialYear, status])
+  @@index([societyId, incurredOn(sort: Desc)])
+}
+
+model IncomeEntry {
+  id                    String     @id @default(uuid(7)) @db.Uuid
+  societyId             String     @db.Uuid
+  kind                  IncomeKind
+  amountPaise           Int
+  receivedOn            DateTime   @db.Date
+  description           String?
+  financialYear         String
+  createdByMembershipId String     @db.Uuid
+  createdAt             DateTime   @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, financialYear])
 }
 
 // ---------- notifications (user owned) ----------

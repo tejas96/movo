@@ -32,6 +32,12 @@ export const AttentionItemSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('JOIN_REQUESTS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('INVITATIONS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('VENDOR_SUGGESTIONS'), count: z.number().int() }),
+  /** Pending expenses the viewer may approve (not ones they added). */
+  z.object({
+    type: z.literal('EXPENSES_TO_APPROVE'),
+    count: z.number().int(),
+    amountPaise: z.number().int(),
+  }),
   z.object({
     type: z.literal('IMPORTANT_NOTICE'),
     noticeId: IdSchema,

@@ -25,14 +25,14 @@ Your section 33 listed marketplace and buy-and-sell as MVP candidates. I put the
 | M4 ✅ | Directory, services, parking, emergency | privacy-aware directory, vendors, my parking, emergency contacts and alerts |
 | M5 ✅ | Meetings and events | schedule, reminders, RSVP, Home upcoming |
 | M6 ✅ | Money | billing plans, bill generation, late fees, record payment with idempotency, receipts, collection status, how to pay, reminders |
-| M7 | Expenses and reports | expenses with receipts and approval, categories, FY summary, member visibility setting |
+| M7 ✅ | Expenses and reports | expenses with receipts and approval, categories, FY summary, member visibility setting |
 | M8 | Duties, tasks, rewards | rotation engine, assignments and overrides, tasks with volunteering and verification, points ledger, rules |
 | M9 | Manage society and release | all admin screens, audit log view, Hindi and Marathi complete, privacy policy page, Play internal testing, backups and uptime checks live |
 | M10 | Marketplace (1.5) | listings, orders, messages, reviews, moderation, network visibility flag |
 
 ## Done so far (2026-09-26)
 
-M0 to M6 are built and tested. The app runs on Android against the local API. See `07-dev-setup.md`.
+M0 to M7 are built and tested. The app runs on Android against the local API. See `07-dev-setup.md`.
 
 M4 added: Services (vendor categories, vendors, member suggestions the committee approves), Parking (slots, one active allocation per slot, vehicles per flat, member detail shows vehicles by the `directory.showVehicles` setting), Emergency (contacts with India's public numbers seeded, hold-to-confirm alerts, cooldown, push to the society or configured roles, resolve or false alarm, active alerts first on Home), and a wing filter in the directory.
 
@@ -42,9 +42,11 @@ M6 added: billing plans (monthly, quarterly, half-yearly, yearly; same amount pe
 
 Also fixed in M6: text sizes. `cn()` used tailwind-merge, which took `text-h1`, `text-display` and the rest for colours and dropped them, so every text rendered at one size. The MOVO scale is now registered with tailwind-merge.
 
+M7 added: expenses (category, amount, date, payee, method, reference) with approval by the `expenses.approval` setting (never, above an amount, always; ₹5,000 by default) and never by the person who added them, reject with a reason, edit sends it back, remove while not approved, idempotency keys; ten seeded expense categories the committee can rename or extend; other income (donations, interest, hall booking, fines); a financial-year report with income, spending by category and month, balance, pending approvals and unpaid dues; the `expenses.visibleToMembers` setting (none, summary, details); "expenses to approve" on Home. Receipt photos wait for document upload.
+
 ## Next
 
-1. M7: expenses and reports.
+1. M8: duties, tasks, rewards.
 2. Firebase project for push (alerts are written to the outbox now; the transport logs until Firebase exists).
 
 ## Explicitly out of the MVP

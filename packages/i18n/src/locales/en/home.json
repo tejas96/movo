@@ -49,6 +49,11 @@
       "title": "{{amount}} due · {{flat}}",
       "titleOverdue": "{{amount}} overdue · {{flat}}",
       "sub": "Due {{date}}"
+    },
+    "EXPENSES_TO_APPROVE": {
+      "title": "{{count}} expense to approve",
+      "title_other": "{{count}} expenses to approve",
+      "sub": "{{amount}} in total"
     }
   },
   "upcomingKind": {

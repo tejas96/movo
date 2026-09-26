@@ -1,0 +1,109 @@
+{
+  "title": "खर्च",
+  "tabList": "खर्च",
+  "tabReport": "अहवाल",
+  "new": "खर्च जोडा",
+  "edit": "खर्च बदला",
+  "empty": "अजून खर्च नाही",
+  "emptyBody": "कमिटी जोडेल ते खर्च इथे दिसतील.",
+  "summaryOnly": "कमिटी हिशोबाचा सारांश दाखवते, प्रत्येक खर्च नाही.",
+  "hidden": "कमिटीने हिशोब दाखवलेला नाही.",
+  "filterAll": "सर्व",
+  "filterPending": "प्रतीक्षेत",
+  "status": {
+    "PENDING": "प्रतीक्षेत",
+    "APPROVED": "मंजूर",
+    "REJECTED": "नामंजूर"
+  },
+  "category": {
+    "electricity": "वीज",
+    "water": "पाणी",
+    "security": "सुरक्षा",
+    "housekeeping": "स्वच्छता",
+    "lift": "लिफ्ट देखभाल",
+    "repairs": "दुरुस्ती",
+    "salaries": "कर्मचारी पगार",
+    "office": "कार्यालय आणि प्रशासन",
+    "events": "कार्यक्रम",
+    "other": "इतर"
+  },
+  "incomeKind": {
+    "DONATION": "देणगी",
+    "INTEREST": "बँक व्याज",
+    "HALL_BOOKING": "हॉल बुकिंग",
+    "PENALTY": "दंड",
+    "OTHER": "इतर"
+  },
+  "form": {
+    "category": "प्रकार",
+    "pickCategory": "प्रकार निवडा",
+    "amount": "रक्कम",
+    "date": "दिल्याची तारीख",
+    "payee": "कोणाला दिले",
+    "payeeHint": "उदा.: MSEDCL",
+    "description": "कशासाठी (ऐच्छिक)",
+    "method": "कसे दिले",
+    "reference": "संदर्भ (ऐच्छिक)",
+    "referenceHint": "बिल क्रमांक किंवा व्यवहार क्रमांक",
+    "saved": "खर्च सेव्ह झाला",
+    "needsApproval": "कमिटीतील दुसऱ्या कोणाला हे मंजूर करावे लागेल."
+  },
+  "detail": {
+    "title": "खर्च",
+    "paidTo": "कोणाला दिले",
+    "paidOn": "दिल्याची तारीख",
+    "method": "कसे दिले",
+    "reference": "संदर्भ",
+    "addedBy": "{{name}} यांनी जोडले",
+    "approvedBy": "{{name}} यांनी मंजूर केले",
+    "rejectedBy": "{{name}} यांनी नामंजूर केले",
+    "approve": "मंजूर करा",
+    "reject": "नामंजूर करा",
+    "rejectTitle": "हा खर्च नामंजूर करायचा?",
+    "reason": "कारण",
+    "approved": "खर्च मंजूर झाला",
+    "rejected": "खर्च नामंजूर झाला",
+    "remove": "खर्च काढा",
+    "removed": "खर्च काढला",
+    "ownNote": "कमिटीतील दुसऱ्या कोणीतरी हे मंजूर केले पाहिजे."
+  },
+  "report": {
+    "fy": "आर्थिक वर्ष {{fy}}",
+    "income": "उत्पन्न",
+    "spent": "खर्च",
+    "net": "शिल्लक",
+    "maintenance": "मेंटेनन्स वसुली",
+    "byCategory": "पैसे कुठे गेले",
+    "byMonth": "महिनानिहाय",
+    "pending": "{{count}} खर्च प्रतीक्षेत · {{amount}}",
+    "pending_other": "{{count}} खर्च प्रतीक्षेत · {{amount}}",
+    "outstanding": "न भरलेली देणी: {{amount}}",
+    "noExpenses": "या वर्षी खर्च नाही",
+    "otherIncome": "इतर उत्पन्न",
+    "addIncome": "उत्पन्न जोडा",
+    "noIncome": "या वर्षी इतर उत्पन्न नाही"
+  },
+  "income": {
+    "title": "उत्पन्न जोडा",
+    "kind": "प्रकार",
+    "amount": "रक्कम",
+    "date": "मिळाल्याची तारीख",
+    "description": "नोंद (ऐच्छिक)",
+    "saved": "उत्पन्न सेव्ह झाले",
+    "removed": "उत्पन्न काढले",
+    "remove": "काढा"
+  },
+  "categories": {
+    "title": "खर्चाचे प्रकार",
+    "add": "प्रकार जोडा",
+    "name": "नाव",
+    "saved": "प्रकार सेव्ह झाला",
+    "removed": "प्रकार काढला",
+    "remove": "काढा"
+  },
+  "push": {
+    "pendingTitle": "खर्च मंजूर करा: {{amount}}",
+    "approvedTitle": "खर्च मंजूर: {{amount}}",
+    "rejectedTitle": "खर्च नामंजूर: {{amount}}"
+  }
+}

@@ -6,6 +6,7 @@ export * from './core/enums';
 export * from './core/route';
 export * from './emergency/emergency.contract';
 export * from './events/events.contract';
+export * from './expenses/expenses.contract';
 export * from './home/home.contract';
 export * from './maintenance/maintenance.contract';
 export * from './me/me.contract';

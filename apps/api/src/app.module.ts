@@ -12,6 +12,7 @@ import { loadEnv } from './config/env';
 import { AppController } from './modules/app/app.controller';
 import { EmergencyModule } from './modules/emergency/emergency.module';
 import { EventsModule } from './modules/events/events.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
@@ -56,6 +57,7 @@ const env = loadEnv();
     EventsModule,
     RemindersModule,
     MaintenanceModule,
+    ExpensesModule,
     HomeModule,
   ],
   controllers: [AppController],

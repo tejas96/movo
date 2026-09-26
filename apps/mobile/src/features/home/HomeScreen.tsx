@@ -219,6 +219,17 @@ function AttentionRow({ item }: { item: AttentionItem }) {
           onPress={() => nav.navigate('Tabs', { screen: 'Money' })}
         />
       );
+    case 'EXPENSES_TO_APPROVE':
+      return (
+        <Row
+          icon="receipt"
+          title={t('home:attention.EXPENSES_TO_APPROVE.title', { count: item.count })}
+          subtitle={t('home:attention.EXPENSES_TO_APPROVE.sub', {
+            amount: money(item.amountPaise),
+          })}
+          onPress={() => nav.navigate('Expenses', { status: 'PENDING' })}
+        />
+      );
     case 'VENDOR_SUGGESTIONS':
       return (
         <Row
