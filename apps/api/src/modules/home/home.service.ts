@@ -1,13 +1,18 @@
-import type { AttentionItem, HomeSummary } from '@movo/contracts';
+import type { AttentionItem, HomeSummary, UpcomingItem } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
 import { EmergencyService } from '../emergency/emergency.service';
+import { EventsService } from '../events/events.service';
+import { MeetingsService } from '../meetings/meetings.service';
 import { NoticesService } from '../notices/notices.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { VendorsService } from '../vendors/vendors.service';
+
+/** Home shows one or two upcoming meetings or events. */
+const UPCOMING_ON_HOME = 2;
 
 /** The server decides what matters today. The app only renders. */
 @Injectable()
@@ -19,6 +24,8 @@ export class HomeService {
     private readonly notifications: NotificationsService,
     private readonly emergency: EmergencyService,
     private readonly vendors: VendorsService,
+    private readonly meetings: MeetingsService,
+    private readonly events: EventsService,
   ) {}
 
   async summary(): Promise<HomeSummary> {
@@ -57,6 +64,14 @@ export class HomeService {
     if (ctx.enabledModules.has('emergency'))
       attention.unshift(...(await this.emergency.attentionForHome()));
 
+    const now = new Date();
+    const upcoming: UpcomingItem[] = [
+      ...(ctx.enabledModules.has('meetings') ? await this.meetings.forHome(ctx, now) : []),
+      ...(ctx.enabledModules.has('events') ? await this.events.forHome(ctx, now) : []),
+    ]
+      .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+      .slice(0, UPCOMING_ON_HOME);
+
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: ctx.userId },
       select: { email: true, phone: true },
@@ -85,6 +100,7 @@ export class HomeService {
         isPrimaryContact: o.isPrimaryContact,
       })),
       attention,
+      upcoming,
       notices,
       unreadNotifications: await this.notifications.unreadCount(ctx.userId),
     };

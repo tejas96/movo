@@ -1,0 +1,62 @@
+{
+  "title": "कार्यक्रम",
+  "new": "नवीन कार्यक्रम",
+  "upcoming": "आगामी",
+  "past": "मागील",
+  "empty": "आगामी कार्यक्रम नाहीत",
+  "emptyBody": "सण, मोहिमा आणि स्नेहमेळावे इथे दिसतील.",
+  "emptyPast": "मागील कार्यक्रम नाहीत",
+  "status": {
+    "PUBLISHED": "प्रकाशित",
+    "CANCELLED": "रद्द"
+  },
+  "about": "माहिती",
+  "postedBy": "{{name}} यांनी पोस्ट केले",
+  "going": "{{count}} येत आहेत",
+  "rsvp": {
+    "question": "तुम्ही येणार का?",
+    "GOING": "येणार",
+    "MAYBE": "कदाचित",
+    "NOT_GOING": "येऊ शकत नाही",
+    "guests": "तुमच्यासोबत पाहुणे",
+    "saved": "उत्तर सेव्ह झाले",
+    "closed": "उत्तरे बंद आहेत",
+    "yours": "तुम्ही: {{answer}}"
+  },
+  "responses": {
+    "title": "उत्तरे",
+    "summary": "{{going}} येणार · {{maybe}} कदाचित · {{notGoing}} येऊ शकत नाहीत",
+    "guests": "+{{count}} पाहुणा",
+    "guests_other": "+{{count}} पाहुणे",
+    "empty": "अजून उत्तरे नाहीत"
+  },
+  "form": {
+    "title": "शीर्षक",
+    "titleHint": "उदा.: दिवाळी उत्सव",
+    "description": "माहिती (ऐच्छिक)",
+    "location": "ठिकाण (ऐच्छिक)",
+    "locationHint": "उदा.: सोसायटी बाग",
+    "startsAt": "तारीख आणि वेळ",
+    "duration": "कालावधी",
+    "rsvp": "कोण येणार ते विचारा",
+    "publish": "प्रकाशित करा",
+    "published": "कार्यक्रम प्रकाशित झाला",
+    "saved": "कार्यक्रम सेव्ह झाला",
+    "notifyHint": "सोसायटीतील सर्वांना आत्ता सूचना मिळेल आणि एक दिवस आधी आठवण मिळेल.",
+    "pastTime": "पुढची वेळ निवडा"
+  },
+  "actions": {
+    "cancel": "कार्यक्रम रद्द करा",
+    "cancelTitle": "हा कार्यक्रम रद्द करायचा?",
+    "cancelReason": "कारण (ऐच्छिक)",
+    "cancelled": "कार्यक्रम रद्द झाला"
+  },
+  "push": {
+    "publishedTitle": "नवीन कार्यक्रम: {{title}}",
+    "movedTitle": "कार्यक्रमाची वेळ बदलली: {{title}}",
+    "movedBody": "आता {{when}} रोजी",
+    "cancelledTitle": "कार्यक्रम रद्द: {{title}}",
+    "cancelledBody": "तो {{when}} रोजी होता",
+    "reminderTitle": "उद्या: {{title}}"
+  }
+}

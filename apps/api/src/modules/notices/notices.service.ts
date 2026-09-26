@@ -1,5 +1,4 @@
 import {
-  type Audience,
   AudienceSchema,
   type Notice,
   type NoticeSummary,
@@ -18,7 +17,7 @@ import { iso } from '../../common/util/dates';
 import { decodeCursor, encodeCursor } from '../../common/util/pagination';
 import type { Notice as NoticeRow, Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
-import { matchesAudience } from './audience';
+import { audienceUserIds, matchesAudience } from './audience';
 
 type CreateBody = RouteBody<typeof noticesContract.create>;
 type UpdateBody = RouteBody<typeof noticesContract.update>;
@@ -353,7 +352,7 @@ export class NoticesService {
 
   private async fanOut(ctx: TenantContext, n: NoticeRow): Promise<void> {
     const audience = AudienceSchema.parse(n.audience);
-    const recipients = await this.audienceUserIds(ctx.societyId, audience);
+    const recipients = await audienceUserIds(this.prisma, ctx.societyId, audience);
     await this.notifications.notifyUsers({
       userIds: recipients.filter((id) => id !== ctx.userId),
       societyId: ctx.societyId,
@@ -367,17 +366,6 @@ export class NoticesService {
       }),
       data: { screen: 'notice', societyId: ctx.societyId, noticeId: n.id, priority: n.priority },
     });
-  }
-
-  async audienceUserIds(societyId: string, audience: Audience): Promise<string[]> {
-    const where: Prisma.MembershipWhereInput = { societyId, status: 'ACTIVE' };
-    if (audience.type === 'ROLES') where.roles = { some: { roleId: { in: audience.ids } } };
-    if (audience.type === 'BUILDINGS')
-      where.occupancies = { some: { toDate: null, flat: { buildingId: { in: audience.ids } } } };
-    if (audience.type === 'FLATS')
-      where.occupancies = { some: { toDate: null, flatId: { in: audience.ids } } };
-    const rows = await this.prisma.membership.findMany({ where, select: { userId: true } });
-    return rows.map((r) => r.userId);
   }
 
   private async readsFor(membershipId: string, noticeIds: string[]): Promise<Map<string, Date>> {

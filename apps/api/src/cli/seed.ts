@@ -138,6 +138,57 @@ async function ensureM4Demo(
  * pnpm seed          -> ensures the platform admin from .env exists
  * pnpm seed --demo   -> also creates "Sunrise Residency" with two wings, flats and an invite code
  */
+/** Evening in India, n days from today. */
+function istEvening(daysAhead: number, hour: number, minute = 0): Date {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + daysAhead);
+  d.setUTCHours(hour - 5, minute - 30, 0, 0);
+  return d;
+}
+
+/** One meeting and one event for the demo society. Safe to run again. */
+async function ensureM5Demo(
+  prisma: PrismaService,
+  societyId: string,
+  log: (msg: string) => void,
+): Promise<void> {
+  const admin = await prisma.membership.findFirst({
+    where: { societyId, roles: { some: { role: { key: 'admin' } } } },
+    orderBy: { createdAt: 'asc' },
+  });
+  if (!admin) return;
+  if ((await prisma.meeting.count({ where: { societyId } })) === 0) {
+    await prisma.meeting.create({
+      data: {
+        societyId,
+        title: 'Monthly committee meeting',
+        agenda: '1. Water tank cleaning schedule\n2. Parking stickers\n3. Diwali plans',
+        location: 'Clubhouse',
+        startsAt: istEvening(5, 19),
+        endsAt: istEvening(5, 20),
+        audience: { type: 'ALL' },
+        createdByMembershipId: admin.id,
+      },
+    });
+    log('added a demo meeting');
+  }
+  if ((await prisma.societyEvent.count({ where: { societyId } })) === 0) {
+    await prisma.societyEvent.create({
+      data: {
+        societyId,
+        title: 'Navratri garba night',
+        description: 'Garba and dandiya in the garden. Snacks from the committee.',
+        location: 'Society garden',
+        startsAt: istEvening(10, 19, 30),
+        endsAt: istEvening(10, 22, 30),
+        audience: { type: 'ALL' },
+        createdByMembershipId: admin.id,
+      },
+    });
+    log('added a demo event');
+  }
+}
+
 async function main(): Promise<void> {
   const env = loadEnv();
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
@@ -183,6 +234,7 @@ async function main(): Promise<void> {
       if (existing) {
         log(`demo society exists: joinCode=${existing.joinCode}`);
         await ensureM4Demo(prisma, existing.id, log);
+        await ensureM5Demo(prisma, existing.id, log);
       } else {
         const result = await societies.create({
           name: 'Sunrise Residency',
@@ -271,6 +323,7 @@ async function main(): Promise<void> {
         log(`  society join code: ${result.joinCode}`);
         log('  invite code for flat A-102: DEMO1234');
         await ensureM4Demo(prisma, societyId, log);
+        await ensureM5Demo(prisma, societyId, log);
       }
     }
   });

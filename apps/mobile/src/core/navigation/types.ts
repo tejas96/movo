@@ -39,6 +39,12 @@ export type RootStackParamList = {
   ParkingSlots: undefined;
   Emergency: undefined;
   AlertDetail: { alertId: string };
+  Meetings: undefined;
+  MeetingDetail: { meetingId: string };
+  MeetingEditor: { meetingId?: string } | undefined;
+  Events: undefined;
+  EventDetail: { eventId: string };
+  EventEditor: { eventId?: string } | undefined;
 };
 
 export type TabParamList = {

@@ -153,7 +153,7 @@ export function VendorEditorScreen() {
             onChangeText={setDescription}
             multiline
             maxLength={500}
-            style={{ minHeight: 96, textAlignVertical: 'top', paddingTop: 12 }}
+            style={{ minHeight: 96, textAlignVertical: 'top' }}
           />
           {canManage ? (
             <>
@@ -177,7 +177,7 @@ export function VendorEditorScreen() {
                 onChangeText={setAdminNotes}
                 multiline
                 maxLength={500}
-                style={{ minHeight: 80, textAlignVertical: 'top', paddingTop: 12 }}
+                style={{ minHeight: 80, textAlignVertical: 'top' }}
               />
             </>
           ) : null}

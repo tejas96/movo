@@ -126,6 +126,7 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 | Tile | 3-column grid; gray or deep gray; bold icon, label, hint, optional count badge |
 | PersonCard | gray 24; avatar 44, name with verified badge, role; ink circles for chat and call |
 | DateBlock | 56 x 60 white block with day and month |
+| DateTimeSheet | bottom sheet with a day strip, an hour strip and quarter-hour minutes. Pure JS, phone time zone |
 | Input, Select | 56, radius 20; label above in gray 13; helper and error below |
 | Segmented | gray pill track 48, ink active pill |
 | Toggle | ink when on |

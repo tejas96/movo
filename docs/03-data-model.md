@@ -73,10 +73,10 @@ One user, many memberships. One membership, many flats through occupancy. One fl
 | --- | --- |
 | notice | society_id, title, body, category, priority (`NORMAL`, `IMPORTANT`, `EMERGENCY`), is_pinned, audience, attachments (document ids), published_at, expires_at, status (`DRAFT`, `PUBLISHED`, `ARCHIVED`), created_by_membership_id |
 | notice_read | notice_id, membership_id, read_at |
-| meeting | society_id, title, agenda, description, starts_at, ends_at, location, audience, status (`SCHEDULED`, `RESCHEDULED`, `CANCELLED`, `COMPLETED`), reminder_policy (JSONB), created_by_membership_id |
-| meeting_update | meeting_id, kind (`RESCHEDULED`, `NOTE`, `CANCELLED`, `COMPLETED`), body, created_by_membership_id. LATER: attendance, minutes, decisions, action items |
-| event | society_id, title, description, starts_at, ends_at, location, cover_document_id, images, rsvp_enabled, audience, status |
-| event_rsvp | event_id, membership_id, response (`GOING`, `NOT_GOING`, `MAYBE`), guests_count |
+| meeting | society_id, title, agenda, starts_at, ends_at (nullable), location, audience, status (`SCHEDULED`, `CANCELLED`, `COMPLETED`), created_by_membership_id. A move is a `RESCHEDULED` update, not a status. Reminder hours come from the `meetings` module settings |
+| meeting_update | society_id, meeting_id, kind (`RESCHEDULED`, `NOTE`, `CANCELLED`, `COMPLETED`), body, previous_starts_at, created_by_membership_id. LATER: attendance, minutes, decisions, action items |
+| event (Prisma model `SocietyEvent`) | society_id, title, description, starts_at, ends_at (nullable), location, rsvp_enabled, audience, status (`PUBLISHED`, `CANCELLED`). LATER: cover image |
+| event_rsvp | society_id, event_id, membership_id, response (`GOING`, `NOT_GOING`, `MAYBE`), guests_count (only for `GOING`, max 10). Primary key (event_id, membership_id) |
 
 ## 6. Tasks, duties, rewards
 
@@ -147,7 +147,7 @@ Buyer identity shown to the seller: name and society. Seller identity shown to t
 | notification | user_id, society_id (nullable), category, title, body, data (JSONB deep link), read_at |
 | notification_delivery | notification_id, channel (`PUSH`, `EMAIL`), status (`PENDING`, `SENT`, `FAILED`, `SKIPPED`), attempts, last_error, sent_at |
 | notification_preference | user_id, society_id, category, push_enabled |
-| reminder_sent | society_id, entity_type, entity_id, kind, sent_at. Prevents duplicate reminders |
+| reminder_sent | society_id, entity_type, entity_id, kind (`before-24h`), sent_at. Unique (entity_type, entity_id, kind). Prevents duplicate reminders; cleared when the item moves |
 | audit_log | society_id (nullable), actor_user_id, membership_id, action, entity_type, entity_id, before (JSONB), after (JSONB), request_id, ip, created_at |
 
 ## 12. Global tables (no society_id)

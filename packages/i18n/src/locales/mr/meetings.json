@@ -1,0 +1,61 @@
+{
+  "title": "सभा",
+  "new": "नवीन सभा",
+  "upcoming": "आगामी",
+  "past": "मागील",
+  "empty": "आगामी सभा नाहीत",
+  "emptyBody": "कमिटी ठरवेल त्या सभा इथे दिसतील.",
+  "emptyPast": "मागील सभा नाहीत",
+  "status": {
+    "SCHEDULED": "ठरलेली",
+    "CANCELLED": "रद्द",
+    "COMPLETED": "झाली"
+  },
+  "agenda": "विषयसूची",
+  "noAgenda": "अजून विषयसूची दिलेली नाही.",
+  "updates": "अपडेट",
+  "scheduledBy": "{{name}} यांनी ठरवली",
+  "update": {
+    "RESCHEDULED": "{{from}} वरून बदलली",
+    "NOTE": "अपडेट",
+    "CANCELLED": "रद्द केली",
+    "COMPLETED": "झाली म्हणून नोंद"
+  },
+  "form": {
+    "title": "शीर्षक",
+    "titleHint": "उदा.: मासिक कमिटी सभा",
+    "agenda": "विषयसूची (ऐच्छिक)",
+    "location": "ठिकाण (ऐच्छिक)",
+    "locationHint": "उदा.: क्लबहाउस",
+    "startsAt": "तारीख आणि वेळ",
+    "duration": "कालावधी",
+    "schedule": "ठरवा",
+    "scheduled": "सभा ठरली",
+    "saved": "सभा सेव्ह झाली",
+    "notifyHint": "सोसायटीतील सर्वांना आत्ता सूचना मिळेल आणि सुरू होण्याआधी आठवण मिळेल.",
+    "pastTime": "पुढची वेळ निवडा",
+    "rescheduleNote": "बदलाचे कारण (ऐच्छिक)"
+  },
+  "actions": {
+    "addNote": "अपडेट पाठवा",
+    "note": "अपडेट",
+    "noteHint": "उदा.: गच्चीवर हलवली",
+    "notePosted": "अपडेट पाठवले",
+    "cancel": "सभा रद्द करा",
+    "cancelTitle": "ही सभा रद्द करायची?",
+    "cancelReason": "कारण (ऐच्छिक)",
+    "cancelled": "सभा रद्द झाली",
+    "complete": "झाली म्हणून नोंदवा",
+    "completeNote": "नोंद (ऐच्छिक)",
+    "completed": "सभा झाली म्हणून नोंदली"
+  },
+  "push": {
+    "scheduledTitle": "नवीन सभा: {{title}}",
+    "movedTitle": "सभेची वेळ बदलली: {{title}}",
+    "movedBody": "आता {{when}} रोजी",
+    "noteTitle": "अपडेट: {{title}}",
+    "cancelledTitle": "सभा रद्द: {{title}}",
+    "cancelledBody": "ती {{when}} रोजी होती",
+    "reminderTitle": "आठवण: {{title}}"
+  }
+}

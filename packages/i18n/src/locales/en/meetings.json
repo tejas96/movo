@@ -1,0 +1,61 @@
+{
+  "title": "Meetings",
+  "new": "New meeting",
+  "upcoming": "Upcoming",
+  "past": "Past",
+  "empty": "No upcoming meetings",
+  "emptyBody": "Meetings your committee schedules will appear here.",
+  "emptyPast": "No past meetings",
+  "status": {
+    "SCHEDULED": "Scheduled",
+    "CANCELLED": "Cancelled",
+    "COMPLETED": "Held"
+  },
+  "agenda": "Agenda",
+  "noAgenda": "No agenda shared yet.",
+  "updates": "Updates",
+  "scheduledBy": "Scheduled by {{name}}",
+  "update": {
+    "RESCHEDULED": "Moved from {{from}}",
+    "NOTE": "Update",
+    "CANCELLED": "Cancelled",
+    "COMPLETED": "Marked as held"
+  },
+  "form": {
+    "title": "Title",
+    "titleHint": "For example: Monthly committee meeting",
+    "agenda": "Agenda (optional)",
+    "location": "Place (optional)",
+    "locationHint": "For example: Clubhouse",
+    "startsAt": "Date and time",
+    "duration": "Length",
+    "schedule": "Schedule",
+    "scheduled": "Meeting scheduled",
+    "saved": "Meeting saved",
+    "notifyHint": "Everyone in the society gets a notification now and a reminder before it starts.",
+    "pastTime": "Pick a time in the future",
+    "rescheduleNote": "Reason for the change (optional)"
+  },
+  "actions": {
+    "addNote": "Post an update",
+    "note": "Update",
+    "noteHint": "For example: moved to the terrace",
+    "notePosted": "Update sent",
+    "cancel": "Cancel meeting",
+    "cancelTitle": "Cancel this meeting?",
+    "cancelReason": "Reason (optional)",
+    "cancelled": "Meeting cancelled",
+    "complete": "Mark as held",
+    "completeNote": "Note (optional)",
+    "completed": "Meeting marked as held"
+  },
+  "push": {
+    "scheduledTitle": "New meeting: {{title}}",
+    "movedTitle": "Meeting moved: {{title}}",
+    "movedBody": "Now on {{when}}",
+    "noteTitle": "Update: {{title}}",
+    "cancelledTitle": "Meeting cancelled: {{title}}",
+    "cancelledBody": "It was on {{when}}",
+    "reminderTitle": "Reminder: {{title}}"
+  }
+}

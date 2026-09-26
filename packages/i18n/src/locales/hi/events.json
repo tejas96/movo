@@ -1,0 +1,62 @@
+{
+  "title": "कार्यक्रम",
+  "new": "नया कार्यक्रम",
+  "upcoming": "आगामी",
+  "past": "पिछले",
+  "empty": "कोई आगामी कार्यक्रम नहीं",
+  "emptyBody": "त्योहार, अभियान और मिलन-समारोह यहाँ दिखेंगे।",
+  "emptyPast": "कोई पिछला कार्यक्रम नहीं",
+  "status": {
+    "PUBLISHED": "प्रकाशित",
+    "CANCELLED": "रद्द"
+  },
+  "about": "विवरण",
+  "postedBy": "{{name}} ने पोस्ट किया",
+  "going": "{{count}} आ रहे हैं",
+  "rsvp": {
+    "question": "क्या आप आ रहे हैं?",
+    "GOING": "आ रहा हूँ",
+    "MAYBE": "शायद",
+    "NOT_GOING": "नहीं आ सकता",
+    "guests": "आपके साथ मेहमान",
+    "saved": "जवाब सेव हो गया",
+    "closed": "जवाब बंद हैं",
+    "yours": "आप: {{answer}}"
+  },
+  "responses": {
+    "title": "जवाब",
+    "summary": "{{going}} आ रहे · {{maybe}} शायद · {{notGoing}} नहीं आ सकते",
+    "guests": "+{{count}} मेहमान",
+    "guests_other": "+{{count}} मेहमान",
+    "empty": "अभी कोई जवाब नहीं"
+  },
+  "form": {
+    "title": "शीर्षक",
+    "titleHint": "जैसे: दिवाली उत्सव",
+    "description": "विवरण (वैकल्पिक)",
+    "location": "जगह (वैकल्पिक)",
+    "locationHint": "जैसे: सोसाइटी गार्डन",
+    "startsAt": "तारीख और समय",
+    "duration": "अवधि",
+    "rsvp": "पूछें कि कौन आ रहा है",
+    "publish": "प्रकाशित करें",
+    "published": "कार्यक्रम प्रकाशित हुआ",
+    "saved": "कार्यक्रम सेव हो गया",
+    "notifyHint": "सोसाइटी में सभी को अभी सूचना मिलेगी और एक दिन पहले रिमाइंडर मिलेगा।",
+    "pastTime": "आगे का समय चुनें"
+  },
+  "actions": {
+    "cancel": "कार्यक्रम रद्द करें",
+    "cancelTitle": "यह कार्यक्रम रद्द करें?",
+    "cancelReason": "कारण (वैकल्पिक)",
+    "cancelled": "कार्यक्रम रद्द हो गया"
+  },
+  "push": {
+    "publishedTitle": "नया कार्यक्रम: {{title}}",
+    "movedTitle": "कार्यक्रम का समय बदला: {{title}}",
+    "movedBody": "अब {{when}} को",
+    "cancelledTitle": "कार्यक्रम रद्द: {{title}}",
+    "cancelledBody": "यह {{when}} को था",
+    "reminderTitle": "कल: {{title}}"
+  }
+}

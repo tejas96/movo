@@ -11,11 +11,14 @@ import { RouteGuard } from './common/route/route.guard';
 import { loadEnv } from './config/env';
 import { AppController } from './modules/app/app.controller';
 import { EmergencyModule } from './modules/emergency/emergency.module';
+import { EventsModule } from './modules/events/events.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
+import { MeetingsModule } from './modules/meetings/meetings.module';
 import { NoticesModule } from './modules/notices/notices.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ParkingModule } from './modules/parking/parking.module';
+import { RemindersModule } from './modules/reminders/reminders.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 import { VendorsModule } from './modules/vendors/vendors.module';
 
@@ -48,6 +51,9 @@ const env = loadEnv();
     ParkingModule,
     VendorsModule,
     EmergencyModule,
+    MeetingsModule,
+    EventsModule,
+    RemindersModule,
     HomeModule,
   ],
   controllers: [AppController],

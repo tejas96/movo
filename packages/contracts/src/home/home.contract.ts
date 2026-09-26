@@ -2,7 +2,9 @@ import { z } from 'zod';
 import { FlatRefSchema, IdSchema, IsoDateTimeSchema } from '../core/common';
 import { defineRoute } from '../core/route';
 import { AlertTypeSchema } from '../emergency/emergency.contract';
+import { EventStatusSchema, MyRsvpSchema } from '../events/events.contract';
 import { MemberFlatSchema, SocietySummarySchema } from '../me/me.contract';
+import { MeetingStatusSchema } from '../meetings/meetings.contract';
 import { NoticeSummarySchema } from '../notices/notices.contract';
 
 /**
@@ -32,11 +34,36 @@ export const AttentionItemSchema = z.discriminatedUnion('type', [
 ]);
 export type AttentionItem = z.infer<typeof AttentionItemSchema>;
 
+/** A meeting or event in the next 14 days, soonest first. */
+export const UpcomingItemSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('MEETING'),
+    id: IdSchema,
+    title: z.string(),
+    startsAt: IsoDateTimeSchema,
+    endsAt: IsoDateTimeSchema.nullable(),
+    location: z.string().nullable(),
+    status: MeetingStatusSchema,
+  }),
+  z.object({
+    kind: z.literal('EVENT'),
+    id: IdSchema,
+    title: z.string(),
+    startsAt: IsoDateTimeSchema,
+    endsAt: IsoDateTimeSchema.nullable(),
+    location: z.string().nullable(),
+    status: EventStatusSchema,
+    myRsvp: MyRsvpSchema.nullable(),
+  }),
+]);
+export type UpcomingItem = z.infer<typeof UpcomingItemSchema>;
+
 export const HomeSummarySchema = z.object({
   generatedAt: IsoDateTimeSchema,
   society: SocietySummarySchema,
   flats: z.array(MemberFlatSchema),
   attention: z.array(AttentionItemSchema),
+  upcoming: z.array(UpcomingItemSchema),
   notices: z.array(NoticeSummarySchema),
   unreadNotifications: z.number().int(),
 });

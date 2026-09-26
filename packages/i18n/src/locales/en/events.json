@@ -1,0 +1,62 @@
+{
+  "title": "Events",
+  "new": "New event",
+  "upcoming": "Upcoming",
+  "past": "Past",
+  "empty": "No upcoming events",
+  "emptyBody": "Festivals, drives and get-togethers will appear here.",
+  "emptyPast": "No past events",
+  "status": {
+    "PUBLISHED": "Published",
+    "CANCELLED": "Cancelled"
+  },
+  "about": "About",
+  "postedBy": "Posted by {{name}}",
+  "going": "{{count}} going",
+  "rsvp": {
+    "question": "Are you going?",
+    "GOING": "Going",
+    "MAYBE": "Maybe",
+    "NOT_GOING": "Can't go",
+    "guests": "Guests with you",
+    "saved": "Answer saved",
+    "closed": "Answers are closed",
+    "yours": "You: {{answer}}"
+  },
+  "responses": {
+    "title": "Responses",
+    "summary": "{{going}} going · {{maybe}} maybe · {{notGoing}} can't go",
+    "guests": "+{{count}} guest",
+    "guests_other": "+{{count}} guests",
+    "empty": "No answers yet"
+  },
+  "form": {
+    "title": "Title",
+    "titleHint": "For example: Diwali celebration",
+    "description": "Details (optional)",
+    "location": "Place (optional)",
+    "locationHint": "For example: Society garden",
+    "startsAt": "Date and time",
+    "duration": "Length",
+    "rsvp": "Ask who is coming",
+    "publish": "Publish",
+    "published": "Event published",
+    "saved": "Event saved",
+    "notifyHint": "Everyone in the society gets a notification now and a reminder a day before.",
+    "pastTime": "Pick a time in the future"
+  },
+  "actions": {
+    "cancel": "Cancel event",
+    "cancelTitle": "Cancel this event?",
+    "cancelReason": "Reason (optional)",
+    "cancelled": "Event cancelled"
+  },
+  "push": {
+    "publishedTitle": "New event: {{title}}",
+    "movedTitle": "Event moved: {{title}}",
+    "movedBody": "Now on {{when}}",
+    "cancelledTitle": "Event cancelled: {{title}}",
+    "cancelledBody": "It was on {{when}}",
+    "reminderTitle": "Tomorrow: {{title}}"
+  }
+}

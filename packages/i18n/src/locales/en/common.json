@@ -96,5 +96,20 @@
       "title": "{{title}}",
       "body": "{{body}}"
     }
+  },
+  "picker": {
+    "date": "Date",
+    "time": "Time",
+    "minutes": "Minutes",
+    "pick": "Pick date and time"
+  },
+  "duration": {
+    "none": "No end time",
+    "m30": "30 min",
+    "h1": "1 hour",
+    "h90": "1.5 hours",
+    "h2": "2 hours",
+    "h3": "3 hours",
+    "h4": "4 hours"
   }
 }

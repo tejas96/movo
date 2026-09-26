@@ -181,6 +181,15 @@ export const AuditActionSchema = z.enum([
   'emergency.contact.deleted',
   'alert.raised',
   'alert.resolved',
+  'meeting.created',
+  'meeting.updated',
+  'meeting.rescheduled',
+  'meeting.note_added',
+  'meeting.cancelled',
+  'meeting.completed',
+  'event.created',
+  'event.updated',
+  'event.cancelled',
   'user.deleted',
 ]);
 export type AuditAction = z.infer<typeof AuditActionSchema>;

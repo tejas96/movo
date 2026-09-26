@@ -1,4 +1,4 @@
-import type { AttentionItem, NoticeSummary } from '@movo/contracts';
+import type { AttentionItem, NoticeSummary, UpcomingItem } from '@movo/contracts';
 import {
   Card,
   Chip,
@@ -26,7 +26,10 @@ import {
   useTenant,
 } from '../../core/tenant/hooks';
 import { greetingKey, relative } from '../../core/util/time';
+import { TimedCard } from '../calendar/shared';
 import { ALERT_ICON } from '../emergency/shared';
+import { EventPill } from '../events/EventsScreen';
+import { MeetingStatusPill } from '../meetings/MeetingsScreen';
 import { useHomeSummary } from './api';
 
 export function HomeScreen() {
@@ -147,6 +150,17 @@ export function HomeScreen() {
         </Card>
       )}
 
+      {summary.data && summary.data.upcoming.length > 0 ? (
+        <>
+          <SectionHeader title={t('home:upcoming')} />
+          <View className="gap-2">
+            {summary.data.upcoming.map((u) => (
+              <UpcomingCard key={`${u.kind}-${u.id}`} item={u} />
+            ))}
+          </View>
+        </>
+      ) : null}
+
       {summary.data && summary.data.notices.length > 0 ? (
         <>
           <SectionHeader
@@ -237,6 +251,33 @@ function AttentionRow({ item }: { item: AttentionItem }) {
     default:
       return null;
   }
+}
+
+function UpcomingCard({ item }: { item: UpcomingItem }) {
+  const { t } = useTranslation('home');
+  const nav = useNav();
+  return (
+    <TimedCard
+      startsAt={item.startsAt}
+      endsAt={item.endsAt}
+      title={item.title}
+      location={item.location}
+      meta={t(`upcomingKind.${item.kind}`)}
+      dimmed={item.status === 'CANCELLED'}
+      pill={
+        item.kind === 'MEETING' ? (
+          <MeetingStatusPill status={item.status} />
+        ) : (
+          <EventPill event={item} />
+        )
+      }
+      onPress={() =>
+        item.kind === 'MEETING'
+          ? nav.navigate('MeetingDetail', { meetingId: item.id })
+          : nav.navigate('EventDetail', { eventId: item.id })
+      }
+    />
+  );
 }
 
 function NoticeRow({ notice }: { notice: NoticeSummary }) {

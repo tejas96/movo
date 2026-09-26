@@ -30,6 +30,8 @@ export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(func
     onFocus,
     onBlur,
     editable = true,
+    multiline,
+    style,
     ...rest
   },
   ref,
@@ -44,7 +46,8 @@ export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(func
       ) : null}
       <View
         className={cn(
-          'h-control-lg flex-row items-center gap-3 rounded-md px-[18px] border-[1.5px]',
+          'flex-row gap-3 rounded-md px-[18px] border-[1.5px]',
+          multiline ? 'min-h-control-lg items-start py-3' : 'h-control-lg items-center',
           white ? 'bg-card-nested' : 'bg-card',
           error ? 'border-danger' : focused ? 'border-ink bg-card-nested' : 'border-transparent',
           !editable && 'opacity-disabled',
@@ -57,7 +60,8 @@ export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(func
           placeholderTextColor={theme.color.text.secondary}
           selectionColor={theme.color.bg.ink}
           className="flex-1 font-sans text-body text-ink py-0"
-          style={{ fontFamily: 'Poppins', fontWeight: '400', includeFontPadding: false }}
+          multiline={multiline}
+          style={[{ fontFamily: 'Poppins', fontWeight: '400', includeFontPadding: false }, style]}
           onFocus={(e) => {
             setFocused(true);
             onFocus?.(e);

@@ -58,6 +58,15 @@ export function formatTime(
   }).format(date);
 }
 
+/** "Sat, 3 Oct, 6:00 pm". Used in pushes and in meeting and event rows. */
+export function formatDateTime(
+  value: string | Date,
+  locale: Locale = 'en',
+  timeZone = 'Asia/Kolkata',
+): string {
+  return `${formatDate(value, locale, 'weekday', timeZone)}, ${formatTime(value, locale, timeZone)}`;
+}
+
 type RelUnit = 'now' | 'minute' | 'hour' | 'day' | 'month';
 
 /**

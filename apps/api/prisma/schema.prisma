@@ -184,6 +184,30 @@ enum AlertStatus {
 }
 
 // ---------- identity (global) ----------
+enum MeetingStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+enum MeetingUpdateKind {
+  RESCHEDULED
+  NOTE
+  CANCELLED
+  COMPLETED
+}
+
+enum EventStatus {
+  PUBLISHED
+  CANCELLED
+}
+
+enum RsvpResponse {
+  GOING
+  MAYBE
+  NOT_GOING
+}
+
 model User {
   id               String     @id @default(uuid(7)) @db.Uuid
   email            String?    @unique
@@ -317,6 +341,11 @@ model Society {
   vendors            Vendor[]
   emergencyContacts  EmergencyContact[]
   alerts             Alert[]
+  meetings           Meeting[]
+  meetingUpdates     MeetingUpdate[]
+  events             SocietyEvent[]
+  eventRsvps         EventRsvp[]
+  remindersSent      ReminderSent[]
 }
 
 model Building {
@@ -377,6 +406,7 @@ model Membership {
   roles       MembershipRole[]
   occupancies FlatOccupancy[]
   noticeReads NoticeRead[]
+  eventRsvps  EventRsvp[]
 
   @@unique([societyId, userId])
   @@index([userId, status])
@@ -663,6 +693,97 @@ model Alert {
 
   @@index([societyId, status, createdAt(sort: Desc)])
   @@index([raisedByMembershipId, createdAt])
+}
+
+// ---------- meetings and events ----------
+model Meeting {
+  id                    String        @id @default(uuid(7)) @db.Uuid
+  societyId             String        @db.Uuid
+  title                 String
+  agenda                String?
+  location              String?
+  startsAt              DateTime
+  endsAt                DateTime?
+  audience              Json
+  status                MeetingStatus @default(SCHEDULED)
+  createdByMembershipId String        @db.Uuid
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  society Society         @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  updates MeetingUpdate[]
+
+  @@index([societyId, startsAt])
+  @@index([status, startsAt])
+}
+
+model MeetingUpdate {
+  id                    String            @id @default(uuid(7)) @db.Uuid
+  societyId             String            @db.Uuid
+  meetingId             String            @db.Uuid
+  kind                  MeetingUpdateKind
+  body                  String?
+  previousStartsAt      DateTime?
+  createdByMembershipId String            @db.Uuid
+  createdAt             DateTime          @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId, createdAt(sort: Desc)])
+}
+
+/// "Event" would shadow the DOM type in TypeScript, so the model is SocietyEvent.
+model SocietyEvent {
+  id                    String      @id @default(uuid(7)) @db.Uuid
+  societyId             String      @db.Uuid
+  title                 String
+  description           String?
+  location              String?
+  startsAt              DateTime
+  endsAt                DateTime?
+  rsvpEnabled           Boolean     @default(true)
+  audience              Json
+  status                EventStatus @default(PUBLISHED)
+  createdByMembershipId String      @db.Uuid
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  society Society     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  rsvps   EventRsvp[]
+
+  @@index([societyId, startsAt])
+  @@index([status, startsAt])
+}
+
+model EventRsvp {
+  eventId      String       @db.Uuid
+  membershipId String       @db.Uuid
+  societyId    String       @db.Uuid
+  response     RsvpResponse
+  guestsCount  Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  society    Society      @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  event      SocietyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  membership Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, membershipId])
+}
+
+/// One row per reminder sent, so a job restart never sends it twice.
+model ReminderSent {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  societyId  String   @db.Uuid
+  entityType String
+  entityId   String   @db.Uuid
+  kind       String
+  sentAt     DateTime @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+
+  @@unique([entityType, entityId, kind])
 }
 
 // ---------- notifications (user owned) ----------

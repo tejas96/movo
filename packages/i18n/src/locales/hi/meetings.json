@@ -1,0 +1,61 @@
+{
+  "title": "बैठकें",
+  "new": "नई बैठक",
+  "upcoming": "आगामी",
+  "past": "पिछली",
+  "empty": "कोई आगामी बैठक नहीं",
+  "emptyBody": "कमेटी जो बैठकें तय करेगी, वे यहाँ दिखेंगी।",
+  "emptyPast": "कोई पिछली बैठक नहीं",
+  "status": {
+    "SCHEDULED": "तय",
+    "CANCELLED": "रद्द",
+    "COMPLETED": "हो चुकी"
+  },
+  "agenda": "एजेंडा",
+  "noAgenda": "अभी एजेंडा साझा नहीं किया गया।",
+  "updates": "अपडेट",
+  "scheduledBy": "{{name}} ने तय की",
+  "update": {
+    "RESCHEDULED": "{{from}} से बदली गई",
+    "NOTE": "अपडेट",
+    "CANCELLED": "रद्द की गई",
+    "COMPLETED": "हो चुकी के रूप में दर्ज"
+  },
+  "form": {
+    "title": "शीर्षक",
+    "titleHint": "जैसे: मासिक कमेटी बैठक",
+    "agenda": "एजेंडा (वैकल्पिक)",
+    "location": "जगह (वैकल्पिक)",
+    "locationHint": "जैसे: क्लबहाउस",
+    "startsAt": "तारीख और समय",
+    "duration": "अवधि",
+    "schedule": "तय करें",
+    "scheduled": "बैठक तय हो गई",
+    "saved": "बैठक सेव हो गई",
+    "notifyHint": "सोसाइटी में सभी को अभी सूचना मिलेगी और शुरू होने से पहले रिमाइंडर मिलेगा।",
+    "pastTime": "आगे का समय चुनें",
+    "rescheduleNote": "बदलाव का कारण (वैकल्पिक)"
+  },
+  "actions": {
+    "addNote": "अपडेट भेजें",
+    "note": "अपडेट",
+    "noteHint": "जैसे: छत पर शिफ्ट की गई",
+    "notePosted": "अपडेट भेजा गया",
+    "cancel": "बैठक रद्द करें",
+    "cancelTitle": "यह बैठक रद्द करें?",
+    "cancelReason": "कारण (वैकल्पिक)",
+    "cancelled": "बैठक रद्द हो गई",
+    "complete": "हो चुकी दर्ज करें",
+    "completeNote": "नोट (वैकल्पिक)",
+    "completed": "बैठक हो चुकी दर्ज हुई"
+  },
+  "push": {
+    "scheduledTitle": "नई बैठक: {{title}}",
+    "movedTitle": "बैठक का समय बदला: {{title}}",
+    "movedBody": "अब {{when}} को",
+    "noteTitle": "अपडेट: {{title}}",
+    "cancelledTitle": "बैठक रद्द: {{title}}",
+    "cancelledBody": "यह {{when}} को थी",
+    "reminderTitle": "रिमाइंडर: {{title}}"
+  }
+}

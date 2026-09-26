@@ -45,5 +45,9 @@
       "title_other": "{{count}} सेवाओं के सुझाव",
       "sub": "सेवाएँ में देखें"
     }
+  },
+  "upcomingKind": {
+    "MEETING": "बैठक",
+    "EVENT": "कार्यक्रम"
   }
 }

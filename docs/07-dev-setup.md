@@ -32,8 +32,9 @@ The demo seed prints:
 | Services | 12 categories, 6 sample vendors |
 | Parking | slots P-01 to P-20, T-01 to T-10, visitor V-01; P-01 and car MH12AB1234 belong to A-101 |
 | Emergency | gate, lift and office contacts plus 112, 100, 101, 108 |
+| Meetings and events | a committee meeting in 5 days, a garba night in 10 days |
 
-Running the seed again on an existing demo society only adds the Services, Parking and Emergency data that is missing.
+Running the seed again on an existing demo society only adds the Services, Parking, Emergency, Meetings and Events data that is missing.
 
 ## 3. Run
 

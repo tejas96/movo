@@ -45,5 +45,9 @@
       "title_other": "{{count}} vendor suggestions",
       "sub": "Review them in Services"
     }
+  },
+  "upcomingKind": {
+    "MEETING": "Meeting",
+    "EVENT": "Event"
   }
 }

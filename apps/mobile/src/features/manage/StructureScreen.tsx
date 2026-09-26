@@ -208,7 +208,7 @@ export function StructureScreen() {
             value={flatNumbers}
             onChangeText={setFlatNumbers}
             multiline
-            style={{ minHeight: 96, textAlignVertical: 'top', paddingTop: 12 }}
+            style={{ minHeight: 96, textAlignVertical: 'top' }}
           />
           <Text variant="micro" tone="secondary" className="font-normal">
             {t('manage:structureForm.flatNumbersHelp')}

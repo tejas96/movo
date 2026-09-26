@@ -10,6 +10,9 @@ import { DirectoryScreen } from '../../features/directory/DirectoryScreen';
 import { MemberDetailScreen } from '../../features/directory/MemberDetailScreen';
 import { AlertDetailScreen } from '../../features/emergency/AlertDetailScreen';
 import { EmergencyScreen } from '../../features/emergency/EmergencyScreen';
+import { EventDetailScreen } from '../../features/events/EventDetailScreen';
+import { EventEditorScreen } from '../../features/events/EventEditorScreen';
+import { EventsScreen } from '../../features/events/EventsScreen';
 import { NotificationsScreen } from '../../features/home/NotificationsScreen';
 import { InvitationsScreen } from '../../features/manage/InvitationsScreen';
 import { InviteMemberScreen } from '../../features/manage/InviteMemberScreen';
@@ -23,6 +26,9 @@ import { EditProfileScreen } from '../../features/me/EditProfileScreen';
 import { LanguageScreen } from '../../features/me/LanguageScreen';
 import { PrivacyScreen } from '../../features/me/PrivacyScreen';
 import { SocietySwitcherScreen } from '../../features/me/SocietySwitcherScreen';
+import { MeetingDetailScreen } from '../../features/meetings/MeetingDetailScreen';
+import { MeetingEditorScreen } from '../../features/meetings/MeetingEditorScreen';
+import { MeetingsScreen } from '../../features/meetings/MeetingsScreen';
 import { NoticeDetailScreen } from '../../features/notices/NoticeDetailScreen';
 import { NoticeEditorScreen } from '../../features/notices/NoticeEditorScreen';
 import { NoticesScreen } from '../../features/notices/NoticesScreen';
@@ -166,6 +172,20 @@ export function RootNavigator() {
           <Stack.Screen name="ParkingSlots" component={ParkingSlotsScreen} />
           <Stack.Screen name="Emergency" component={EmergencyScreen} />
           <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
+          <Stack.Screen name="Meetings" component={MeetingsScreen} />
+          <Stack.Screen name="MeetingDetail" component={MeetingDetailScreen} />
+          <Stack.Screen
+            name="MeetingEditor"
+            component={MeetingEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="Events" component={EventsScreen} />
+          <Stack.Screen name="EventDetail" component={EventDetailScreen} />
+          <Stack.Screen
+            name="EventEditor"
+            component={EventEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
           <Stack.Screen name="Join" component={JoinScreen} />
           <Stack.Screen name="PickFlat" component={PickFlatScreen} />
           <Stack.Screen name="Pending" component={PendingScreen} />

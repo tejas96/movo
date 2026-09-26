@@ -110,7 +110,7 @@ export function NoticeEditorScreen() {
             onChangeText={setBody}
             multiline
             maxLength={5000}
-            style={{ minHeight: 140, textAlignVertical: 'top', paddingTop: 12 }}
+            style={{ minHeight: 140, textAlignVertical: 'top' }}
             containerClassName=""
           />
           <SelectField

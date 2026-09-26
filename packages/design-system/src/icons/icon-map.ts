@@ -24,6 +24,7 @@ export const iconMap = {
   filter: 'setting-4',
   settings: 'setting-2',
   add: 'add',
+  minus: 'minus',
   addCircle: 'add-circle',
   edit: 'edit-2',
   trash: 'trash',

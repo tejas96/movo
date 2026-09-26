@@ -57,6 +57,8 @@ export function SocietyHubScreen() {
   const open = (tile: ModuleTile) => {
     const title = t(`society:modules.${tile.labelKey}` as 'society:modules.notices');
     if (tile.key === 'notices') nav.navigate('Notices');
+    else if (tile.key === 'meetings') nav.navigate('Meetings');
+    else if (tile.key === 'events') nav.navigate('Events');
     else if (tile.key === 'directory') nav.navigate('Directory');
     else if (tile.key === 'vendors') nav.navigate('Services');
     else if (tile.key === 'parking') nav.navigate('Parking');

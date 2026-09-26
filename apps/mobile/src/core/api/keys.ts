@@ -27,6 +27,11 @@ export const keys = {
     emergencyContacts: ['society', id, 'emergency', 'contacts'] as const,
     alerts: (status: string) => ['society', id, 'emergency', 'alerts', status] as const,
     alert: (alertId: string) => ['society', id, 'emergency', 'alert', alertId] as const,
+    meetings: (when: string) => ['society', id, 'meetings', 'list', when] as const,
+    meeting: (meetingId: string) => ['society', id, 'meetings', 'one', meetingId] as const,
+    events: (when: string) => ['society', id, 'events', 'list', when] as const,
+    event: (eventId: string) => ['society', id, 'events', 'one', eventId] as const,
+    eventRsvps: (eventId: string) => ['society', id, 'events', 'rsvps', eventId] as const,
   }),
   join: { preview: (code: string) => ['join', 'preview', code] as const },
 };

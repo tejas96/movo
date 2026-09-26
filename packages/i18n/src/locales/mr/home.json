@@ -45,5 +45,9 @@
       "title_other": "{{count}} सेवांच्या सूचना",
       "sub": "सेवा मध्ये पाहा"
     }
+  },
+  "upcomingKind": {
+    "MEETING": "सभा",
+    "EVENT": "कार्यक्रम"
   }
 }
