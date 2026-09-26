@@ -1,5 +1,9 @@
 import 'dotenv/config';
 import 'reflect-metadata';
+import { randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { copyFile, mkdir } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import type { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
@@ -402,6 +406,110 @@ async function ensureM8Demo(
   log('added a duty rotation, two tasks and some points');
 }
 
+/** Market on, with four listings and bundled photos. Safe to run again. */
+async function ensureM10Demo(
+  prisma: PrismaService,
+  societyId: string,
+  log: (msg: string) => void,
+): Promise<void> {
+  await prisma.societyModule.upsert({
+    where: { societyId_moduleKey: { societyId, moduleKey: 'marketplace' } },
+    update: { enabled: true },
+    create: { societyId, moduleKey: 'marketplace', enabled: true, settings: {} },
+  });
+  if ((await prisma.listing.count({ where: { societyId } })) > 0) return;
+  const members = await prisma.membership.findMany({
+    where: { societyId, status: 'ACTIVE' },
+    orderBy: { createdAt: 'asc' },
+  });
+  const admin = members[0];
+  if (!admin) return;
+  // Food and the cycle come from a neighbour when there is one, so the admin can try ordering.
+  const neighbour = members[1] ?? admin;
+  const photosDir = resolve(__dirname, '../../../../packages/design-system/assets/photos');
+  const filesDir = resolve(loadEnv().FILES_DIR);
+  const photo = async (name: string, ownerMembershipId: string) => {
+    const from = join(photosDir, `${name}.jpg`);
+    if (!existsSync(from)) return [];
+    const storageKey = `${societyId}/${randomUUID()}.jpg`;
+    await mkdir(join(filesDir, societyId), { recursive: true });
+    await copyFile(from, join(filesDir, storageKey));
+    const f = await prisma.storedFile.create({
+      data: {
+        societyId,
+        ownerMembershipId,
+        kind: 'LISTING_IMAGE',
+        mime: 'image/jpeg',
+        sizeBytes: 100_000,
+        storageKey,
+        attachedAt: new Date(),
+      },
+    });
+    return [{ fileId: f.id, societyId, sortOrder: 0 }];
+  };
+  const tomorrow = todayIn('Asia/Kolkata', new Date(Date.now() + 24 * 3600 * 1000));
+  const at = (hhmm: string) => new Date(`${tomorrow}T${hhmm}:00+05:30`);
+  await prisma.listing.create({
+    data: {
+      societyId,
+      sellerMembershipId: neighbour.id,
+      kind: 'FOOD',
+      title: 'Kanda poha and chai',
+      description: 'Fresh every morning. Made with less oil. Chai in a flask on request.',
+      priceType: 'PER_UNIT',
+      pricePaise: 6000,
+      unit: 'plate',
+      diet: 'VEG',
+      quantityAvailable: 10,
+      readyAt: at('08:30'),
+      orderBy: at('07:00'),
+      fulfilment: 'BOTH',
+      images: { create: await photo('food', neighbour.id) },
+    },
+  });
+  await prisma.listing.create({
+    data: {
+      societyId,
+      sellerMembershipId: admin.id,
+      kind: 'PRODUCT',
+      title: 'Homemade mango pickle',
+      description: 'Aai’s recipe. 500 g glass jar.',
+      priceType: 'FIXED',
+      pricePaise: 25000,
+      quantityAvailable: 6,
+      fulfilment: 'PICKUP',
+      images: { create: await photo('product', admin.id) },
+    },
+  });
+  await prisma.listing.create({
+    data: {
+      societyId,
+      sellerMembershipId: admin.id,
+      kind: 'SERVICE',
+      title: 'Maths tuition, classes 5 to 8',
+      description: 'Weekday evenings in the clubhouse. First class free.',
+      priceType: 'NEGOTIABLE',
+      fulfilment: 'PICKUP',
+    },
+  });
+  await prisma.listing.create({
+    data: {
+      societyId,
+      sellerMembershipId: neighbour.id,
+      kind: 'RESALE',
+      title: 'Kids cycle, 16 inch',
+      description: 'Used for one year. New tyres.',
+      priceType: 'FIXED',
+      pricePaise: 150000,
+      quantityAvailable: 1,
+      condition: 'LIKE_NEW',
+      fulfilment: 'PICKUP',
+      images: { create: await photo('resale', neighbour.id) },
+    },
+  });
+  log('market on, with four demo listings');
+}
+
 async function main(): Promise<void> {
   const env = loadEnv();
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['error', 'warn'] });
@@ -451,6 +559,7 @@ async function main(): Promise<void> {
         await ensureM6Demo(app, prisma, existing.id, log);
         await ensureM7Demo(prisma, existing.id, log);
         await ensureM8Demo(app, prisma, existing.id, log);
+        await ensureM10Demo(prisma, existing.id, log);
       } else {
         const result = await societies.create({
           name: 'Sunrise Residency',
@@ -543,6 +652,7 @@ async function main(): Promise<void> {
         await ensureM6Demo(app, prisma, societyId, log);
         await ensureM7Demo(prisma, societyId, log);
         await ensureM8Demo(app, prisma, societyId, log);
+        await ensureM10Demo(prisma, societyId, log);
       }
     }
   });

@@ -263,6 +263,20 @@ export class AuthService {
         where: { userId, status: 'PENDING' },
         data: { status: 'REJECTED', decisionReason: 'account deleted' },
       });
+      // Market: listings go, open orders on either side are cancelled.
+      const memberships = await tx.membership.findMany({ where: { userId }, select: { id: true } });
+      const mids = memberships.map((m) => m.id);
+      await tx.listing.updateMany({
+        where: { sellerMembershipId: { in: mids }, status: { not: 'ARCHIVED' } },
+        data: { status: 'ARCHIVED' },
+      });
+      await tx.marketOrder.updateMany({
+        where: {
+          OR: [{ buyerMembershipId: { in: mids } }, { sellerMembershipId: { in: mids } }],
+          status: { in: ['REQUESTED', 'ACCEPTED', 'READY'] },
+        },
+        data: { status: 'CANCELLED', reason: 'account deleted', closedAt: new Date() },
+      });
       await this.audit.record({ action: 'user.deleted', entityType: 'User', entityId: userId }, tx);
     });
     await this.sessions.revokeAllForUser(userId);

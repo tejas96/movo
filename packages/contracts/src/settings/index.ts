@@ -52,7 +52,9 @@ export const EmergencySettingsSchema = z.object({
   cooldownMinutes: z.number().int().min(1).max(60).default(5),
 });
 export const MarketplaceSettingsSchema = z.object({
+  /** Listings may be shown to nearby MOVO societies. Browsing them arrives with the network. */
   network: z.boolean().default(false),
+  foodEnabled: z.boolean().default(true),
   resaleEnabled: z.boolean().default(true),
 });
 

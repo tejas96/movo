@@ -6,11 +6,15 @@ import emergency from '../../assets/photos/emergency.jpg';
 import empty from '../../assets/photos/empty.jpg';
 import events from '../../assets/photos/events.jpg';
 import expenses from '../../assets/photos/expenses.jpg';
+import food from '../../assets/photos/food.jpg';
 import manage from '../../assets/photos/manage.jpg';
+import market from '../../assets/photos/market.jpg';
 import meetings from '../../assets/photos/meetings.jpg';
 import money from '../../assets/photos/money.jpg';
 import notices from '../../assets/photos/notices.jpg';
 import parking from '../../assets/photos/parking.jpg';
+import product from '../../assets/photos/product.jpg';
+import resale from '../../assets/photos/resale.jpg';
 import rewards from '../../assets/photos/rewards.jpg';
 import services from '../../assets/photos/services.jpg';
 import society from '../../assets/photos/society.jpg';
@@ -29,11 +33,15 @@ export const photos = {
   empty,
   events,
   expenses,
+  food,
   manage,
+  market,
   meetings,
   money,
   notices,
   parking,
+  product,
+  resale,
   rewards,
   services,
   society,

@@ -184,9 +184,11 @@ Each job takes a Postgres advisory lock named after the job. A second API instan
 
 ### 4.8 Files
 
-Upload: `POST /documents/upload-intent {kind, mime, sizeBytes}` → `{documentId, uploadUrl}` → the app PUTs the file to R2 → `POST /documents/:id/complete` → the API verifies size and type with a HEAD request → status READY.
-Download: `GET /documents/:id/url` → a 5-minute presigned GET after the access policy passes. The policy asks the owning module (payment, expense, listing, profile) whether this member may see it.
-Images are resized on the phone before upload (max 1600 px, JPEG 80). Limit 10 MB per file. Soft quota per society with an admin warning.
+As built (M10): photos live on the server's own disk (`FILES_DIR`, a Docker volume in production). ₹0 and no extra account. R2 or any S3 can replace the disk later behind `FilesService`.
+
+Upload: the app resizes on the phone (1600 px, JPEG 80) and sends `POST /v1/societies/:id/files` as multipart (`file`). The API checks the first bytes (JPEG, PNG or WebP only, 5 MB at most), stores `<societyId>/<uuid>.<ext>` and returns `{id, url}`.
+Download: `url` is a signed path `/v1/files/<id>?e=<expiry>&s=<hmac>`, valid until the end of the next hour, so an `<Image>` loads it without a login header and the same url stays stable for caching. Anything wrong or expired is a plain 404.
+A file becomes "attached" when a listing uses it. Unattached uploads older than a day are removed nightly at 03:15 IST. Photos taken off a listing are deleted at once.
 
 ### 4.9 Audit
 

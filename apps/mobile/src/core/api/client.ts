@@ -3,6 +3,8 @@ import {
   authContract,
   buildPath,
   buildQuery,
+  type FileRef,
+  filesContract,
   type RouteDef,
   type RouteInput,
   type RouteResponse,
@@ -133,4 +135,69 @@ export async function api<T extends RouteDef>(
       console.warn(`[contract] ${route.method} ${route.path}`, parsed.error.issues.slice(0, 3));
   }
   return json as RouteResponse<T>;
+}
+
+export interface UploadAsset {
+  uri: string;
+  fileName?: string | undefined;
+  type?: string | undefined;
+}
+
+/**
+ * Multipart upload of one photo (field "file"). Not a JSON route, so it lives beside api().
+ * Same auth header and one silent refresh on 401.
+ */
+export async function uploadFile(
+  societyId: string,
+  asset: UploadAsset,
+  retry = true,
+): Promise<FileRef> {
+  const url = `${API_URL}${buildPath(filesContract.upload.path, { societyId })}`;
+  const form = new FormData();
+  const type = asset.type ?? 'image/jpeg';
+  const name = asset.fileName ?? `photo.${type.split('/')[1] ?? 'jpg'}`;
+  // React Native's FormData takes a {uri, name, type} object for files.
+  form.append('file', { uri: asset.uri, name, type } as unknown as Blob);
+  const headers: Record<string, string> = {
+    accept: 'application/json',
+    'x-app-version': APP_VERSION,
+    'accept-language': i18n.language,
+  };
+  const token = await ensureAccessToken();
+  if (token) headers.authorization = `Bearer ${token}`;
+  let res: Response;
+  try {
+    res = await fetch(url, { method: 'POST', headers, body: form });
+  } catch {
+    throw new ApiError('NETWORK', 'Cannot reach the server', 0);
+  }
+  if (res.status === 401) {
+    if (retry) {
+      const tokens = await refreshTokens();
+      if (tokens) return uploadFile(societyId, asset, false);
+    }
+    await signOutLocally();
+  }
+  const text = await res.text();
+  let json: Record<string, unknown> = {};
+  try {
+    json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  } catch {
+    json = {};
+  }
+  if (res.status >= 400) {
+    throw new ApiError(
+      (json.code as ApiError['code']) ?? 'INTERNAL',
+      (json.message as string) ?? 'Upload failed',
+      res.status,
+      json.details,
+      json.requestId as string | undefined,
+    );
+  }
+  return json as unknown as FileRef;
+}
+
+/** A stored file's url is a relative signed path. Images load it straight, no auth header. */
+export function fileUri(ref: Pick<FileRef, 'url'>): string {
+  return /^https?:/.test(ref.url) ? ref.url : `${API_URL}${ref.url}`;
 }

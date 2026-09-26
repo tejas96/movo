@@ -39,3 +39,6 @@ apps/api/src/generated/
 
 # production backups when the prod compose is run from infra/ locally
 infra/backups/
+
+# uploaded files (FILES_DIR)
+apps/api/data/

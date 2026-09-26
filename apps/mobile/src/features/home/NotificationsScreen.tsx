@@ -48,6 +48,8 @@ export function NotificationsScreen() {
       expenseId?: string;
       dutyId?: string;
       taskId?: string;
+      listingId?: string;
+      orderId?: string;
     };
     if (data.screen === 'notice' && data.noticeId)
       nav.navigate('NoticeDetail', { noticeId: data.noticeId });
@@ -66,6 +68,10 @@ export function NotificationsScreen() {
       nav.navigate('DutyDetail', { dutyId: data.dutyId });
     else if (data.screen === 'task' && data.taskId)
       nav.navigate('TaskDetail', { taskId: data.taskId });
+    else if (data.screen === 'listing' && data.listingId)
+      nav.navigate('Listing', { listingId: data.listingId });
+    else if (data.screen === 'order' && data.orderId)
+      nav.navigate('OrderDetail', { orderId: data.orderId });
     else if (data.screen === 'manage/join-requests') nav.navigate('JoinRequests');
   };
 

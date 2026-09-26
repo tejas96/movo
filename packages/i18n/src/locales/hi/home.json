@@ -19,6 +19,11 @@
   "upcoming": "आगामी",
   "notices": "नोटिस",
   "attention": {
+    "MARKET_ORDERS_WAITING": {
+      "title": "{{count}} मार्केट ऑर्डर इंतज़ार में",
+      "title_other": "{{count}} मार्केट ऑर्डर इंतज़ार में",
+      "sub": "ऑर्डर में जाकर स्वीकार या मना करें"
+    },
     "JOIN_REQUESTS_PENDING": {
       "title": "{{count}} जुड़ने का अनुरोध बाकी",
       "title_other": "{{count}} जुड़ने के अनुरोध बाकी",

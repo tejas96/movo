@@ -228,6 +228,8 @@ export const AuditActionSchema = z.enum([
   'task.returned',
   'task.cancelled',
   'points.adjusted',
+  'listing.hidden',
+  'listing.unhidden',
   'user.deleted',
 ]);
 export type AuditAction = z.infer<typeof AuditActionSchema>;

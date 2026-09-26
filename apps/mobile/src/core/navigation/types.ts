@@ -1,4 +1,12 @@
-import type { ExpenseStatus, ModuleKey, TaskView, Vehicle, VendorStatus } from '@movo/contracts';
+import type {
+  ExpenseStatus,
+  ListingKind,
+  ModuleKey,
+  OrderRole,
+  TaskView,
+  Vehicle,
+  VendorStatus,
+} from '@movo/contracts';
 import { type NavigatorScreenParams, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -72,6 +80,12 @@ export type RootStackParamList = {
   Modules: undefined;
   ModuleSettings: { moduleKey: ModuleKey };
   AuditLog: undefined;
+  Listing: { listingId: string };
+  ListingEditor: { listingId?: string; kind?: ListingKind } | undefined;
+  MyListings: undefined;
+  Orders: { role?: OrderRole } | undefined;
+  OrderDetail: { orderId: string };
+  MarketReports: undefined;
 };
 
 export type TabParamList = {

@@ -33,6 +33,12 @@ import { RolesScreen } from '../../features/manage/RolesScreen';
 import { SocietyProfileScreen } from '../../features/manage/SocietyProfileScreen';
 import { StructureScreen } from '../../features/manage/StructureScreen';
 import { ComingSoonScreen } from '../../features/market/ComingSoonScreen';
+import { ListingDetailScreen } from '../../features/market/ListingDetailScreen';
+import { ListingEditorScreen } from '../../features/market/ListingEditorScreen';
+import { MarketReportsScreen } from '../../features/market/MarketReportsScreen';
+import { MyListingsScreen } from '../../features/market/MyListingsScreen';
+import { OrderDetailScreen } from '../../features/market/OrderDetailScreen';
+import { OrdersScreen } from '../../features/market/OrdersScreen';
 import { ChangePasswordScreen } from '../../features/me/ChangePasswordScreen';
 import { DeleteAccountScreen } from '../../features/me/DeleteAccountScreen';
 import { EditProfileScreen } from '../../features/me/EditProfileScreen';
@@ -264,6 +270,16 @@ export function RootNavigator() {
           <Stack.Screen name="Modules" component={ModulesScreen} />
           <Stack.Screen name="ModuleSettings" component={ModuleSettingsScreen} />
           <Stack.Screen name="AuditLog" component={AuditLogScreen} />
+          <Stack.Screen name="Listing" component={ListingDetailScreen} />
+          <Stack.Screen
+            name="ListingEditor"
+            component={ListingEditorScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen name="MyListings" component={MyListingsScreen} />
+          <Stack.Screen name="Orders" component={OrdersScreen} />
+          <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+          <Stack.Screen name="MarketReports" component={MarketReportsScreen} />
           <Stack.Screen name="Join" component={JoinScreen} />
           <Stack.Screen name="PickFlat" component={PickFlatScreen} />
           <Stack.Screen name="Pending" component={PendingScreen} />

@@ -47,6 +47,8 @@ export const AttentionItemSchema = z.discriminatedUnion('type', [
     returned: z.boolean(),
   }),
   z.object({ type: z.literal('TASKS_TO_VERIFY'), count: z.number().int() }),
+  /** New market orders waiting for me as the seller. */
+  z.object({ type: z.literal('MARKET_ORDERS_WAITING'), count: z.number().int() }),
   z.object({ type: z.literal('JOIN_REQUESTS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('INVITATIONS_PENDING'), count: z.number().int() }),
   z.object({ type: z.literal('VENDOR_SUGGESTIONS'), count: z.number().int() }),

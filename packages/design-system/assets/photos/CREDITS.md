@@ -1,6 +1,6 @@
 # Photo credits
 
-All photos are from Unsplash under the [Unsplash License](https://unsplash.com/license) (free for commercial use, no attribution required). Credits are kept here as a courtesy. Resized to 1000x667 (3:2) JPEG, metadata stripped.
+All photos are from Unsplash under the [Unsplash License](https://unsplash.com/license) (free for commercial use, no attribution required). Credits are kept here as a courtesy. Resized to 1000x667 (3:2) JPEG, metadata stripped. resale.jpg: a small brand script on the bike frame was retouched out.
 
 | File | Photographer | Source | Licence |
 |---|---|---|---|
@@ -21,3 +21,7 @@ All photos are from Unsplash under the [Unsplash License](https://unsplash.com/l
 | empty.jpg | Declan Sun | https://unsplash.com/photos/a-blurry-photo-of-a-tree-with-yellow-flowers-ER36ync_8JE | Unsplash License |
 | auth.jpg | Zoshua Colah | https://unsplash.com/photos/an-aerial-view-of-a-city-with-tall-buildings-DjGZNgKg2kc | Unsplash License |
 | manage.jpg | Diana Polekhina | https://unsplash.com/photos/white-click-pen-on-white-spiral-notebook-MQtdbRHnoxI | Unsplash License |
+| market.jpg | Laura Mitulla | https://unsplash.com/photos/2-clear-glass-condiment-shakers-on-white-table-GjQR7cs7no8 | Unsplash License |
+| food.jpg | Syed Hussaini | https://unsplash.com/photos/fried-egg-on-white-ceramic-plate-r6Y01QzcVdY | Unsplash License |
+| product.jpg | Sincerely Media | https://unsplash.com/photos/white-square-container-on-white-table-UZm4Etsk6Go | Unsplash License |
+| resale.jpg | Waldemar Brandt | https://unsplash.com/photos/yellow-city-bicycle-with-brown-woven-basket-on-top-d7wWUTGWAtY | Unsplash License |

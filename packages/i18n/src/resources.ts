@@ -7,6 +7,7 @@ import enEvents from './locales/en/events.json';
 import enExpenses from './locales/en/expenses.json';
 import enHome from './locales/en/home.json';
 import enManage from './locales/en/manage.json';
+import enMarket from './locales/en/market.json';
 import enMe from './locales/en/me.json';
 import enMeetings from './locales/en/meetings.json';
 import enMoney from './locales/en/money.json';
@@ -26,6 +27,7 @@ import hiEvents from './locales/hi/events.json';
 import hiExpenses from './locales/hi/expenses.json';
 import hiHome from './locales/hi/home.json';
 import hiManage from './locales/hi/manage.json';
+import hiMarket from './locales/hi/market.json';
 import hiMe from './locales/hi/me.json';
 import hiMeetings from './locales/hi/meetings.json';
 import hiMoney from './locales/hi/money.json';
@@ -45,6 +47,7 @@ import mrEvents from './locales/mr/events.json';
 import mrExpenses from './locales/mr/expenses.json';
 import mrHome from './locales/mr/home.json';
 import mrManage from './locales/mr/manage.json';
+import mrMarket from './locales/mr/market.json';
 import mrMe from './locales/mr/me.json';
 import mrMeetings from './locales/mr/meetings.json';
 import mrMoney from './locales/mr/money.json';
@@ -77,6 +80,7 @@ export const en = {
   duties: enDuties,
   tasks: enTasks,
   rewards: enRewards,
+  market: enMarket,
 } as const;
 
 export type Resources = typeof en;
@@ -106,6 +110,7 @@ export const resources = {
     duties: hiDuties,
     tasks: hiTasks,
     rewards: hiRewards,
+    market: hiMarket,
   },
   mr: {
     common: mrCommon,
@@ -127,5 +132,6 @@ export const resources = {
     duties: mrDuties,
     tasks: mrTasks,
     rewards: mrRewards,
+    market: mrMarket,
   },
 } as const;

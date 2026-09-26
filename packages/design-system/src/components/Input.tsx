@@ -3,6 +3,7 @@ import { Pressable, TextInput, type TextInputProps, View } from 'react-native';
 import type { IconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
+import { useRevealFocused } from './keyboard-reveal';
 import { Text } from './Text';
 import { theme } from './theme';
 
@@ -37,6 +38,7 @@ export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(func
   ref,
 ) {
   const [focused, setFocused] = useState(false);
+  const reveal = useRevealFocused();
   return (
     <View className={containerClassName}>
       {label ? (
@@ -64,6 +66,8 @@ export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(func
           style={[{ fontFamily: 'Poppins', fontWeight: '400', includeFontPadding: false }, style]}
           onFocus={(e) => {
             setFocused(true);
+            // When the keyboard is already open, moving to another field needs its own scroll.
+            reveal?.();
             onFocus?.(e);
           }}
           onBlur={(e) => {

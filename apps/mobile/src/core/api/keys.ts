@@ -58,6 +58,13 @@ export const keys = {
     rewards: ['society', id, 'rewards'] as const,
     rewardsMine: ['society', id, 'rewards', 'me'] as const,
     leaderboard: ['society', id, 'rewards', 'board'] as const,
+    market: ['society', id, 'market'] as const,
+    listings: (filter: string) => ['society', id, 'market', 'listings', filter] as const,
+    listing: (listingId: string) => ['society', id, 'market', 'listing', listingId] as const,
+    myListings: ['society', id, 'market', 'mine'] as const,
+    orders: (role: string) => ['society', id, 'market', 'orders', role] as const,
+    order: (orderId: string) => ['society', id, 'market', 'order', orderId] as const,
+    marketReports: ['society', id, 'market', 'reports'] as const,
   }),
   join: { preview: (code: string) => ['join', 'preview', code] as const },
 };

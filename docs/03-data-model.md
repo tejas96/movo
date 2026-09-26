@@ -128,17 +128,19 @@ Approval rule comes from settings: `NEVER`, `ABOVE_AMOUNT`, `ALWAYS`. The creato
 | alert | society_id, source (`USER`, `DEVICE`), type (`MEDICAL`, `FIRE`, `SECURITY`, `LIFT`, `GAS`, `OTHER`), raised_by_membership_id, flat_id, message, status (`ACTIVE`, `RESOLVED`, `FALSE_ALARM`), resolved_by_membership_id, resolved_at, resolution_note |
 | document | society_id (nullable for profile photos), owner_user_id, kind (`RECEIPT`, `EXPENSE_RECEIPT`, `NOTICE_ATTACHMENT`, `TASK_EVIDENCE`, `LISTING_IMAGE`, `AVATAR`, `LOGO`, `OTHER`), storage_key, mime, size_bytes, status (`PENDING`, `READY`, `DELETED`) |
 
-## 10. Marketplace (phase 1.5)
+## 10. Marketplace (built in M10)
 
 | Table | Key fields |
 | --- | --- |
-| listing | society_id, seller_membership_id, kind (`PRODUCT`, `SERVICE`, `RESALE`), title, description, category, price_type (`FIXED`, `PER_UNIT`, `NEGOTIABLE`, `FREE`), price_paise, unit, quantity_available, condition (resale), images, availability_text, visibility (`SOCIETY`, `NETWORK`), contact_preference (`IN_APP`, `PHONE_AFTER_ACCEPT`), status (`DRAFT`, `ACTIVE`, `PAUSED`, `SOLD`, `ARCHIVED`) |
-| order | listing_id, seller_society_id, buyer_user_id, buyer_society_id, quantity, offer_paise (nullable), note, status (`REQUESTED`, `ACCEPTED`, `REJECTED`, `READY`, `COMPLETED`, `CANCELLED`) |
-| order_message | order_id, sender_user_id, body, created_at |
-| review | order_id (unique), rating, text. Only after `COMPLETED` |
-| listing_report | listing_id, reporter_user_id, reason, status |
+| stored_file | society_id, owner_membership_id, kind (`LISTING_IMAGE`), mime, size_bytes, storage_key, attached_at (null = not used yet, removed after a day) |
+| listing | society_id, seller_membership_id, kind (`FOOD`, `PRODUCT`, `SERVICE`, `RESALE`), title, description, price_type (`FIXED`, `PER_UNIT`, `NEGOTIABLE`, `FREE`), price_paise, unit, diet (`VEG`, `EGG`, `NON_VEG`, food only, required), quantity_available (null = no limit), ready_at and order_by (food), fulfilment (`PICKUP`, `DELIVERY`, `BOTH`), condition (resale), visibility (`SOCIETY`, `NETWORK`), show_phone_after_accept, status (`ACTIVE`, `PAUSED`, `ARCHIVED`, `HIDDEN`), hidden_reason, rating_sum, rating_count |
+| listing_image | listing_id, file_id, sort_order (first = cover), at most 5 |
+| market_order | listing_id, buyer and seller membership ids, quantity, unit_price_paise (snapshot), fulfilment, note, status (`REQUESTED`, `ACCEPTED`, `REJECTED`, `READY`, `COMPLETED`, `CANCELLED`), reason, accepted_at, ready_at, closed_at, buyer_read_at, seller_read_at |
+| order_message | order_id, sender_membership_id, body |
+| listing_review | order_id (unique), listing_id, author, rating 1–5, text. Only the buyer, only after `COMPLETED` |
+| listing_report | listing_id, reporter_membership_id, reason, status (`OPEN`, `ACTIONED`, `DISMISSED`) |
 
-Buyer identity shown to the seller: name and society. Seller identity shown to the buyer: name and society. Flat numbers are never included.
+Rules: stock goes down when the seller accepts (race-safe, never below zero) and comes back if an accepted order is cancelled. No orders after `order_by`. Food ready more than 12 hours ago leaves the feed. One open order per buyer per listing. Flats and the seller's phone (if shared) appear only after acceptance. A moderator hiding a listing cancels its open orders and closes its reports. Browsing other societies (`NETWORK`) is stored now and shown when the network arrives in phase 2.
 
 ## 11. Notifications and audit
 

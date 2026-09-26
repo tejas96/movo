@@ -18,6 +18,8 @@ const EnvSchema = z.object({
   LATEST_APP_VERSION: z.string().default('0.1.0'),
   SUPPORT_EMAIL: z.string().optional().default(''),
   PRIVACY_POLICY_URL: z.string().optional().default(''),
+  /** Uploaded photos live here. A Docker volume in production. */
+  FILES_DIR: z.string().default('./data/files'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

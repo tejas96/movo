@@ -14,9 +14,11 @@ import { DutiesModule } from './modules/duties/duties.module';
 import { EmergencyModule } from './modules/emergency/emergency.module';
 import { EventsModule } from './modules/events/events.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
+import { FilesModule } from './modules/files/files.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+import { MarketModule } from './modules/market/market.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
 import { NoticesModule } from './modules/notices/notices.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -63,6 +65,8 @@ const env = loadEnv();
     ExpensesModule,
     DutiesModule,
     TasksModule,
+    FilesModule,
+    MarketModule,
     RewardsModule,
     HomeModule,
   ],

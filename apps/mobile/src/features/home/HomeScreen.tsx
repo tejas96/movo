@@ -113,12 +113,7 @@ export function HomeScreen() {
           <Chip
             label={t('home:quick.market')}
             icon="market"
-            onPress={() =>
-              nav.navigate('ComingSoon', {
-                moduleKey: 'marketplace',
-                title: t('home:quick.market'),
-              })
-            }
+            onPress={() => nav.navigate('Tabs', { screen: 'Market' })}
           />
         ) : canManage ? (
           <Chip
@@ -311,6 +306,15 @@ function AttentionRow({ item }: { item: AttentionItem }) {
               title: t('services:status.SUGGESTED'),
             })
           }
+        />
+      );
+    case 'MARKET_ORDERS_WAITING':
+      return (
+        <Row
+          icon="market"
+          title={t('home:attention.MARKET_ORDERS_WAITING.title', { count: item.count })}
+          subtitle={t('home:attention.MARKET_ORDERS_WAITING.sub')}
+          onPress={() => nav.navigate('Orders', { role: 'SELLING' })}
         />
       );
     case 'JOIN_REQUESTS_PENDING':

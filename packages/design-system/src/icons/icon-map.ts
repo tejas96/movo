@@ -131,6 +131,15 @@ export const iconMap = {
   alarm: 'alarm',
   callCalling: 'call-calling',
   evCharge: 'battery-charging',
+  // market (M10)
+  food: 'reserve',
+  flag: 'flag',
+  pause: 'pause-circle',
+  play: 'play-circle',
+  archive: 'archive',
+  eyeSlash: 'eye-slash',
+  galleryAdd: 'gallery-add',
+  orders: 'receipt-item',
 } as const;
 
 export type IconName = keyof typeof iconMap;

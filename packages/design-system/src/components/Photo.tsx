@@ -66,6 +66,8 @@ export interface PhotoCardProps {
   source: ImageSourcePropType;
   /** Pill on the photo, top left. */
   badge?: PhotoPill;
+  /** Any node top left instead of the badge pill (a pill with a custom mark). */
+  leading?: ReactNode;
   /** Top right over the photo, usually a CircleButton. */
   action?: ReactNode;
   photoHeight?: number;
@@ -78,6 +80,7 @@ export interface PhotoCardProps {
 export function PhotoCard({
   source,
   badge,
+  leading,
   action,
   photoHeight = 170,
   onPress,
@@ -93,11 +96,12 @@ export function PhotoCard({
           style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
         />
         <View className="flex-row items-start justify-between p-3">
-          {badge ? (
-            <Pill icon={badge.icon} label={badge.label} tone="overlay" size="sm" />
-          ) : (
-            <View />
-          )}
+          {leading ??
+            (badge ? (
+              <Pill icon={badge.icon} label={badge.label} tone="overlay" size="sm" />
+            ) : (
+              <View />
+            ))}
           {action}
         </View>
       </View>

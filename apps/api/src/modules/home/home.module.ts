@@ -4,6 +4,7 @@ import { EmergencyModule } from '../emergency/emergency.module';
 import { EventsModule } from '../events/events.module';
 import { ExpensesModule } from '../expenses/expenses.module';
 import { MaintenanceModule } from '../maintenance/maintenance.module';
+import { MarketModule } from '../market/market.module';
 import { MeetingsModule } from '../meetings/meetings.module';
 import { NoticesModule } from '../notices/notices.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -26,6 +27,7 @@ import { HomeService } from './home.service';
     DutiesModule,
     TasksModule,
     RewardsModule,
+    MarketModule,
   ],
   controllers: [HomeController],
   providers: [HomeService],

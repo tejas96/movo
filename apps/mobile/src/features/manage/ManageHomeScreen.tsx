@@ -46,6 +46,8 @@ export function ManageHomeScreen() {
   const canSettings = useCan('society.settings.manage');
   const canRoles = useCan('society.roles.manage');
   const canAudit = useCan('audit.view');
+  const marketOn = useModuleEnabled('marketplace');
+  const canModerate = useCan('marketplace.moderate');
   const pending = summary.data?.attention.find((a) => a.type === 'JOIN_REQUESTS_PENDING');
   const joinCode = profile.data?.joinCode;
   const p = profile.data;
@@ -106,6 +108,13 @@ export function ManageHomeScreen() {
         label: t('manage:tiles.roles'),
         onPress: () => nav.navigate('Roles'),
       },
+      marketOn &&
+        canModerate && {
+          key: 'marketReports',
+          icon: 'flag',
+          label: t('manage:tiles.marketReports'),
+          onPress: () => nav.navigate('MarketReports'),
+        },
       canAudit && {
         key: 'audit',
         icon: 'audit',

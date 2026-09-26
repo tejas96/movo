@@ -165,3 +165,7 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 | `PhotoCard` | the reference listing card: gray card, inset photo with a pill top left and an action top right, content under it (Home upcoming, Society hero, dues card) |
 | `PhotoTile` | Society hub grid, two per row, label in a white pill on the photo |
 | `EmptyState photo` | full-screen empty states show `photos.empty` above the text |
+
+## Keyboard (Android edge to edge)
+
+The window does not resize for the keyboard, so the design system handles it once: `Screen` and `Sheet` use `KeyboardAvoidingView` with `padding` on both platforms, `BottomBar` rides on top of the keyboard (`useKeyboardHeight`), and a scrolling `Screen` scrolls the focused `Input` into view above the keyboard and the bar. Screens need no keyboard code of their own.

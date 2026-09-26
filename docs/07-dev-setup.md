@@ -35,9 +35,10 @@ The demo seed prints:
 | Meetings and events | a committee meeting in 5 days, a garba night in 10 days |
 | Duties, tasks, rewards | "Main gate locking" monthly over wing A (A-101's turn now), an open task worth 3 points, 5 points for the admin |
 | Expenses | 10 categories, five approved expenses this month, one hall booking |
+| Market | switched on; poha and chai (food, from the second member if there is one), mango pickle, maths tuition, kids cycle; photos copied into `apps/api/data/files` |
 | Money | plan "Maintenance" ₹2,500 monthly, due on the 10th, ₹100 late fee after 5 days; UPI `sunriseresidency@okaxis`; this month's bills; 16 flats paid, A-101 (the admin) not |
 
-Running the seed again on an existing demo society only adds the Services, Parking, Emergency, Meetings, Events, Money, Expenses, Duties, Tasks and Rewards data that is missing.
+Running the seed again on an existing demo society only adds the Services, Parking, Emergency, Meetings, Events, Money, Expenses, Duties, Tasks, Rewards and Market data that is missing.
 
 ## 3. Run
 
@@ -71,6 +72,7 @@ pnpm design:preview              # regenerate the design system page
 | `apps/api/prisma/schema.prisma` | database schema. `pnpm --filter @movo/api db:migrate` after edits |
 | `apps/mobile/src/features/*` | screens and their data hooks |
 | `apps/mobile/src/core` | api client, session, tenant context, navigation, i18n |
+| `apps/api/data/files` | uploaded photos in development (`FILES_DIR`, git-ignored) |
 
 ## 6. Common tasks
 

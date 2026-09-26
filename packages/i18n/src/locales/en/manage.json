@@ -73,7 +73,8 @@
     "profile": "Society profile",
     "modules": "Modules",
     "roles": "Roles",
-    "audit": "Audit log"
+    "audit": "Audit log",
+    "marketReports": "Market reports"
   },
   "profile": {
     "title": "Society profile",
@@ -309,6 +310,20 @@
         "label": "Minutes between alerts from one member",
         "help": "From 1 to 60. Stops accidental repeats."
       }
+    },
+    "marketplace": {
+      "foodEnabled": {
+        "label": "Homemade food",
+        "help": "Members can sell tiffin, snacks and other food they cook."
+      },
+      "resaleEnabled": {
+        "label": "Used items",
+        "help": "Members can sell things they no longer need."
+      },
+      "network": {
+        "label": "Nearby societies",
+        "help": "Nearby MOVO societies can see listings marked for them. Browsing other societies arrives later."
+      }
     }
   },
   "audit": {
@@ -415,6 +430,8 @@
       "task_returned": "Task sent back",
       "task_cancelled": "Task cancelled",
       "points_adjusted": "Points adjusted",
+      "listing_hidden": "Market listing taken down",
+      "listing_unhidden": "Market listing brought back",
       "user_deleted": "Account deleted"
     }
   }

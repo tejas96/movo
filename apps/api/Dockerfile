@@ -44,7 +44,8 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /out /app
 COPY apps/api/docker/start.sh /usr/local/bin/movo-start
-RUN chmod 0755 /usr/local/bin/movo-start
+RUN chmod 0755 /usr/local/bin/movo-start \
+ && mkdir -p /data/files && chown node:node /data/files
 EXPOSE 4000
 # Code is owned by root and read-only to the app user.
 USER node

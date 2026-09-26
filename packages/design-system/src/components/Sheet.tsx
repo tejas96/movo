@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { theme } from './theme';
+import { useKeyboardHeight } from './useKeyboardHeight';
 
 export interface SheetProps {
   visible: boolean;
@@ -16,6 +17,7 @@ export interface SheetProps {
 /** Bottom sheet on a scrim. 28 radius, grabber, gray body so white inputs stand out. */
 export function Sheet({ visible, onClose, title, children, footer }: SheetProps) {
   const insets = useSafeAreaInsets();
+  const keyboard = useKeyboardHeight();
   return (
     <Modal
       visible={visible}
@@ -31,11 +33,14 @@ export function Sheet({ visible, onClose, title, children, footer }: SheetProps)
           accessibilityLabel="Close"
           accessibilityRole="button"
         />
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView behavior="padding">
           <View
             className="rounded-t-xl bg-card-alt px-5 pt-3"
             style={[
-              { paddingBottom: Math.max(insets.bottom, 16) + 8, maxHeight: 640 },
+              {
+                paddingBottom: keyboard > 0 ? 16 : Math.max(insets.bottom, 16) + 8,
+                maxHeight: 640,
+              },
               theme.shadow.sheet,
             ]}
           >

@@ -76,10 +76,19 @@ prune() { # dir keep
 prune "$BACKUP_DIR/daily" "$KEEP_DAILY"
 prune "$BACKUP_DIR/monthly" "$KEEP_MONTHLY"
 
+# Uploaded photos: a plain mirror next to the dumps. New files are copied, nothing is deleted,
+# so a photo removed by mistake can still be found here.
+if [ -d "${FILES_DIR:-/files}" ]; then
+  mkdir -p "$BACKUP_DIR/files"
+  cp -Rpu "${FILES_DIR:-/files}/." "$BACKUP_DIR/files/"
+  log "mirrored uploaded files ($(du -sh "$BACKUP_DIR/files" | cut -f1))"
+fi
+
 if [ -n "$RCLONE_REMOTE" ]; then
   log "copying off-site to $RCLONE_REMOTE"
   rclone copy --no-traverse "$daily" "$RCLONE_REMOTE/daily/"
   rclone copy --no-traverse "$monthly" "$RCLONE_REMOTE/monthly/"
+  if [ -d "$BACKUP_DIR/files" ]; then rclone copy "$BACKUP_DIR/files" "$RCLONE_REMOTE/files/"; fi
   # Same retention off-site, by age.
   rclone delete --min-age "$((KEEP_DAILY + 1))d" "$RCLONE_REMOTE/daily/"
   rclone delete --min-age "$((KEEP_MONTHLY * 31 + 1))d" "$RCLONE_REMOTE/monthly/"

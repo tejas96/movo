@@ -301,6 +301,70 @@ enum AssignmentStatus {
   SKIPPED
 }
 
+enum FileKind {
+  LISTING_IMAGE
+}
+
+enum ListingKind {
+  FOOD
+  PRODUCT
+  SERVICE
+  RESALE
+}
+
+enum Diet {
+  VEG
+  EGG
+  NON_VEG
+}
+
+enum PriceType {
+  FIXED
+  PER_UNIT
+  NEGOTIABLE
+  FREE
+}
+
+enum Fulfilment {
+  PICKUP
+  DELIVERY
+  BOTH
+}
+
+enum ItemCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+}
+
+enum ListingStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+  HIDDEN
+}
+
+enum ListingVisibility {
+  SOCIETY
+  NETWORK
+}
+
+enum OrderStatus {
+  REQUESTED
+  ACCEPTED
+  REJECTED
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum ReportStatus {
+  OPEN
+  ACTIONED
+  DISMISSED
+}
+
 enum TaskStatus {
   OPEN
   IN_PROGRESS
@@ -481,6 +545,13 @@ model Society {
   tasks                      Task[]
   taskEvents                 TaskEvent[]
   pointsLedgers              PointsLedger[]
+  files                      StoredFile[]
+  listings                   Listing[]
+  listingImages              ListingImage[]
+  marketOrders               MarketOrder[]
+  orderMessages              OrderMessage[]
+  listingReviews             ListingReview[]
+  listingReports             ListingReport[]
 }
 
 model Building {
@@ -1321,4 +1392,149 @@ model AuditLog {
   createdAt         DateTime @default(now())
 
   @@index([societyId, createdAt(sort: Desc)])
+}
+
+/// A file on the server's disk (FILES_DIR). Served through short-lived signed urls.
+model StoredFile {
+  id                String    @id @default(uuid(7)) @db.Uuid
+  societyId         String    @db.Uuid
+  ownerMembershipId String    @db.Uuid
+  kind              FileKind
+  mime              String
+  sizeBytes         Int
+  storageKey        String    @unique
+  /// Set once something (a listing) uses the file. Unused files are removed after a day.
+  attachedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  society       Society        @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  listingImages ListingImage[]
+
+  @@index([societyId, attachedAt])
+}
+
+model Listing {
+  id                   String            @id @default(uuid(7)) @db.Uuid
+  societyId            String            @db.Uuid
+  sellerMembershipId   String            @db.Uuid
+  kind                 ListingKind
+  title                String
+  description          String?
+  priceType            PriceType
+  pricePaise           Int?
+  unit                 String?
+  diet                 Diet?
+  /// null = no limit. Goes down when the seller accepts an order.
+  quantityAvailable    Int?
+  readyAt              DateTime?
+  orderBy              DateTime?
+  fulfilment           Fulfilment        @default(PICKUP)
+  condition            ItemCondition?
+  visibility           ListingVisibility @default(SOCIETY)
+  showPhoneAfterAccept Boolean           @default(false)
+  status               ListingStatus     @default(ACTIVE)
+  hiddenReason         String?
+  ratingSum            Int               @default(0)
+  ratingCount          Int               @default(0)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  society Society         @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  images  ListingImage[]
+  orders  MarketOrder[]
+  reviews ListingReview[]
+  reports ListingReport[]
+
+  @@index([societyId, status, createdAt(sort: Desc)])
+  @@index([sellerMembershipId, status])
+}
+
+model ListingImage {
+  listingId String @db.Uuid
+  fileId    String @db.Uuid
+  societyId String @db.Uuid
+  sortOrder Int
+
+  society Society    @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  listing Listing    @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  file    StoredFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, fileId])
+}
+
+model MarketOrder {
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  societyId          String      @db.Uuid
+  listingId          String      @db.Uuid
+  buyerMembershipId  String      @db.Uuid
+  sellerMembershipId String      @db.Uuid
+  quantity           Int
+  /// Unit price when the order was made. null when there was no price.
+  unitPricePaise     Int?
+  fulfilment         Fulfilment
+  note               String?
+  status             OrderStatus @default(REQUESTED)
+  reason             String?
+  acceptedAt         DateTime?
+  readyAt            DateTime?
+  closedAt           DateTime?
+  buyerReadAt        DateTime    @default(now())
+  sellerReadAt       DateTime    @default(now())
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  society  Society        @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  listing  Listing        @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  messages OrderMessage[]
+  review   ListingReview?
+
+  @@index([buyerMembershipId, status])
+  @@index([sellerMembershipId, status])
+  @@index([listingId, status])
+}
+
+model OrderMessage {
+  id                 String   @id @default(uuid(7)) @db.Uuid
+  societyId          String   @db.Uuid
+  orderId            String   @db.Uuid
+  senderMembershipId String   @db.Uuid
+  body               String
+  createdAt          DateTime @default(now())
+
+  society Society     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  order   MarketOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+}
+
+model ListingReview {
+  id                 String   @id @default(uuid(7)) @db.Uuid
+  societyId          String   @db.Uuid
+  listingId          String   @db.Uuid
+  orderId            String   @unique @db.Uuid
+  authorMembershipId String   @db.Uuid
+  rating             Int
+  text               String?
+  createdAt          DateTime @default(now())
+
+  society Society     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  listing Listing     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  order   MarketOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, createdAt(sort: Desc)])
+}
+
+model ListingReport {
+  id                   String       @id @default(uuid(7)) @db.Uuid
+  societyId            String       @db.Uuid
+  listingId            String       @db.Uuid
+  reporterMembershipId String       @db.Uuid
+  reason               String
+  status               ReportStatus @default(OPEN)
+  createdAt            DateTime     @default(now())
+
+  society Society @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([societyId, status])
 }

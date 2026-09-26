@@ -47,9 +47,14 @@ export const MODULE_SETTINGS: Partial<Record<ModuleKey, readonly SettingField[]>
     { key: 'roleIds', kind: 'roles', showWhen: { key: 'alertRecipients', value: 'ROLES' } },
     { key: 'cooldownMinutes', kind: 'number', min: 1, max: 60 },
   ],
+  marketplace: [
+    { key: 'foodEnabled', kind: 'toggle' },
+    { key: 'resaleEnabled', kind: 'toggle' },
+    { key: 'network', kind: 'toggle' },
+  ],
 };
 
-/** Modules shown on the Modules screen, in hub order. Marketplace arrives with M10. */
+/** Modules shown on the Modules screen, in hub order. */
 export const MANAGED_MODULES: readonly ModuleKey[] = [
   'notices',
   'meetings',
@@ -63,6 +68,7 @@ export const MANAGED_MODULES: readonly ModuleKey[] = [
   'emergency',
   'maintenance',
   'expenses',
+  'marketplace',
 ];
 
 /** Permissions grouped the way a committee thinks about them. Every key appears once. */

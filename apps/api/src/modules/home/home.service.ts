@@ -9,6 +9,7 @@ import { EmergencyService } from '../emergency/emergency.service';
 import { EventsService } from '../events/events.service';
 import { ExpensesService } from '../expenses/expenses.service';
 import { AccountsService } from '../maintenance/accounts.service';
+import { MarketService } from '../market/market.service';
 import { MeetingsService } from '../meetings/meetings.service';
 import { NoticesService } from '../notices/notices.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -35,6 +36,7 @@ export class HomeService {
     private readonly expenses: ExpensesService,
     private readonly duties: DutiesService,
     private readonly tasks: TasksService,
+    private readonly market: MarketService,
     private readonly rewards: RewardsService,
   ) {}
 
@@ -49,6 +51,10 @@ export class HomeService {
       attention.push(...(await this.duties.attentionForHome(ctx)));
     if (ctx.enabledModules.has('tasks'))
       attention.push(...(await this.tasks.attentionForHome(ctx)));
+    if (ctx.enabledModules.has('marketplace')) {
+      const waiting = await this.market.waitingCount(ctx.membershipId);
+      if (waiting > 0) attention.push({ type: 'MARKET_ORDERS_WAITING', count: waiting });
+    }
 
     if (can(ctx, 'member.manage')) {
       const [joinRequests, invitations] = await Promise.all([

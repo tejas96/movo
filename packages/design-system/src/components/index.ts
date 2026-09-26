@@ -26,3 +26,4 @@ export * from './Toast';
 export * from './Toggle';
 export * from './TopBar';
 export * from './theme';
+export * from './useKeyboardHeight';

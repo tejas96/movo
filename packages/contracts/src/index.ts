@@ -10,6 +10,7 @@ export * from './events/events.contract';
 export * from './expenses/expenses.contract';
 export * from './home/home.contract';
 export * from './maintenance/maintenance.contract';
+export * from './market/market.contract';
 export * from './me/me.contract';
 export * from './meetings/meetings.contract';
 export * from './notices/notices.contract';

@@ -54,7 +54,11 @@ services:
       LATEST_APP_VERSION: ${LATEST_APP_VERSION:-0.1.0}
       SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
       PRIVACY_POLICY_URL: ${PRIVACY_POLICY_URL:-https://tejas96.github.io/movo/privacy.html}
+      FILES_DIR: /data/files
       TZ: Asia/Kolkata
+    volumes:
+      # Market photos. Backed up by the backup service as a mirror.
+      - files:/data/files
     logging: *logging
 
   caddy:
@@ -103,9 +107,11 @@ services:
       TZ: Asia/Kolkata
     volumes:
       - ${BACKUP_HOST_DIR:-./backups}:/backups
+      - files:/files:ro
     logging: *logging
 
 volumes:
   pgdata:
+  files:
   caddy_data:
   caddy_config:

@@ -43,6 +43,13 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'Task',
   'TaskEvent',
   'PointsLedger',
+  'StoredFile',
+  'Listing',
+  'ListingImage',
+  'MarketOrder',
+  'OrderMessage',
+  'ListingReview',
+  'ListingReport',
 ]);
 
 const READ_OPS = new Set([
