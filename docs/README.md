@@ -16,6 +16,7 @@ Read in this order:
 | 6 | [06-design-system.md](06-design-system.md) | Look and feel, tokens, components |
 | 7 | [07-dev-setup.md](07-dev-setup.md) | Run it on your Mac. Seed data, commands, troubleshooting |
 | 8 | [08-release-and-ops.md](08-release-and-ops.md) | Server, deploys, backups, uptime, privacy policy, Play release |
+| 9 | [09-spatial-ar-digital-twin.md](09-spatial-ar-digital-twin.md) | Building drawings → spatial model → AR → IoT → Digital Twin. Analysis and phases, no code yet |
 
 Status words used in the docs:
 

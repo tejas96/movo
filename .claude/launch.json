@@ -24,6 +24,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@movo/mobile", "start"],
       "port": 8081
+    },
+    {
+      "name": "spatial-viewer",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "docs/spatial"],
+      "port": 8765
     }
   ]
 }
