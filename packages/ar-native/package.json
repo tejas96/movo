@@ -1,0 +1,26 @@
+{
+  "name": "@movo/ar-native",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MOVO AR camera view: ARKit on iOS, ARCore on Android. Tracks the phone and detects landmark plates; all content is drawn by JS.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "react-native": "src/index.ts",
+  "files": [
+    "src",
+    "ios",
+    "android",
+    "MovoArNative.podspec",
+    "react-native.config.js"
+  ],
+  "peerDependencies": {
+    "react": ">=19",
+    "react-native": ">=0.80"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "react": "19.2.3",
+    "react-native": "0.87.1",
+    "typescript": "5.9.3"
+  }
+}

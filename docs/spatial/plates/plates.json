@@ -1,0 +1,322 @@
+{
+ "frame": "BLCS mm; plate centre position; normal = unit vector out of the wall; plate X = up x normal, Y = normal, Z = down",
+ "plates": [
+  {
+   "id": "LP-L1-LIFT",
+   "levelId": "L1",
+   "title": "FLOOR 1",
+   "where": "Lift landing floor 1: on the ventilation-shaft wall facing the lift door",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -1883,
+    970,
+    4700
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L1-LIFT.png"
+  },
+  {
+   "id": "LP-L2-LIFT",
+   "levelId": "L2",
+   "title": "FLOOR 2",
+   "where": "Lift landing floor 2: on the ventilation-shaft wall facing the lift door",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -1883,
+    970,
+    7700
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L2-LIFT.png"
+  },
+  {
+   "id": "LP-L3-LIFT",
+   "levelId": "L3",
+   "title": "FLOOR 3",
+   "where": "Lift landing floor 3: on the ventilation-shaft wall facing the lift door",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -1883,
+    970,
+    10700
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L3-LIFT.png"
+  },
+  {
+   "id": "LP-L4-LIFT",
+   "levelId": "L4",
+   "title": "FLOOR 4",
+   "where": "Lift landing floor 4: on the ventilation-shaft wall facing the lift door",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -1883,
+    970,
+    13700
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L4-LIFT.png"
+  },
+  {
+   "id": "LP-L5-LIFT",
+   "levelId": "L5",
+   "title": "FLOOR 5",
+   "where": "Lift landing floor 5: on the ventilation-shaft wall facing the lift door",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -1883,
+    970,
+    16700
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L5-LIFT.png"
+  },
+  {
+   "id": "LP-L6-LIFT",
+   "levelId": "L6",
+   "title": "FLOOR 6",
+   "where": "Lift landing floor 6: on the ventilation-shaft wall facing the lift door",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -1883,
+    970,
+    19700
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L6-LIFT.png"
+  },
+  {
+   "id": "LP-L0-LOBBY",
+   "levelId": "L0",
+   "title": "GROUND",
+   "where": "Entrance lobby: wall facing the lift door",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -1250,
+    970,
+    1400
+   ],
+   "normal": [
+    1,
+    0,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "low",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L0-LOBBY.png"
+  },
+  {
+   "id": "LP-L0-C13",
+   "levelId": "L0",
+   "title": "PARKING N",
+   "where": "Parking, column C13, face towards the core (south)",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    3361,
+    3991,
+    1400
+   ],
+   "normal": [
+    0,
+    -1,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L0-C13.png"
+  },
+  {
+   "id": "LP-L0-C25",
+   "levelId": "L0",
+   "title": "PARKING S",
+   "where": "Parking, column C25, face towards the core (north)",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    3361,
+    -2060,
+    1400
+   ],
+   "normal": [
+    0,
+    1,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "medium",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L0-C25.png"
+  },
+  {
+   "id": "LP-L6-TERRACE",
+   "levelId": "L6",
+   "title": "TERRACE",
+   "where": "Sixth floor: lobby wall beside the door to the north terrace",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -3000,
+    4400,
+    19700
+   ],
+   "normal": [
+    0,
+    -1,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "low",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L6-TERRACE.png"
+  },
+  {
+   "id": "LP-L0-GATE",
+   "levelId": "L0",
+   "title": "GATE",
+   "where": "South gate (west one): pillar face towards the plot",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -2200,
+    -9200,
+    1400
+   ],
+   "normal": [
+    0,
+    1,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "low",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L0-GATE.png"
+  },
+  {
+   "id": "LP-L1-F102-BED-TEST",
+   "levelId": "L1",
+   "title": "TEST 102",
+   "where": "Desk test only: monitor against the south wall of the second bedroom of flat 102, screen centre 1.1 m up, facing north into the room",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    -11080,
+    -2420,
+    4400
+   ],
+   "normal": [
+    0,
+    1,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "low",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L1-F102-BED-TEST.png"
+  },
+  {
+   "id": "LP-RF-TANK",
+   "levelId": "RF",
+   "title": "ROOF TANK",
+   "where": "Roof, near the overhead tank: position UNKNOWN until a photo or visit",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": null,
+   "normal": null,
+   "heightAboveFloorMm": 1400,
+   "confidence": "none",
+   "status": "POSE_TBD",
+   "image": "LP-RF-TANK.png"
+  }
+ ]
+}

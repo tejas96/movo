@@ -1,0 +1,37 @@
+{
+  "title": "AR guide",
+  "map": "2D map",
+  "camera": "Camera",
+  "whereTo": "Where to?",
+  "pickDestination": "Pick a destination",
+  "clearRoute": "Clear route",
+  "hint": {
+    "noFix": "Point the camera at a floor plate to find where you are.",
+    "tracking": "Move the phone slowly and keep the plate in view.",
+    "lost": "Tracking lost. Look at the nearest plate again."
+  },
+  "status": {
+    "level": "{{level}}",
+    "noFloor": "Floor unknown",
+    "confidence": "{{pct}}% sure",
+    "notAvailable": "AR is not available on this phone. Use the 2D map.",
+    "permission": "The camera is needed for the AR guide.",
+    "openSettings": "Open settings"
+  },
+  "route": {
+    "summary": "{{steps}} steps, about {{seconds}} s",
+    "next": "Next: {{name}}",
+    "arrived": "You are here: {{name}}",
+    "none": "No route found."
+  },
+  "levels": {
+    "L0": "Ground",
+    "L1": "1st floor",
+    "L2": "2nd floor",
+    "L3": "3rd floor",
+    "L4": "4th floor",
+    "L5": "5th floor",
+    "L6": "6th floor"
+  },
+  "you": "You"
+}

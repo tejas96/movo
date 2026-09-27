@@ -64,6 +64,8 @@ import { NoticesScreen } from '../../features/notices/NoticesScreen';
 import { JoinScreen } from '../../features/onboarding/JoinScreen';
 import { PendingScreen } from '../../features/onboarding/PendingScreen';
 import { PickFlatScreen } from '../../features/onboarding/PickFlatScreen';
+import { ARScreen } from '../../features/ar/ARScreen';
+import { FloorMapScreen } from '../../features/ar/FloorMapScreen';
 import { ParkingScreen } from '../../features/parking/ParkingScreen';
 import { ParkingSlotsScreen } from '../../features/parking/ParkingSlotsScreen';
 import { VehicleEditorScreen } from '../../features/parking/VehicleEditorScreen';
@@ -197,6 +199,8 @@ export function RootNavigator() {
           />
           <Stack.Screen name="VendorCategories" component={VendorCategoriesScreen} />
           <Stack.Screen name="Parking" component={ParkingScreen} />
+          <Stack.Screen name="AR" component={ARScreen} options={{ animation: 'fade' }} />
+          <Stack.Screen name="FloorMap" component={FloorMapScreen} />
           <Stack.Screen
             name="VehicleEditor"
             component={VehicleEditorScreen}

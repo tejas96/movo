@@ -78,6 +78,8 @@ export type RootStackParamList = {
   Roles: undefined;
   RoleEditor: { roleId?: string } | undefined;
   Modules: undefined;
+  AR: undefined;
+  FloorMap: { levelId?: string; destinationId?: string } | undefined;
   ModuleSettings: { moduleKey: ModuleKey };
   AuditLog: undefined;
   Listing: { listingId: string };
