@@ -346,6 +346,19 @@ export const societyContract = {
     params: societyParams.extend({ membershipId: IdSchema }),
     response: z.object({ code: z.string(), expiresAt: IsoDateTimeSchema }),
   }),
+  getMyPrivacy: defineRoute({
+    method: 'GET',
+    path: '/v1/societies/:societyId/members/me/privacy',
+    summary:
+      'What other members may see about me in this society, and whether showing my phone is allowed',
+    params: societyParams,
+    response: z.object({
+      showPhone: z.boolean(),
+      showEmail: z.boolean(),
+      /** false when the society's directory.allowPhoneOptIn setting is off. */
+      phoneOptInAllowed: z.boolean(),
+    }),
+  }),
   updateMyPrivacy: defineRoute({
     method: 'PATCH',
     path: '/v1/societies/:societyId/members/me/privacy',

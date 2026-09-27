@@ -68,6 +68,9 @@ export class SocietyController {
   ): Out<'listMembers'> {
     return this.members.list(query);
   }
+  @Route(c.getMyPrivacy) getMyPrivacy(): Out<'getMyPrivacy'> {
+    return this.members.getMyPrivacy();
+  }
   @Route(c.updateMyPrivacy) updateMyPrivacy(
     @Input(c.updateMyPrivacy) { body }: In<'updateMyPrivacy'>,
   ): Out<'updateMyPrivacy'> {

@@ -1,11 +1,10 @@
-import { Card, Screen, Text, TitleBar, Toggle, useToast } from '@movo/design-system';
-import { useState } from 'react';
+import { Card, Screen, Skeleton, Text, TitleBar, Toggle, useToast } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
-import { useUpdatePrivacy } from './api';
+import { useMyPrivacy, useUpdatePrivacy } from './api';
 
 export function PrivacyScreen() {
   const { t } = useTranslation('me');
@@ -13,15 +12,13 @@ export function PrivacyScreen() {
   const toast = useToast();
   const toMessage = useErrorMessage();
   const societyId = useSocietyId();
+  const privacy = useMyPrivacy(societyId);
   const update = useUpdatePrivacy(societyId);
-  const [showPhone, setShowPhone] = useState(false);
-  const [showEmail, setShowEmail] = useState(false);
+  const p = privacy.data;
 
   const change = async (patch: { showPhone?: boolean; showEmail?: boolean }) => {
     try {
-      const res = await update.mutateAsync(patch);
-      setShowPhone(res.showPhone);
-      setShowEmail(res.showEmail);
+      await update.mutateAsync(patch);
     } catch (e) {
       toast.show(toMessage(e), 'error');
     }
@@ -30,20 +27,37 @@ export function PrivacyScreen() {
   return (
     <Screen>
       <TitleBar title={t('privacy')} onBack={() => nav.goBack()} />
-      <Card tight className="mt-6 gap-2">
-        <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
-          <Text variant="body" className="flex-1 pr-3">
-            {t('privacyShowPhone')}
-          </Text>
-          <Toggle value={showPhone} onValueChange={(v) => void change({ showPhone: v })} />
-        </View>
-        <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
-          <Text variant="body" className="flex-1 pr-3">
-            {t('privacyShowEmail')}
-          </Text>
-          <Toggle value={showEmail} onValueChange={(v) => void change({ showEmail: v })} />
-        </View>
-      </Card>
+      {!p ? (
+        <Skeleton className="mt-6 h-40 rounded-xl" />
+      ) : (
+        <Card tight className="mt-6 gap-2">
+          <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
+            <View className="flex-1 pr-3">
+              <Text variant="body">{t('privacyShowPhone')}</Text>
+              {!p.phoneOptInAllowed ? (
+                <Text variant="caption" tone="secondary">
+                  {t('privacyPhoneOff')}
+                </Text>
+              ) : null}
+            </View>
+            <Toggle
+              value={p.showPhone}
+              disabled={!p.phoneOptInAllowed || update.isPending}
+              onValueChange={(v) => void change({ showPhone: v })}
+            />
+          </View>
+          <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
+            <Text variant="body" className="flex-1 pr-3">
+              {t('privacyShowEmail')}
+            </Text>
+            <Toggle
+              value={p.showEmail}
+              disabled={update.isPending}
+              onValueChange={(v) => void change({ showEmail: v })}
+            />
+          </View>
+        </Card>
+      )}
     </Screen>
   );
 }

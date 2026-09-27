@@ -1,4 +1,6 @@
 <resources>
     <!-- Tint of the small notification icon (ink). -->
     <color name="notification_color">#151515</color>
+    <!-- Background layer of the adaptive launcher icon (ink). -->
+    <color name="ic_launcher_background">#151515</color>
 </resources>

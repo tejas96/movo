@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { societyWithResident } from './fixtures';
 import { createHarness, type Harness, login } from './harness';
 
 let h: Harness;
@@ -245,5 +246,29 @@ describe('tenancy', () => {
       (m: { displayName: string }) => m.displayName === 'Resident',
     );
     expect(residentCard.phone).toBe('+919876500002');
+  });
+});
+
+describe('my privacy', () => {
+  it('reads back what I saved and respects the society phone setting', async () => {
+    const s = await societyWithResident(h, 'p1');
+    const url = `/v1/societies/${s.societyId}/members/me/privacy`;
+    const first = await h.http().get(url).set(auth(s.resident.token));
+    expect(first.body).toEqual({ showPhone: false, showEmail: false, phoneOptInAllowed: true });
+    await h
+      .http()
+      .patch(url)
+      .set(auth(s.resident.token))
+      .send({ showPhone: true, showEmail: true });
+    const saved = await h.http().get(url).set(auth(s.resident.token));
+    expect(saved.body).toEqual({ showPhone: true, showEmail: true, phoneOptInAllowed: true });
+
+    await h
+      .http()
+      .patch(`/v1/societies/${s.societyId}/modules/directory`)
+      .set(auth(s.admin))
+      .send({ settings: { allowPhoneOptIn: false } });
+    const off = await h.http().get(url).set(auth(s.resident.token));
+    expect(off.body).toEqual({ showPhone: false, showEmail: true, phoneOptInAllowed: false });
   });
 });

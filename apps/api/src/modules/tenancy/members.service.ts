@@ -251,6 +251,19 @@ export class MembersService {
     return { code, expiresAt: expiresAt.toISOString() };
   }
 
+  async getMyPrivacy() {
+    const ctx = requireTenant();
+    const m = await this.db.membership.findUniqueOrThrow({ where: { id: ctx.membershipId } });
+    const allowPhone =
+      (ctx.moduleSettings.directory as { allowPhoneOptIn?: boolean } | undefined)
+        ?.allowPhoneOptIn ?? true;
+    return {
+      showPhone: allowPhone && m.privacyShowPhone,
+      showEmail: m.privacyShowEmail,
+      phoneOptInAllowed: allowPhone,
+    };
+  }
+
   async updateMyPrivacy(body: RouteBody<typeof societyContract.updateMyPrivacy>) {
     const ctx = requireTenant();
     const allowPhone =
