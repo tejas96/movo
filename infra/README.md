@@ -10,12 +10,14 @@ docker compose -f infra/docker-compose.yml down -v    # stop and wipe data
 
 ## Production
 
+One Oracle Cloud Always Free ARM VM in Mumbai (`ap-mumbai-1`) runs this compose stack. `.github/workflows/deploy.yml` builds the multi-arch API image, pushes it to GHCR and updates the VM over SSH.
+
 | File | What |
 | --- | --- |
 | `docker-compose.prod.yml` | api (GHCR image) + postgres (no public port) + caddy (HTTPS) + backup |
 | `Caddyfile` | reverse proxy for `{$API_DOMAIN}`, Let's Encrypt certificate |
 | `.env.prod.example` | every production variable. Copy to `/opt/movo/.env.prod` on the VM |
-| `backup/` | backup image: `backup.sh` (nightly 02:30 IST, 14 daily + 6 monthly, optional rclone + heartbeat), `restore.sh` (drill into a scratch db), `schedule.sh` |
+| `backup/` | backup image: `backup.sh` (nightly 02:30 IST, 14 daily + 6 monthly, optional rclone copy to Oracle Object Storage or Cloudflare R2 + heartbeat), `restore.sh` (drill into a scratch db), `schedule.sh` |
 
 On the VM, from `/opt/movo`:
 

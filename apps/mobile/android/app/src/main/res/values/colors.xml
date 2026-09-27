@@ -1,0 +1,4 @@
+<resources>
+    <!-- Tint of the small notification icon (ink). -->
+    <color name="notification_color">#151515</color>
+</resources>

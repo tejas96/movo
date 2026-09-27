@@ -1,4 +1,5 @@
-# Production stack for one VM: api + postgres + caddy (HTTPS) + backup.
+# Production stack for one VM (Oracle Cloud Always Free ARM, Mumbai): api + postgres +
+# caddy (HTTPS) + backup.
 # On the VM, from /opt/movo:
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 # Every variable is listed in .env.prod.example. See docs/08-release-and-ops.md.
@@ -55,6 +56,8 @@ services:
       SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
       PRIVACY_POLICY_URL: ${PRIVACY_POLICY_URL:-https://tejas96.github.io/movo/privacy.html}
       FILES_DIR: /data/files
+      # healthchecks.io ping URL, pinged every 5 minutes while the API and database are up.
+      UPTIME_HEARTBEAT_URL: ${UPTIME_HEARTBEAT_URL:-}
       TZ: Asia/Kolkata
     volumes:
       # Market photos. Backed up by the backup service as a mirror.
@@ -96,14 +99,18 @@ services:
       KEEP_DAILY: ${KEEP_DAILY:-14}
       KEEP_MONTHLY: ${KEEP_MONTHLY:-6}
       BACKUP_HEARTBEAT_URL: ${BACKUP_HEARTBEAT_URL:-}
+      # Off-site copy. rclone reads its remote from env: the remote is named "offsite", so
+      # RCLONE_REMOTE=offsite:<bucket>. Any S3-compatible store: Oracle Object Storage
+      # (provider Other, region ap-mumbai-1) or Cloudflare R2 (provider Cloudflare, region auto).
       RCLONE_REMOTE: ${RCLONE_REMOTE:-}
-      # rclone reads its remote from env; "r2" here matches RCLONE_REMOTE=r2:<bucket>.
-      RCLONE_CONFIG_R2_TYPE: s3
-      RCLONE_CONFIG_R2_PROVIDER: ${RCLONE_S3_PROVIDER:-Cloudflare}
-      RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${RCLONE_S3_ACCESS_KEY_ID:-}
-      RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${RCLONE_S3_SECRET_ACCESS_KEY:-}
-      RCLONE_CONFIG_R2_ENDPOINT: ${RCLONE_S3_ENDPOINT:-}
-      RCLONE_CONFIG_R2_NO_CHECK_BUCKET: "true"
+      RCLONE_CONFIG_OFFSITE_TYPE: s3
+      RCLONE_CONFIG_OFFSITE_PROVIDER: ${RCLONE_S3_PROVIDER:-Other}
+      RCLONE_CONFIG_OFFSITE_ACCESS_KEY_ID: ${RCLONE_S3_ACCESS_KEY_ID:-}
+      RCLONE_CONFIG_OFFSITE_SECRET_ACCESS_KEY: ${RCLONE_S3_SECRET_ACCESS_KEY:-}
+      RCLONE_CONFIG_OFFSITE_ENDPOINT: ${RCLONE_S3_ENDPOINT:-}
+      RCLONE_CONFIG_OFFSITE_REGION: ${RCLONE_S3_REGION:-}
+      RCLONE_CONFIG_OFFSITE_FORCE_PATH_STYLE: ${RCLONE_S3_FORCE_PATH_STYLE:-true}
+      RCLONE_CONFIG_OFFSITE_NO_CHECK_BUCKET: "true"
       TZ: Asia/Kolkata
     volumes:
       - ${BACKUP_HOST_DIR:-./backups}:/backups

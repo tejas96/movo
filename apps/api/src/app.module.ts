@@ -10,6 +10,7 @@ import { ResponseValidationInterceptor } from './common/route/response-validatio
 import { RouteGuard } from './common/route/route.guard';
 import { loadEnv } from './config/env';
 import { AppController } from './modules/app/app.controller';
+import { HeartbeatJob } from './modules/app/heartbeat.job';
 import { DutiesModule } from './modules/duties/duties.module';
 import { EmergencyModule } from './modules/emergency/emergency.module';
 import { EventsModule } from './modules/events/events.module';
@@ -72,6 +73,7 @@ const env = loadEnv();
   ],
   controllers: [AppController],
   providers: [
+    HeartbeatJob,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: RouteGuard },
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

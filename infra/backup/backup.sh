@@ -7,7 +7,7 @@
 #   BACKUP_DIR            default /backups
 #   KEEP_DAILY            default 14
 #   KEEP_MONTHLY          default 6
-#   RCLONE_REMOTE         e.g. r2:movo-backups  (empty = local only)
+#   RCLONE_REMOTE         e.g. offsite:movo-backups  (empty = local only)
 #   BACKUP_HEARTBEAT_URL  e.g. https://hc-ping.com/<uuid>  (empty = no ping)
 set -eu
 # A failing pg_dump must fail the run, not hide behind a successful gzip.

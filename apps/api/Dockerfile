@@ -3,7 +3,9 @@
 # Multi-arch (what CI pushes to GHCR):
 #   docker buildx build --platform linux/arm64,linux/amd64 -f apps/api/Dockerfile .
 #
-# Start command: `prisma migrate deploy`, then `node dist/main.js`.
+# Start command: `prisma migrate deploy`, then `node dist/main.js`, as the `node` user.
+# The container starts as root only so movo-start can hand FILES_DIR to `node` (a fresh volume
+# mounts root-owned), then it drops to `node` before anything else runs.
 
 ARG NODE_IMAGE=node:22-slim
 
@@ -47,8 +49,8 @@ COPY apps/api/docker/start.sh /usr/local/bin/movo-start
 RUN chmod 0755 /usr/local/bin/movo-start \
  && mkdir -p /data/files && chown node:node /data/files
 EXPOSE 4000
-# Code is owned by root and read-only to the app user.
-USER node
+# Code is owned by root and read-only to the app user. No `USER node` here: movo-start drops
+# to `node` itself after fixing the files directory owner (see docker/start.sh).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.API_PORT||4000)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 ENTRYPOINT ["/usr/bin/tini", "--"]

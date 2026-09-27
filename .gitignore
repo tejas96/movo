@@ -18,9 +18,10 @@ coverage/
 *.p8
 *.keystore
 !debug.keystore
-google-services.json
-GoogleService-Info.plist
+# google-services.json / GoogleService-Info.plist are app config, not secrets: commit them.
+# The Firebase service account key IS a secret: never commit it.
 firebase-service-account*.json
+*-firebase-adminsdk-*.json
 
 # generated design preview (regenerate with: pnpm design:preview)
 packages/design-system/preview/dist/

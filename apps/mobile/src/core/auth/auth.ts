@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { api, refreshTokens, signOutLocally } from '../api/client';
 import { queryClient } from '../api/query-client';
 import { setAppLocale } from '../i18n';
+import { unregisterPush } from '../push/push';
 import { useSessionStore } from './session.store';
 import { loadRefreshToken, saveRefreshToken } from './token-storage';
 
@@ -30,6 +31,8 @@ export async function signUp(input: {
 }
 
 export async function signOut(): Promise<void> {
+  // First, while the access token is still valid: stop pushes to this phone.
+  await unregisterPush().catch(() => {});
   try {
     const refreshToken = await loadRefreshToken();
     await api(authContract.logout, { body: refreshToken ? { refreshToken } : {} }, false);

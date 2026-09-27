@@ -83,8 +83,8 @@
   <table>
     <thead><tr><th>Provider</th><th>What for</th></tr></thead>
     <tbody>
-      <tr><td>Cloud hosting provider (Oracle Cloud Infrastructure, Mumbai region)</td><td>Runs our server and database. Your data is stored in India.</td></tr>
-      <tr><td>Backup storage (such as Cloudflare R2), if used</td><td>Encrypted copies of the database for disaster recovery</td></tr>
+      <tr><td>Cloud hosting provider (Oracle Cloud Infrastructure, Mumbai region)</td><td>Runs our server and database. Your data and uploaded photos are stored in India.</td></tr>
+      <tr><td>Backup storage (Oracle Cloud Object Storage, Mumbai region; or Cloudflare R2), if used</td><td>Copies of the database and uploaded photos for disaster recovery, stored encrypted at rest by the provider</td></tr>
       <tr><td>Google Firebase Cloud Messaging</td><td>Delivers push notifications to your phone. It receives your device token and the notification text.</td></tr>
       <tr><td>Resend</td><td>Sends password reset emails. It receives your email address and the reset link.</td></tr>
       <tr><td>Google Play</td><td>Distributes the app. Google handles its own data under its own policy.</td></tr>

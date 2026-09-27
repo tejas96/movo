@@ -1,6 +1,13 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+// Firebase (push). google-services.json comes from the Firebase console (docs/08-release-and-ops.md,
+// "Firebase (push)"). Without it the app builds and runs; push is simply off.
+if (file("google-services.json").exists()) {
+    apply plugin: "com.google.gms.google-services"
+} else {
+    logger.lifecycle("MOVO: no app/google-services.json; building without Firebase (push off).")
+}
 // react-native-config: debug builds read apps/mobile/.env, release builds read
 // apps/mobile/.env.production (API_URL=https://<your api domain>). ENVFILE=... overrides both.
 project.ext.envConfigFiles = [debug: ".env", release: ".env.production"]

@@ -20,6 +20,8 @@ const EnvSchema = z.object({
   PRIVACY_POLICY_URL: z.string().optional().default(''),
   /** Uploaded photos live here. A Docker volume in production. */
   FILES_DIR: z.string().default('./data/files'),
+  /** healthchecks.io ping URL, pinged every 5 minutes while the API and database are up. Empty = off. */
+  UPTIME_HEARTBEAT_URL: z.string().optional().default(''),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

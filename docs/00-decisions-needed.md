@@ -1,6 +1,6 @@
 # Decisions
 
-**Status (2026-09-26): you chose option A for every question below.** They are now decisions, kept here as the record. Section B still needs your answers before society #1 goes live.
+**Status (2026-09-26): you chose option A for every question below.** They are now decisions, kept here as the record. Decision 2 was reopened on 2026-09-27 and stays A. Section B still needs your answers before society #1 goes live.
 
 ## A. Decided (option A everywhere)
 
@@ -10,11 +10,13 @@
 
 Either way the data model and tenancy rules for it are in the plan now.
 
-### 2. Where does the server run? — DECIDED: A
-- **A. Oracle Cloud "Always Free" ARM VM in Mumbai, Docker Compose** (recommended). ₹0 per month. Needs a card at signup. Upgrade the account to pay-as-you-go so Oracle does not reclaim idle free machines. Free limits still cost ₹0.
+### 2. Where does the server run? — DECIDED: A (confirmed 2026-09-27)
+- **A. Oracle Cloud "Always Free" ARM VM in Mumbai (`ap-mumbai-1`), Docker Compose** (recommended). ₹0 per month. Needs a card at signup. Upgrade the account to Pay As You Go so Oracle does not reclaim idle free machines. Free limits still cost ₹0. Runbook: `08-release-and-ops.md`, section 2.
 - **B. Small paid VPS (Hetzner or DigitalOcean)**, about ₹450–600 per month. Simpler signup, no reclaim risk.
 
-Both run the same `docker compose` file. Moving later is one evening of work.
+Both run the same `docker compose` file (`infra/docker-compose.prod.yml`). Moving later is one evening of work.
+
+Fly.io was considered on 2026-09-27 and dropped for cost: about US$9 (₹800) a month for an always-on API machine plus a Postgres machine, no Mumbai region (data would sit in Singapore), versus ₹0 on Oracle.
 
 ### 3. Password reset without OTP or SMS — DECIDED: A (built)
 - **A. Email link through a free email tier (Resend, 3,000 emails per month) plus an admin-issued one-time reset code for members who have no email** (recommended). Admins already know their residents in person.

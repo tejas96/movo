@@ -1,17 +1,28 @@
+import type { NotificationCategory } from '@movo/contracts';
 import { Injectable, Logger } from '@nestjs/common';
 
 export interface PushMessage {
   deliveryId: string;
+  category: NotificationCategory;
   tokens: string[];
   title: string;
   body: string;
+  /** FCM data payload. Values must be strings. */
   data: Record<string, string>;
 }
 
+/**
+ * SENT: at least one device accepted it. RETRY: nothing went out because of a temporary error
+ * (429, 5xx, network); the job tries again later. FAILED: a permanent error. SKIPPED: not sent on purpose.
+ */
+export type PushStatus = 'SENT' | 'FAILED' | 'SKIPPED' | 'RETRY';
+
 export interface PushResult {
   deliveryId: string;
-  status: 'SENT' | 'FAILED' | 'SKIPPED';
+  status: PushStatus;
   error?: string;
+  /** Tokens FCM says are dead (app uninstalled, token rotated). The job deletes them. */
+  invalidTokens?: string[];
 }
 
 export abstract class PushTransport {

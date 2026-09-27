@@ -55,7 +55,7 @@ The scaling path in section 11 needs no schema change.
 | i18n | **i18next** on the app and the server, resources in `@movo/i18n` | Lingui, FormatJS | Same resources render UI text and push notification text. Plural rules for hi and mr are built in. |
 | Lint and format | **Biome** only | ESLint + Prettier | Your call, and it is faster. |
 | Monorepo | **pnpm 10 + Turborepo 2** | Nx, Yarn workspaces | Your call. Same shape as heliogrid, which already builds on this machine. |
-| Hosting | **One VM with Docker Compose** (see decisions doc for Oracle vs paid VPS) | PaaS free tiers that sleep, serverless | Cron and push need a process that never sleeps. Free PaaS tiers sleep. |
+| Hosting | **One Oracle Cloud Always Free ARM VM in Mumbai with Docker Compose** (decisions doc, decision 2; Fly.io considered and dropped for cost on 2026-09-27) | PaaS free tiers that sleep, serverless | Cron and push need a process that never sleeps. Free PaaS tiers sleep. |
 | Web admin | **LATER**, Next.js reusing the same contracts | build now | Phone-only admin is fine for one society. Bulk imports want a desktop later. |
 
 ## 3. Monorepo layout
@@ -321,7 +321,7 @@ flowchart LR
   L -->|policy: who, template, channel, priority| N[(Notification rows<br/>one per recipient)]
   N --> D[(NotificationDelivery<br/>PUSH pending)]
   J[Delivery job<br/>every 30 s or on event] --> D
-  J -->|sendEachForMulticast| FCM
+  J -->|HTTP v1, one call per token| FCM
   N --> C[In-app notification center]
 ```
 
@@ -347,12 +347,17 @@ Anti-spam
 - One push per event per recipient. Reminders are consolidated when several fall in the same hour.
 - Preferences per category per society. `EMERGENCY` and `MEMBERSHIP` cannot be turned off.
 - Quiet hours and daily digest are LATER.
-- Android channels: `alerts` (high, sound), `general`, `reminders`.
 
-Firebase provisioning (you do this later, code is ready now)
-1. Create the Firebase project and an Android app with package `com.movo.app`. Download `google-services.json` into `apps/mobile/android/app/`. The Gradle plugin is applied only when that file exists, so builds work without it.
-2. Create a service account key. Put its JSON in the API env `FIREBASE_SERVICE_ACCOUNT_JSON`. Without it the push transport logs instead of sending.
-3. iOS later: upload an APNs key to Firebase, add `GoogleService-Info.plist`.
+As built (2026-09-27)
+- Transport: `FcmPushTransport` (`apps/api/src/modules/notifications/fcm.transport.ts`) calls the FCM HTTP v1 API, `POST https://fcm.googleapis.com/v1/projects/<project_id>/messages:send`, one request per device token (v1 has no multicast), 8 at a time. The OAuth access token comes from a service-account JWT signed with `jose` (already a dependency, so no `google-auth-library` or `firebase-admin`), cached until a minute before it expires; a 401 fetches a new one once.
+- Chosen at boot in `NotificationsModule`: FCM when `FIREBASE_SERVICE_ACCOUNT_JSON` parses as a service account, else `NoopPushTransport` (logs, marks `SKIPPED`).
+- Payload: `notification {title, body}`, `data` = the notification's data as strings plus `notificationId`, `societyId`, `category`; `android.priority` HIGH and channel `emergency` for `EMERGENCY`, NORMAL and channel `default` otherwise.
+- `DeliveryJob` (every 30 s, advisory lock): skips a delivery when the member muted that category for that society (`NotificationPreference.pushEnabled = false`; no screen for it yet) or has no device; SENT when any device accepted it; `UNREGISTERED` or an invalid-token `INVALID_ARGUMENT` deletes that `DeviceToken`; 429, 5xx and network errors leave it `PENDING` for the next run, `FAILED` after 5 attempts.
+- App (`apps/mobile/src/core/push`): `@react-native-firebase/app` and `messaging`. Once signed in with a society, Android 13+ asks once for `POST_NOTIFICATIONS`, then the FCM token is registered through `POST /v1/me/devices` and re-registered on refresh; sign-out removes it (`DELETE /v1/me/devices`) before the session is cleared. Foreground messages show a toast and refresh the notification list and home. Taps (background and cold start) switch to the notification's society if needed, open the same screen as the notification center (`openNotificationTarget`), and mark it read.
+- Android channels, created in `MainApplication.kt`: `default` ("Society updates", default importance) and `emergency` ("Emergency alerts", high, sound). Small icon `ic_notification` (white "M"), color `#151515`; default channel and color are set in `apps/mobile/firebase.json`.
+- Without Firebase: no `google-services.json` means the Gradle plugin is not applied and no Firebase app exists, so every push call in the app is a no-op; the API marks deliveries `SKIPPED`.
+
+Firebase provisioning: step by step in `docs/08-release-and-ops.md`, section 6, "Firebase (push)". iOS later: upload an APNs key to Firebase and add `GoogleService-Info.plist`.
 
 ## 10. Security and privacy
 
@@ -375,22 +380,29 @@ Firebase provisioning (you do this later, code is ready now)
 
 | Component | Choice | Monthly cost |
 | --- | --- | --- |
-| Compute | one ARM VM (Oracle Always Free, Mumbai) or a small paid VPS | ₹0 or about ₹500 |
-| Database | PostgreSQL 17 in Docker on the same VM | ₹0 |
-| Backups | nightly `pg_dump` on the VM, 14 daily + 6 monthly kept, optional copy to R2, monthly restore drill | ₹0 |
-| Object storage | Cloudflare R2, 10 GB free | ₹0 |
+| Compute | one Oracle Cloud Always Free Ampere A1 VM (`VM.Standard.A1.Flex`, 2 OCPU / 12 GB, Ubuntu 24.04 aarch64) in Mumbai (`ap-mumbai-1`); account upgraded to Pay As You Go so the idle free VM is not reclaimed | ₹0 |
+| Database | PostgreSQL 17 in Docker on the same VM, no public port | ₹0 |
+| Uploaded photos | `files` Docker volume on the VM (`FILES_DIR=/data/files`) | ₹0 |
+| Backups | nightly `pg_dump` + photo mirror on the VM, 14 daily + 6 monthly kept, off-site copy with rclone to Oracle Object Storage (Always Free 20 GB) or Cloudflare R2, monthly restore drill | ₹0 |
 | TLS and proxy | Caddy with Let's Encrypt | ₹0 |
-| Domain | one domain, Cloudflare DNS | about ₹100 per month equivalent |
+| Domain | free DuckDNS subdomain first; a bought domain later | ₹0 (about ₹100 per month equivalent if bought) |
 | Push | FCM | ₹0 |
 | Email | Resend free tier | ₹0 |
-| Errors and uptime | Sentry free, UptimeRobot free | ₹0 |
+| Errors and uptime | Sentry free (not wired yet); healthchecks.io free: API heartbeat every 5 min (`UPTIME_HEARTBEAT_URL`) and nightly backup heartbeat | ₹0 |
 | CI | GitHub Actions free minutes | ₹0 |
 | Android | Play Console | $25 once |
 | iOS | Apple Developer | $99 per year, LATER |
 
 Deployment
 - `infra/docker-compose.prod.yml`: `api`, `postgres`, `caddy`, `backup`. Details in [08-release-and-ops.md](08-release-and-ops.md).
-- GitHub Actions on `main`: lint, typecheck, tests, build the API image, push to GHCR, SSH to the VM, `docker compose pull && up -d`. The API runs `prisma migrate deploy` on start.
+- GitHub Actions on `main`: `ci.yml` (lint, typecheck, tests), then `deploy.yml` builds the API image for linux/arm64 (the VM) and linux/amd64, pushes it to GHCR, SSHes to the VM, `docker compose pull && up -d` in `/opt/movo`, and waits for the api health check. Skipped until the `DEPLOY_*` secrets exist. The API runs `prisma migrate deploy` on start.
+
+Reliability on a free VM
+- Reclaim: Oracle may reclaim idle Always Free instances on free-tier accounts; the Pay As You Go upgrade removes that (Always Free limits still bill ₹0). A billing alert (budget ₹1) catches accidental paid resources.
+- Restarts: every container has `restart: unless-stopped`; Docker starts on boot, so a VM reboot brings the stack back.
+- Detection: healthchecks.io emails when the API heartbeat (every 5 min, only sent while the database answers) or the nightly backup ping stops.
+- Recovery: off-site dumps and photos in Object Storage or R2; a new VM from the runbook plus a restore takes about an hour. Monthly restore drill proves it.
+- Patching: `unattended-upgrades` for security updates, SSH keys only, only ports 22, 80 and 443 open.
 - Android release APK or AAB is built on tags. Debug builds are local.
 - Environments: `local` (Docker Postgres on your Mac) and `prod`. Staging is added when a second society arrives.
 
@@ -420,8 +432,8 @@ Scaling path, none of which changes the schema
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Single VM, single process | downtime on host failure | Docker Compose is reproducible in minutes, nightly backups, uptime alerts. Accepted for a free MVP. |
-| Oracle free tier reclaim | sudden downtime | pay-as-you-go upgrade, backups, paid VPS fallback documented |
+| Single VM, single process | downtime on host failure | Docker Compose is reproducible in minutes, nightly off-site backups, healthchecks.io alerts. Accepted for a free MVP. |
+| Oracle free tier reclaim or out-of-capacity | sudden downtime, or no VM at signup | Pay As You Go upgrade (still ₹0), off-site backups, healthchecks.io alerts; paid VPS fallback runs the same compose file |
 | Manual payment entry | treasurer effort, typos | bulk "mark paid" screen, idempotency keys, resident notified so errors are caught fast |
 | Push unreliability on some Android brands | missed reminders | in-app notification center is the source of truth, high-priority channel for alerts, "allow background" hint once |
 | Devanagari rendering | clipped or mismatched text | Poppins ships Devanagari, generous line heights, screenshots reviewed in all three languages |

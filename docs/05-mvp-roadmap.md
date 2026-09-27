@@ -54,8 +54,8 @@ M10 added: the Market. Members sell homemade food, products, services and used i
 
 ## Next
 
-1. Create the accounts in `08-release-and-ops.md` (Oracle VM, Play Console, UptimeRobot, healthchecks.io), deploy, and send the AAB to Play internal testing.
-2. Firebase project for push (notifications are written to the outbox now; the transport logs until Firebase exists).
+1. Follow the runbook in `08-release-and-ops.md`: Oracle Always Free VM in Mumbai (upgraded to Pay As You Go, still ₹0), DuckDNS or a bought domain, healthchecks.io for the API and backup heartbeats, off-site backups to Oracle Object Storage or R2; deploy, then send the AAB to Play internal testing.
+2. Firebase project for push (the FCM transport is built; until `FIREBASE_SERVICE_ACCOUNT_JSON` is set it logs instead of sending). Steps: `08-release-and-ops.md`, "Firebase (push)".
 3. Phase 1.5 leftovers: points against dues, join request polish, row-level security, receipt PDF. Browsing nearby societies' listings comes with the network in phase 2.
 
 ## Explicitly out of the MVP
