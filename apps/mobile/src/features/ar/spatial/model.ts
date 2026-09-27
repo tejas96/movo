@@ -27,7 +27,21 @@ export interface LabelledSpace {
   polygon: number[][];
 }
 
-const WALKABLE = new Set(['living', 'kitchen', 'bedroom', 'toilet', 'passage', 'corridor', 'balcony', 'terrace', 'lift', 'stair', 'shaft', 'parking_area', 'unknown']);
+const WALKABLE = new Set([
+  'living',
+  'kitchen',
+  'bedroom',
+  'toilet',
+  'passage',
+  'corridor',
+  'balcony',
+  'terrace',
+  'lift',
+  'stair',
+  'shaft',
+  'parking_area',
+  'unknown',
+]);
 
 function centroid(P: number[][]): [number, number] {
   let a = 0;
@@ -68,7 +82,9 @@ export function spacesOnLevel(level: LevelDef): LabelledSpace[] {
 
 export function instanceCode(code: string, level: LevelDef): string {
   if (code.includes('/TYP/')) {
-    return code.replace('/TYP/', `/${level.id}/`).replace(/\/F(0[1-5])\//, (_m, pos: string) => `/F${level.index}${pos}/`);
+    return code
+      .replace('/TYP/', `/${level.id}/`)
+      .replace(/\/F(0[1-5])\//, (_m, pos: string) => `/F${level.index}${pos}/`);
   }
   if (code.includes('/SIXTH/')) return code.replace('/SIXTH/', '/L6/');
   if (code.includes('/GF/')) return code.replace('/GF/', '/L0/');

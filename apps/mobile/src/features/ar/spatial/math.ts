@@ -4,12 +4,20 @@ import type { Mat4, Vec3 } from './types';
 
 export const IDENTITY: Mat4 = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
+/** Element read for computed indices. */
+function at(m: Mat4, i: number): number {
+  return m[i] ?? 0;
+}
+
 export function mul(a: Mat4, b: Mat4): Mat4 {
   const out = [...IDENTITY] as Mat4;
   for (let c = 0; c < 4; c++) {
     for (let r = 0; r < 4; r++) {
       out[c * 4 + r] =
-        a[r]! * b[c * 4]! + a[4 + r]! * b[c * 4 + 1]! + a[8 + r]! * b[c * 4 + 2]! + a[12 + r]! * b[c * 4 + 3]!;
+        at(a, r) * at(b, c * 4) +
+        at(a, 4 + r) * at(b, c * 4 + 1) +
+        at(a, 8 + r) * at(b, c * 4 + 2) +
+        at(a, 12 + r) * at(b, c * 4 + 3);
     }
   }
   return out;
@@ -18,14 +26,33 @@ export function mul(a: Mat4, b: Mat4): Mat4 {
 /** Inverse of a rigid transform (rotation + translation). */
 export function invertRigid(m: Mat4): Mat4 {
   // R^T
-  const r: [number, number, number, number, number, number, number, number, number] = [m[0], m[4], m[8], m[1], m[5], m[9], m[2], m[6], m[10]];
+  const r: [number, number, number, number, number, number, number, number, number] = [
+    m[0],
+    m[4],
+    m[8],
+    m[1],
+    m[5],
+    m[9],
+    m[2],
+    m[6],
+    m[10],
+  ];
   const tx = m[12];
   const ty = m[13];
   const tz = m[14];
   return [
-    r[0], r[3], r[6], 0,
-    r[1], r[4], r[7], 0,
-    r[2], r[5], r[8], 0,
+    r[0],
+    r[3],
+    r[6],
+    0,
+    r[1],
+    r[4],
+    r[7],
+    0,
+    r[2],
+    r[5],
+    r[8],
+    0,
     -(r[0] * tx + r[1] * ty + r[2] * tz),
     -(r[3] * tx + r[4] * ty + r[5] * tz),
     -(r[6] * tx + r[7] * ty + r[8] * tz),

@@ -1,7 +1,17 @@
-import { create } from 'zustand';
 import type { ArImageEvent, ArPoseEvent } from '@movo/ar-native';
+import { create } from 'zustand';
+import { arLog } from '../debug';
 import { PLATES } from '../plates.generated';
-import { AR_TO_UP_Z, invertRigid, mul, normalize, rotZ, transformDir, transformPoint, translation } from './math';
+import {
+  AR_TO_UP_Z,
+  invertRigid,
+  mul,
+  normalize,
+  rotZ,
+  transformDir,
+  transformPoint,
+  translation,
+} from './math';
 import type { DevicePose, Mat4, PlateDefinition, Vec3 } from './types';
 
 /**
@@ -38,7 +48,24 @@ function plateInBlcsM(p: PlateDefinition): Mat4 | null {
   const n = normalize(p.normal);
   const x: Vec3 = normalize([-n[1], n[0], 0]);
   const z: Vec3 = [0, 0, -1];
-  return [x[0], x[1], x[2], 0, n[0], n[1], n[2], 0, z[0], z[1], z[2], 0, p.position[0] / 1000, p.position[1] / 1000, p.position[2] / 1000, 1];
+  return [
+    x[0],
+    x[1],
+    x[2],
+    0,
+    n[0],
+    n[1],
+    n[2],
+    0,
+    z[0],
+    z[1],
+    z[2],
+    0,
+    p.position[0] / 1000,
+    p.position[1] / 1000,
+    p.position[2] / 1000,
+    1,
+  ];
 }
 
 /** Gravity-constrained fix: yaw from the plate normal, position from the plate centre. Result maps AR metres to BLCS metres. */
@@ -66,7 +93,12 @@ function yawDegFromCamera(tBlcsFromAr: Mat4, camera: Mat4): number {
   return (deg + 360) % 360;
 }
 
-export function decayConfidence(base: number, distanceM: number, ageS: number, tracking: string): number {
+export function decayConfidence(
+  base: number,
+  distanceM: number,
+  ageS: number,
+  tracking: string,
+): number {
   let c = base - 0.02 * distanceM - 0.004 * ageS;
   if (tracking === 'limited') c -= 0.3;
   if (tracking === 'notAvailable') c = 0;
@@ -89,7 +121,8 @@ export const useLocalizer = create<LocalizerState>((set, get) => ({
     const s = get();
     const cam = translation(e.camera as Mat4);
     let dist = s.distanceSinceFixM;
-    if (s.lastCamAr) dist += Math.hypot(cam[0] - s.lastCamAr[0], cam[1] - s.lastCamAr[1], cam[2] - s.lastCamAr[2]);
+    if (s.lastCamAr)
+      dist += Math.hypot(cam[0] - s.lastCamAr[0], cam[1] - s.lastCamAr[1], cam[2] - s.lastCamAr[2]);
     const tracking = e.tracking || s.tracking;
     if (!s.tBlcsFromAr) {
       set({ lastCamAr: cam, distanceSinceFixM: dist, tracking, lastFrame: e });
@@ -98,9 +131,23 @@ export const useLocalizer = create<LocalizerState>((set, get) => ({
     const pB = transformPoint(s.tBlcsFromAr, cam);
     const ageS = (Date.now() - s.fixAtMs) / 1000;
     const confidence = decayConfidence(0.9, dist, ageS, tracking);
-    if (__DEV__ && Date.now() - lastPoseLog > 1000) {
+    if (Date.now() - lastPoseLog > 1000) {
       lastPoseLog = Date.now();
-      console.log('[ar] pose', s.levelId, 'x', pB[0].toFixed(2), 'y', pB[1].toFixed(2), 'z', pB[2].toFixed(2), 'yaw', yawDegFromCamera(s.tBlcsFromAr, e.camera as Mat4).toFixed(0), 'conf', confidence.toFixed(2));
+      const yaw = yawDegFromCamera(s.tBlcsFromAr, e.camera as Mat4).toFixed(0);
+      arLog(
+        'pose',
+        s.levelId,
+        'x',
+        pB[0].toFixed(2),
+        'y',
+        pB[1].toFixed(2),
+        'z',
+        pB[2].toFixed(2),
+        'yaw',
+        yaw,
+        'conf',
+        confidence.toFixed(2),
+      );
     }
     set({
       lastCamAr: cam,
@@ -124,7 +171,7 @@ export const useLocalizer = create<LocalizerState>((set, get) => ({
 
   onImage: (e) => {
     const plate = plateById.get(e.plateId);
-    if (__DEV__) console.log('[ar] plate seen', e.plateId, e.tracked ? 'tracked' : 'lost', plate ? '' : '(unknown id)');
+    arLog('plate seen', e.plateId, e.tracked ? 'tracked' : 'lost', plate ? '' : '(unknown id)');
     if (!plate) return;
     const fix = computeFix(plate, e.transform as Mat4);
     if (!fix) return;
@@ -135,10 +182,10 @@ export const useLocalizer = create<LocalizerState>((set, get) => ({
     const range = cam ? Math.hypot(cAr[0] - cam[0], cAr[1] - cam[1], cAr[2] - cam[2]) : 0;
     if (!e.tracked && s.tBlcsFromAr) return;
     if (range > 3.5) {
-      if (__DEV__) console.log('[ar] plate too far', range.toFixed(2), 'm');
+      arLog('plate too far', range.toFixed(2), 'm');
       return;
     }
-    if (__DEV__) console.log('[ar] FIX from', plate.id, 'level', plate.levelId, 'range', range.toFixed(2), 'm');
+    arLog('FIX from', plate.id, 'level', plate.levelId, 'range', range.toFixed(2), 'm');
     set({
       tBlcsFromAr: fix,
       levelId: plate.levelId,
@@ -151,7 +198,16 @@ export const useLocalizer = create<LocalizerState>((set, get) => ({
 
   setTracking: (state) => set({ tracking: state }),
   reset: () =>
-    set({ levelId: null, tBlcsFromAr: null, confidence: 0, fixPlateId: null, fixAtMs: 0, distanceSinceFixM: 0, lastCamAr: null, pose: null }),
+    set({
+      levelId: null,
+      tBlcsFromAr: null,
+      confidence: 0,
+      fixPlateId: null,
+      fixAtMs: 0,
+      distanceSinceFixM: 0,
+      lastCamAr: null,
+      pose: null,
+    }),
 }));
 
 /** AR world (m) <- BLCS (mm): for placing model points in the camera frame. */

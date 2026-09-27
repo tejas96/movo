@@ -19,6 +19,9 @@
       "!packages/design-system/src/icons/generated",
       "!apps/api/src/generated",
       "!apps/mobile/global.css",
+      "!docs/spatial/**/*.json",
+      "!apps/mobile/src/features/ar/data",
+      "!apps/mobile/src/features/ar/plates.generated.ts",
       "!**/*.html"
     ]
   },

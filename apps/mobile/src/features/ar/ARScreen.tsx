@@ -12,14 +12,15 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Polyline } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { useNav } from '../../core/navigation/types';
 import { DestinationPicker } from './DestinationPicker';
+import { arLog } from './debug';
 import { levelKey } from './labels';
 import { PLATES } from './plates.generated';
 import { useLocalizer } from './spatial/localizer';
 import { levelById, spacesOnLevel } from './spatial/model';
-import { makeProjector, type ScreenPoint } from './spatial/project';
+import { makeProjector } from './spatial/project';
 import type { NavNode } from './spatial/types';
 import { useRoute } from './useRoute';
 
@@ -33,7 +34,6 @@ const PLATES_JSON = JSON.stringify(
 );
 
 type Perm = 'pending' | 'granted' | 'denied';
-let lastLogSec = -1;
 
 /** Camera view. The native side tracks; this screen draws labels and the route on top. */
 export function ARScreen() {
@@ -76,31 +76,21 @@ export function ARScreen() {
       .filter((x) => x.p.visible && x.p.depth < 14)
       .sort((a, b) => a.p.depth - b.p.depth)
       .slice(0, 12);
-    if (__DEV__ && labels.length && Math.floor(frame.t / 1000) !== lastLogSec) {
-      lastLogSec = Math.floor(frame.t / 1000);
-      console.log(
-        '[ar] labels',
-        'yaw',
-        pose ? Math.round(pose.yawDeg) : '?',
-        labels.slice(0, 4).map((l) => `${l.s.flat ?? ''}${l.s.name}@(${Math.round(l.p.x)},${Math.round(l.p.y)}) d=${l.p.depth.toFixed(1)}`).join(' | '),
-        'of',
-        labels.length,
-      );
-    }
-    const runs: ScreenPoint[][] = [];
+    // route as one SVG path; a gap starts a new sub-path where the line leaves the view
+    let routePath = '';
     if (routeView) {
-      let cur: ScreenPoint[] = [];
+      let open = false;
       for (const pt of routeView.points) {
         const sp = project(pt);
-        if (sp.visible) cur.push(sp);
-        else if (cur.length) {
-          runs.push(cur);
-          cur = [];
+        if (!sp.visible) {
+          open = false;
+          continue;
         }
+        routePath += `${open ? 'L' : 'M'}${sp.x.toFixed(1)} ${sp.y.toFixed(1)} `;
+        open = true;
       }
-      if (cur.length) runs.push(cur);
     }
-    return { labels, runs };
+    return { labels, routePath };
   }, [tBlcsFromAr, frame, level, size, routeView]);
 
   const onLayout = (e: LayoutChangeEvent) =>
@@ -112,7 +102,8 @@ export function ARScreen() {
     if (error) return error;
     if (!tBlcsFromAr) return t('ar:hint.noFix');
     if (tracking === 'limited') return t('ar:hint.tracking');
-    if (routeView?.next) return t('ar:route.next', { name: routeView.next.name ?? routeView.next.kind });
+    if (routeView?.next)
+      return t('ar:route.next', { name: routeView.next.name ?? routeView.next.kind });
     return null;
   })();
 
@@ -127,12 +118,12 @@ export function ARScreen() {
           onPose={(e) => onPose(e.nativeEvent)}
           onImage={(e) => onImage(e.nativeEvent)}
           onTrackingState={(e) => {
-            if (__DEV__) console.log('[ar] tracking', e.nativeEvent.state, e.nativeEvent.reason ?? '');
+            arLog('tracking', e.nativeEvent.state, e.nativeEvent.reason ?? '');
             setTracking(e.nativeEvent.state);
             setTrk(e.nativeEvent.state);
           }}
           onError={(e) => {
-            if (__DEV__) console.log('[ar] error', e.nativeEvent.code, e.nativeEvent.message);
+            arLog('error', e.nativeEvent.code, e.nativeEvent.message);
             setError(e.nativeEvent.message);
           }}
         />
@@ -140,26 +131,33 @@ export function ARScreen() {
 
       {overlay && size.w > 0 ? (
         <Svg pointerEvents="none" style={StyleSheet.absoluteFill} width={size.w} height={size.h}>
-          {overlay.runs.map((run, i) => (
-            <Polyline
-              key={`r${i}`}
-              points={run.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}
+          {overlay.routePath ? (
+            <Path
+              d={overlay.routePath}
               stroke="#ffb000"
               strokeWidth={6}
               strokeLinejoin="round"
               strokeLinecap="round"
               fill="none"
             />
-          ))}
-          {overlay.labels.map((l, i) => (
-            <Circle key={`${l.s.code}#${i}`} cx={l.p.x} cy={l.p.y} r={5} fill="#ffffff" stroke="#000" strokeWidth={1} />
+          ) : null}
+          {overlay.labels.map((l) => (
+            <Circle
+              key={l.s.code}
+              cx={l.p.x}
+              cy={l.p.y}
+              r={5}
+              fill="#ffffff"
+              stroke="#000"
+              strokeWidth={1}
+            />
           ))}
         </Svg>
       ) : null}
 
-      {overlay?.labels.map((l, i) => (
+      {overlay?.labels.map((l) => (
         <View
-          key={`${l.s.code}#${i}`}
+          key={l.s.code}
           pointerEvents="none"
           style={{ position: 'absolute', left: l.p.x - 70, top: l.p.y - 42, width: 140 }}
           className="items-center"
@@ -172,49 +170,82 @@ export function ARScreen() {
         </View>
       ))}
 
-      <View style={{ position: 'absolute', top: insets.top + 8, left: 12, right: 12 }} className="flex-row items-center gap-2">
-        <Pressable accessibilityRole="button" onPress={() => nav.goBack()} className="rounded-full bg-black/60 px-4 py-2">
+      <View
+        style={{ position: 'absolute', top: insets.top + 8, left: 12, right: 12 }}
+        className="flex-row items-center gap-2"
+      >
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => nav.goBack()}
+          className="rounded-full bg-black/60 px-4 py-2"
+        >
           <Text className="text-white">{t('common:back', { defaultValue: 'Back' })}</Text>
         </Pressable>
         <View className="rounded-full bg-black/60 px-4 py-2">
           <Text className="text-white">
-            {level ? t('ar:status.level', { level: t(levelKey(level.id)) }) : t('ar:status.noFloor')}
-            {pose ? `  ·  ${t('ar:status.confidence', { pct: Math.round(pose.confidence * 100) })}` : ''}
+            {level
+              ? t('ar:status.level', { level: t(levelKey(level.id)) })
+              : t('ar:status.noFloor')}
+            {pose
+              ? `  ·  ${t('ar:status.confidence', { pct: Math.round(pose.confidence * 100) })}`
+              : ''}
           </Text>
         </View>
       </View>
 
-      <View style={{ position: 'absolute', bottom: insets.bottom + 16, left: 12, right: 12 }} className="gap-2">
+      <View
+        style={{ position: 'absolute', bottom: insets.bottom + 16, left: 12, right: 12 }}
+        className="gap-2"
+      >
         {hint ? (
           <View className="rounded-2xl bg-black/70 px-4 py-3">
             <Text className="text-white">{hint}</Text>
             {perm === 'denied' ? (
-              <Pressable accessibilityRole="button" onPress={() => void Linking.openSettings()} className="mt-2">
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => void Linking.openSettings()}
+                className="mt-2"
+              >
                 <Text className="text-white underline">{t('ar:status.openSettings')}</Text>
               </Pressable>
             ) : null}
-            {fixPlate && !routeView ? <Text className="mt-1 text-xs text-white/70">{fixPlate}</Text> : null}
+            {fixPlate && !routeView ? (
+              <Text className="mt-1 text-xs text-white/70">{fixPlate}</Text>
+            ) : null}
           </View>
         ) : null}
         {routeView ? (
           <View className="rounded-2xl bg-black/70 px-4 py-3">
             <Text className="text-white">
-              {t('ar:route.summary', { steps: routeView.route.nodes.length - 1, seconds: Math.round(routeView.route.totalS) })}
+              {t('ar:route.summary', {
+                steps: routeView.route.nodes.length - 1,
+                seconds: Math.round(routeView.route.totalS),
+              })}
             </Text>
           </View>
         ) : null}
         <View className="flex-row gap-2">
-          <Pressable accessibilityRole="button" onPress={() => setPicker(true)} className="flex-1 items-center rounded-full bg-white px-4 py-3">
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setPicker(true)}
+            className="flex-1 items-center rounded-full bg-white px-4 py-3"
+          >
             <Text>{dest ? (dest.name ?? dest.kind) : t('ar:whereTo')}</Text>
           </Pressable>
           {dest ? (
-            <Pressable accessibilityRole="button" onPress={() => setDest(null)} className="items-center rounded-full bg-white/80 px-4 py-3">
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setDest(null)}
+              className="items-center rounded-full bg-white/80 px-4 py-3"
+            >
               <Text>{t('ar:clearRoute')}</Text>
             </Pressable>
           ) : null}
           <Pressable
             accessibilityRole="button"
-            onPress={() => nav.navigate('FloorMap', { levelId: levelId ?? undefined, destinationId: dest?.id })}
+            onPress={() =>
+              nav.navigate('FloorMap', { levelId: levelId ?? undefined, destinationId: dest?.id })
+            }
             className="items-center rounded-full bg-white/80 px-4 py-3"
           >
             <Text>{t('ar:map')}</Text>

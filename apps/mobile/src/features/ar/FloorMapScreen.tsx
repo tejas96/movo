@@ -11,7 +11,7 @@ import { DestinationPicker } from './DestinationPicker';
 import { levelKey } from './labels';
 import { useLocalizer } from './spatial/localizer';
 import { levelById, levels, model, spacesOnLevel } from './spatial/model';
-import type { NavNode } from './spatial/types';
+import type { LevelDef, NavNode } from './spatial/types';
 import { useRoute } from './useRoute';
 
 const FILL: Record<string, string> = {
@@ -31,6 +31,15 @@ const FILL: Record<string, string> = {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FloorMap'>;
 
+const FALLBACK_LEVEL: LevelDef = {
+  id: 'L0',
+  index: 0,
+  name: 'Ground',
+  elevationMm: 0,
+  heightMm: null,
+  template: 'GF',
+};
+
 /** Plan view of one level. Works without the camera. Shows the blue dot when the AR guide has a fix. */
 export function FloorMapScreen(_props: Props) {
   const { t } = useTranslation(['ar', 'common']);
@@ -44,7 +53,7 @@ export function FloorMapScreen(_props: Props) {
     () => model.building.nav.nodes.find((n) => n.id === params?.destinationId) ?? null,
   );
   const [picker, setPicker] = useState(false);
-  const level = levelById(levelId) ?? levels[0] ?? model.building.levels[0]!;
+  const level = levelById(levelId) ?? levels[0] ?? FALLBACK_LEVEL;
   const routeView = useRoute(dest, level.id);
 
   const plan = useMemo(() => {
@@ -74,19 +83,31 @@ export function FloorMapScreen(_props: Props) {
           <Text>{t('common:back', { defaultValue: 'Back' })}</Text>
         </Pressable>
         <Text className="flex-1 text-lg font-semibold">{t('ar:map')}</Text>
-        <Pressable accessibilityRole="button" onPress={() => nav.navigate('AR')} className="rounded-full bg-ink px-4 py-2">
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => nav.navigate('AR')}
+          className="rounded-full bg-ink px-4 py-2"
+        >
           <Text className="text-white">{t('ar:camera')}</Text>
         </Pressable>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+      >
         {levels.map((l) => (
           <Pressable
             key={l.id}
             accessibilityRole="button"
             onPress={() => setLevelId(l.id)}
-            className={l.id === level.id ? 'rounded-full bg-ink px-4 py-2' : 'rounded-full bg-card px-4 py-2'}
+            className={
+              l.id === level.id ? 'rounded-full bg-ink px-4 py-2' : 'rounded-full bg-card px-4 py-2'
+            }
           >
-            <Text className={l.id === level.id ? 'text-white' : undefined}>{t(levelKey(l.id))}</Text>
+            <Text className={l.id === level.id ? 'text-white' : undefined}>
+              {t(levelKey(l.id))}
+            </Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -104,7 +125,13 @@ export function FloorMapScreen(_props: Props) {
             ))}
             {plan.columns.map((c) => {
               const P = c.geometry.coords as number[][];
-              return <Polygon key={c.code} points={P.map((p) => `${plan.X(p[0] ?? 0)},${plan.Y(p[1] ?? 0)}`).join(' ')} fill="#8a2a8a" />;
+              return (
+                <Polygon
+                  key={c.code}
+                  points={P.map((p) => `${plan.X(p[0] ?? 0)},${plan.Y(p[1] ?? 0)}`).join(' ')}
+                  fill="#8a2a8a"
+                />
+              );
             })}
             {routeView ? (
               <Polyline
@@ -119,11 +146,25 @@ export function FloorMapScreen(_props: Props) {
               />
             ) : null}
             {dest && dest.levelId === level.id ? (
-              <Circle cx={plan.X(dest.p[0])} cy={plan.Y(dest.p[1])} r={7} fill="#ffb000" stroke="#000" strokeWidth={1} />
+              <Circle
+                cx={plan.X(dest.p[0])}
+                cy={plan.Y(dest.p[1])}
+                r={7}
+                fill="#ffb000"
+                stroke="#000"
+                strokeWidth={1}
+              />
             ) : null}
             {pose && pose.levelId === level.id ? (
               <>
-                <Circle cx={plan.X(pose.x)} cy={plan.Y(pose.y)} r={9} fill="#2f5fd0" stroke="#fff" strokeWidth={2} />
+                <Circle
+                  cx={plan.X(pose.x)}
+                  cy={plan.Y(pose.y)}
+                  r={9}
+                  fill="#2f5fd0"
+                  stroke="#fff"
+                  strokeWidth={2}
+                />
                 <Rect
                   x={plan.X(pose.x) - 2}
                   y={plan.Y(pose.y) - 18}
@@ -143,16 +184,30 @@ export function FloorMapScreen(_props: Props) {
         </Text>
         {routeView ? (
           <Text className="mt-2">
-            {t('ar:route.summary', { steps: routeView.route.nodes.length - 1, seconds: Math.round(routeView.route.totalS) })}
+            {t('ar:route.summary', {
+              steps: routeView.route.nodes.length - 1,
+              seconds: Math.round(routeView.route.totalS),
+            })}
           </Text>
         ) : null}
       </ScrollView>
-      <View style={{ position: 'absolute', bottom: insets.bottom + 16, left: 16, right: 16 }} className="flex-row gap-2">
-        <Pressable accessibilityRole="button" onPress={() => setPicker(true)} className="flex-1 items-center rounded-full bg-ink px-4 py-3">
+      <View
+        style={{ position: 'absolute', bottom: insets.bottom + 16, left: 16, right: 16 }}
+        className="flex-row gap-2"
+      >
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setPicker(true)}
+          className="flex-1 items-center rounded-full bg-ink px-4 py-3"
+        >
           <Text className="text-white">{dest ? (dest.name ?? dest.kind) : t('ar:whereTo')}</Text>
         </Pressable>
         {dest ? (
-          <Pressable accessibilityRole="button" onPress={() => setDest(null)} className="items-center rounded-full bg-card px-4 py-3">
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setDest(null)}
+            className="items-center rounded-full bg-card px-4 py-3"
+          >
             <Text>{t('ar:clearRoute')}</Text>
           </Pressable>
         ) : null}

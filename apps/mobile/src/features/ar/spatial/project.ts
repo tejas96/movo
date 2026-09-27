@@ -11,7 +11,12 @@ export interface ScreenPoint {
 }
 
 /** Projects a building point (mm) onto the camera view using the last frame's view and projection. */
-export function makeProjector(tBlcsFromAr: Mat4, frame: ArPoseEvent, screenW: number, screenH: number) {
+export function makeProjector(
+  tBlcsFromAr: Mat4,
+  frame: ArPoseEvent,
+  screenW: number,
+  screenH: number,
+) {
   const arFromBlcs = invertRigid(tBlcsFromAr);
   const v = frame.view as Mat4;
   const p = frame.projection as Mat4;
