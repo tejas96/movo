@@ -1,3 +1,4 @@
+import enAr from './locales/en/ar.json';
 import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
 import enDuties from './locales/en/duties.json';
@@ -18,6 +19,7 @@ import enRewards from './locales/en/rewards.json';
 import enServices from './locales/en/services.json';
 import enSociety from './locales/en/society.json';
 import enTasks from './locales/en/tasks.json';
+import hiAr from './locales/hi/ar.json';
 import hiAuth from './locales/hi/auth.json';
 import hiCommon from './locales/hi/common.json';
 import hiDuties from './locales/hi/duties.json';
@@ -38,6 +40,7 @@ import hiRewards from './locales/hi/rewards.json';
 import hiServices from './locales/hi/services.json';
 import hiSociety from './locales/hi/society.json';
 import hiTasks from './locales/hi/tasks.json';
+import mrAr from './locales/mr/ar.json';
 import mrAuth from './locales/mr/auth.json';
 import mrCommon from './locales/mr/common.json';
 import mrDuties from './locales/mr/duties.json';
@@ -81,6 +84,7 @@ export const en = {
   tasks: enTasks,
   rewards: enRewards,
   market: enMarket,
+  ar: enAr,
 } as const;
 
 export type Resources = typeof en;
@@ -111,6 +115,7 @@ export const resources = {
     tasks: hiTasks,
     rewards: hiRewards,
     market: hiMarket,
+    ar: hiAr,
   },
   mr: {
     common: mrCommon,
@@ -133,5 +138,6 @@ export const resources = {
     tasks: mrTasks,
     rewards: mrRewards,
     market: mrMarket,
+    ar: mrAr,
   },
 } as const;

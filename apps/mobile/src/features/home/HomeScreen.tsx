@@ -102,6 +102,7 @@ export function HomeScreen() {
           icon="directory"
           onPress={() => nav.navigate('Directory')}
         />
+        <Chip label={t('home:quick.ar')} icon="map" onPress={() => nav.navigate('AR')} />
         {emergency ? (
           <Chip
             label={t('home:quick.emergency')}

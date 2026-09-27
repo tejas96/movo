@@ -2,6 +2,8 @@ import { Button, EmptyState, Screen, Text } from '@movo/design-system';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, View } from 'react-native';
+import { ARScreen } from '../../features/ar/ARScreen';
+import { FloorMapScreen } from '../../features/ar/FloorMapScreen';
 import { ForgotPasswordScreen } from '../../features/auth/ForgotPasswordScreen';
 import { LoginScreen } from '../../features/auth/LoginScreen';
 import { RegisterScreen } from '../../features/auth/RegisterScreen';
@@ -197,6 +199,8 @@ export function RootNavigator() {
           />
           <Stack.Screen name="VendorCategories" component={VendorCategoriesScreen} />
           <Stack.Screen name="Parking" component={ParkingScreen} />
+          <Stack.Screen name="AR" component={ARScreen} options={{ animation: 'fade' }} />
+          <Stack.Screen name="FloorMap" component={FloorMapScreen} />
           <Stack.Screen
             name="VehicleEditor"
             component={VehicleEditorScreen}

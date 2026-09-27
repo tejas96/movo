@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "5.9.1",
+    "@movo/ar-native": "workspace:*",
     "@movo/contracts": "workspace:*",
     "@movo/design-system": "workspace:*",
     "@movo/i18n": "workspace:*",

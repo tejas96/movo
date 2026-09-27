@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plate on screen</title>
+<style>
+  :root{--bg:#ffffff;--ink:#111}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:14px -apple-system,Segoe UI,Roboto,sans-serif}
+  body{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px}
+  img{width:190mm;height:auto;border:1px solid #ccc;image-rendering:auto}
+  .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  a{padding:6px 10px;border:1px solid #ccc;border-radius:6px;color:var(--ink);text-decoration:none}
+  a.on{background:#111;color:#fff}
+  p{max-width:60ch;text-align:center;color:#555;margin:0}
+</style>
+</head>
+<body>
+  <div class="row" id="links"></div>
+  <img id="plate" alt="landmark plate">
+  <p>Screen test only. The image is drawn 190 mm wide by CSS, which is close to the printed size on most laptops.
+     Hold the phone 0.6 to 1.5 m away, avoid glare. The phone will report this plate's floor.</p>
+<script>
+  const ids=['LP-L0-LOBBY','LP-L1-LIFT','LP-L2-LIFT','LP-L3-LIFT','LP-L4-LIFT','LP-L5-LIFT','LP-L6-LIFT','LP-L0-C13','LP-L0-C25','LP-L6-TERRACE','LP-L0-GATE','LP-RF-TANK'];
+  const cur=new URLSearchParams(location.search).get('id')||'LP-L3-LIFT';
+  const links=document.getElementById('links');
+  ids.forEach(id=>{const a=document.createElement('a');a.href='?id='+id;a.textContent=id.replace('LP-','');if(id===cur)a.className='on';links.appendChild(a);});
+  document.getElementById('plate').src=cur+'.png?t='+Date.now();
+</script>
+</body>
+</html>

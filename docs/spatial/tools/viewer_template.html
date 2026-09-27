@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laxmi-Pushp 3D check</title>
+<style>
+  :root{--bg:#f4f4f6;--panel:#ffffff;--ink:#1a1a1a;--muted:#666;--accent:#2f5fd0;--line:#ddd}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,Segoe UI,Roboto,sans-serif}
+  #c{position:fixed;inset:0;display:block}
+  #ui{position:fixed;left:12px;top:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+  #info{position:fixed;right:12px;top:12px;width:300px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+  h1{font-size:15px;margin:0 0 8px}h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:12px 0 4px}
+  label{display:block;margin:2px 0}code{font-size:12px;background:#f0f0f0;padding:1px 4px;border-radius:4px}
+  button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;margin:2px 2px 2px 0;cursor:pointer}button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  #path{white-space:pre-wrap;font-size:12px;color:var(--muted)}
+  .row{display:flex;gap:6px;align-items:center}
+  @media (max-width:700px){#ui{width:calc(100% - 24px);max-height:45%}#info{display:none}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <h1>Laxmi-Pushp 3D check</h1>
+  <div style="color:var(--muted);font-size:12px">Origin: lift shaft SW corner. Metres. Heights are assumed (3.0 m, GF 3.3 m).</div>
+  <h2>Levels</h2><div id="levels"></div>
+  <h2>Explode <span id="explv" style="color:var(--muted)">0 m</span></h2>
+  <input id="explode" type="range" min="0" max="8" step="0.5" value="0" style="width:100%">
+  <h2>Show</h2>
+  <label><input type="checkbox" id="t_wall" checked> walls</label>
+  <label><input type="checkbox" id="t_column" checked> columns</label>
+  <label><input type="checkbox" id="t_door" checked> doors</label>
+  <label><input type="checkbox" id="t_zone" checked> flat / shop plates</label>
+  <label><input type="checkbox" id="t_nav"> walking graph</label>
+  <h2>Route test</h2>
+  <div class="row"><button id="pathmode">pick start, then end</button><button id="pathclear">clear</button></div>
+  <div id="path">Turn on the walking graph, press the button, click two nodes.</div>
+</div>
+<div id="info"><h1>Object</h1><div id="infotext" style="color:var(--muted)">Click a room, wall, column or door.</div></div>
+<script id="glb" type="text/plain">{{GLB_B64}}</script>
+<script id="nav" type="application/json">{{NAV_JSON}}</script>
+<script id="levelsjson" type="application/json">{{LEVELS_JSON}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const NAV=JSON.parse(document.getElementById('nav').textContent);
+const LEVELS=JSON.parse(document.getElementById('levelsjson').textContent);
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xf4f4f6);
+const camera=new THREE.PerspectiveCamera(50,1,0.1,500); camera.up.set(0,0,1); camera.position.set(-6,-42,34);
+const controls=new OrbitControls(camera,canvas); controls.target.set(-5,0,9);
+scene.add(new THREE.HemisphereLight(0xffffff,0x888899,1.1)); const sun=new THREE.DirectionalLight(0xffffff,1.2); sun.position.set(20,-30,50); scene.add(sun);
+const grid=new THREE.GridHelper(80,80,0xcccccc,0xe6e6e6); grid.rotation.x=Math.PI/2; grid.position.z=-0.7; scene.add(grid);
+const levelGroups={}; const meshes=[]; const byLevel={};
+LEVELS.forEach((L,i)=>{const g=new THREE.Group(); g.userData={level:L,index:i}; levelGroups[L.id]=g; scene.add(g); byLevel[L.id]=[];});
+// level checkboxes
+const lv=document.getElementById('levels');
+LEVELS.forEach(L=>{const lab=document.createElement('label'); lab.innerHTML=`<input type="checkbox" data-l="${L.id}" checked> ${L.id} ${L.name} (+${(L.elevationMm/1000).toFixed(1)} m)`; lv.appendChild(lab);});
+lv.addEventListener('change',e=>{const id=e.target.dataset.l; if(id) levelGroups[id].visible=e.target.checked; drawNav();});
+// glb
+const b64=document.getElementById('glb').textContent.trim(); const bin=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));
+new GLTFLoader().parse(bin.buffer,'',gltf=>{
+  gltf.scene.traverse(o=>{ if(o.isMesh){ const u=o.userData; if(!u.levelId) return; o.material=o.material.clone(); o.material.flatShading=true;
+    if(u.kind==='zone'){o.material.transparent=true;o.material.opacity=0.5;}
+    meshes.push(o); byLevel[u.levelId].push(o);} });
+  Object.keys(byLevel).forEach(id=>byLevel[id].forEach(o=>levelGroups[id].add(o)));
+  applyToggles(); drawNav();
+});
+// toggles
+const T={wall:'t_wall',column:'t_column',door:'t_door',zone:'t_zone'};
+function applyToggles(){ for(const [k,id] of Object.entries(T)){ const on=document.getElementById(id).checked; meshes.forEach(o=>{const u=o.userData; const hit=(k==='zone')?u.kind==='zone':u.subtype===k; if(hit) o.visible=on;}); } }
+Object.values(T).forEach(id=>document.getElementById(id).addEventListener('change',applyToggles));
+document.getElementById('t_nav').addEventListener('change',drawNav);
+// explode
+const expl=document.getElementById('explode');
+function applyExplode(){ const e=parseFloat(expl.value); document.getElementById('explv').textContent=e.toFixed(1)+' m'; LEVELS.forEach((L,i)=>{levelGroups[L.id].position.z=i*e;}); drawNav(); }
+expl.addEventListener('input',applyExplode);
+// nav graph
+const navGroup=new THREE.Group(); scene.add(navGroup); const nodeMeshes=[]; const nodeById={}; NAV.nodes.forEach(n=>nodeById[n.id]=n);
+const levelIndex={}; LEVELS.forEach((L,i)=>levelIndex[L.id]=i);
+function npos(n){ const L=LEVELS[levelIndex[n.levelId]]; const e=parseFloat(expl.value); return new THREE.Vector3(n.p[0]/1000,n.p[1]/1000,L.elevationMm/1000+levelIndex[n.levelId]*e+0.3); }
+const kindColor={space:0x2f5fd0,door:0xc07020,lift:0x9030c0,stair:0xd03030,entrance:0xff0000,shop:0x8040a0,parking_slot:0x30a050,two_wheeler_area:0x30a0a0};
+function drawNav(){
+  navGroup.clear(); nodeMeshes.length=0;
+  if(!document.getElementById('t_nav').checked){ drawPath(); return; }
+  const geo=new THREE.SphereGeometry(0.18,10,10);
+  NAV.nodes.forEach(n=>{ if(!levelGroups[n.levelId].visible) return; const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:kindColor[n.kind]||0x888888})); m.position.copy(npos(n)); m.userData={node:n}; navGroup.add(m); nodeMeshes.push(m); });
+  const pts=[]; const cols=[];
+  NAV.edges.forEach(e=>{const a=nodeById[e.a],b=nodeById[e.b]; if(!levelGroups[a.levelId].visible||!levelGroups[b.levelId].visible) return; pts.push(npos(a),npos(b)); const c=new THREE.Color(e.kind==='walk_fallback'?0xbbbbbb:e.kind==='lift'?0x9030c0:e.kind==='stair'?0xd03030:0x2f5fd0); cols.push(c,c);});
+  const g=new THREE.BufferGeometry().setFromPoints(pts); g.setAttribute('color',new THREE.Float32BufferAttribute(cols.flatMap(c=>[c.r,c.g,c.b]),3));
+  navGroup.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true})));
+  drawPath();
+}
+// route test (Dijkstra)
+let pathMode=false, pathA=null, pathB=null, pathLine=null;
+document.getElementById('pathmode').addEventListener('click',e=>{pathMode=!pathMode; e.target.classList.toggle('on',pathMode); document.getElementById('t_nav').checked=true; drawNav();});
+document.getElementById('pathclear').addEventListener('click',()=>{pathA=pathB=null; document.getElementById('path').textContent='Cleared.'; drawPath();});
+function dijkstra(s,t){ const adj={}; NAV.nodes.forEach(n=>adj[n.id]=[]); NAV.edges.forEach(e=>{adj[e.a].push([e.b,e.costS,e]); adj[e.b].push([e.a,e.costS,e]);});
+  const dist={},prev={},done=new Set(); NAV.nodes.forEach(n=>dist[n.id]=Infinity); dist[s]=0;
+  while(true){ let u=null,best=Infinity; for(const k in dist){ if(!done.has(k)&&dist[k]<best){best=dist[k];u=k;} } if(u===null||u===t) break; done.add(u); for(const [v,c,e] of adj[u]){ if(dist[u]+c<dist[v]){dist[v]=dist[u]+c; prev[v]=[u,e];} } }
+  if(dist[t]===Infinity) return null; const seq=[t]; let cur=t; while(prev[cur]){cur=prev[cur][0]; seq.push(cur);} return {nodes:seq.reverse(),cost:dist[t]};
+}
+function drawPath(){ if(pathLine){scene.remove(pathLine); pathLine=null;} if(!pathA||!pathB) return; const r=dijkstra(pathA,pathB); const out=document.getElementById('path');
+  if(!r){out.textContent='No route between those nodes.'; return;}
+  const pts=r.nodes.map(id=>npos(nodeById[id])); const g=new THREE.BufferGeometry().setFromPoints(pts); pathLine=new THREE.Line(g,new THREE.LineBasicMaterial({color:0xffb000,linewidth:3})); scene.add(pathLine);
+  out.textContent=`${r.nodes.length-1} steps, about ${Math.round(r.cost)} s\n`+r.nodes.map(id=>{const n=nodeById[id]; return `${n.levelId}  ${n.name||n.kind}${n.space?'  ('+n.space.split('/').slice(-2).join('/')+')':''}`;}).join('\n'); }
+// picking
+const ray=new THREE.Raycaster(); const mouse=new THREE.Vector2();
+canvas.addEventListener('pointerdown',ev=>{canvas._down=[ev.clientX,ev.clientY];});
+canvas.addEventListener('pointerup',ev=>{ if(!canvas._down||Math.hypot(ev.clientX-canvas._down[0],ev.clientY-canvas._down[1])>4) return;
+  mouse.x=(ev.clientX/innerWidth)*2-1; mouse.y=-(ev.clientY/innerHeight)*2+1; ray.setFromCamera(mouse,camera);
+  if(pathMode){ const h=ray.intersectObjects(nodeMeshes,false)[0]; if(h){ const n=h.object.userData.node; if(!pathA||(pathA&&pathB)){pathA=n.id;pathB=null; document.getElementById('path').textContent='Start: '+(n.name||n.kind)+' on '+n.levelId+'. Now click the end.';} else {pathB=n.id; drawPath();} } return; }
+  const hits=ray.intersectObjects(meshes.filter(m=>m.visible&&levelGroups[m.userData.levelId].visible),false); const h=hits[0]; const box=document.getElementById('infotext');
+  if(!h){box.textContent='Nothing there.'; return;} const u=h.object.userData;
+  box.innerHTML=`<div><b>${u.name||''}</b></div><div><code>${u.code}</code></div><div>${u.kind} / ${u.subtype} on <b>${u.levelId}</b></div>`+(u.areaM2?`<div>area ${u.areaM2} m²${u.reraCarpetM2?' (RERA '+u.reraCarpetM2+' m²)':''}</div>`:'')+(u.widthMm?`<div>width ${u.widthMm} mm</div>`:'')+`<div>confidence: ${u.confidence||'n/a'}</div>`+(u.note?`<div style="color:var(--muted)">${u.note}</div>`:'')+(u.door?`<div style="color:var(--muted)">door on ${u.door.face} face, ${u.door.widthMm} mm</div>`:'');
+});
+function resize(){const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+renderer.setAnimationLoop(()=>{controls.update(); renderer.render(scene,camera);});
+</script>
+</body>
+</html>
