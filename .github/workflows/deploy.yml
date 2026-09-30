@@ -40,7 +40,7 @@ jobs:
     outputs:
       enabled: ${{ steps.check.outputs.enabled }}
       sha: ${{ steps.check.outputs.sha }}
-      matrix: ${{ steps.check.outputs.matrix }}
+      arches: ${{ steps.check.outputs.arches }}
     steps:
       - id: check
         env:
@@ -49,17 +49,14 @@ jobs:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           RUN_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
           ARCHES: ${{ vars.DEPLOY_ARCHES || 'amd64' }}
-          ARM_RUNNER: ${{ vars.ARM_RUNNER || 'ubuntu-24.04-arm' }}
         run: |
           echo "sha=$RUN_SHA" >> "$GITHUB_OUTPUT"
-          matrix=$(for a in $ARCHES; do
-            case "$a" in
-              amd64) printf '{"arch":"amd64","runner":"ubuntu-latest"}\n' ;;
-              arm64) printf '{"arch":"arm64","runner":"%s"}\n' "$ARM_RUNNER" ;;
-              *) echo "::error::DEPLOY_ARCHES: unknown arch $a" >&2; exit 1 ;;
-            esac
-          done | jq -sc '{include: .}')
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          # Only arch names here: an output that contains a secret's value (DEPLOY_USER is
+          # often "ubuntu", like the runner labels) is masked and dropped by Actions.
+          for a in $ARCHES; do
+            case "$a" in amd64|arm64) ;; *) echo "::error::DEPLOY_ARCHES: unknown arch $a"; exit 1 ;; esac
+          done
+          echo "arches=$(printf '%s\n' $ARCHES | jq -Rsc 'split("\n") | map(select(. != ""))')" >> "$GITHUB_OUTPUT"
           if [ -n "$DEPLOY_HOST" ] && [ -n "$DEPLOY_USER" ] && [ -n "$DEPLOY_SSH_KEY" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
@@ -72,8 +69,9 @@ jobs:
     needs: gate
     if: needs.gate.outputs.enabled == 'true'
     strategy:
-      matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}
-    runs-on: ${{ matrix.runner }}
+      matrix:
+        arch: ${{ fromJSON(needs.gate.outputs.arches) }}
+    runs-on: ${{ matrix.arch == 'arm64' && (vars.ARM_RUNNER || 'ubuntu-24.04-arm') || 'ubuntu-latest' }}
     timeout-minutes: 30
     permissions:
       contents: read
