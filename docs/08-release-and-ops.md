@@ -396,14 +396,15 @@ General: data is **encrypted in transit** (HTTPS): Yes. Users can **request dele
 | --- | --- | --- | --- |
 | Name (Personal info) | Yes | App functionality, Account management | No |
 | Email address (Personal info) | Yes | Account management (reset links), App functionality | Yes |
-| Phone number (Personal info) | Yes | Account management (sign in), App functionality | No |
+| Phone number (Personal info) | Yes | Account management (sign in), App functionality | Yes (email alone also works) |
 | Address: flat and wing (Personal info → Address) | Yes | App functionality | No |
 | Other info: vehicle numbers, society role (Personal info → Other) | Yes | App functionality | Yes |
-| Photos (profile photo, market listing photos the user picks) | Yes | App functionality | Yes |
+| Photos (market listing photos the user picks; no profile photo upload yet) | Yes | App functionality | Yes |
 | Purchase history: maintenance payments recorded by the committee (Financial info → Purchase history) | Yes | App functionality | No |
 | Other user-generated content: notices, minutes, tasks, RSVPs, market listings and reviews (App activity → Other user-generated content) | Yes | App functionality | Yes |
 | In-app messages between buyer and seller on a market order (Messages → Other in-app messages) | Yes | App functionality | Yes |
 | Device or other IDs: push token | Yes | App functionality (notifications) | No |
+| App info and performance / other: IP address and device name on sign-in sessions and the audit log | Yes | Fraud prevention, security | No |
 | Crash logs / diagnostics | No (server logs only, not collected from the device) | – | – |
 | Location, contacts, SMS, call logs, web history, health, files | No | – | – |
 
