@@ -9,6 +9,8 @@ import { ForgotPasswordScreen } from '../../features/auth/ForgotPasswordScreen';
 import { LoginScreen } from '../../features/auth/LoginScreen';
 import { RegisterScreen } from '../../features/auth/RegisterScreen';
 import { ResetPasswordScreen } from '../../features/auth/ResetPasswordScreen';
+import { WelcomeScreen } from '../../features/auth/WelcomeScreen';
+import { isWelcomeSeen } from '../../features/auth/welcome-seen';
 import { DirectoryScreen } from '../../features/directory/DirectoryScreen';
 import { MemberDetailScreen } from '../../features/directory/MemberDetailScreen';
 import { DutiesScreen } from '../../features/duties/DutiesScreen';
@@ -122,6 +124,8 @@ export function RootNavigator() {
   const ctx = useMeContext(status === 'signedIn');
   const [splashDone, setSplashDone] = useState(false);
   const hideSplash = useCallback(() => setSplashDone(true), []);
+  // Read once per launch: leaving Welcome marks it seen without pulling the route from under it.
+  const [showWelcome] = useState(() => !isWelcomeSeen());
 
   // The splash stays on top until the session and the society context are known,
   // so the first real screen is already mounted when it fades away.
@@ -134,14 +138,22 @@ export function RootNavigator() {
       {!settled ? null : status === 'signedIn' && !ctx.data ? (
         <ContextError retry={() => void ctx.refetch()} />
       ) : (
-        <Navigator status={status} hasSociety={hasSociety} />
+        <Navigator status={status} hasSociety={hasSociety} showWelcome={showWelcome} />
       )}
       {splashDone ? null : <Splash stage={stage} onDone={hideSplash} />}
     </View>
   );
 }
 
-function Navigator({ status, hasSociety }: { status: SessionStatus; hasSociety: boolean }) {
+function Navigator({
+  status,
+  hasSociety,
+  showWelcome,
+}: {
+  status: SessionStatus;
+  hasSociety: boolean;
+  showWelcome: boolean;
+}) {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -152,6 +164,7 @@ function Navigator({ status, hasSociety }: { status: SessionStatus; hasSociety: 
     >
       {status === 'signedOut' ? (
         <Stack.Group>
+          {showWelcome ? <Stack.Screen name="Welcome" component={WelcomeScreen} /> : null}
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
