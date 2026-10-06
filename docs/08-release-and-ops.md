@@ -15,6 +15,19 @@ How MOVO goes live and stays up, for ₹0 a month. Production is one **Oracle Cl
 
 The first server (an AMD VM.Standard.E2.1.Micro with 1 GB, used while Ampere was out of capacity) was retired on 2026-10-06 after the data moved with `pg_dump | pg_restore` (section 3, "Moving to a new VM").
 
+**Pending (placeholders).** Each item waits on the user or on Google. When one completes, do the "then" column, update `.private/MOVO-VAULT.md`, and delete the row.
+
+| Waiting for | Then |
+| --- | --- |
+| Play identity verification, then phone verification (Play Console home) | Create the app "MOVO – Housing Society App" (`com.movo.app`), fill the store listing and App content from `apps/mobile/store/`, upload `../movo-builds/movo-v0.1.0-code1-0bbfbbe.aab` by hand to Internal testing (the first upload must be manual) |
+| First AAB accepted by Play | Add the **Play App Signing** SHA-1 to Firebase: `firebase apps:android:sha:create 1:1005160681740:android:8827a74ade5798b6f23929 <sha1> --account tejas96patil@gmail.com --project movo-society` |
+| App exists in Play | Service account for CI uploads: Google Cloud → IAM → create `movo-play-publisher`, JSON key → Play Console → Users and permissions → invite it with release rights for MOVO → `gh secret set PLAY_SERVICE_ACCOUNT_JSON < key.json` → delete the local key file |
+| User runs `apps/mobile/store/tools/set-ci-signing-secrets.sh` | `Release Android` can sign; push a `v*` tag to test |
+| Reviewer demo account (production) | Make a demo society + member on production, put the login in Play → App content → App access, and test push on a real install |
+| healthchecks.io account (postponed) | Two checks (API 5 min / 10 min grace, backup 1 day / 2 h grace), `UPTIME_HEARTBEAT_URL` and `BACKUP_HEARTBEAT_URL` in `.env.prod`, `dc up -d api backup` |
+| Closed test, 12 testers × 14 days (personal Play account) | Apply for production access in Play Console |
+| Business registered (later) | Play account → Organization (needs D-U-N-S), Resend with an owned domain, maybe a bought domain instead of DuckDNS |
+
 Day-to-day: `infra/server/check.sh` prints health, certificate, containers, memory, disk and the newest local and off-site backups. A new VM is set up with `infra/server/bootstrap.sh` (sections 2.5–2.10 explain each step); a backup key is rotated with `infra/server/set-offsite-key.sh`.
 
 If the server IP changes (new VM, terminate and recreate): log in at duckdns.org, type the new IP in the `movo-society` row, **update ip**, then `dc restart caddy` on the new VM so it fetches the certificate at once. Update the `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` secrets too. No app build is needed.
@@ -24,7 +37,8 @@ If the server IP changes (new VM, terminate and recreate): log in at duckdns.org
 | API image | `apps/api/Dockerfile` (multi-arch; runs `prisma migrate deploy`, then the API as `node`) |
 | Production stack | `infra/docker-compose.prod.yml`, `infra/Caddyfile`, `infra/.env.prod.example` |
 | Backups | `infra/backup/` (`backup.sh`, `restore.sh`, daily scheduler) |
-| Deploy | `.github/workflows/deploy.yml` (skipped until the `DEPLOY_*` secrets exist) |
+| Deploy | `.github/workflows/deploy.yml` (after green CI on `main`) |
+| App release | `.github/workflows/release-android.yml` (on a `v*` tag) |
 | Privacy policy site | `site/` and `.github/workflows/pages.yml` |
 | Android release | `apps/mobile/android/app/build.gradle`, `pnpm --filter @movo/mobile android:bundle` |
 
@@ -356,12 +370,19 @@ The build stops if a release signed with the upload key would not use `https://`
 - `versionCode` comes from `MOVO_VERSION_CODE` (default 1). Play needs a higher number for every upload: `apps/mobile/store/tools/build-release.sh 2`; record each upload in the table under Build.
 - Also bump `APP_VERSION` in `apps/mobile/src/core/env.ts` and, when an old app must update, `MIN_SUPPORTED_APP_VERSION` / `LATEST_APP_VERSION` in `.env.prod` (then `dc up -d api`).
 
-### Build
+### Releases (normal path: CI)
+
+1. Bump `version` in `apps/mobile/package.json` in a PR (for example 0.1.0 → 0.1.1) and merge it.
+2. Tag the merge commit: `git tag v0.1.1 origin/main && git push origin v0.1.1`.
+3. `.github/workflows/release-android.yml` checks the tag matches the version, builds the AAB signed with the upload key (secrets from `set-ci-signing-secrets.sh`), versionCode `major*10000 + minor*100 + patch` (0.1.1 → 101), keeps it 90 days as a run artifact, and uploads it to Play **internal testing** when `PLAY_SERVICE_ACCOUNT_JSON` is set. Promote internal → closed → production in Play Console.
+4. The API needs nothing: every green `main` is already deployed. If a release needs the new app, raise `MIN_SUPPORTED_APP_VERSION` in `.env.prod` after the app is live.
+
+### Build (local or emergency)
 
 Uploads to Play are built with one command, from a clean checkout of `origin/main` (the working folder can hold another session's unsaved work, which must never ship):
 
 ```bash
-apps/mobile/store/tools/build-release.sh <versionCode>   # e.g. 2 for the second upload
+apps/mobile/store/tools/build-release.sh [versionCode]   # default: same rule as CI
 ```
 
 It checks the upload key, builds in a temporary worktree, refuses a debug-signed result, and saves `../movo-builds/movo-v<version>-code<N>-<sha>.aab` with a `.sha256` next to it. Uploads so far:

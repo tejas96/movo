@@ -1,0 +1,31 @@
+# Weekly update PRs for CI actions and Docker base images. npm gets security fixes only
+# (Dependabot security updates, repo Settings -> Code security); version bumps for the React
+# Native stack are done by hand because they need an app build and a device test.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Kolkata
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "CI"
+
+  - package-ecosystem: docker
+    directories: ["/apps/api", "/infra/backup"]
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Kolkata
+    commit-message:
+      prefix: "Docker"
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0

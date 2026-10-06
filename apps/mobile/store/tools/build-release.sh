@@ -2,14 +2,16 @@
 # Build the Play upload (signed AAB) from a clean checkout of origin/main, never from the
 # working folder (which may hold another session's unsaved work).
 #
-#   apps/mobile/store/tools/build-release.sh <versionCode> [ref]
+#   apps/mobile/store/tools/build-release.sh [versionCode] [ref]
 #
-# versionCode must be higher than every upload so far (Play rejects repeats). ref defaults
-# to origin/main. Uses apps/mobile/.env.production and the MOVO_UPLOAD_* lines in
+# Normal releases are built by CI from a tag (.github/workflows/release-android.yml); use this
+# for a local or emergency build. versionCode defaults to the same rule as CI:
+# major*10000 + minor*100 + patch of apps/mobile/package.json at ref (0.1.1 -> 101). It must be
+# higher than every upload so far (Play rejects repeats). ref defaults to origin/main. Uses apps/mobile/.env.production and the MOVO_UPLOAD_* lines in
 # ~/.gradle/gradle.properties (make-upload-key.sh). Output, outside the repo:
 #   ../movo-builds/movo-v<versionName>-code<versionCode>-<sha>.aab (+ .sha256)
 set -euo pipefail
-CODE=${1:?usage: build-release.sh <versionCode> [ref]}
+CODE=${1:-}
 REF=${2:-origin/main}
 ROOT=$(git rev-parse --show-toplevel)
 OUT=$(dirname "$ROOT")/movo-builds
@@ -25,6 +27,9 @@ git -C "$ROOT" worktree remove --force "$WT" 2>/dev/null || true
 git -C "$ROOT" worktree add --detach "$WT" "$REF" >/dev/null
 trap 'git -C "$ROOT" worktree remove --force "$WT" >/dev/null 2>&1 || true' EXIT
 
+if [ -z "$CODE" ]; then
+  CODE=$(node -e "const [a,b,c]=require('$WT/apps/mobile/package.json').version.split('.').map(Number);console.log(a*10000+b*100+c)")
+fi
 cp "$ROOT/apps/mobile/.env.production" "$WT/apps/mobile/"
 [ -f "$ROOT/apps/mobile/android/local.properties" ] && cp "$ROOT/apps/mobile/android/local.properties" "$WT/apps/mobile/android/"
 
