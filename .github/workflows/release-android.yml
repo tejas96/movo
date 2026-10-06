@@ -1,0 +1,138 @@
+name: Release Android
+
+# Builds the Play upload (signed AAB) for a version tag and, once Play is set up, uploads it to
+# the internal testing track. Runbook: docs/08-release-and-ops.md ("Releases").
+#
+#   1. bump "version" in apps/mobile/package.json in a PR, merge it
+#   2. git tag v<version> origin/main && git push origin v<version>
+#
+# versionCode = major*10000 + minor*100 + patch (0.1.1 -> 101), so it always grows with the
+# version. Run by hand (workflow_dispatch) to rebuild a tag.
+#
+# Secrets (placeholders until set; each step that needs one is skipped without it):
+#   ANDROID_UPLOAD_KEYSTORE_BASE64   base64 of ~/keys/movo-upload.jks
+#   MOVO_UPLOAD_STORE_PASSWORD, MOVO_UPLOAD_KEY_PASSWORD
+#     set all three with apps/mobile/store/tools/set-ci-signing-secrets.sh
+#   PLAY_SERVICE_ACCOUNT_JSON        Google Cloud service account with release access in Play
+#     Console (Users and permissions). Needs the Play app to exist and one manual upload first.
+# Variables: MOVO_API_URL (default https://movo-society.duckdns.org)
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build, e.g. v0.1.1"
+        required: true
+
+concurrency:
+  group: release-android-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Signed AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      play: ${{ steps.gate.outputs.play }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - id: gate
+        env:
+          KS: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          SP: ${{ secrets.MOVO_UPLOAD_STORE_PASSWORD }}
+          KP: ${{ secrets.MOVO_UPLOAD_KEY_PASSWORD }}
+          PLAY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$KS" ] || [ -z "$SP" ] || [ -z "$KP" ]; then
+            echo "::error::Upload key secrets are not set. Run apps/mobile/store/tools/set-ci-signing-secrets.sh"
+            exit 1
+          fi
+          if [ -n "$PLAY" ]; then echo "play=true" >> "$GITHUB_OUTPUT"; else echo "play=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - id: version
+        name: Version from tag
+        env:
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          v=${TAG#v}
+          echo "$v" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "::error::Tag $TAG is not vX.Y.Z"; exit 1; }
+          pkg=$(jq -r .version apps/mobile/package.json)
+          [ "$pkg" = "$v" ] || { echo "::error::Tag $TAG but apps/mobile/package.json says $pkg. Bump it in a PR first."; exit 1; }
+          IFS=. read -r ma mi pa <<< "$v"
+          [ "$mi" -lt 100 ] && [ "$pa" -lt 100 ] || { echo "::error::minor and patch must be < 100"; exit 1; }
+          code=$((ma * 10000 + mi * 100 + pa))
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "::notice::versionName $v, versionCode $code"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @movo/contracts --filter @movo/i18n build
+      - name: Release env and upload key
+        env:
+          KS: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          API_URL: ${{ vars.MOVO_API_URL || 'https://movo-society.duckdns.org' }}
+        run: |
+          echo "API_URL=$API_URL" > apps/mobile/.env.production
+          printf '%s' "$KS" | base64 -d > "$RUNNER_TEMP/movo-upload.jks"
+      - name: bundleRelease
+        working-directory: apps/mobile/android
+        env:
+          MOVO_UPLOAD_STORE_FILE: ${{ runner.temp }}/movo-upload.jks
+          MOVO_UPLOAD_KEY_ALIAS: movo-upload
+          MOVO_UPLOAD_STORE_PASSWORD: ${{ secrets.MOVO_UPLOAD_STORE_PASSWORD }}
+          MOVO_UPLOAD_KEY_PASSWORD: ${{ secrets.MOVO_UPLOAD_KEY_PASSWORD }}
+          MOVO_VERSION_CODE: ${{ steps.version.outputs.code }}
+          MOVO_VERSION_NAME: ${{ steps.version.outputs.version }}
+        run: ./gradlew bundleRelease --no-daemon
+      - name: Check signer
+        run: |
+          aab=apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+          owner=$(keytool -printcert -jarfile "$aab" | awk -F': ' '/Owner:/{print $2; exit}')
+          echo "signer: $owner"
+          case "$owner" in *Debug*|"") echo "::error::AAB is not signed with the upload key"; exit 1 ;; esac
+          mkdir -p out
+          name="movo-v${{ steps.version.outputs.version }}-code${{ steps.version.outputs.code }}-${GITHUB_SHA::7}.aab"
+          cp "$aab" "out/$name"
+          (cd out && sha256sum "$name" > "$name.sha256")
+          rm -f "$RUNNER_TEMP/movo-upload.jks"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aab-v${{ steps.version.outputs.version }}
+          path: out/*
+          retention-days: 90
+
+  play:
+    name: Upload to Play (internal)
+    needs: build
+    if: needs.build.outputs.play == 'true'
+    runs-on: ubuntu-latest
+    environment: play
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: aab-v${{ needs.build.outputs.version }}
+          path: out
+      - uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.movo.app
+          releaseFiles: out/*.aab
+          track: internal
+          status: completed
