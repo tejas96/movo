@@ -54,7 +54,7 @@ jobs:
             exit 1
           fi
           if [ -n "$PLAY" ]; then echo "play=true" >> "$GITHUB_OUTPUT"; else echo "play=false" >> "$GITHUB_OUTPUT"; fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.inputs.tag || github.ref }}
       - id: version
@@ -72,16 +72,16 @@ jobs:
           echo "version=$v" >> "$GITHUB_OUTPUT"
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "::notice::versionName $v, versionCode $code"
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: "17"
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @movo/contracts --filter @movo/i18n build
       - name: Release env and upload key
@@ -112,7 +112,7 @@ jobs:
           cp "$aab" "out/$name"
           (cd out && sha256sum "$name" > "$name.sha256")
           rm -f "$RUNNER_TEMP/movo-upload.jks"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: aab-v${{ steps.version.outputs.version }}
           path: out/*
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: play
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: aab-v${{ needs.build.outputs.version }}
           path: out
