@@ -10,8 +10,8 @@ name: Deploy
 #           GHCR_PULL_TOKEN (read:packages; default is this run's own token, so the GHCR
 #           package can stay private)
 # Optional variables: DEPLOY_PATH (default /opt/movo)
-#                     DEPLOY_ARCHES (default "amd64": the Oracle E2.1.Micro VM is x86_64. Set
-#                     "amd64 arm64" for a multi-arch image, or "arm64" once on Ampere A1)
+#                     DEPLOY_ARCHES (default "arm64": the Oracle Ampere A1 VM. Set "amd64" for an
+#                     x86_64 VM such as E2.1.Micro, or "amd64 arm64" while moving between them)
 #                     ARM_RUNNER (default ubuntu-24.04-arm, free for public repos; set it to
 #                     ubuntu-latest on a private repo and arm64 is built under QEMU, slower)
 
@@ -48,7 +48,7 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           RUN_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-          ARCHES: ${{ vars.DEPLOY_ARCHES || 'amd64' }}
+          ARCHES: ${{ vars.DEPLOY_ARCHES || 'arm64' }}
         run: |
           echo "sha=$RUN_SHA" >> "$GITHUB_OUTPUT"
           # Only arch names here: an output that contains a secret's value (DEPLOY_USER is

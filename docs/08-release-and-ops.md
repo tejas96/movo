@@ -9,11 +9,13 @@ How MOVO goes live and stays up, for ₹0 a month. Production is one **Oracle Cl
 | Tenancy | BeyondNyx, home region Mumbai, Pay As You Go (billed in SGD: the contract is with Oracle Singapore). Budget `movo-zero-spend`: SG$1 a month, email at 1 % actual spend |
 | VM | `movo-arm`, Ampere VM.Standard.A1.Flex **2 OCPU / 2 GB**, 50 GB boot volume, Ubuntu 24.04 aarch64, 2 GB swap, public IP `92.4.70.154` (ephemeral) |
 | Name | `https://movo-society.duckdns.org` (also `92-4-70-154.sslip.io`, same server). The app's release build uses the DuckDNS name |
-| Deploy | GitHub secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`; repo variable `DEPLOY_ARCHES=arm64` |
+| Deploy | GitHub secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`; no repo variables (the image is built for arm64 by default) |
 | Backups off-site | Object Storage bucket `movo-backups` (namespace `bmyygakxjg10`), customer secret key `movo-backup-2` |
 | Not set up yet | healthchecks.io (`UPTIME_HEARTBEAT_URL`, `BACKUP_HEARTBEAT_URL`), Resend |
 
 The first server (an AMD VM.Standard.E2.1.Micro with 1 GB, used while Ampere was out of capacity) was retired on 2026-10-06 after the data moved with `pg_dump | pg_restore` (section 3, "Moving to a new VM").
+
+Day-to-day: `infra/server/check.sh` prints health, certificate, containers, memory, disk and the newest local and off-site backups. A new VM is set up with `infra/server/bootstrap.sh` (sections 2.5–2.10 explain each step); a backup key is rotated with `infra/server/set-offsite-key.sh`.
 
 If the server IP changes (new VM, terminate and recreate): log in at duckdns.org, type the new IP in the `movo-society` row, **update ip**, then `dc restart caddy` on the new VM so it fetches the certificate at once. Update the `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` secrets too. No app build is needed.
 
@@ -84,6 +86,8 @@ cat ~/.ssh/movo_oracle.pub                                       # paste this in
 **"Out of host capacity"**: Ampere capacity in Mumbai runs out at times. Retry the same Create a few hours later (early morning IST works best), try a specific fault domain instead of "Let Oracle choose", or create with 1 OCPU / 6 GB and resize later (Instance → Edit → shape). Pay As You Go accounts get capacity more easily than free-tier ones, which is another reason to do step 2.2 first.
 
 ### 2.5 Open ports 80 and 443
+
+`infra/server/bootstrap.sh` does 2.5 (host part), 2.6, 2.7, swap, 2.8 (sshd) and the folder in 2.10 in one run: `ssh -i ~/.ssh/movo_oracle ubuntu@<public-ip> 'bash -s' < infra/server/bootstrap.sh`. The steps below are what it does, for reference.
 
 Two firewalls, both needed.
 
@@ -470,6 +474,7 @@ Monthly
 - [ ] `dc pull && dc up -d` for new Postgres and Caddy patch images; `ls /var/run/reboot-required` and reboot at a quiet hour if it exists (security updates install by themselves)
 - [ ] Disk: `df -h /` and `du -sh /opt/movo/backups`; Object Storage bucket size under 10 GB
 - [ ] Billing: Cost Analysis shows ₹0
+- [ ] `infra/server/check.sh` shows all green
 
 ## 9. Cost
 
