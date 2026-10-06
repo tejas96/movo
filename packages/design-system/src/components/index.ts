@@ -15,6 +15,7 @@ export * from './Input';
 export * from './PersonCard';
 export * from './Photo';
 export * from './Pill';
+export * from './Press';
 export * from './Screen';
 export * from './SearchBar';
 export * from './Segmented';

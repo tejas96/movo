@@ -4,6 +4,7 @@ import type { IconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { IconSquare } from './IconButtons';
+import { Press } from './Press';
 import { Text } from './Text';
 import { theme } from './theme';
 
@@ -85,14 +86,14 @@ export function Row({
   );
   if (!onPress) return <View className={cls}>{body}</View>;
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       onPress={onPress}
       {...rest}
       className={cn(cls, 'active:opacity-pressed')}
     >
       {body}
-    </Pressable>
+    </Press>
   );
 }
 
