@@ -27,3 +27,4 @@ export * from './Toggle';
 export * from './TopBar';
 export * from './theme';
 export * from './useKeyboardHeight';
+export * from './Wordmark';
