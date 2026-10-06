@@ -1,14 +1,14 @@
+import type { NoticeCategory } from '@movo/contracts';
 import {
-  Card,
-  Divider,
   IconSquare,
   OptionSheet,
-  Pill,
+  PhotoHeader,
+  type PhotoName,
+  photos,
   Screen,
   Skeleton,
   StatusPill,
   Text,
-  TitleBar,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
@@ -23,6 +23,19 @@ import { mediumDate } from '../../core/util/time';
 import { useNotice, useNoticeAction } from './api';
 
 type Action = 'edit' | 'pin' | 'unpin' | 'publish' | 'archive';
+
+/** The photo at the top follows the category, so a water notice does not look like a party. */
+const CATEGORY_PHOTO: Record<NoticeCategory, PhotoName> = {
+  GENERAL: 'notices',
+  WATER: 'notices',
+  ELECTRICITY: 'services',
+  MAINTENANCE: 'tasks',
+  SECURITY: 'duties',
+  EVENT: 'events',
+  FINANCE: 'money',
+  EMERGENCY: 'emergency',
+  OTHER: 'notices',
+};
 
 export function NoticeDetailScreen() {
   const { t } = useTranslation(['notices', 'common']);
@@ -78,14 +91,16 @@ export function NoticeDetailScreen() {
 
   return (
     <Screen>
-      <TitleBar
-        title={t('notices:title')}
+      <PhotoHeader
+        source={photos[n ? CATEGORY_PHOTO[n.category] : 'notices']}
+        height={220}
         onBack={() => nav.goBack()}
         trailing={
           canEdit ? (
-            <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
+            <IconSquare icon="more" variant="linear" tone="white" onPress={() => setMenu(true)} />
           ) : undefined
         }
+        pills={n ? [{ icon: 'notices', label: t(`notices:category.${n.category}`) }] : undefined}
       />
       {notice.isLoading || !n ? (
         <View className="mt-6 gap-3">
@@ -93,35 +108,35 @@ export function NoticeDetailScreen() {
           <Skeleton className="h-48 rounded-xl" />
         </View>
       ) : (
-        <Card className="mt-6">
-          <View className="flex-row flex-wrap gap-2">
-            <Pill label={t(`notices:category.${n.category}`)} icon="notices" size="sm" />
-            {n.priority !== 'NORMAL' ? (
-              <StatusPill
-                label={t(`notices:priority.${n.priority}`)}
-                tone={n.priority === 'EMERGENCY' ? 'danger' : 'warning'}
-                dot
-              />
-            ) : null}
-            {n.isPinned ? <StatusPill label={t('notices:pinned')} tone="ink" /> : null}
-            {n.status === 'DRAFT' ? <StatusPill label={t('notices:draft')} tone="neutral" /> : null}
-          </View>
-          <Text variant="h1" className="mt-4">
-            {n.title}
-          </Text>
-          <Text variant="label" tone="secondary" className="mt-1">
+        <View className="mt-5">
+          {n.priority !== 'NORMAL' || n.isPinned || n.status === 'DRAFT' ? (
+            <View className="mb-3 flex-row flex-wrap gap-2">
+              {n.priority !== 'NORMAL' ? (
+                <StatusPill
+                  label={t(`notices:priority.${n.priority}`)}
+                  tone={n.priority === 'EMERGENCY' ? 'danger' : 'warning'}
+                  dot
+                />
+              ) : null}
+              {n.isPinned ? <StatusPill label={t('notices:pinned')} tone="ink" /> : null}
+              {n.status === 'DRAFT' ? (
+                <StatusPill label={t('notices:draft')} tone="neutral" />
+              ) : null}
+            </View>
+          ) : null}
+          <Text variant="h1">{n.title}</Text>
+          <Text variant="label" tone="secondary" className="mt-1.5">
             {[n.createdBy.displayName, mediumDate(n.publishedAt ?? n.createdAt)].join(' · ')}
           </Text>
-          <Divider />
-          <Text variant="body" className="leading-6">
+          <Text variant="body" className="mt-5 leading-6">
             {n.body}
           </Text>
           {n.readCount !== null ? (
-            <Text variant="label" tone="secondary" className="mt-5">
+            <Text variant="label" tone="tertiary" className="mt-6">
               {t('notices:readBy', { count: n.readCount })}
             </Text>
           ) : null}
-        </Card>
+        </View>
       )}
       <OptionSheet
         visible={menu}
