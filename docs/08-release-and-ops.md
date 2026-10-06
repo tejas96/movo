@@ -22,7 +22,6 @@ The first server (an AMD VM.Standard.E2.1.Micro with 1 GB, used while Ampere was
 | Play identity verification, then phone verification (Play Console home) | Create the app "MOVO – Housing Society App" (`com.movo.app`), fill the store listing and App content from `apps/mobile/store/`, upload `../movo-builds/movo-v0.1.0-code1-0bbfbbe.aab` by hand to Internal testing (the first upload must be manual) |
 | First AAB accepted by Play | Add the **Play App Signing** SHA-1 to Firebase: `firebase apps:android:sha:create 1:1005160681740:android:8827a74ade5798b6f23929 <sha1> --account tejas96patil@gmail.com --project movo-society` |
 | App exists in Play | Service account for CI uploads: Google Cloud → IAM → create `movo-play-publisher`, JSON key → Play Console → Users and permissions → invite it with release rights for MOVO → `gh secret set PLAY_SERVICE_ACCOUNT_JSON < key.json` → delete the local key file |
-| User runs `apps/mobile/store/tools/set-ci-signing-secrets.sh` | `Release Android` can sign; push a `v*` tag to test |
 | Reviewer demo account (production) | Make a demo society + member on production, put the login in Play → App content → App access, and test push on a real install |
 | healthchecks.io account (postponed) | Two checks (API 5 min / 10 min grace, backup 1 day / 2 h grace), `UPTIME_HEARTBEAT_URL` and `BACKUP_HEARTBEAT_URL` in `.env.prod`, `dc up -d api backup` |
 | Closed test, 12 testers × 14 days (personal Play account) | Apply for production access in Play Console |
@@ -389,7 +388,8 @@ It checks the upload key, builds in a temporary worktree, refuses a debug-signed
 
 | versionCode | Commit | Track | Date |
 | --- | --- | --- | --- |
-| 1 | `0bbfbbe` | internal testing (pending) | 2026-10-06 |
+| 1 | `0bbfbbe` | built locally, not uploaded (first Play upload waits on verification) | 2026-10-06 |
+| 101 (v0.1.1) | tag `v0.1.1` | CI artifact; Play upload waits on the Play items in Pending | 2026-10-06 |
 
 For local tests only:
 
