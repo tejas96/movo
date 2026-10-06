@@ -302,6 +302,31 @@
    "image": "LP-L1-F102-BED-TEST.png"
   },
   {
+   "id": "LP-L2-F201-LIV-TEST",
+   "levelId": "L2",
+   "title": "TEST 201",
+   "where": "Desk test only: laptop in the living room of flat 201, near the south (balcony) wall, screen facing north, screen centre 0.46 m above the floor",
+   "physicalWidthM": 0.19,
+   "imagePx": [
+    480,
+    680
+   ],
+   "position": [
+    4000,
+    -5800,
+    6757
+   ],
+   "normal": [
+    0,
+    1,
+    0
+   ],
+   "heightAboveFloorMm": 1400,
+   "confidence": "low",
+   "status": "PLANNED_NOT_MOUNTED",
+   "image": "LP-L2-F201-LIV-TEST.png"
+  },
+  {
    "id": "LP-RF-TANK",
    "levelId": "RF",
    "title": "ROOF TANK",

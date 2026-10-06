@@ -93,8 +93,9 @@ export function FloorMapScreen(_props: Props) {
       </View>
       <ScrollView
         horizontal
+        style={{ flexGrow: 0 }}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8, alignItems: 'center' }}
       >
         {levels.map((l) => (
           <Pressable
