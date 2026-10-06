@@ -6,12 +6,10 @@ import {
   type IconName,
   IconSquare,
   PhotoCard,
-  PhotoTile,
   Press,
   photos,
   Row,
   Screen,
-  SearchBar,
   SectionHeader,
   Skeleton,
   StatusPill,
@@ -20,8 +18,16 @@ import {
 } from '@movo/design-system';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import {
+  Image,
+  type ImageSourcePropType,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useSessionStore } from '../../core/auth/session.store';
 import { useNav } from '../../core/navigation/types';
 import {
@@ -135,11 +141,19 @@ export function HomeScreen() {
               ) : null}
             </View>
           </Press>
-          <IconSquare
-            icon="bell"
-            dot={(summary.data?.unreadNotifications ?? 0) > 0}
-            onPress={() => nav.navigate('Notifications')}
-          />
+          <View className="flex-row gap-2">
+            <IconSquare
+              icon="search"
+              variant="linear"
+              onPress={() => nav.navigate('Directory')}
+              accessibilityLabel={t('common:actions.search')}
+            />
+            <IconSquare
+              icon="bell"
+              dot={(summary.data?.unreadNotifications ?? 0) > 0}
+              onPress={() => nav.navigate('Notifications')}
+            />
+          </View>
         </View>
       </Reveal>
 
@@ -153,7 +167,7 @@ export function HomeScreen() {
 
       <Reveal order={2}>
         <View className="mt-3 flex-row gap-2.5">
-          <PhotoTile
+          <HomeTile
             source={photos.notices}
             icon="notices"
             label={t('home:notices')}
@@ -161,7 +175,7 @@ export function HomeScreen() {
             count={notices.filter((n) => !n.readAt).length || undefined}
             onPress={() => nav.navigate('Notices')}
           />
-          <PhotoTile
+          <HomeTile
             source={upcoming[0]?.kind === 'MEETING' ? photos.meetings : photos.events}
             icon={upcoming[0]?.kind === 'MEETING' ? 'meetings' : 'events'}
             label={t('home:upcoming')}
@@ -179,14 +193,6 @@ export function HomeScreen() {
 
       <Reveal order={3}>
         <QuickGrid items={quick} />
-      </Reveal>
-
-      <Reveal order={4}>
-        <SearchBar
-          className="mt-5"
-          placeholder={t('home:searchPlaceholder')}
-          onPressOpen={() => nav.navigate('Directory')}
-        />
       </Reveal>
 
       {rest.length > 0 ? (
@@ -353,36 +359,118 @@ function HeroCard({
   }
 
   const danger = hero?.type === 'ACTIVE_ALERT';
+  const photo =
+    hero?.type === 'ACTIVE_ALERT'
+      ? photos.emergency
+      : hero?.type === 'DUES'
+        ? photos.money
+        : hero?.type === 'MY_DUTY'
+          ? photos.duties
+          : hero?.type === 'MY_TASK'
+            ? photos.tasks
+            : photos.society2;
   return (
-    <View style={styles.hero} className="mt-5">
-      <View className="flex-row items-center gap-2">
-        {danger ? <StatusPill label={t('emergency:status.ACTIVE')} tone="danger" dot /> : null}
-        <Text variant="label" style={styles.heroDim} numberOfLines={1} className="shrink">
-          {label}
-        </Text>
-      </View>
-      {typeof value === 'string' ? (
-        <Text variant="h2" tone="inverse" numberOfLines={2} className="mt-2">
-          {value}
-        </Text>
-      ) : (
-        <View className="mt-2">{value}</View>
-      )}
-      {caption ? (
-        <Text variant="caption" style={styles.heroDim} numberOfLines={2} className="mt-1">
-          {caption}
-        </Text>
-      ) : null}
-      {cta ? (
-        <View className="mt-4 flex-row">
-          <Button label={cta.label} variant="white" size="sm" inline onPress={cta.go} />
+    <Press
+      accessibilityRole="button"
+      onPress={cta?.go}
+      disabled={!cta}
+      className="mt-4 overflow-hidden rounded-xl bg-ink"
+      style={styles.hero}
+    >
+      <Image source={photo} resizeMode="cover" style={styles.fill} />
+      <PhotoScrim top={0.1} bottom={0.82} />
+      <View style={styles.heroBody}>
+        <View className="flex-row items-center gap-2">
+          {danger ? <StatusPill label={t('emergency:status.ACTIVE')} tone="danger" dot /> : null}
+          <Text variant="label" style={styles.heroDim} numberOfLines={1} className="shrink">
+            {label}
+          </Text>
         </View>
-      ) : null}
-    </View>
+        {typeof value === 'string' ? (
+          <Text variant="h2" tone="inverse" numberOfLines={2} className="mt-1.5">
+            {value}
+          </Text>
+        ) : (
+          <View className="mt-1.5">{value}</View>
+        )}
+        {caption ? (
+          <Text variant="caption" style={styles.heroDim} numberOfLines={2} className="mt-0.5">
+            {caption}
+          </Text>
+        ) : null}
+        {cta ? (
+          <View className="mt-4 flex-row">
+            <Button label={cta.label} variant="white" size="sm" inline onPress={cta.go} />
+          </View>
+        ) : null}
+      </View>
+    </Press>
   );
 }
 
-/** Rupees rolling from zero to the amount, once, when the card appears. */
+/** Dark gradient over a photo so white text reads: `top` and `bottom` are opacities. */
+function PhotoScrim({ top, bottom }: { top: number; bottom: number }) {
+  const id = `scrim-${top}-${bottom}`;
+  return (
+    <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
+      <Defs>
+        <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="#000" stopOpacity={top} />
+          <Stop offset="0.45" stopColor="#000" stopOpacity={(top + bottom) / 4} />
+          <Stop offset="1" stopColor="#000" stopOpacity={bottom} />
+        </LinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
+    </Svg>
+  );
+}
+
+/** Photo tile for Home: the photo fills it, a count sits top left, label and hint in white below. */
+function HomeTile({
+  source,
+  icon,
+  label,
+  hint,
+  count,
+  onPress,
+}: {
+  source: ImageSourcePropType;
+  icon: IconName;
+  label: string;
+  hint: string;
+  count?: number | undefined;
+  onPress: () => void;
+}) {
+  return (
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      className="flex-1 overflow-hidden rounded-lg bg-card"
+      style={styles.tile}
+    >
+      <Image source={source} resizeMode="cover" style={styles.fill} />
+      <PhotoScrim top={0} bottom={0.78} />
+      {count ? (
+        <View className="absolute left-3 top-3 h-6 min-w-6 items-center justify-center rounded-full bg-overlay px-2">
+          <Text variant="micro">{count > 99 ? '99+' : String(count)}</Text>
+        </View>
+      ) : null}
+      <View style={styles.tileText}>
+        <View className="flex-row items-center gap-1.5">
+          <Icon name={icon} variant="bold" size={16} color={theme.color.text.onInk} />
+          <Text variant="bodyMedium" tone="inverse" className="font-semibold" numberOfLines={1}>
+            {label}
+          </Text>
+        </View>
+        <Text variant="micro" style={styles.heroDim} numberOfLines={1} className="font-normal">
+          {hint}
+        </Text>
+      </View>
+    </Press>
+  );
+}
+
 function CountUp({ paise }: { paise: number }) {
   const [shown, setShown] = useState(0);
   const done = useRef(false);
@@ -437,9 +525,11 @@ function QuickGrid({
             <Icon name={q.icon} variant="bold" size={24} />
             {q.dot ? <View style={styles.dot} /> : null}
           </View>
-          <Text variant="micro" center numberOfLines={2} className="font-medium">
-            {q.label}
-          </Text>
+          <View style={styles.quickLabel}>
+            <Text variant="micro" center numberOfLines={2} className="font-medium">
+              {q.label}
+            </Text>
+          </View>
         </Press>
       ))}
     </View>
@@ -447,8 +537,21 @@ function QuickGrid({
 }
 
 const styles = StyleSheet.create({
-  hero: { backgroundColor: theme.color.bg.ink, borderRadius: theme.radius.xl, padding: 20 },
-  heroDim: { color: 'rgba(255, 255, 255, 0.62)' },
+  hero: { minHeight: 216 },
+  heroBody: { flex: 1, justifyContent: 'flex-end', padding: 20 },
+  heroDim: { color: 'rgba(255, 255, 255, 0.72)' },
+  fill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  tile: { height: 132 },
+  tileText: { position: 'absolute', left: 12, right: 12, bottom: 12, gap: 1 },
+  quickLabel: { height: 32 },
   amount: { fontVariant: ['tabular-nums'] },
   dot: {
     position: 'absolute',
