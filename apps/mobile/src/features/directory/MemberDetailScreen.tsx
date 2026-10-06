@@ -6,6 +6,7 @@ import {
   CircleButton,
   Divider,
   Pill,
+  photos,
   Row,
   Screen,
   Sheet,
@@ -19,7 +20,7 @@ import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Linking, View } from 'react-native';
+import { Alert, Image, Linking, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
@@ -110,9 +111,18 @@ export function MemberDetailScreen() {
         </View>
       ) : (
         <>
-          <View className="mt-6 items-center">
-            <Avatar name={m.displayName} uri={m.avatarUrl} size={64} tone="gray" />
-            <Text variant="h2" className="mt-3">
+          <View className="mt-4 h-[120px] overflow-hidden rounded-xl bg-card">
+            <Image
+              source={photos.directory}
+              resizeMode="cover"
+              style={{ width: '100%', height: '100%' }}
+            />
+          </View>
+          <View className="-mt-8 items-center">
+            <View className="rounded-full bg-canvas p-[3px]">
+              <Avatar name={m.displayName} uri={m.avatarUrl} size={64} tone="gray" />
+            </View>
+            <Text variant="h2" className="mt-2">
               {m.displayName}
             </Text>
             <View className="mt-2 flex-row flex-wrap justify-center gap-2">
