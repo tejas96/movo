@@ -43,3 +43,6 @@ infra/backups/
 
 # uploaded files (FILES_DIR)
 apps/api/data/
+
+# Private notes and credentials (MOVO-VAULT.md). Never commit, never copy into an image.
+.private/

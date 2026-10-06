@@ -15,6 +15,7 @@
 google-services.json
 GoogleService-Info.plist
 firebase-service-account*.json
+.private
 
 # Installed and built output. pnpm install runs inside the image.
 node_modules
