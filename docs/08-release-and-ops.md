@@ -320,18 +320,18 @@ Sentry is not wired in yet. API logs: `dc logs api` (rotated at 5 × 10 MB per c
 
 Play App Signing keeps the real app signing key. You keep an **upload key**. Make it outside the repo and back it up (password manager plus one offline copy). Losing it means asking Google to reset it.
 
+Made on 2026-10-06: `~/keys/movo-upload.jks`, alias `movo-upload`, RSA 4096, SHA-1 `7D:C6:69:07:22:83:45:9F:04:B8:AA:94:F1:80:4E:9D:87:9D:AD:98` (added to Firebase). To make one on a new machine or after a reset:
+
 ```bash
-mkdir -p ~/keys
-keytool -genkeypair -v -storetype PKCS12 -keystore ~/keys/movo-upload.keystore \
-  -alias movo-upload -keyalg RSA -keysize 2048 -validity 10000
+apps/mobile/store/tools/make-upload-key.sh
 ```
 
-Add to `~/.gradle/gradle.properties` (never to the repo):
+It asks for the password (hidden, twice), creates the keystore, writes the four lines below to `~/.gradle/gradle.properties` (mode 600, never the repo) and prints the SHA-1. It refuses to overwrite an existing key.
 
 ```properties
-MOVO_UPLOAD_STORE_FILE=/Users/<you>/keys/movo-upload.keystore
-MOVO_UPLOAD_STORE_PASSWORD=...
+MOVO_UPLOAD_STORE_FILE=/Users/<you>/keys/movo-upload.jks
 MOVO_UPLOAD_KEY_ALIAS=movo-upload
+MOVO_UPLOAD_STORE_PASSWORD=...
 MOVO_UPLOAD_KEY_PASSWORD=...
 ```
 
@@ -381,7 +381,7 @@ The code is ready and runs without Firebase: with no `google-services.json` the 
      ```
    - Register app → **Download google-services.json** → put it at `apps/mobile/android/app/google-services.json`. Skip the console's "add the SDK" steps; Gradle is already set up (`com.google.gms.google-services` 4.5.0, applied only when that file exists).
 3. Add the other SHA-1s afterwards (Project settings → General → Your apps → MOVO Android → **Add fingerprint**):
-   - Upload key: `keytool -list -v -keystore ~/keys/movo-upload.keystore -alias movo-upload | grep SHA1` (asks for the store password).
+   - Upload key: `keytool -list -v -keystore ~/keys/movo-upload.jks -alias movo-upload | grep SHA1` (asks for the store password).
    - Play App Signing key, once the first AAB is uploaded: Play Console → Test and release → Setup → **App signing** → "App signing key certificate" → SHA-1.
    A new fingerprint does not change `google-services.json`, so no rebuild is needed for push.
 4. Commit `google-services.json`. It is app configuration, not a secret (its API key only identifies the Firebase project). If GitHub's secret scanning flags it, close the alert as "used in tests / false positive", and optionally restrict that key in Google Cloud console → APIs & Services → Credentials to Android apps with package `com.movo.app` and the SHA-1s above.
