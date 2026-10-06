@@ -2,6 +2,21 @@
 
 How MOVO goes live and stays up, for ₹0 a month. Production is one **Oracle Cloud "Always Free" ARM VM in Mumbai** (`ap-mumbai-1`) running `infra/docker-compose.prod.yml` (api + postgres + caddy + backup). Fly.io was considered on 2026-09-27 and dropped for cost (see [00-decisions-needed.md](00-decisions-needed.md), decision 2). Everything in the repo works without the accounts below; each piece switches on when its account or secret exists.
 
+**Live setup (2026-10-06)**
+
+| What | Value |
+| --- | --- |
+| Tenancy | BeyondNyx, home region Mumbai, Pay As You Go (billed in SGD: the contract is with Oracle Singapore). Budget `movo-zero-spend`: SG$1 a month, email at 1 % actual spend |
+| VM | `movo-arm`, Ampere VM.Standard.A1.Flex **2 OCPU / 2 GB**, 50 GB boot volume, Ubuntu 24.04 aarch64, 2 GB swap, public IP `92.4.70.154` (ephemeral) |
+| Name | `https://movo-society.duckdns.org` (also `92-4-70-154.sslip.io`, same server). The app's release build uses the DuckDNS name |
+| Deploy | GitHub secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`; repo variable `DEPLOY_ARCHES=arm64` |
+| Backups off-site | Object Storage bucket `movo-backups` (namespace `bmyygakxjg10`), customer secret key `movo-backup-2` |
+| Not set up yet | healthchecks.io (`UPTIME_HEARTBEAT_URL`, `BACKUP_HEARTBEAT_URL`), Resend |
+
+The first server (an AMD VM.Standard.E2.1.Micro with 1 GB, used while Ampere was out of capacity) was retired on 2026-10-06 after the data moved with `pg_dump | pg_restore` (section 3, "Moving to a new VM").
+
+If the server IP changes (new VM, terminate and recreate): log in at duckdns.org, type the new IP in the `movo-society` row, **update ip**, then `dc restart caddy` on the new VM so it fetches the certificate at once. Update the `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` secrets too. No app build is needed.
+
 | Piece | Where |
 | --- | --- |
 | API image | `apps/api/Dockerfile` (multi-arch; runs `prisma migrate deploy`, then the API as `node`) |
@@ -45,7 +60,7 @@ On a free-tier-only account Oracle reclaims Always Free compute instances that s
 
 1. Console → ☰ → Billing & Cost Management → **Upgrade and Manage Payment** → Upgrade to Pay As You Go → confirm the card. It takes minutes to a day; wait for the email.
 2. Guard rail: Billing & Cost Management → **Budgets** → Create budget: target the root compartment, amount ₹100 per month, alert rule at 1 % of actual spend to your email. Any charge means something outside Always Free was created.
-3. Create only what this runbook lists. Everything below is inside Always Free: Ampere A1 up to 4 OCPU / 24 GB total, block volumes up to 200 GB total, Object Storage 20 GB, 10 TB outbound traffic a month.
+3. Create only what this runbook lists. Everything below is inside Always Free: Ampere A1 up to 4 OCPU / 24 GB total, block volumes up to 200 GB total, Object Storage 10 GB (plus 10 GB Archive), 10 TB outbound traffic a month.
 
 ### 2.3 SSH key (on your Mac)
 
@@ -60,10 +75,10 @@ cat ~/.ssh/movo_oracle.pub                                       # paste this in
 2. Name `movo`. Placement: Mumbai has one availability domain (AD-1); leave the fault domain on "Let Oracle choose".
 3. Image and shape:
    - Image → Change image → **Canonical Ubuntu 24.04** (the plain one, not "Minimal"); the aarch64 build is picked automatically for Ampere.
-   - Shape → Change shape → Ampere → **VM.Standard.A1.Flex**, **2 OCPU, 12 GB** memory. Plenty for MOVO; up to 4 OCPU / 24 GB is still free. Burstable off.
+   - Shape → Change shape → Ampere → **VM.Standard.A1.Flex**, **2 OCPU, 2 GB** memory (what runs today: the stack uses about 300 MB). Up to 4 OCPU / 24 GB is still free, so raise memory later with Instance → Edit → shape if needed. Burstable off.
 4. Networking: **Create new virtual cloud network** and **Create new public subnet** (the wizard makes the VCN, internet gateway, route table and a default security list), **Assign a public IPv4 address**: yes.
 5. SSH keys: **Paste public keys** → the `movo_oracle.pub` line.
-6. Boot volume: **Specify a custom boot volume size → 100 GB** (free up to 200 GB total). Leave encryption on the Oracle-managed key.
+6. Boot volume: the default 50 GB is plenty (free up to 200 GB total across all boot and block volumes). The cost estimate in the wizard shows a list price for the boot volume (about $3 a month); it ignores the free tier, the real charge is 0. Leave encryption on the Oracle-managed key.
 7. Create. When it is Running, note the **Public IP** on the instance page. The ephemeral IP stays with the instance across stop and start; it is only released if the instance is terminated.
 
 **"Out of host capacity"**: Ampere capacity in Mumbai runs out at times. Retry the same Create a few hours later (early morning IST works best), try a specific fault domain instead of "Let Oracle choose", or create with 1 OCPU / 6 GB and resize later (Instance → Edit → shape). Pay As You Go accounts get capacity more easily than free-tier ones, which is another reason to do step 2.2 first.
@@ -99,7 +114,13 @@ sudo dpkg-reconfigure -plow unattended-upgrades     # answer Yes: security updat
 sudo reboot                                         # if /var/run/reboot-required exists
 ```
 
-No swap is needed with 12 GB of memory.
+Swap (2 GB), so a memory spike slows the VM instead of killing a container:
+
+```bash
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-movo.conf && sudo sysctl --system
+```
 
 ### 2.7 Docker Engine and the compose plugin (Docker's apt repo)
 
@@ -175,11 +196,11 @@ Layout on the VM: `/opt/movo/{docker-compose.prod.yml, Caddyfile, .env.prod, bac
    | `DEPLOY_USER` | `ubuntu` |
    | `DEPLOY_SSH_KEY` | contents of `~/.ssh/movo_deploy` (the private key) |
    | `DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan <public-ip>` (recommended; without it the host key is trusted on first use) |
-   | `GHCR_PULL_TOKEN` | only if the GHCR package stays private: a classic token with `read:packages` |
+   | `GHCR_PULL_TOKEN` | optional: by default the VM logs in to GHCR with the run's own token for the pull and logs out after, so the package may be private or public |
 
-   Optional variables: `DEPLOY_PATH` (default `/opt/movo`), `DEPLOY_PORT` secret (default 22), `ARM_RUNNER` (default `ubuntu-24.04-arm`, free for public repos; on a private repo set `ubuntu-latest` and arm64 is built under QEMU, slower).
-2. Actions → **Deploy** → Run workflow. It builds the image for **linux/arm64** (the Ampere VM) and linux/amd64 on native runners, pushes `ghcr.io/tejas96/movo-api:<sha>` and `:latest`, copies the compose files and backup scripts to the VM, runs `docker compose pull`, `docker compose up -d`, and waits for the API to report healthy. Without the secrets every job is skipped. After this, every push to `main` that passes CI deploys by itself.
-3. First image only: GitHub → your profile → Packages → `movo-api` → Package settings → change visibility to **Public** (the image holds no secrets), or set `GHCR_PULL_TOKEN`, then run Deploy again.
+   Optional variables: `DEPLOY_ARCHES` (image platforms: default `amd64`; set `arm64` for the Ampere VM, `amd64 arm64` during a move between the two), `DEPLOY_PATH` (default `/opt/movo`), `DEPLOY_PORT` secret (default 22), `ARM_RUNNER` (default `ubuntu-24.04-arm`, free for public repos; on a private repo set `ubuntu-latest` and arm64 is built under QEMU, slower).
+2. Actions → **Deploy** → Run workflow. It builds the image for the platforms in `DEPLOY_ARCHES` on native runners, pushes `ghcr.io/tejas96/movo-api:<sha>` and `:latest`, copies the compose files and backup scripts to the VM, runs `docker compose pull`, `docker compose up -d`, and waits for the API to report healthy. Without the secrets every job is skipped. After this, every push to `main` that passes CI deploys by itself.
+3. The `movo-api` package on GHCR is public today (the image holds no secrets); anyone can pull it, which also makes a manual `dc pull` on the VM work without a login.
 4. Caddy fetches the certificate on the first request; watch `dc logs caddy` for `certificate obtained successfully`.
 5. Create the platform admin (reads `PLATFORM_ADMIN_EMAIL` / `PLATFORM_ADMIN_PASSWORD` from `.env.prod`). The seed is built to `/app/dist/cli/seed.js` in the image and the container's working directory is `/app`:
    ```bash
@@ -196,6 +217,15 @@ Migrations run when the api container starts (`prisma migrate deploy`, then the 
 
 Without GitHub Actions you can build and run on the VM directly (it is ARM, so the native build is arm64): `git clone` the repo, `docker build -f apps/api/Dockerfile -t movo-api .`, set `API_IMAGE=movo-api` in `.env.prod`, then `dc up -d`.
 
+Moving to a new VM (done once, AMD → Ampere, 2026-10-06): set up the new VM (2.4–2.8), copy the compose files and `.env.prod` (`ssh old 'cat /opt/movo/.env.prod' | ssh new 'umask 077; cat > /opt/movo/.env.prod'`), set `API_DOMAIN` for the new IP, `dc pull` and start `postgres`. Then `dc stop api backup` on the old VM and stream the data across:
+
+```bash
+ssh old "cd /opt/movo && dc exec -T postgres sh -c 'pg_dump -U \$POSTGRES_USER -d \$POSTGRES_DB -Fc'" \
+  | ssh new "cd /opt/movo && dc exec -T postgres sh -c 'pg_restore -U \$POSTGRES_USER -d \$POSTGRES_DB --no-owner --exit-on-error'"
+```
+
+Copy the `movo_files` volume the same way (`tar` through a throwaway container), compare row counts (the query in `restore.sh`), `dc up -d` on the new VM, test it on its sslip.io name, then move DuckDNS and the deploy secrets (top of this file).
+
 Rollback: set `API_IMAGE=ghcr.io/tejas96/movo-api:<older-sha>` in `.env.prod` and `dc up -d api`. Migrations only move forward, so roll back only to an image that knows the current schema.
 
 ## 4. Backups
@@ -211,11 +241,11 @@ The `backup` container runs `backup.sh` every day at **02:30 IST**:
 
 Run one now: `dc exec backup backup.sh`.
 
-### Off-site: Oracle Object Storage (recommended, Always Free 20 GB, stays in Mumbai)
+### Off-site: Oracle Object Storage (recommended, Always Free 10 GB Standard, stays in Mumbai)
 
 1. Namespace: Console → Profile → **Tenancy: <name>** → Object storage namespace (a short random string).
 2. Bucket: ☰ → Storage → Buckets → compartment **root** (the S3 endpoint creates and finds buckets there by default) → Create bucket `movo-backups`, Standard tier, no public access.
-3. Keys: Profile → My profile → **Customer secret keys** → Generate secret key, name `movo-backup`. Copy the secret now (shown once); the **Access key** is shown in the list.
+3. Keys: Profile → My profile → **Customer secret keys** → Generate secret key, name `movo-backup`. Copy the secret now (shown once); the **Access key** is the 40-character ID in the list (two different values). A new key can answer 403 for a minute or two before it works everywhere. If a secret is ever pasted where others can see it, generate a new key, put it in `.env.prod`, `dc up -d backup`, run a backup, then delete the old key.
 4. In `/opt/movo/.env.prod`:
    ```
    RCLONE_REMOTE=offsite:movo-backups
@@ -438,15 +468,15 @@ App
 Monthly
 - [ ] Restore drill (section 4)
 - [ ] `dc pull && dc up -d` for new Postgres and Caddy patch images; `ls /var/run/reboot-required` and reboot at a quiet hour if it exists (security updates install by themselves)
-- [ ] Disk: `df -h /` and `du -sh /opt/movo/backups`; Object Storage bucket size under 20 GB
+- [ ] Disk: `df -h /` and `du -sh /opt/movo/backups`; Object Storage bucket size under 10 GB
 - [ ] Billing: Cost Analysis shows ₹0
 
 ## 9. Cost
 
 | Item | Monthly |
 | --- | --- |
-| Ampere A1 VM, 2 OCPU / 12 GB, 100 GB boot volume (Always Free) | ₹0 |
-| Object Storage, a few hundred MB of dumps and photos (Always Free 20 GB) | ₹0 |
+| Ampere A1 VM, 2 OCPU / 2 GB, 50 GB boot volume (Always Free) | ₹0 |
+| Object Storage, a few hundred MB of dumps and photos (Always Free 10 GB) | ₹0 |
 | Outbound traffic (Always Free 10 TB) | ₹0 |
 | DuckDNS, Let's Encrypt, healthchecks.io, GitHub Actions and GHCR (public), Firebase Spark, Resend free | ₹0 |
 | **Total** | **₹0** (Play Console $25 once; a bought domain about ₹800–1,000 a year, optional) |
