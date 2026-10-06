@@ -353,10 +353,24 @@ The build stops if a release signed with the upload key would not use `https://`
 ### Version
 
 - `versionName` comes from `version` in `apps/mobile/package.json` (override with `MOVO_VERSION_NAME`).
-- `versionCode` comes from `MOVO_VERSION_CODE` (default 1). Play needs a higher number for every upload: `MOVO_VERSION_CODE=2 pnpm --filter @movo/mobile android:bundle`, or keep the current number in `~/.gradle/gradle.properties`.
+- `versionCode` comes from `MOVO_VERSION_CODE` (default 1). Play needs a higher number for every upload: `apps/mobile/store/tools/build-release.sh 2`; record each upload in the table under Build.
 - Also bump `APP_VERSION` in `apps/mobile/src/core/env.ts` and, when an old app must update, `MIN_SUPPORTED_APP_VERSION` / `LATEST_APP_VERSION` in `.env.prod` (then `dc up -d api`).
 
 ### Build
+
+Uploads to Play are built with one command, from a clean checkout of `origin/main` (the working folder can hold another session's unsaved work, which must never ship):
+
+```bash
+apps/mobile/store/tools/build-release.sh <versionCode>   # e.g. 2 for the second upload
+```
+
+It checks the upload key, builds in a temporary worktree, refuses a debug-signed result, and saves `../movo-builds/movo-v<version>-code<N>-<sha>.aab` with a `.sha256` next to it. Uploads so far:
+
+| versionCode | Commit | Track | Date |
+| --- | --- | --- | --- |
+| 1 | `0bbfbbe` | internal testing (pending) | 2026-10-06 |
+
+For local tests only:
 
 ```bash
 pnpm --filter @movo/mobile android:bundle        # AAB for Play: android/app/build/outputs/bundle/release/app-release.aab
