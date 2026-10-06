@@ -10,7 +10,7 @@ import {
   Text,
   useToast,
 } from '@movo/design-system';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
@@ -49,15 +49,15 @@ export function JoinScreen() {
     setError(null);
   };
 
-  const reject = (message: string) => {
+  const reject = useCallback((message: string) => {
     setError(message);
     setShake((n) => n + 1);
-  };
+  }, []);
 
   // A society code that does not match: shake, explain, let them retype.
   useEffect(() => {
     if (mode === 'society' && complete && preview.isError) reject(toMessage(preview.error));
-  }, [mode, complete, preview.isError, preview.error, toMessage]);
+  }, [mode, complete, preview.isError, preview.error, toMessage, reject]);
 
   // Takes the code as an argument: the last typed box submits before the state has updated.
   const joinWithInvite = async (value: string) => {
