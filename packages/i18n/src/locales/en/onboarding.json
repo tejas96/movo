@@ -19,5 +19,25 @@
   "joined": "Welcome to {{society}}",
   "profileTitle": "Almost done",
   "profileBody": "Check your name and pick your language.",
-  "noFlatsYet": "This society has not added flats yet. Ask your admin to set them up."
+  "noFlatsYet": "This society has not added flats yet. Ask your admin to set them up.",
+  "inviteTitle": "Enter your invite code",
+  "inviteBody": "It is in the message from your committee.",
+  "societyTitle": "Enter the society code",
+  "societyBody": "Ask a neighbour or your committee for it.",
+  "codeFound": "Code found",
+  "join": "Join",
+  "pickFlatCta": "Continue to pick your flat",
+  "flatsCount_one": "{{count}} flat",
+  "flatsCount_other": "{{count}} flats",
+  "noInviteCode": "No invite code? Switch to Society code to request access.",
+  "noSocietyCode": "The society code is 6 characters. Your committee can share it.",
+  "pendingHeadline": "Almost in",
+  "pendingRequested": "Flat {{flat}} · requested {{when}}",
+  "steps": {
+    "sent": "Request sent",
+    "review": "Committee reviews",
+    "reviewHint": "Usually within a day. We will send a notification.",
+    "in": "You are in",
+    "inHint": "Notices, dues and the directory unlock."
+  }
 }
