@@ -27,6 +27,7 @@ p,nrm=col_face('C25','N'); PLATES.append(dict(id="LP-L0-C25",levelId="L0",label=
 PLATES.append(dict(id="LP-L6-TERRACE",levelId="L6",label="6",title="TERRACE",where="Sixth floor: lobby wall beside the door to the north terrace",position=[-3000,4400,1400],normal=[0,-1,0],conf="low"))
 PLATES.append(dict(id="LP-L0-GATE",levelId="L0",label="G",title="GATE",where="South gate (west one): pillar face towards the plot",position=[-2200,-9200,1400],normal=[0,1,0],conf="low"))
 PLATES.append(dict(id="LP-L1-F102-BED-TEST",levelId="L1",label="102",title="TEST 102",where="Desk test only: monitor against the south wall of the second bedroom of flat 102, screen centre 1.1 m up, facing north into the room",position=[-11080,-2420,1100],normal=[0,1,0],conf="low"))
+PLATES.append(dict(id="LP-L2-F201-LIV-TEST",levelId="L2",label="201",title="TEST 201",where="Desk test only: laptop in the living room of flat 201, near the south (balcony) wall, screen facing north, screen centre 0.46 m above the floor",position=[4000,-5800,457],normal=[0,1,0],conf="low"))
 PLATES.append(dict(id="LP-RF-TANK",levelId="RF",label="R",title="ROOF TANK",where="Roof, near the overhead tank: position UNKNOWN until a photo or visit",position=None,normal=None,conf="none"))
 W,H=480,680; PHYS_W_M=0.190
 def font(size):

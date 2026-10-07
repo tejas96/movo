@@ -7,7 +7,7 @@
 <style>
   :root{--bg:#f4f4f6;--panel:#ffffff;--ink:#1a1a1a;--muted:#666;--accent:#2f5fd0;--line:#ddd}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 -apple-system,Segoe UI,Roboto,sans-serif}
-  #c{position:fixed;inset:0;display:block}
+  #c{position:fixed;inset:0;display:block;width:100%;height:100%}
   #ui{position:fixed;left:12px;top:12px;width:280px;max-height:calc(100% - 24px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
   #info{position:fixed;right:12px;top:12px;width:300px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
   h1{font-size:15px;margin:0 0 8px}h2{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:12px 0 4px}
@@ -23,6 +23,7 @@
 <div id="ui">
   <h1>Laxmi-Pushp 3D check</h1>
   <div style="color:var(--muted);font-size:12px">Origin: lift shaft SW corner. Metres. Heights are assumed (3.0 m, GF 3.3 m).</div>
+  <div class="row"><button id="fit">center view</button></div>
   <h2>Levels</h2><div id="levels"></div>
   <h2>Explode <span id="explv" style="color:var(--muted)">0 m</span></h2>
   <input id="explode" type="range" min="0" max="8" step="0.5" value="0" style="width:100%">
@@ -67,7 +68,7 @@ new GLTFLoader().parse(bin.buffer,'',gltf=>{
     if(u.kind==='zone'){o.material.transparent=true;o.material.opacity=0.5;}
     meshes.push(o); byLevel[u.levelId].push(o);} });
   Object.keys(byLevel).forEach(id=>byLevel[id].forEach(o=>levelGroups[id].add(o)));
-  applyToggles(); drawNav();
+  applyToggles(); drawNav(); fitView();
 });
 // toggles
 const T={wall:'t_wall',column:'t_column',door:'t_door',zone:'t_zone'};
@@ -117,7 +118,18 @@ canvas.addEventListener('pointerup',ev=>{ if(!canvas._down||Math.hypot(ev.client
   if(!h){box.textContent='Nothing there.'; return;} const u=h.object.userData;
   box.innerHTML=`<div><b>${u.name||''}</b></div><div><code>${u.code}</code></div><div>${u.kind} / ${u.subtype} on <b>${u.levelId}</b></div>`+(u.areaM2?`<div>area ${u.areaM2} m²${u.reraCarpetM2?' (RERA '+u.reraCarpetM2+' m²)':''}</div>`:'')+(u.widthMm?`<div>width ${u.widthMm} mm</div>`:'')+`<div>confidence: ${u.confidence||'n/a'}</div>`+(u.note?`<div style="color:var(--muted)">${u.note}</div>`:'')+(u.door?`<div style="color:var(--muted)">door on ${u.door.face} face, ${u.door.widthMm} mm</div>`:'');
 });
-function resize(){const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();}
+// keep the model centred in the free area right of the panel, and fit it on screen
+function panelShift(){ const ui=document.getElementById('ui'); const r=ui.getBoundingClientRect(); return innerWidth>700 ? r.right/2 : 0; }
+function resize(){const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h;
+  const dx=panelShift(); if(dx) camera.setViewOffset(w,h,-dx,0,w,h); else camera.clearViewOffset(); camera.updateProjectionMatrix();}
+function fitView(){ scene.updateMatrixWorld(true); const box=new THREE.Box3(); Object.values(levelGroups).forEach(g=>{ if(g.visible) box.expandByObject(g); }); if(box.isEmpty()) return;
+  const c=box.getCenter(new THREE.Vector3()), r=box.getBoundingSphere(new THREE.Sphere()).radius;
+  const free=(innerWidth-2*panelShift())/innerWidth; const fov=THREE.MathUtils.degToRad(camera.fov);
+  const hfov=2*Math.atan(Math.tan(fov/2)*camera.aspect*free); const d=1.0*r/Math.sin(Math.min(fov,hfov)/2);
+  const dir=new THREE.Vector3(-0.15,-1,0.75).normalize(); controls.target.copy(c); camera.position.copy(c).addScaledVector(dir,d);
+  camera.near=d/100; camera.far=d*10; camera.updateProjectionMatrix(); controls.update(); }
+document.getElementById('fit').addEventListener('click',fitView);
+addEventListener('keydown',e=>{ if(e.key==='f'&&e.target.tagName!=='INPUT') fitView(); });
 addEventListener('resize',resize); resize();
 renderer.setAnimationLoop(()=>{controls.update(); renderer.render(scene,camera);});
 </script>
