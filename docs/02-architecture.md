@@ -184,11 +184,17 @@ Each job takes a Postgres advisory lock named after the job. A second API instan
 
 ### 4.8 Files
 
-As built (M10): photos live on the server's own disk (`FILES_DIR`, a Docker volume in production). ₹0 and no extra account. R2 or any S3 can replace the disk later behind `FilesService`.
+Photos: market listings (up to 5), profile photo, society photo, expense bill photos (up to 5), payment proof (up to 2) and task photos (up to 3).
 
-Upload: the app resizes on the phone (1600 px, JPEG 80) and sends `POST /v1/societies/:id/files` as multipart (`file`). The API checks the first bytes (JPEG, PNG or WebP only, 5 MB at most), stores `<societyId>/<uuid>.<ext>` and returns `{id, url}`.
-Download: `url` is a signed path `/v1/files/<id>?e=<expiry>&s=<hmac>`, valid until the end of the next hour, so an `<Image>` loads it without a login header and the same url stays stable for caching. Anything wrong or expired is a plain 404.
-A file becomes "attached" when a listing uses it. Unattached uploads older than a day are removed nightly at 03:15 IST. Photos taken off a listing are deleted at once.
+Storage sits behind `FileStore` (`apps/api/src/modules/files/file-store.ts`), picked by `STORAGE_DRIVER`:
+
+- `disk`: `FILES_DIR` (tests, CI, and production before the bucket).
+- `s3`: any S3-compatible bucket through `@aws-sdk/client-s3`. Locally the shared rustfs container `heliogrid-object-store-local` (bucket `movo-local`); in production a private Oracle Object Storage bucket `movo-files` in Mumbai. Nothing goes to AWS; the endpoint decides where bytes go.
+
+Upload: the app takes a photo with the camera or picks from the gallery (`src/core/photos`), shrinks it on the phone (1600 px, 512 px for a profile photo; JPEG 80) and sends it as multipart (`file`) to `POST /v1/societies/:id/files?kind=<UploadKind>` or, for the profile photo, `POST /v1/me/avatar`. The API checks the first bytes (JPEG, PNG or WebP only, 5 MB at most), stores `<societyId>/<uuid>.<ext>` (or `avatars/<uuid>.<ext>`) and returns `{id, url}`.
+Attach: the form sends the ids (`imageIds`, `receiptIds`, `proofIds`, `logoFileId`). The API accepts only unused uploads of the right kind by the same member in the same society, then links them (`StoredFile.expenseId` / `paymentId` / `taskId`, `Society.logoFileId`, `User.avatarFileId`, `ListingImage`).
+Download: `url` is a signed path `/v1/files/<id>?e=<expiry>&s=<hmac>`. It stays the same for a whole UTC day and works until the end of the next one, so `<Image>` loads it without a login header and the phone caches it for a day (fewer bucket reads). The phone never talks to the bucket. Anything wrong or expired is a plain 404.
+Cleanup: unattached uploads older than a day are removed nightly at 03:15 IST. Photos taken off something, a replaced profile or society photo, the photos of a removed expense, and the profile photo of a deleted account are deleted at once.
 
 ### 4.9 Audit
 
@@ -382,7 +388,7 @@ Firebase provisioning: step by step in `docs/08-release-and-ops.md`, section 6, 
 | --- | --- | --- |
 | Compute | one Oracle Cloud Always Free Ampere A1 VM (`VM.Standard.A1.Flex`, 2 OCPU / 12 GB, Ubuntu 24.04 aarch64) in Mumbai (`ap-mumbai-1`); account upgraded to Pay As You Go so the idle free VM is not reclaimed | ₹0 |
 | Database | PostgreSQL 17 in Docker on the same VM, no public port | ₹0 |
-| Uploaded photos | `files` Docker volume on the VM (`FILES_DIR=/data/files`) | ₹0 |
+| Uploaded photos | private Oracle Object Storage bucket `movo-files` (`STORAGE_DRIVER=s3`); before the switch, the `files` Docker volume | ₹0 |
 | Backups | nightly `pg_dump` + photo mirror on the VM, 14 daily + 6 monthly kept, off-site copy with rclone to Oracle Object Storage (Always Free 20 GB) or Cloudflare R2, monthly restore drill | ₹0 |
 | TLS and proxy | Caddy with Let's Encrypt | ₹0 |
 | Domain | free DuckDNS subdomain first; a bought domain later | ₹0 (about ₹100 per month equivalent if bought) |

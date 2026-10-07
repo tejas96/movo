@@ -66,7 +66,8 @@
     "reverseTitle": "Reverse this payment?",
     "reverseHint": "Use this only for a payment entered by mistake. The flat is told.",
     "reversedToast": "Payment reversed",
-    "shareText": "{{society}}\nReceipt {{no}}\nFlat {{flat}}\n{{amount}} paid on {{date}} by {{method}}"
+    "shareText": "{{society}}\nReceipt {{no}}\nFlat {{flat}}\n{{amount}} paid on {{date}} by {{method}}",
+    "proofs": "Proof of payment"
   },
   "collection": {
     "title": "Collection",
@@ -110,7 +111,9 @@
     "saved": "Payment recorded. The flat has been told.",
     "owes": "Owes {{amount}}",
     "nothingDue": "Nothing due",
-    "advanceHint": "This is more than the dues. The rest is kept as advance."
+    "advanceHint": "This is more than the dues. The rest is kept as advance.",
+    "proofs": "Proof of payment",
+    "proofsHelp": "Up to 2. A cheque photo or a UPI screenshot."
   },
   "plan": {
     "title": "Billing plans",

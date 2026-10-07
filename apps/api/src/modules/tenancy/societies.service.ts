@@ -19,6 +19,7 @@ import { readableCode } from '../../common/util/codes';
 import type { Prisma, Society } from '../../generated/prisma/client';
 import { defaultEmergencyContactRows } from '../emergency/emergency.service';
 import { defaultExpenseCategoryRows } from '../expenses/expenses.service';
+import { FilesService } from '../files/files.service';
 import { PasswordService } from '../identity/password.service';
 import { UsersService } from '../identity/users.service';
 import { defaultVendorCategoryRows } from '../vendors/vendors.service';
@@ -51,6 +52,7 @@ function profileFields(s: Society) {
     defaultLocale: s.defaultLocale,
     fyStartMonth: s.fyStartMonth,
     settings: s.settings,
+    logoFileId: s.logoFileId,
   };
 }
 
@@ -63,6 +65,7 @@ export class SocietiesService {
     private readonly passwords: PasswordService,
     private readonly audit: AuditService,
     private readonly context: ContextService,
+    private readonly files: FilesService,
   ) {}
 
   private async uniqueSlug(base: string): Promise<string> {
@@ -224,7 +227,15 @@ export class SocietiesService {
         })
       : currentSettings;
     const joinCode = body.rotateJoinCode ? await this.uniqueJoinCode() : undefined;
+    const logoChanged = body.logoFileId !== undefined && body.logoFileId !== before.logoFileId;
+    if (logoChanged && body.logoFileId)
+      await this.files.claim(ctx, [body.logoFileId], 'SOCIETY_LOGO');
     const society = await this.prisma.$transaction(async (tx) => {
+      if (logoChanged && body.logoFileId)
+        await tx.storedFile.update({
+          where: { id: body.logoFileId },
+          data: { attachedAt: new Date() },
+        });
       const updated = await tx.society.update({
         where: { id: ctx.societyId },
         data: {
@@ -236,6 +247,7 @@ export class SocietiesService {
           ...(body.defaultLocale !== undefined ? { defaultLocale: body.defaultLocale } : {}),
           ...(body.fyStartMonth !== undefined ? { fyStartMonth: body.fyStartMonth } : {}),
           ...(joinCode ? { joinCode } : {}),
+          ...(logoChanged ? { logoFileId: body.logoFileId } : {}),
           settings: nextSettings as Prisma.InputJsonValue,
         },
         include: {
@@ -256,6 +268,7 @@ export class SocietiesService {
       );
       return updated;
     });
+    if (logoChanged && before.logoFileId) await this.files.remove([before.logoFileId]);
     this.context.invalidateSociety(ctx.societyId);
     return this.toProfile(society, society._count, true);
   }

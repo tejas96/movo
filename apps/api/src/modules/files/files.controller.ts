@@ -1,7 +1,8 @@
-import { FILE_MAX_BYTES, filesContract } from '@movo/contracts';
+import { FILE_MAX_BYTES, filesContract, UploadKindSchema } from '@movo/contracts';
 import { Controller, Get, Param, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
+import { ApiException } from '../../common/errors/api.exception';
 import { Route } from '../../common/route/route.decorator';
 import { FilesService, type UploadedBlob } from './files.service';
 
@@ -11,8 +12,10 @@ export class FilesController {
 
   @Route(filesContract.upload)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: FILE_MAX_BYTES, files: 1 } }))
-  upload(@UploadedFile() file: UploadedBlob | undefined) {
-    return this.files.upload(file);
+  upload(@UploadedFile() file: UploadedBlob | undefined, @Query('kind') kind?: string) {
+    const parsed = UploadKindSchema.default('LISTING_IMAGE').safeParse(kind);
+    if (!parsed.success) throw ApiException.badRequest('VALIDATION_FAILED', 'Unknown photo kind');
+    return this.files.upload(file, parsed.data);
   }
 
   /** Public on purpose: the signature in the url is the permission. */
@@ -29,7 +32,8 @@ export class FilesController {
       return;
     }
     res.setHeader('Content-Type', file.mime);
-    res.setHeader('Cache-Control', 'private, max-age=3600');
+    // The link itself changes once a day, so a day of caching is safe.
+    res.setHeader('Cache-Control', 'private, max-age=86400');
     res.send(file.body);
   }
 }

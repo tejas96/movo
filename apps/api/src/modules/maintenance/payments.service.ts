@@ -11,6 +11,7 @@ import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { minutes } from '../../common/util/dates';
 import { decodeCursor, encodeCursor } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
+import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { toFlatRef } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
@@ -36,6 +37,7 @@ const TYPO_WINDOW_MS = minutes(10);
 const paymentInclude = {
   ...flatInclude,
   allocations: { include: { bill: true } },
+  proofs: { select: { id: true }, orderBy: { sortOrder: 'asc' } },
 } as const;
 type PaymentRow = Prisma.PaymentGetPayload<{ include: typeof paymentInclude }>;
 
@@ -47,6 +49,7 @@ export class PaymentsService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly bills: BillsService,
+    private readonly files: FilesService,
   ) {}
 
   private get db() {
@@ -113,6 +116,7 @@ export class PaymentsService {
         { path: ['paidOn'], message: 'Cannot be in the future', in: 'body' },
       ]);
     const fy = fyLabel(body.paidOn, ctx.society.fyStartMonth);
+    const proofIds = await this.files.claim(ctx, body.proofIds ?? [], 'PAYMENT_PROOF');
 
     let paymentId: string;
     try {
@@ -159,6 +163,7 @@ export class PaymentsService {
             },
           },
         });
+        await this.files.link(tx, proofIds, { paymentId: p.id });
         await refreshBills(
           tx,
           allocations.map((a) => a.billId),
@@ -316,6 +321,7 @@ export class PaymentsService {
       unallocatedPaise: p.status === 'RECORDED' ? p.amountPaise - allocated : 0,
       reversedReason: p.reversedReason,
       canReverse: this.canReverse(ctx, p),
+      proofs: p.proofs.map((f) => this.files.ref(f.id)),
     };
   }
 }

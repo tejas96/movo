@@ -20,6 +20,7 @@ import {
   PermissionKeySchema,
 } from '../core/enums';
 import { defineRoute } from '../core/route';
+import { AVATAR_UPLOAD_PATH } from '../files/files.contract';
 import { SocietySettingsSchema } from '../settings';
 
 export const SocietySummarySchema = z.object({
@@ -113,6 +114,19 @@ export const meContract = {
     body: z
       .object({ displayName: DisplayNameSchema.optional(), locale: LocaleSchema.optional() })
       .strict(),
+    response: UserSchema,
+  }),
+  setAvatar: defineRoute({
+    method: 'POST',
+    path: AVATAR_UPLOAD_PATH,
+    summary:
+      'Set my profile photo: multipart/form-data with one field "file" (JPEG, PNG or WebP, 5 MB at most). Replaces the old one.',
+    response: UserSchema,
+  }),
+  removeAvatar: defineRoute({
+    method: 'DELETE',
+    path: AVATAR_UPLOAD_PATH,
+    summary: 'Remove my profile photo',
     response: UserSchema,
   }),
   context: defineRoute({

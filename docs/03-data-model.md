@@ -17,7 +17,7 @@ PostgreSQL. Prisma schema is generated from this document when the API is scaffo
 
 | Table | Key fields |
 | --- | --- |
-| user | email (unique, nullable), phone (unique, nullable, E.164), display_name, avatar_document_id, locale (`en`/`hi`/`mr`), status (`ACTIVE`, `DELETED`), deleted_at |
+| user | email (unique, nullable), phone (unique, nullable, E.164), display_name, avatar_file_id (stored_file, no society), locale (`en`/`hi`/`mr`), status (`ACTIVE`, `DELETED`), deleted_at |
 | user_credential | user_id, type (`PASSWORD` now; `OTP_PHONE`, `GOOGLE`, `APPLE` later), secret_hash, provider_subject, verified_at |
 | refresh_session | user_id, token_hash, family_id, device_name, platform, expires_at, revoked_at, replaced_by_id, last_used_at, ip |
 | device_token | user_id, fcm_token (unique), platform, app_version, last_seen_at |
@@ -28,7 +28,7 @@ PostgreSQL. Prisma schema is generated from this document when the API is scaffo
 
 | Table | Key fields |
 | --- | --- |
-| society | name, slug (unique), logo_document_id, address, city, state, pincode, geo (nullable), timezone (`Asia/Kolkata`), default_locale, currency (`INR`), fy_start_month (4), join_code (nullable, rotatable), join_requests_enabled, status |
+| society | name, slug (unique), logo_file_id (stored_file), address, city, state, pincode, geo (nullable), timezone (`Asia/Kolkata`), default_locale, currency (`INR`), fy_start_month (4), join_code (nullable, rotatable), join_requests_enabled, status |
 | building | society_id, name (wing), floors_count, sort_order |
 | flat | society_id, building_id (nullable), number, floor, type (`1BHK`...), area_sqft (nullable), status (`OCCUPIED`, `VACANT`, `INACTIVE`). Unique (society_id, building_id, number) |
 | membership | society_id, user_id, status (`INVITED`, `PENDING_APPROVAL`, `ACTIVE`, `SUSPENDED`, `LEFT`), joined_at, left_at, privacy (JSONB: show_phone, show_email, show_vehicles), notes (admin only). Unique (society_id, user_id) |
@@ -82,7 +82,7 @@ One user, many memberships. One membership, many flats through occupancy. One fl
 
 | Table | Key fields |
 | --- | --- |
-| task | society_id, title, description, points, due_on, assignee_membership_id (nullable = open for volunteers), status (`OPEN`, `IN_PROGRESS`, `SUBMITTED`, `COMPLETED`, `CANCELLED`), submission_note, submitted_at, completed_at, verified_by_membership_id, created_by_membership_id. LATER: categories, evidence photos |
+| task | society_id, title, description, points, due_on, assignee_membership_id (nullable = open for volunteers), status (`OPEN`, `IN_PROGRESS`, `SUBMITTED`, `COMPLETED`, `CANCELLED`), submission_note, submitted_at, completed_at, verified_by_membership_id, created_by_membership_id. Proof photos: stored_file.task_id (at most 3, replaced on each "done"). LATER: categories |
 | task_event | society_id, task_id, kind (`CREATED`, `ASSIGNED`, `VOLUNTEERED`, `WITHDRAWN`, `SUBMITTED`, `RETURNED`, `VERIFIED`, `CANCELLED`), note, by_membership_id |
 | responsibility | society_id, title, description, participant_kind (`FLAT`, `MEMBER`), period_unit (`DAY`, `WEEK`, `MONTH`), period_length, start_date, requires_confirmation, on_miss (`MARK_MISSED`, `CARRY_OVER`), points (nullable), status (`ACTIVE`, `PAUSED`, `ENDED`), created_by_membership_id |
 | responsibility_participant | responsibility_id, position, flat_id or membership_id, active |
@@ -100,7 +100,7 @@ Rotation rule: assignments are materialised 12 periods ahead, continuing the ord
 | flat_charge_override | plan_id, flat_id, amount_paise |
 | bill | society_id, flat_id, plan_id (nullable for ad hoc), kind (`MAINTENANCE`, `ADHOC`), title, period_key (`2026-10`, `2026-27-Q1`, `2026-27-H1`, `2026-27`), due_date, financial_year, total_paise, paid_paise, status (`DUE`, `PARTIALLY_PAID`, `PAID`, `OVERDUE`, `WAIVED`), late_fee_waived, waived_reason. Unique (plan_id, flat_id, period_key) |
 | bill_line | society_id, bill_id, type (`BASE`, `LATE_FEE`), label, amount_paise. Unique (bill_id, type) |
-| payment | society_id, flat_id, amount_paise, paid_on, method (`CASH`, `UPI`, `BANK_TRANSFER`, `CHEQUE`, `OTHER`), reference, receipt_no (`R-2026-27-0001`, from receipt_counter), financial_year, notes, recorded_by_membership_id, status (`RECORDED`, `REVERSED`), reversed_reason, idempotency_key. Unique (society_id, receipt_no) and (society_id, idempotency_key). LATER: receipt_document_id |
+| payment | society_id, flat_id, amount_paise, paid_on, method (`CASH`, `UPI`, `BANK_TRANSFER`, `CHEQUE`, `OTHER`), reference, receipt_no (`R-2026-27-0001`, from receipt_counter), financial_year, notes, recorded_by_membership_id, status (`RECORDED`, `REVERSED`), reversed_reason, idempotency_key. Unique (society_id, receipt_no) and (society_id, idempotency_key). Proof photos: stored_file.payment_id, at most 2 |
 | payment_allocation | society_id, payment_id, bill_id, amount_paise. Oldest bill first by default, treasurer may choose. Money not allocated is advance and is used on the next bills |
 | receipt_counter | society_id, financial_year, last_no |
 | flat_adjustment | LATER (with reward redemption in 1.5). Waivers are a bill status, advance is unallocated payment |
@@ -113,7 +113,7 @@ Flat balance = sum of open bills' (total − paid). Advance = sum(payment.amount
 | Table | Key fields |
 | --- | --- |
 | expense_category | society_id, key (seeded ones, for translated names), name, icon, sort_order. Unique (society_id, name) |
-| expense | society_id, category_id, amount_paise, incurred_on, payee_name, description, method, reference, status (`PENDING`, `APPROVED`, `REJECTED`), financial_year, created_by_membership_id, decided_by_membership_id, decided_at, rejection_reason, idempotency_key. Unique (society_id, idempotency_key). LATER: receipts (document ids), vendor link |
+| expense | society_id, category_id, amount_paise, incurred_on, payee_name, description, method, reference, status (`PENDING`, `APPROVED`, `REJECTED`), financial_year, created_by_membership_id, decided_by_membership_id, decided_at, rejection_reason, idempotency_key. Unique (society_id, idempotency_key). Bill photos: stored_file.expense_id, at most 5. LATER: vendor link |
 | income_entry | society_id, kind (`DONATION`, `INTEREST`, `HALL_BOOKING`, `PENALTY`, `OTHER`), amount_paise, received_on, description, financial_year, created_by_membership_id. Small table so reports can show total income beyond maintenance |
 
 Approval rule comes from settings: `NEVER`, `ABOVE_AMOUNT`, `ALWAYS`. The creator cannot approve their own expense.
@@ -126,13 +126,13 @@ Approval rule comes from settings: `NEVER`, `ABOVE_AMOUNT`, `ALWAYS`. The creato
 | vendor | society_id, category_id, name, phone, alt_phone, description, availability, status (`SUGGESTED`, `APPROVED`, `TRIAL`, `BLOCKED`), admin_notes, added_by_membership_id. Members suggest, the committee approves |
 | emergency_contact | society_id, label, phone, type (`MEDICAL`, `FIRE`, `POLICE`, `SECURITY`, `LIFT`, `ADMIN`, `OTHER`), sort_order, is_public_number |
 | alert | society_id, source (`USER`, `DEVICE`), type (`MEDICAL`, `FIRE`, `SECURITY`, `LIFT`, `GAS`, `OTHER`), raised_by_membership_id, flat_id, message, status (`ACTIVE`, `RESOLVED`, `FALSE_ALARM`), resolved_by_membership_id, resolved_at, resolution_note |
-| document | society_id (nullable for profile photos), owner_user_id, kind (`RECEIPT`, `EXPENSE_RECEIPT`, `NOTICE_ATTACHMENT`, `TASK_EVIDENCE`, `LISTING_IMAGE`, `AVATAR`, `LOGO`, `OTHER`), storage_key, mime, size_bytes, status (`PENDING`, `READY`, `DELETED`) |
+| document | Not built. `stored_file` (section 10) holds every photo; notice attachments would use it too |
 
 ## 10. Marketplace (built in M10)
 
 | Table | Key fields |
 | --- | --- |
-| stored_file | society_id, owner_membership_id, kind (`LISTING_IMAGE`), mime, size_bytes, storage_key, attached_at (null = not used yet, removed after a day) |
+| stored_file | society_id (null for profile photos), owner_membership_id, kind (`LISTING_IMAGE`, `AVATAR`, `SOCIETY_LOGO`, `EXPENSE_RECEIPT`, `PAYMENT_PROOF`, `TASK_PROOF`), mime, size_bytes, storage_key, attached_at (null = not used yet, removed after a day), expense_id, payment_id, task_id, sort_order. Bytes live in the FileStore (disk or bucket) |
 | listing | society_id, seller_membership_id, kind (`FOOD`, `PRODUCT`, `SERVICE`, `RESALE`), title, description, price_type (`FIXED`, `PER_UNIT`, `NEGOTIABLE`, `FREE`), price_paise, unit, diet (`VEG`, `EGG`, `NON_VEG`, food only, required), quantity_available (null = no limit), ready_at and order_by (food), fulfilment (`PICKUP`, `DELIVERY`, `BOTH`), condition (resale), visibility (`SOCIETY`, `NETWORK`), show_phone_after_accept, status (`ACTIVE`, `PAUSED`, `ARCHIVED`, `HIDDEN`), hidden_reason, rating_sum, rating_count |
 | listing_image | listing_id, file_id, sort_order (first = cover), at most 5 |
 | market_order | listing_id, buyer and seller membership ids, quantity, unit_price_paise (snapshot), fulfilment, note, status (`REQUESTED`, `ACCEPTED`, `REJECTED`, `READY`, `COMPLETED`, `CANCELLED`), reason, accepted_at, ready_at, closed_at, buyer_read_at, seller_read_at |

@@ -10,6 +10,7 @@ import {
   page,
 } from '../core/common';
 import { defineRoute } from '../core/route';
+import { FileRefSchema, MAX_EXPENSE_RECEIPTS } from '../files/files.contract';
 import { PaymentMethodSchema } from '../maintenance/maintenance.contract';
 import { type VendorCategoryIcon, VendorCategoryIconSchema } from '../vendors/vendors.contract';
 
@@ -73,6 +74,8 @@ export const ExpenseSchema = ExpenseSummarySchema.extend({
   decidedAt: IsoDateTimeSchema.nullable(),
   rejectionReason: z.string().nullable(),
   createdAt: IsoDateTimeSchema,
+  /** Photos of the bill or receipt, in the order they were added. */
+  receipts: z.array(FileRefSchema),
   /** The viewer holds expense.approve, did not create it, and it is pending. */
   canDecide: z.boolean(),
   /** Pending or rejected, and the viewer created it or can approve. */
@@ -136,6 +139,8 @@ const ExpenseInputSchema = z
     description: z.string().trim().max(500).nullable().optional(),
     method: PaymentMethodSchema.default('BANK_TRANSFER'),
     reference: z.string().trim().max(80).nullable().optional(),
+    /** EXPENSE_RECEIPT uploads. On edit, the full new list. */
+    receiptIds: z.array(IdSchema).max(MAX_EXPENSE_RECEIPTS).optional(),
   })
   .strict();
 

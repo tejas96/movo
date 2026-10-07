@@ -88,7 +88,9 @@
     "fyStart": "Financial year starts in",
     "joinRequests": "Accept join requests",
     "joinRequestsHelp": "Residents can ask to join with the society code. Turn off to allow invites only.",
-    "saved": "Society profile saved"
+    "saved": "Society profile saved",
+    "logo": "Society photo",
+    "logoHelp": "A photo of the building or the society's logo. Every member sees it."
   },
   "rolesScreen": {
     "title": "Roles",

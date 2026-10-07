@@ -7,6 +7,7 @@ import { numericCode, secureToken } from '../../common/util/codes';
 import { addMs, minutes } from '../../common/util/dates';
 import { sha256 } from '../../common/util/hash';
 import { loadEnv } from '../../config/env';
+import { FilesService } from '../files/files.service';
 import { EmailService } from './email.service';
 import { PasswordService } from './password.service';
 import { type DeviceInfo, SessionsService } from './sessions.service';
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly sessions: SessionsService,
     private readonly email: EmailService,
     private readonly audit: AuditService,
+    private readonly files: FilesService,
   ) {}
 
   async register(input: {
@@ -237,6 +239,10 @@ export class AuthService {
       ? await this.passwords.verify(credential.secretHash, password)
       : false;
     if (!ok) throw ApiException.badRequest('PASSWORD_INCORRECT', 'The password is wrong');
+    const avatar = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatarFileId: true },
+    });
     await this.prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: userId },
@@ -246,7 +252,7 @@ export class AuthService {
           email: null,
           phone: null,
           displayName: 'Deleted member',
-          avatarUrl: null,
+          avatarFileId: null,
         },
       });
       await tx.userCredential.deleteMany({ where: { userId } });
@@ -279,6 +285,8 @@ export class AuthService {
       });
       await this.audit.record({ action: 'user.deleted', entityType: 'User', entityId: userId }, tx);
     });
+    // The privacy policy promises the photo goes at once, bytes included.
+    if (avatar?.avatarFileId) await this.files.remove([avatar.avatarFileId]);
     await this.sessions.revokeAllForUser(userId);
   }
 }

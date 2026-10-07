@@ -11,6 +11,7 @@ import {
   page,
 } from '../core/common';
 import { defineRoute } from '../core/route';
+import { FileRefSchema, MAX_PAYMENT_PROOFS } from '../files/files.contract';
 
 export const BillingFrequencySchema = z.enum(['MONTHLY', 'QUARTERLY', 'HALF_YEARLY', 'YEARLY']);
 export type BillingFrequency = z.infer<typeof BillingFrequencySchema>;
@@ -138,6 +139,8 @@ export const PaymentSchema = PaymentSummarySchema.extend({
   unallocatedPaise: PaiseSchema,
   reversedReason: z.string().nullable(),
   canReverse: z.boolean(),
+  /** Cheque photo, UPI screenshot or paper receipt the treasurer added. */
+  proofs: z.array(FileRefSchema),
 });
 export type Payment = z.infer<typeof PaymentSchema>;
 
@@ -339,6 +342,8 @@ export const maintenanceContract = {
           .array(z.object({ billId: IdSchema, amountPaise: PaiseSchema.min(1) }).strict())
           .max(50)
           .optional(),
+        /** PAYMENT_PROOF uploads. */
+        proofIds: z.array(IdSchema).max(MAX_PAYMENT_PROOFS).optional(),
         idempotencyKey: z.string().min(8).max(64),
       })
       .strict(),

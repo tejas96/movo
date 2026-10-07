@@ -26,5 +26,7 @@
     "privacy": "Privacy",
     "society": "Society",
     "support": "Support"
-  }
+  },
+  "photo": "Profile photo",
+  "photoHelp": "Members of your society see it in the directory."
 }

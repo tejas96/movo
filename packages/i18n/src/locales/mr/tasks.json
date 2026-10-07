@@ -45,7 +45,9 @@
     "cancelled": "काम रद्द झाले",
     "assign": "सोपवा",
     "openUp": "सर्वांसाठी खुले करा",
-    "assigned": "काम सोपवले"
+    "assigned": "काम सोपवले",
+    "proofs": "फोटो",
+    "proofsHelp": "3 पर्यंत. काम झाल्याचे दाखवा."
   },
   "event": {
     "CREATED": "तयार केले",
@@ -78,5 +80,6 @@
     "pointsBody": "+{{count}} पॉइंट",
     "pointsBody_other": "+{{count}} पॉइंट्स",
     "returnedTitle": "काम परत पाठवले: {{title}}"
-  }
+  },
+  "proofs": "कामाचे फोटो"
 }

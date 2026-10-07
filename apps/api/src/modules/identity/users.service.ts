@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { type Identifier, normalizeIdentifier } from '../../common/util/identifier';
 import type { User } from '../../generated/prisma/client';
+import { fileUrl } from '../files/file-url';
 
 @Injectable()
 export class UsersService {
@@ -15,7 +16,7 @@ export class UsersService {
       email: user.email,
       phone: user.phone,
       locale: user.locale,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: fileUrl(user.avatarFileId),
       createdAt: user.createdAt.toISOString(),
     };
   }

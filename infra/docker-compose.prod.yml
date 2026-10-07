@@ -56,11 +56,18 @@ services:
       SUPPORT_EMAIL: ${SUPPORT_EMAIL:-}
       PRIVACY_POLICY_URL: ${PRIVACY_POLICY_URL:-https://tejas96.github.io/movo/privacy.html}
       FILES_DIR: /data/files
+      # Photos: "disk" (the files volume) or "s3" (Oracle Object Storage bucket).
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-disk}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_REGION: ${S3_REGION:-ap-mumbai-1}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
       # healthchecks.io ping URL, pinged every 5 minutes while the API and database are up.
       UPTIME_HEARTBEAT_URL: ${UPTIME_HEARTBEAT_URL:-}
       TZ: Asia/Kolkata
     volumes:
-      # Market photos. Backed up by the backup service as a mirror.
+      # Photos while STORAGE_DRIVER=disk. Backed up by the backup service as a mirror.
       - files:/data/files
     logging: *logging
 

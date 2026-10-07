@@ -303,6 +303,11 @@ enum AssignmentStatus {
 
 enum FileKind {
   LISTING_IMAGE
+  AVATAR
+  SOCIETY_LOGO
+  EXPENSE_RECEIPT
+  PAYMENT_PROOF
+  TASK_PROOF
 }
 
 enum ListingKind {
@@ -396,7 +401,8 @@ model User {
   phone            String?    @unique
   displayName      String
   locale           Locale     @default(en)
-  avatarUrl        String?
+  /// Profile photo. A StoredFile with no society.
+  avatarFileId     String?    @unique @db.Uuid
   status           UserStatus @default(ACTIVE)
   failedLoginCount Int        @default(0)
   lockedUntil      DateTime?
@@ -413,6 +419,7 @@ model User {
   notifications Notification[]
   platformAdmin PlatformAdmin?
   preferences   NotificationPreference[]
+  avatar        StoredFile?              @relation("UserAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
 }
 
 model UserCredential {
@@ -491,7 +498,7 @@ model Society {
   id            String        @id @default(uuid(7)) @db.Uuid
   name          String
   slug          String        @unique
-  logoUrl       String?
+  logoFileId    String?       @unique @db.Uuid
   addressLine   String?
   city          String?
   state         String?
@@ -546,6 +553,7 @@ model Society {
   taskEvents                 TaskEvent[]
   pointsLedgers              PointsLedger[]
   files                      StoredFile[]
+  logo                       StoredFile?                 @relation("SocietyLogo", fields: [logoFileId], references: [id], onDelete: SetNull)
   listings                   Listing[]
   listingImages              ListingImage[]
   marketOrders               MarketOrder[]
@@ -1098,6 +1106,7 @@ model Payment {
   society     Society             @relation(fields: [societyId], references: [id], onDelete: Cascade)
   flat        Flat                @relation(fields: [flatId], references: [id], onDelete: Cascade)
   allocations PaymentAllocation[]
+  proofs      StoredFile[]
 
   @@unique([societyId, receiptNo])
   @@unique([societyId, idempotencyKey])
@@ -1187,6 +1196,7 @@ model Expense {
 
   society  Society         @relation(fields: [societyId], references: [id], onDelete: Cascade)
   category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  receipts StoredFile[]
 
   @@unique([societyId, idempotencyKey])
   @@index([societyId, financialYear, status])
@@ -1289,8 +1299,9 @@ model Task {
   createdAt              DateTime   @default(now())
   updatedAt              DateTime   @updatedAt
 
-  society Society     @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  society Society      @relation(fields: [societyId], references: [id], onDelete: Cascade)
   events  TaskEvent[]
+  proofs  StoredFile[]
 
   @@index([societyId, status])
   @@index([assigneeMembershipId, status])
@@ -1394,23 +1405,36 @@ model AuditLog {
   @@index([societyId, createdAt(sort: Desc)])
 }
 
-/// A file on the server's disk (FILES_DIR). Served through short-lived signed urls.
+/// A photo in the file store (disk or an S3 bucket, see FileStore). Served through signed urls.
 model StoredFile {
   id                String    @id @default(uuid(7)) @db.Uuid
-  societyId         String    @db.Uuid
-  ownerMembershipId String    @db.Uuid
+  /// Null only for profile photos, which belong to the person, not to a society.
+  societyId         String?   @db.Uuid
+  ownerMembershipId String?   @db.Uuid
   kind              FileKind
   mime              String
   sizeBytes         Int
   storageKey        String    @unique
-  /// Set once something (a listing) uses the file. Unused files are removed after a day.
+  /// Set once something uses the file. Unused files are removed after a day.
   attachedAt        DateTime?
+  expenseId         String?   @db.Uuid
+  paymentId         String?   @db.Uuid
+  taskId            String?   @db.Uuid
+  sortOrder         Int       @default(0)
   createdAt         DateTime  @default(now())
 
-  society       Society        @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  society       Society?       @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  expense       Expense?       @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  payment       Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  task          Task?          @relation(fields: [taskId], references: [id], onDelete: SetNull)
   listingImages ListingImage[]
+  avatarOf      User?          @relation("UserAvatar")
+  logoOf        Society?       @relation("SocietyLogo")
 
   @@index([societyId, attachedAt])
+  @@index([expenseId])
+  @@index([paymentId])
+  @@index([taskId])
 }
 
 model Listing {

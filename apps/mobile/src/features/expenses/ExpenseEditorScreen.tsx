@@ -1,4 +1,4 @@
-import { type PaymentMethod, PaymentMethodSchema } from '@movo/contracts';
+import { MAX_EXPENSE_RECEIPTS, type PaymentMethod, PaymentMethodSchema } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
 import {
   day,
@@ -52,6 +53,11 @@ export function ExpenseEditorScreen() {
   const [sheet, setSheet] = useState<'category' | 'date' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [key] = useState(newIdempotencyKey);
+  const receipts = usePhotoPicker(societyId, {
+    kind: 'EXPENSE_RECEIPT',
+    max: MAX_EXPENSE_RECEIPTS,
+  });
+  const { reset: resetReceipts } = receipts;
 
   useEffect(() => {
     const e = existing.data;
@@ -64,7 +70,8 @@ export function ExpenseEditorScreen() {
     setDescription(e.description ?? '');
     setMethod(e.method);
     setReference(e.reference ?? '');
-  }, [expenseId, existing.data]);
+    resetReceipts(e.receipts);
+  }, [expenseId, existing.data, resetReceipts]);
 
   const category = categories.data?.find((c) => c.id === categoryId);
   const paise = parseRupees(amount);
@@ -73,6 +80,10 @@ export function ExpenseEditorScreen() {
     setError(null);
     if (!categoryId || !paise || payee.trim().length < 2) {
       setError(t('common:validation.required'));
+      return;
+    }
+    if (receipts.uploading) {
+      setError(t('common:photo.uploading'));
       return;
     }
     try {
@@ -84,6 +95,7 @@ export function ExpenseEditorScreen() {
         description: description.trim() || null,
         method,
         reference: reference.trim() || null,
+        receiptIds: receipts.ids,
         idempotencyKey: key,
       });
       toast.show(t('expenses:form.saved'));
@@ -160,6 +172,11 @@ export function ExpenseEditorScreen() {
             onChangeText={setReference}
             maxLength={80}
           />
+          <PhotoField
+            label={t('expenses:form.receipts')}
+            help={t('expenses:form.receiptsHelp')}
+            picker={receipts}
+          />
           <Text variant="label" tone="secondary">
             {t('expenses:form.needsApproval')}
           </Text>
@@ -178,6 +195,7 @@ export function ExpenseEditorScreen() {
               label={t('common:actions.save')}
               inline
               loading={save.isPending}
+              disabled={receipts.uploading}
               onPress={() => void submit()}
             />
           </View>

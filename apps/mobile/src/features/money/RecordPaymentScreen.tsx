@@ -1,4 +1,4 @@
-import { type PaymentMethod, PaymentMethodSchema } from '@movo/contracts';
+import { MAX_PAYMENT_PROOFS, type PaymentMethod, PaymentMethodSchema } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import {
   day,
@@ -52,6 +53,7 @@ export function RecordPaymentScreen() {
   const [error, setError] = useState<string | null>(null);
   // One key per open form: a double tap or a retry after a timeout records the payment once.
   const [key] = useState(newIdempotencyKey);
+  const proofs = usePhotoPicker(societyId, { kind: 'PAYMENT_PROOF', max: MAX_PAYMENT_PROOFS });
 
   const owes = flatId ? account.data?.outstandingPaise : undefined;
   useEffect(() => {
@@ -71,6 +73,10 @@ export function RecordPaymentScreen() {
       setError(t('common:validation.required'));
       return;
     }
+    if (proofs.uploading) {
+      setError(t('common:photo.uploading'));
+      return;
+    }
     try {
       const p = await record.mutateAsync({
         flatId,
@@ -79,6 +85,7 @@ export function RecordPaymentScreen() {
         method,
         reference: reference.trim() || null,
         notes: notes.trim() || null,
+        proofIds: proofs.ids,
         idempotencyKey: key,
       });
       toast.show(t('money:record.saved'));
@@ -178,6 +185,11 @@ export function RecordPaymentScreen() {
             onChangeText={setNotes}
             maxLength={500}
           />
+          <PhotoField
+            label={t('money:record.proofs')}
+            help={t('money:record.proofsHelp')}
+            picker={proofs}
+          />
           {error ? (
             <Text variant="caption" tone="danger">
               {error}
@@ -193,6 +205,7 @@ export function RecordPaymentScreen() {
               label={t('money:record.save')}
               inline
               loading={record.isPending}
+              disabled={proofs.uploading}
               onPress={() => void save()}
             />
           </View>

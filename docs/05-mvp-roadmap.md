@@ -52,6 +52,8 @@ M9 added: Manage society as a tile grid shown by permission (members, invites, r
 
 M10 added: the Market. Members sell homemade food, products, services and used items to neighbours. Food has a veg, egg or non-veg mark, a ready time and an order-by time, pickup or delivery at the door, and a portion limit that goes down when the seller accepts. Up to 5 photos per listing, uploaded from the phone gallery and stored on the server's disk behind signed urls. Orders go requested → accepted → ready → completed, with decline and cancel, a short message thread, and a review from the buyer. Flats and the seller's phone (if shared) appear only after acceptance. Members report listings; moderators hide them, which cancels open orders. The committee can switch off food or resale, and store a "nearby societies" flag for later. Home shows new orders waiting for the seller. Nothing is paid in the app.
 
+Photos (October 2026): profile photo, society photo, bill photos on expenses, proof of payment on receipts and photos when a task is marked done, each from the camera or the gallery. Photos move from the server disk to a private Oracle Object Storage bucket behind `FileStore` (rustfs locally); signed links stay a day so phones cache them. Notice attachments and event covers come later.
+
 ## Next
 
 1. Follow the runbook in `08-release-and-ops.md`: Oracle Always Free VM in Mumbai (upgraded to Pay As You Go, still ₹0), DuckDNS or a bought domain, healthchecks.io for the API and backup heartbeats, off-site backups to Oracle Object Storage or R2; deploy, then send the AAB to Play internal testing.

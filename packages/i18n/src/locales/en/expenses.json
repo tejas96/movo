@@ -46,7 +46,9 @@
     "reference": "Reference (optional)",
     "referenceHint": "Bill number or transaction id",
     "saved": "Expense saved",
-    "needsApproval": "Someone else in the committee may need to approve this."
+    "needsApproval": "Someone else in the committee may need to approve this.",
+    "receipts": "Bill photos",
+    "receiptsHelp": "Up to 5. A photo of the bill or receipt."
   },
   "detail": {
     "title": "Expense",
@@ -65,7 +67,8 @@
     "rejected": "Expense rejected",
     "remove": "Remove expense",
     "removed": "Expense removed",
-    "ownNote": "Someone else in the committee must approve this."
+    "ownNote": "Someone else in the committee must approve this.",
+    "receipts": "Bill photos"
   },
   "report": {
     "fy": "FY {{fy}}",

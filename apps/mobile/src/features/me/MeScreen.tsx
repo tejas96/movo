@@ -2,6 +2,7 @@ import { Avatar, Button, Card, photos, Row, Screen, Text, TitleBar } from '@movo
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Linking, StyleSheet, View } from 'react-native';
+import { photoUri } from '../../core/api/client';
 import { signOut } from '../../core/auth/auth';
 import { useSessionStore } from '../../core/auth/session.store';
 import { APP_VERSION, PRIVACY_POLICY_URL } from '../../core/env';
@@ -29,10 +30,23 @@ export function MeScreen() {
       {/* Profile: the society photo as a backdrop, the avatar sitting on its lower edge. */}
       <View className="mt-5">
         <View style={styles.backdrop}>
-          <Image source={photos.society2} resizeMode="cover" style={styles.photo} />
+          <Image
+            source={
+              tenant.society.logoUrl
+                ? { uri: photoUri(tenant.society.logoUrl) ?? undefined }
+                : photos.society2
+            }
+            resizeMode="cover"
+            style={styles.photo}
+          />
         </View>
         <View style={styles.avatar}>
-          <Avatar name={user?.displayName ?? '?'} uri={user?.avatarUrl} size={64} tone="gray" />
+          <Avatar
+            name={user?.displayName ?? '?'}
+            uri={photoUri(user?.avatarUrl)}
+            size={64}
+            tone="gray"
+          />
         </View>
         <View style={styles.identity}>
           <Text variant="h2" numberOfLines={1}>

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -14,6 +14,7 @@ import { loadEnv } from '../config/env';
 import { DutiesService } from '../modules/duties/duties.service';
 import { defaultEmergencyContactRows } from '../modules/emergency/emergency.service';
 import { defaultExpenseCategoryRows } from '../modules/expenses/expenses.service';
+import { createFileStore } from '../modules/files/file-store';
 import { PasswordService } from '../modules/identity/password.service';
 import { UsersService } from '../modules/identity/users.service';
 import { fyLabel, receiptNo, todayIn } from '../modules/maintenance/billing';
@@ -427,20 +428,20 @@ async function ensureM10Demo(
   // Food and the cycle come from a neighbour when there is one, so the admin can try ordering.
   const neighbour = members[1] ?? admin;
   const photosDir = resolve(__dirname, '../../../../packages/design-system/assets/photos');
-  const filesDir = resolve(loadEnv().FILES_DIR);
+  const store = createFileStore(loadEnv());
   const photo = async (name: string, ownerMembershipId: string) => {
     const from = join(photosDir, `${name}.jpg`);
     if (!existsSync(from)) return [];
     const storageKey = `${societyId}/${randomUUID()}.jpg`;
-    await mkdir(join(filesDir, societyId), { recursive: true });
-    await copyFile(from, join(filesDir, storageKey));
+    const body = await readFile(from);
+    await store.put(storageKey, body, 'image/jpeg');
     const f = await prisma.storedFile.create({
       data: {
         societyId,
         ownerMembershipId,
         kind: 'LISTING_IMAGE',
         mime: 'image/jpeg',
-        sizeBytes: 100_000,
+        sizeBytes: body.length,
         storageKey,
         attachedAt: new Date(),
       },

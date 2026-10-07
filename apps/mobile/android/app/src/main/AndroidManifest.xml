@@ -4,6 +4,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Android 13+: asked at runtime after sign-in (src/core/push). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Photos of bills, payments, tasks and profiles (src/core/photos), and the AR guide. Asked
+         at runtime. Not required, so phones without a camera can still install the app. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
       android:name=".MainApplication"

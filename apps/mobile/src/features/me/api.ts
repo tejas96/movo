@@ -1,6 +1,6 @@
 import { authContract, type Locale, meContract, societyContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../core/api/client';
+import { api, type UploadAsset, uploadAvatar } from '../../core/api/client';
 import { keys } from '../../core/api/keys';
 import { invalidateContext } from '../../core/auth/auth';
 import { useSessionStore } from '../../core/auth/session.store';
@@ -13,6 +13,27 @@ export function useUpdateProfile() {
     onSuccess: async (user) => {
       useSessionStore.getState().setUser(user);
       await setAppLocale(user.locale);
+      await invalidateContext();
+    },
+  });
+}
+
+/** Profile photo: saved at once, then the directory and Me show it. */
+export function useSetAvatar() {
+  return useMutation({
+    mutationFn: (asset: UploadAsset) => uploadAvatar(asset),
+    onSuccess: async (user) => {
+      useSessionStore.getState().setUser(user);
+      await invalidateContext();
+    },
+  });
+}
+
+export function useRemoveAvatar() {
+  return useMutation({
+    mutationFn: () => api(meContract.removeAvatar, {}),
+    onSuccess: async (user) => {
+      useSessionStore.getState().setUser(user);
       await invalidateContext();
     },
   });

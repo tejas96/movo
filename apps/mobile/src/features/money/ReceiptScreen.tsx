@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { Share, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { day, money } from '../../core/util/money';
 import { usePayment, useReversePayment } from './api';
@@ -130,6 +131,7 @@ export function ReceiptScreen() {
               </Text>
             ) : null}
           </Card>
+          <PhotoSection className="mt-6" title={t('money:receipt.proofs')} photos={p.proofs} />
           {p.status === 'RECORDED' ? (
             <Button
               className="mt-4"

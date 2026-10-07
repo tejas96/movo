@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { day, money } from '../../core/util/money';
 import { relative } from '../../core/util/time';
@@ -130,6 +131,11 @@ export function ExpenseDetailScreen() {
                 </Text>
               ) : null}
             </Card>
+            <PhotoSection
+              className="mt-6"
+              title={t('expenses:detail.receipts')}
+              photos={e.receipts}
+            />
             {e.canEdit ? (
               <Button
                 className="mt-4"

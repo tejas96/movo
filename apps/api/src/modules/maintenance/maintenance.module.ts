@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
+import { FilesModule } from '../files/files.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AccountsService } from './accounts.service';
 import { BillsService } from './bills.service';
@@ -9,7 +10,7 @@ import { PaymentsService } from './payments.service';
 import { PlansService } from './plans.service';
 
 @Module({
-  imports: [NotificationsModule],
+  imports: [NotificationsModule, FilesModule],
   controllers: [MaintenanceController],
   providers: [
     AccountsService,

@@ -1,6 +1,7 @@
 import { Button, Card, Icon, Row, Screen, TitleBar } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
+import { photoUri } from '../../core/api/client';
 import { queryClient } from '../../core/api/query-client';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useMeContext } from '../../core/tenant/hooks';
@@ -28,6 +29,14 @@ export function SocietySwitcherScreen() {
           <Row
             key={m.id}
             icon="building"
+            leading={
+              m.society.logoUrl ? (
+                <Image
+                  source={{ uri: photoUri(m.society.logoUrl) ?? undefined }}
+                  style={{ width: 44, height: 44, borderRadius: 12 }}
+                />
+              ) : undefined
+            }
             title={m.society.name}
             subtitle={[m.flats.map(formatFlat).join(', '), m.roles.map((r) => r.name).join(', ')]
               .filter(Boolean)

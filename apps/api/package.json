@@ -10,6 +10,7 @@
     "dev": "nest start --watch",
     "start": "node dist/main.js",
     "seed": "nest build && node dist/cli/seed.js",
+    "files": "nest build && node dist/cli/files.js",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
@@ -20,6 +21,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1141.0",
     "@movo/contracts": "workspace:*",
     "@movo/i18n": "workspace:*",
     "@nestjs/common": "12.1.0",

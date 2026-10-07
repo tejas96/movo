@@ -21,6 +21,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Linking, View } from 'react-native';
+import { photoUri } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
@@ -120,7 +121,7 @@ export function MemberDetailScreen() {
           </View>
           <View className="-mt-8 items-center">
             <View className="rounded-full bg-canvas p-[3px]">
-              <Avatar name={m.displayName} uri={m.avatarUrl} size={64} tone="gray" />
+              <Avatar name={m.displayName} uri={photoUri(m.avatarUrl)} size={64} tone="gray" />
             </View>
             <Text variant="h2" className="mt-2">
               {m.displayName}

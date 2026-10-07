@@ -5,6 +5,7 @@ import {
   type ItemCondition,
   ItemConditionSchema,
   type ListingKind,
+  MAX_LISTING_PHOTOS,
   type PriceType,
   PriceTypeSchema,
 } from '@movo/contracts';
@@ -29,11 +30,11 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { PhotoPickerRow, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { parseRupees, rupeesText } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
 import { useListing, useSaveListing } from './api';
-import { PhotoPickerRow, usePhotoPicker } from './PhotoPickerRow';
 import { DietMark, KIND_ICON, shortWhen, useAllowedKinds, useMarketSettings } from './shared';
 
 const UNITS = ['plate', 'piece', 'kg', 'box', 'hour'] as const;
@@ -57,7 +58,7 @@ export function ListingEditorScreen() {
   const save = useSaveListing(societyId, listingId);
   const settings = useMarketSettings();
   const kinds = useAllowedKinds();
-  const picker = usePhotoPicker(societyId);
+  const picker = usePhotoPicker(societyId, { kind: 'LISTING_IMAGE', max: MAX_LISTING_PHOTOS });
 
   const [kind, setKind] = useState<ListingKind>(params?.kind ?? kinds[0] ?? 'PRODUCT');
   const [title, setTitle] = useState('');
@@ -180,7 +181,7 @@ export function ListingEditorScreen() {
           </Field>
 
           <Field label={t('market:editor.photos')} help={t('market:editor.photosHelp')}>
-            <PhotoPickerRow picker={picker} />
+            <PhotoPickerRow picker={picker} showCover />
           </Field>
 
           <Input

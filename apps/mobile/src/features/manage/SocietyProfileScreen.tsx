@@ -2,6 +2,7 @@ import type { Locale } from '@movo/contracts';
 import {
   BottomBar,
   Button,
+  IconSquare,
   Input,
   OptionSheet,
   Screen,
@@ -14,9 +15,12 @@ import {
 } from '@movo/design-system';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
+import { photoUri, uploadFile } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
+import { type PhotoSource, usePickOne } from '../../core/photos/pick';
+import { SinglePhotoField } from '../../core/photos/SinglePhotoField';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { localeTag } from '../../core/util/time';
 import { useSocietyProfile } from '../society/api';
@@ -39,7 +43,40 @@ export function SocietyProfileScreen() {
   const societyId = useSocietyId();
   const profile = useSocietyProfile(societyId);
   const save = useUpdateSociety(societyId);
+  // The photo saves on its own, apart from the form below.
+  const saveLogo = useUpdateSociety(societyId);
+  const pickOne = usePickOne();
+  const [logoBusy, setLogoBusy] = useState(false);
   const p = profile.data;
+
+  const changeLogo = async (source: PhotoSource) => {
+    const asset = await pickOne(source, 1600);
+    if (!asset?.uri) return;
+    setLogoBusy(true);
+    try {
+      const ref = await uploadFile(
+        societyId,
+        { uri: asset.uri, fileName: asset.fileName, type: asset.type },
+        'SOCIETY_LOGO',
+      );
+      await saveLogo.mutateAsync({ logoFileId: ref.id });
+    } catch (e) {
+      toast.show(toMessage(e), 'error');
+    } finally {
+      setLogoBusy(false);
+    }
+  };
+
+  const clearLogo = async () => {
+    setLogoBusy(true);
+    try {
+      await saveLogo.mutateAsync({ logoFileId: null });
+    } catch (e) {
+      toast.show(toMessage(e), 'error');
+    } finally {
+      setLogoBusy(false);
+    }
+  };
 
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -98,6 +135,25 @@ export function SocietyProfileScreen() {
           <Skeleton className="mt-6 h-96 rounded-xl" />
         ) : (
           <View className="mt-6 gap-3">
+            <SinglePhotoField
+              title={t('manage:profile.logo')}
+              help={t('manage:profile.logoHelp')}
+              hasPhoto={Boolean(p.logoUrl)}
+              busy={logoBusy}
+              preview={
+                p.logoUrl ? (
+                  <Image
+                    source={{ uri: photoUri(p.logoUrl) ?? undefined }}
+                    resizeMode="cover"
+                    style={{ width: 64, height: 64, borderRadius: 16 }}
+                  />
+                ) : (
+                  <IconSquare icon="building" tone="white" />
+                )
+              }
+              onPick={(source) => void changeLogo(source)}
+              onRemove={() => void clearLogo()}
+            />
             <Input
               label={t('manage:profile.name')}
               value={name}

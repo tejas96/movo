@@ -20,6 +20,8 @@ pnpm --filter @movo/api db:deploy                       # apply migrations
 pnpm --filter @movo/api seed -- --demo                  # platform admin + demo society
 ```
 
+Photos use the disk (`FILES_DIR`) by default. To use a bucket like production, reuse the rustfs container that heliogrid already runs (`heliogrid-object-store-local`, `127.0.0.1:9000`; no new image): set the commented `S3_*` lines and `STORAGE_DRIVER=s3` in `apps/api/.env`, then make the bucket once with `pnpm --filter @movo/api files bucket`. MOVO keeps its photos in its own bucket, `movo-local`.
+
 The demo seed prints:
 
 | What | Value |
@@ -35,7 +37,7 @@ The demo seed prints:
 | Meetings and events | a committee meeting in 5 days, a garba night in 10 days |
 | Duties, tasks, rewards | "Main gate locking" monthly over wing A (A-101's turn now), an open task worth 3 points, 5 points for the admin |
 | Expenses | 10 categories, five approved expenses this month, one hall booking |
-| Market | switched on; poha and chai (food, from the second member if there is one), mango pickle, maths tuition, kids cycle; photos copied into `apps/api/data/files` |
+| Market | switched on; poha and chai (food, from the second member if there is one), mango pickle, maths tuition, kids cycle; photos written to the photo store (`apps/api/data/files`, or the bucket with `STORAGE_DRIVER=s3`) |
 | Money | plan "Maintenance" ₹2,500 monthly, due on the 10th, ₹100 late fee after 5 days; UPI `sunriseresidency@okaxis`; this month's bills; 16 flats paid, A-101 (the admin) not |
 
 Running the seed again on an existing demo society only adds the Services, Parking, Emergency, Meetings, Events, Money, Expenses, Duties, Tasks, Rewards and Market data that is missing.
@@ -72,7 +74,7 @@ pnpm design:preview              # regenerate the design system page
 | `apps/api/prisma/schema.prisma` | database schema. `pnpm --filter @movo/api db:migrate` after edits |
 | `apps/mobile/src/features/*` | screens and their data hooks |
 | `apps/mobile/src/core` | api client, session, tenant context, navigation, i18n |
-| `apps/api/data/files` | uploaded photos in development (`FILES_DIR`, git-ignored) |
+| `apps/api/data/files` | uploaded photos in development with `STORAGE_DRIVER=disk` (`FILES_DIR`, git-ignored) |
 
 ## 6. Common tasks
 

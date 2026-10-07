@@ -16,6 +16,7 @@ import {
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
+import { photoUri } from '../../core/api/client';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCanManageSociety, useTenant } from '../../core/tenant/hooks';
 import { useMembers } from '../directory/api';
@@ -90,7 +91,11 @@ export function SocietyHubScreen() {
       />
       <PhotoCard
         className="mt-5"
-        source={photos.society}
+        source={
+          tenant.society.logoUrl
+            ? { uri: photoUri(tenant.society.logoUrl) ?? undefined }
+            : photos.society
+        }
         photoHeight={190}
         badge={tenant.society.city ? { icon: 'location', label: tenant.society.city } : undefined}
       >
@@ -146,7 +151,7 @@ export function SocietyHubScreen() {
               <PersonCard
                 key={m.membershipId}
                 name={m.displayName}
-                avatarUri={m.avatarUrl}
+                avatarUri={photoUri(m.avatarUrl)}
                 verified={m.roles.some((r) => r.key === 'admin')}
                 role={[
                   m.roles.map((r) => r.name).join(', '),
