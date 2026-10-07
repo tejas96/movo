@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
+import { FilesModule } from '../files/files.module';
 import { IdentityModule } from '../identity/identity.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AuditLogService } from './audit-log.service';
@@ -16,7 +17,7 @@ import { SocietyController } from './society.controller';
 import { StructureService } from './structure.service';
 
 @Module({
-  imports: [IdentityModule, NotificationsModule],
+  imports: [IdentityModule, NotificationsModule, FilesModule],
   controllers: [PlatformController, JoinController, SocietyController],
   providers: [
     ContextService,

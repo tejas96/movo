@@ -45,7 +45,9 @@
     "cancelled": "Task cancelled",
     "assign": "Assign",
     "openUp": "Open for volunteers",
-    "assigned": "Task assigned"
+    "assigned": "Task assigned",
+    "proofs": "Photos",
+    "proofsHelp": "Up to 3. Show that the work is done."
   },
   "event": {
     "CREATED": "Created",
@@ -78,5 +80,6 @@
     "pointsBody": "+{{count}} point",
     "pointsBody_other": "+{{count}} points",
     "returnedTitle": "Task sent back: {{title}}"
-  }
+  },
+  "proofs": "Photos of the work"
 }

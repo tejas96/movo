@@ -25,9 +25,10 @@ The first server (an AMD VM.Standard.E2.1.Micro with 1 GB, used while Ampere was
 | Reviewer demo account (production) | Make a demo society + member on production, put the login in Play → App content → App access, and test push on a real install |
 | healthchecks.io account (postponed) | Two checks (API 5 min / 10 min grace, backup 1 day / 2 h grace), `UPTIME_HEARTBEAT_URL` and `BACKUP_HEARTBEAT_URL` in `.env.prod`, `dc up -d api backup` |
 | Closed test, 12 testers × 14 days (personal Play account) | Apply for production access in Play Console |
+| Photo bucket: `movo-files` bucket, `movo-files-bot` user, policy and key in Oracle (user's clicks, section 4 "Photo storage") | `infra/server/set-files-key.sh`, then `--switch`; check photos in the app; vault entry |
 | Business registered (later) | Play account → Organization (needs D-U-N-S), Resend with an owned domain, maybe a bought domain instead of DuckDNS |
 
-Day-to-day: `infra/server/check.sh` prints health, certificate, containers, memory, disk and the newest local and off-site backups. A new VM is set up with `infra/server/bootstrap.sh` (sections 2.5–2.10 explain each step); a backup key is rotated with `infra/server/set-offsite-key.sh`.
+Day-to-day: `infra/server/check.sh` prints health, certificate, containers, memory, disk and the newest local and off-site backups. A new VM is set up with `infra/server/bootstrap.sh` (sections 2.5–2.10 explain each step); a backup key is rotated with `infra/server/set-offsite-key.sh`, the photo bucket key with `infra/server/set-files-key.sh`.
 
 If the server IP changes (new VM, terminate and recreate): log in at duckdns.org, type the new IP in the `movo-society` row, **update ip**, then `dc restart caddy` on the new VM so it fetches the certificate at once. Update the `DEPLOY_HOST` and `DEPLOY_KNOWN_HOSTS` secrets too. No app build is needed.
 
@@ -252,7 +253,7 @@ The `backup` container runs `backup.sh` every day at **02:30 IST**:
 - `pg_dump` in custom format, gzipped, into `/opt/movo/backups/daily/`. Each dump is checked with `gzip -t` and `pg_restore --list`.
 - The first dump of each month is also copied to `backups/monthly/`.
 - Keeps 14 daily and 6 monthly (`KEEP_DAILY`, `KEEP_MONTHLY`).
-- Market photos are mirrored into `backups/files/` (new files copied, nothing deleted).
+- Photos on the disk (`files` volume) are mirrored into `backups/files/` (new files copied, nothing deleted). After the switch to the bucket (below) new photos go to Object Storage instead, which keeps its own copies; the mirror then only holds the old ones.
 - Off-site copy with rclone when `RCLONE_REMOTE` is set: dumps and photos. Off-site copies follow the same retention by age.
 - Pings `BACKUP_HEARTBEAT_URL` on success and `<url>/fail` on failure.
 
@@ -315,6 +316,28 @@ dc start api
 A backup from off-site first: `dc exec backup rclone copy offsite:movo-backups/daily/<file> /backups/restore/`. Photos: `dc exec backup rclone copy offsite:movo-backups/files /backups/files`, then copy them into the volume (`docker run --rm -v movo_files:/data/files -v /opt/movo/backups/files:/src alpine cp -a /src/. /data/files/`).
 
 VM lost: build a new VM with section 2, `dc up -d postgres backup`, pull the newest dump from off-site, restore as above, then run Deploy. About an hour.
+
+### Photo storage (Oracle Object Storage bucket)
+
+Photos (market, profile, society, bills, payment proof, tasks) start on the VM disk (`STORAGE_DRIVER=disk`). To move them to a private bucket in Mumbai, after the photo PR is deployed:
+
+1. **Bucket** (you): ☰ → Storage → Buckets → compartment **root** → Create bucket `movo-files`, Standard tier, no public access.
+2. **A user that can only use that bucket** (you): ☰ → Identity & Security → Domains → Default →
+   - Groups → Create group `movo-files-writers`.
+   - Users → Create user `movo-files-bot` (no email needed, no console password), add it to `movo-files-writers`.
+   - ☰ → Identity & Security → Policies → compartment root → Create policy `movo-files` with:
+     ```
+     Allow group 'Default'/'movo-files-writers' to read buckets in tenancy where target.bucket.name='movo-files'
+     Allow group 'Default'/'movo-files-writers' to manage objects in tenancy where target.bucket.name='movo-files'
+     ```
+   - Users → `movo-files-bot` → Customer secret keys → Generate secret key, name `movo-files`. Copy the secret now (shown once) and the 40-character access key from the list.
+3. **Key on the VM and copy** (Mac): `infra/server/set-files-key.sh`. It asks the two values (hidden), saves them in `.env.prod` with the endpoint the backups use, restarts the api and copies every photo into the bucket. The API still serves from the disk.
+4. **Switch** (Mac): `infra/server/set-files-key.sh --switch`. Copies photos added since, sets `STORAGE_DRIVER=s3`, restarts the api. Open a market listing and your profile in the app to check the photos load.
+5. **Back out** if needed: set `STORAGE_DRIVER=disk` in `/opt/movo/.env.prod` and `dc up -d api`. Photos uploaded while on the bucket stay in the bucket only.
+
+The `files` volume stays as it is until the bucket has worked for a few weeks. Update `.private/MOVO-VAULT.md` with the bucket, the user and the key name (never the secret).
+
+Limits: Object Storage gives 10 GB Standard and 50,000 requests a month free; the backups share them. A phone photo is about 200–400 KB after the app shrinks it, and links stay the same for a day so phones cache them. The `movo-zero-spend` budget alert catches any overrun.
 
 ## 5. Uptime alerts (healthchecks.io)
 
@@ -468,7 +491,7 @@ General: data is **encrypted in transit** (HTTPS): Yes. Users can **request dele
 | Phone number (Personal info) | Yes | Account management (sign in), App functionality | Yes (email alone also works) |
 | Address: flat and wing (Personal info → Address) | Yes | App functionality | No |
 | Other info: vehicle numbers, society role (Personal info → Other) | Yes | App functionality | Yes |
-| Photos (market listing photos the user picks; no profile photo upload yet) | Yes | App functionality | Yes |
+| Photos (taken with the camera or picked by the user: market listings, profile photo, society photo, bill photos, payment proof, task photos) | Yes | App functionality | Yes |
 | Purchase history: maintenance payments recorded by the committee (Financial info → Purchase history) | Yes | App functionality | No |
 | Other user-generated content: notices, minutes, tasks, RSVPs, market listings and reviews (App activity → Other user-generated content) | Yes | App functionality | Yes |
 | In-app messages between buyer and seller on a market order (Messages → Other in-app messages) | Yes | App functionality | Yes |
@@ -477,7 +500,7 @@ General: data is **encrypted in transit** (HTTPS): Yes. Users can **request dele
 | Crash logs / diagnostics | No (server logs only, not collected from the device) | – | – |
 | Location, contacts, SMS, call logs, web history, health, files | No | – | – |
 
-Market photos live in the `files` Docker volume (`FILES_DIR=/data/files`); the backup service mirrors them into `backups/files` every night and copies them off-site when rclone is set.
+Photos live in the private `movo-files` bucket once switched (before that in the `files` Docker volume, mirrored by the backup service). Data safety also asks about permissions: the app uses the camera to take photos the user chooses to upload and for the AR guide; camera pictures of the AR guide never leave the phone.
 
 If you later add Sentry or analytics, update this table and `site/privacy.html` together.
 
@@ -516,7 +539,7 @@ Monthly
 | Item | Monthly |
 | --- | --- |
 | Ampere A1 VM, 2 OCPU / 2 GB, 50 GB boot volume (Always Free) | ₹0 |
-| Object Storage, a few hundred MB of dumps and photos (Always Free 10 GB) | ₹0 |
+| Object Storage: dumps (`movo-backups`) and photos (`movo-files`), a few hundred MB (Always Free 10 GB, 50,000 requests a month) | ₹0 |
 | Outbound traffic (Always Free 10 TB) | ₹0 |
 | DuckDNS, Let's Encrypt, healthchecks.io, GitHub Actions and GHCR (public), Firebase Spark, Resend free | ₹0 |
 | **Total** | **₹0** (Play Console $25 once; a bought domain about ₹800–1,000 a year, optional) |

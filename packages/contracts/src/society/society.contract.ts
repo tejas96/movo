@@ -213,6 +213,8 @@ export const societyContract = {
         fyStartMonth: z.number().int().min(1).max(12).optional(),
         settings: SocietySettingsSchema.partial().optional(),
         rotateJoinCode: z.boolean().optional(),
+        /** A SOCIETY_LOGO upload, or null to remove the logo. */
+        logoFileId: IdSchema.nullable().optional(),
       })
       .strict(),
     response: SocietyProfileSchema,

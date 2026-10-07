@@ -34,7 +34,7 @@ export class TasksController {
     return this.tasks.withdraw(params.taskId);
   }
   @Route(c.submit) submit(@Input(c.submit) { params, body }: In<'submit'>): Out<'submit'> {
-    return this.tasks.submit(params.taskId, body.note);
+    return this.tasks.submit(params.taskId, body.note, body.proofIds);
   }
   @Route(c.verify) verify(@Input(c.verify) { params }: In<'verify'>): Out<'verify'> {
     return this.tasks.verify(params.taskId);

@@ -24,20 +24,11 @@ import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Alert,
-  FlatList,
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
-  useWindowDimensions,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Image, Pressable, ScrollView, View } from 'react-native';
 import { fileUri } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { PhotoViewer } from '../../core/photos/PhotoViewer';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { money } from '../../core/util/money';
 import { relative } from '../../core/util/time';
@@ -538,44 +529,5 @@ function OrderSheet({
         </Text>
       </View>
     </Sheet>
-  );
-}
-
-function PhotoViewer({
-  images,
-  index,
-  onClose,
-}: {
-  images: string[];
-  index: number | null;
-  onClose: () => void;
-}) {
-  const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-  return (
-    <Modal
-      visible={index !== null}
-      onRequestClose={onClose}
-      animationType="fade"
-      statusBarTranslucent
-    >
-      <View className="flex-1 bg-ink">
-        <FlatList
-          data={images}
-          horizontal
-          pagingEnabled
-          initialScrollIndex={index ?? 0}
-          getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
-          keyExtractor={(u) => u}
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item }} resizeMode="contain" style={{ width, height }} />
-          )}
-        />
-        <View className="absolute right-5" style={{ top: insets.top + 12 }}>
-          <IconSquare icon="close" variant="linear" tone="white" onPress={onClose} />
-        </View>
-      </View>
-    </Modal>
   );
 }

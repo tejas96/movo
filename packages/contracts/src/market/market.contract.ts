@@ -9,6 +9,7 @@ import {
   page,
 } from '../core/common';
 import { defineRoute } from '../core/route';
+import { FileRefSchema, MAX_LISTING_PHOTOS } from '../files/files.contract';
 
 /** FOOD = homemade food and tiffin. PRODUCT = handmade or small-batch goods. RESALE = used items. */
 export const ListingKindSchema = z.enum(['FOOD', 'PRODUCT', 'SERVICE', 'RESALE']);
@@ -50,13 +51,6 @@ export type OrderStatus = z.infer<typeof OrderStatusSchema>;
 
 export const OrderRoleSchema = z.enum(['BUYING', 'SELLING']);
 export type OrderRole = z.infer<typeof OrderRoleSchema>;
-
-/**
- * A stored photo. The url is a signed path on the API ("/v1/files/<id>?e=..&s=..") that works
- * for at least an hour without a login. The app puts API_URL in front of it.
- */
-export const FileRefSchema = z.object({ id: IdSchema, url: z.string() });
-export type FileRef = z.infer<typeof FileRefSchema>;
 
 export const RatingSchema = z.object({
   average: z.number(),
@@ -134,7 +128,7 @@ const ListingInputSchema = z
     fulfilment: FulfilmentSchema.default('PICKUP'),
     condition: ItemConditionSchema.nullable().optional(),
     /** Up to 5 photos, first one is the cover. Upload them first. */
-    imageIds: z.array(IdSchema).max(5).default([]),
+    imageIds: z.array(IdSchema).max(MAX_LISTING_PHOTOS).default([]),
     visibility: ListingVisibilitySchema.default('SOCIETY'),
     showPhoneAfterAccept: z.boolean().default(false),
   })
@@ -416,20 +410,5 @@ export const marketContract = {
       })
       .strict(),
     response: OrderSchema,
-  }),
-};
-
-/** Upload is multipart/form-data with one field "file". The app calls it with fetch + FormData. */
-export const FILE_UPLOAD_PATH = '/v1/societies/:societyId/files';
-export const FILE_MAX_BYTES = 5 * 1024 * 1024;
-export const FILE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
-
-export const filesContract = {
-  upload: defineRoute({
-    method: 'POST',
-    path: FILE_UPLOAD_PATH,
-    summary: 'Upload one photo (JPEG, PNG or WebP, 5 MB at most). Unused uploads go after a day.',
-    params: societyParams,
-    response: FileRefSchema,
   }),
 };

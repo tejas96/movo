@@ -112,5 +112,18 @@
     "h2": "2 hours",
     "h3": "3 hours",
     "h4": "4 hours"
+  },
+  "photo": {
+    "add": "Add photo",
+    "change": "Change photo",
+    "take": "Take photo",
+    "choose": "Choose from gallery",
+    "remove": "Remove photo",
+    "cover": "Cover",
+    "open": "Photo {{n}}",
+    "tooBig": "That photo is too big. 5 MB at most.",
+    "uploadFailed": "A photo did not upload. Remove it and try again.",
+    "uploading": "Wait until the photos finish uploading.",
+    "cameraDenied": "Camera permission is off. Turn it on in the phone's settings to take a photo."
   }
 }

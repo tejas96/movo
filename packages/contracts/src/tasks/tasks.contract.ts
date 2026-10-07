@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ActorSchema, IdSchema, IsoDateSchema, IsoDateTimeSchema } from '../core/common';
 import { defineRoute } from '../core/route';
+import { FileRefSchema, MAX_TASK_PROOFS } from '../files/files.contract';
 
 export const TaskStatusSchema = z.enum([
   'OPEN',
@@ -40,6 +41,8 @@ export type TaskSummary = z.infer<typeof TaskSummarySchema>;
 export const TaskSchema = TaskSummarySchema.extend({
   description: z.string().nullable(),
   submissionNote: z.string().nullable(),
+  /** Photos sent with the last "done". */
+  proofs: z.array(FileRefSchema),
   createdBy: ActorSchema,
   createdAt: IsoDateTimeSchema,
   /** Newest first. */
@@ -145,7 +148,13 @@ export const tasksContract = {
     summary: 'Say the task is done. Someone with task.verify checks it.',
     module: t,
     params: taskParams,
-    body: z.object({ note: z.string().trim().max(1000).optional() }).strict(),
+    body: z
+      .object({
+        note: z.string().trim().max(1000).optional(),
+        /** TASK_PROOF uploads. They replace the photos of an earlier try. */
+        proofIds: z.array(IdSchema).max(MAX_TASK_PROOFS).optional(),
+      })
+      .strict(),
     response: TaskSchema,
   }),
   verify: defineRoute({

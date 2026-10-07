@@ -5,9 +5,12 @@ import {
   buildQuery,
   type FileRef,
   filesContract,
+  meContract,
   type RouteDef,
   type RouteInput,
   type RouteResponse,
+  type UploadKind,
+  type User,
 } from '@movo/contracts';
 import { useSessionStore } from '../auth/session.store';
 import { clearRefreshToken, loadRefreshToken, saveRefreshToken } from '../auth/token-storage';
@@ -147,12 +150,8 @@ export interface UploadAsset {
  * Multipart upload of one photo (field "file"). Not a JSON route, so it lives beside api().
  * Same auth header and one silent refresh on 401.
  */
-export async function uploadFile(
-  societyId: string,
-  asset: UploadAsset,
-  retry = true,
-): Promise<FileRef> {
-  const url = `${API_URL}${buildPath(filesContract.upload.path, { societyId })}`;
+async function postPhoto<T>(path: string, asset: UploadAsset, retry = true): Promise<T> {
+  const url = `${API_URL}${path}`;
   const form = new FormData();
   const type = asset.type ?? 'image/jpeg';
   const name = asset.fileName ?? `photo.${type.split('/')[1] ?? 'jpg'}`;
@@ -174,7 +173,7 @@ export async function uploadFile(
   if (res.status === 401) {
     if (retry) {
       const tokens = await refreshTokens();
-      if (tokens) return uploadFile(societyId, asset, false);
+      if (tokens) return postPhoto<T>(path, asset, false);
     }
     await signOutLocally();
   }
@@ -194,10 +193,32 @@ export async function uploadFile(
       json.requestId as string | undefined,
     );
   }
-  return json as unknown as FileRef;
+  return json as unknown as T;
+}
+
+/** A society photo. It stays unused until a form saves it with its id. */
+export function uploadFile(
+  societyId: string,
+  asset: UploadAsset,
+  kind: UploadKind,
+): Promise<FileRef> {
+  return postPhoto<FileRef>(
+    `${buildPath(filesContract.upload.path, { societyId })}?kind=${kind}`,
+    asset,
+  );
+}
+
+/** Sets my profile photo and returns my updated profile. */
+export function uploadAvatar(asset: UploadAsset): Promise<User> {
+  return postPhoto<User>(meContract.setAvatar.path, asset);
 }
 
 /** A stored file's url is a relative signed path. Images load it straight, no auth header. */
 export function fileUri(ref: Pick<FileRef, 'url'>): string {
   return /^https?:/.test(ref.url) ? ref.url : `${API_URL}${ref.url}`;
+}
+
+/** For a url field that may be empty: avatarUrl, logoUrl. */
+export function photoUri(url: string | null | undefined): string | null {
+  return url ? fileUri({ url }) : null;
 }

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { JwtService } from '../../common/auth/jwt.service';
 import { TtlCache } from '../../common/tenant/tenant-cache';
+import { FilesModule } from '../files/files.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { EmailService } from './email.service';
@@ -12,6 +13,7 @@ import { SessionsService } from './sessions.service';
 import { UsersService } from './users.service';
 
 @Module({
+  imports: [FilesModule],
   controllers: [AuthController, MeController],
   providers: [
     AuthService,

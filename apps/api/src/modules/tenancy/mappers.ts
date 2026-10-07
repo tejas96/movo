@@ -1,6 +1,7 @@
 import type { FlatRef, MemberCard, MemberFlat, SocietySummary } from '@movo/contracts';
 import { iso } from '../../common/util/dates';
 import type { Building, Flat, Prisma, Society } from '../../generated/prisma/client';
+import { fileUrl } from '../files/file-url';
 
 export function toSocietySummary(s: Society): SocietySummary {
   return {
@@ -8,7 +9,7 @@ export function toSocietySummary(s: Society): SocietySummary {
     name: s.name,
     slug: s.slug,
     city: s.city,
-    logoUrl: s.logoUrl,
+    logoUrl: fileUrl(s.logoFileId),
     defaultLocale: s.defaultLocale,
     timezone: s.timezone,
   };
@@ -49,7 +50,7 @@ export function toMemberCard(m: MembershipWithAll, viewerSeesContact: boolean): 
     membershipId: m.id,
     userId: m.userId,
     displayName: m.user.displayName,
-    avatarUrl: m.user.avatarUrl,
+    avatarUrl: fileUrl(m.user.avatarFileId),
     status: m.status,
     roles: m.roles
       .map((r) => ({ id: r.role.id, key: r.role.key, name: r.role.name }))

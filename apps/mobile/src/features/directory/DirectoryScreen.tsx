@@ -16,6 +16,7 @@ import { useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Linking, ScrollView, View } from 'react-native';
+import { photoUri } from '../../core/api/client';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { useBuildings } from '../manage/api';
@@ -114,7 +115,7 @@ export function DirectoryScreen() {
           renderItem={({ item }) => (
             <PersonCard
               name={item.displayName}
-              avatarUri={item.avatarUrl}
+              avatarUri={photoUri(item.avatarUrl)}
               verified={item.roles.some((r) => r.key === 'admin')}
               role={role(item)}
               onPress={() => nav.navigate('MemberDetail', { membershipId: item.membershipId })}

@@ -16,6 +16,7 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import type { Prisma, Task as TaskRow, TaskStatus } from '../../generated/prisma/client';
+import { FilesService } from '../files/files.service';
 import { dateOnly, dbDate } from '../maintenance/ledger';
 import { NotificationsService } from '../notifications/notifications.service';
 import { awardContext, awardPoints } from '../rewards/rewards.service';
@@ -34,6 +35,7 @@ export class TasksService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly files: FilesService,
   ) {}
 
   private get db() {
@@ -197,12 +199,21 @@ export class TasksService {
     return this.toDto(ctx, task);
   }
 
-  async submit(taskId: string, note: string | undefined): Promise<Task> {
+  async submit(
+    taskId: string,
+    note: string | undefined,
+    proofIds: string[] | undefined,
+  ): Promise<Task> {
     const ctx = requireTenant();
     const t = await this.requireTask(taskId);
     if (t.assigneeMembershipId !== ctx.membershipId || t.status !== 'IN_PROGRESS')
       throw ApiException.forbidden('Only the person doing a task can mark it done');
+    // New photos replace the ones from a try that was sent back; no list keeps them.
+    const proofs = proofIds
+      ? await this.files.plan(ctx, await this.files.linked({ taskId }), proofIds, 'TASK_PROOF')
+      : null;
     const task = await this.prisma.$transaction(async (tx) => {
+      if (proofs) await this.files.link(tx, proofs.final, { taskId });
       const updated = await tx.task.update({
         where: { id: taskId, societyId: ctx.societyId },
         data: { status: 'SUBMITTED', submissionNote: note ?? null, submittedAt: new Date() },
@@ -210,6 +221,7 @@ export class TasksService {
       await this.event(tx, ctx, taskId, 'SUBMITTED', note);
       return updated;
     });
+    if (proofs) await this.files.remove(proofs.dropped);
     const verifiers = await this.prisma.membership.findMany({
       where: {
         societyId: ctx.societyId,
@@ -437,6 +449,7 @@ export class TasksService {
       ...toSummary(t, names),
       description: t.description,
       submissionNote: t.submissionNote,
+      proofs: (await this.files.linked({ taskId: t.id })).map((id) => this.files.ref(id)),
       createdBy: actor(t.createdByMembershipId),
       createdAt: t.createdAt.toISOString(),
       events: events.map((e) => ({

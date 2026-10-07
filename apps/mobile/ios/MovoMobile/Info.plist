@@ -34,7 +34,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>The camera shows the AR guide: where you are in the building and the way to a flat, the lift or the parking.</string>
+	<string>MOVO uses the camera when you take a photo of a bill, a payment, finished work or yourself, and for the AR guide inside your building.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string/>
 	<key>RCTNewArchEnabled</key>

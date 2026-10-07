@@ -26,6 +26,7 @@ import type {
   ExpenseCategory as CategoryRow,
   Expense as ExpenseRow,
 } from '../../generated/prisma/client';
+import { FilesService } from '../files/files.service';
 import { fyLabel, todayIn } from '../maintenance/billing';
 import { dateOnly, dbDate } from '../maintenance/ledger';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -67,6 +68,7 @@ export class ExpensesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly files: FilesService,
   ) {}
 
   private get db() {
@@ -199,6 +201,7 @@ export class ExpensesService {
     if (repeat) return this.get(repeat.id);
     await this.requireCategory(body.categoryId);
     this.checkDate(ctx, body.incurredOn);
+    const receiptIds = await this.files.claim(ctx, body.receiptIds ?? [], 'EXPENSE_RECEIPT');
     const status = this.needsApproval(ctx, body.amountPaise) ? 'PENDING' : 'APPROVED';
     let row: ExpenseWithCategory;
     try {
@@ -220,6 +223,7 @@ export class ExpensesService {
           },
           include: { category: true },
         });
+        await this.files.link(tx, receiptIds, { expenseId: e.id });
         await this.audit.record(
           {
             action: 'expense.created',
@@ -251,7 +255,16 @@ export class ExpensesService {
     if (body.incurredOn) this.checkDate(ctx, body.incurredOn);
     const amountPaise = body.amountPaise ?? before.amountPaise;
     const status = this.needsApproval(ctx, amountPaise) ? 'PENDING' : 'APPROVED';
+    const receipts = body.receiptIds
+      ? await this.files.plan(
+          ctx,
+          await this.files.linked({ expenseId }),
+          body.receiptIds,
+          'EXPENSE_RECEIPT',
+        )
+      : null;
     const row = await this.prisma.$transaction(async (tx) => {
+      if (receipts) await this.files.link(tx, receipts.final, { expenseId });
       const e = await tx.expense.update({
         where: { id: expenseId, societyId: ctx.societyId },
         data: {
@@ -282,6 +295,7 @@ export class ExpensesService {
       );
       return e;
     });
+    if (receipts) await this.files.remove(receipts.dropped);
     if (status === 'PENDING') await this.askApprovers(ctx, row);
     return this.toDto(ctx, row);
   }
@@ -339,6 +353,7 @@ export class ExpensesService {
   async remove(expenseId: string): Promise<void> {
     const ctx = requireTenant();
     const e = await this.requireEditable(ctx, expenseId);
+    const receiptIds = await this.files.linked({ expenseId });
     await this.prisma.$transaction(async (tx) => {
       await tx.expense.delete({ where: { id: expenseId } });
       await this.audit.record(
@@ -351,6 +366,7 @@ export class ExpensesService {
         tx,
       );
     });
+    await this.files.remove(receiptIds);
   }
 
   /** Home: pending expenses this approver may decide. */
@@ -537,6 +553,7 @@ export class ExpensesService {
       decidedAt: iso(e.decidedAt),
       rejectionReason: e.rejectionReason,
       createdAt: e.createdAt.toISOString(),
+      receipts: (await this.files.linked({ expenseId: e.id })).map((id) => this.files.ref(id)),
       canDecide:
         e.status === 'PENDING' &&
         can(ctx, 'expense.approve') &&

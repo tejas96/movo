@@ -1,3 +1,4 @@
+import { MAX_TASK_PROOFS } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -23,6 +24,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
+import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { day } from '../../core/util/money';
 import { relative } from '../../core/util/time';
@@ -46,6 +49,7 @@ export function TaskDetailScreen() {
   const [pick, setPick] = useState(false);
   const [sheet, setSheet] = useState<'submit' | 'sendBack' | 'cancel' | null>(null);
   const [text, setText] = useState('');
+  const proofs = usePhotoPicker(societyId, { kind: 'TASK_PROOF', max: MAX_TASK_PROOFS });
   const x = task.data;
 
   const run = async (a: TaskAction, ok: string) => {
@@ -78,6 +82,7 @@ export function TaskDetailScreen() {
             label: t('tasks:actions.submit'),
             onPress: () => {
               setText('');
+              proofs.reset(x.proofs);
               setSheet('submit');
             },
           }
@@ -142,6 +147,7 @@ export function TaskDetailScreen() {
                 {t('tasks:createdBy', { name: x.createdBy.displayName })}
               </Text>
             </Card>
+            <PhotoSection className="mt-6" title={t('tasks:proofs')} photos={x.proofs} />
             {x.canVerify ? (
               <Button
                 className="mt-3"
@@ -236,11 +242,14 @@ export function TaskDetailScreen() {
             }
             variant={sheet === 'cancel' ? 'danger' : 'ink'}
             loading={action.isPending}
-            disabled={sheet === 'sendBack' && text.trim().length < 2}
+            disabled={
+              (sheet === 'sendBack' && text.trim().length < 2) ||
+              (sheet === 'submit' && proofs.uploading)
+            }
             onPress={() =>
               sheet === 'submit'
                 ? void run(
-                    { kind: 'submit', note: text.trim() || undefined },
+                    { kind: 'submit', note: text.trim() || undefined, proofIds: proofs.ids },
                     t('tasks:actions.submitted'),
                   )
                 : sheet === 'sendBack'
@@ -255,15 +264,25 @@ export function TaskDetailScreen() {
             {x?.title ?? ''}
           </Text>
         ) : (
-          <Input
-            white
-            multiline
-            label={sheet === 'submit' ? t('tasks:actions.note') : t('tasks:actions.reason')}
-            value={text}
-            onChangeText={setText}
-            maxLength={1000}
-            style={{ minHeight: 90, textAlignVertical: 'top' }}
-          />
+          <View className="gap-4">
+            <Input
+              white
+              multiline
+              label={sheet === 'submit' ? t('tasks:actions.note') : t('tasks:actions.reason')}
+              value={text}
+              onChangeText={setText}
+              maxLength={1000}
+              style={{ minHeight: 90, textAlignVertical: 'top' }}
+            />
+            {sheet === 'submit' ? (
+              <PhotoField
+                label={t('tasks:actions.proofs')}
+                help={t('tasks:actions.proofsHelp')}
+                picker={proofs}
+                onGray
+              />
+            ) : null}
+          </View>
         )}
       </Sheet>
     </>

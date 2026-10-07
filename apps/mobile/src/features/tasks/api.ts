@@ -43,7 +43,7 @@ export function useSaveTask(societyId: string, taskId: string | undefined) {
 
 export type TaskAction =
   | { kind: 'volunteer' | 'withdraw' | 'verify' | 'cancel' }
-  | { kind: 'submit'; note?: string }
+  | { kind: 'submit'; note?: string; proofIds: string[] }
   | { kind: 'sendBack'; reason: string }
   | { kind: 'assign'; membershipId: string | null };
 
@@ -62,7 +62,10 @@ export function useTaskAction(societyId: string, taskId: string) {
         case 'cancel':
           return api(c.cancel, { params });
         case 'submit':
-          return api(c.submit, { params, body: a.note ? { note: a.note } : {} });
+          return api(c.submit, {
+            params,
+            body: { ...(a.note ? { note: a.note } : {}), proofIds: a.proofIds },
+          });
         case 'sendBack':
           return api(c.sendBack, { params, body: { reason: a.reason } });
         case 'assign':
