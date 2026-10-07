@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "MOVO"
+    "name": "MOVO",
+    "tagline": "Your society, in your pocket"
   },
   "actions": {
     "continue": "Continue",

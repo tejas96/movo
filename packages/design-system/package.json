@@ -14,6 +14,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "icons": "node scripts/build-icons.mjs",
+    "wordmark": "python3 scripts/build-wordmark.py",
     "fonts": "node scripts/sync-fonts.mjs",
     "preview": "node scripts/build-icons.mjs && node scripts/build-preview.mjs",
     "check:preset": "node scripts/check-preset.mjs"

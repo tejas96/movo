@@ -1,13 +1,16 @@
-import { Button, EmptyState, Screen, Text } from '@movo/design-system';
+import { Button, EmptyState, Screen } from '@movo/design-system';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { ARScreen } from '../../features/ar/ARScreen';
 import { FloorMapScreen } from '../../features/ar/FloorMapScreen';
 import { ForgotPasswordScreen } from '../../features/auth/ForgotPasswordScreen';
 import { LoginScreen } from '../../features/auth/LoginScreen';
 import { RegisterScreen } from '../../features/auth/RegisterScreen';
 import { ResetPasswordScreen } from '../../features/auth/ResetPasswordScreen';
+import { WelcomeScreen } from '../../features/auth/WelcomeScreen';
+import { isWelcomeSeen } from '../../features/auth/welcome-seen';
 import { DirectoryScreen } from '../../features/directory/DirectoryScreen';
 import { MemberDetailScreen } from '../../features/directory/MemberDetailScreen';
 import { DutiesScreen } from '../../features/duties/DutiesScreen';
@@ -79,26 +82,14 @@ import { TaskDetailScreen } from '../../features/tasks/TaskDetailScreen';
 import { TaskEditorScreen } from '../../features/tasks/TaskEditorScreen';
 import { TasksScreen } from '../../features/tasks/TasksScreen';
 import { signOut } from '../auth/auth';
-import { useSessionStore } from '../auth/session.store';
+import { type SessionStatus, useSessionStore } from '../auth/session.store';
 import { useBootstrap } from '../auth/use-bootstrap';
 import { useMeContext } from '../tenant/hooks';
 import { MainTabs } from './MainTabs';
+import { Splash, type SplashStage } from './Splash';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
-function Splash() {
-  return (
-    <View className="flex-1 items-center justify-center bg-canvas">
-      <View className="h-16 w-16 items-center justify-center rounded-md bg-ink">
-        <Text variant="h1" tone="inverse">
-          M
-        </Text>
-      </View>
-      <ActivityIndicator className="mt-6" />
-    </View>
-  );
-}
 
 function ContextError({ retry }: { retry: () => void }) {
   const { t } = useTranslation('common');
@@ -131,14 +122,38 @@ export function RootNavigator() {
   useBootstrap();
   const status = useSessionStore((s) => s.status);
   const ctx = useMeContext(status === 'signedIn');
+  const [splashDone, setSplashDone] = useState(false);
+  const hideSplash = useCallback(() => setSplashDone(true), []);
+  // Read once per launch: leaving Welcome marks it seen without pulling the route from under it.
+  const [showWelcome] = useState(() => !isWelcomeSeen());
 
-  if (status === 'booting') return <Splash />;
-  if (status === 'signedIn' && !ctx.data) {
-    if (ctx.isError) return <ContextError retry={() => void ctx.refetch()} />;
-    return <Splash />;
-  }
+  // The splash stays on top until the session and the society context are known,
+  // so the first real screen is already mounted when it fades away.
+  const settled = status === 'signedOut' || Boolean(ctx.data) || ctx.isError;
+  const stage: SplashStage = status === 'booting' ? 0 : settled ? 2 : 1;
   const hasSociety = Boolean(ctx.data?.memberships.some((m) => m.status === 'ACTIVE'));
 
+  return (
+    <View className="flex-1 bg-canvas">
+      {!settled ? null : status === 'signedIn' && !ctx.data ? (
+        <ContextError retry={() => void ctx.refetch()} />
+      ) : (
+        <Navigator status={status} hasSociety={hasSociety} showWelcome={showWelcome} />
+      )}
+      {splashDone ? null : <Splash stage={stage} onDone={hideSplash} />}
+    </View>
+  );
+}
+
+function Navigator({
+  status,
+  hasSociety,
+  showWelcome,
+}: {
+  status: SessionStatus;
+  hasSociety: boolean;
+  showWelcome: boolean;
+}) {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -149,6 +164,7 @@ export function RootNavigator() {
     >
       {status === 'signedOut' ? (
         <Stack.Group>
+          {showWelcome ? <Stack.Screen name="Welcome" component={WelcomeScreen} /> : null}
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />

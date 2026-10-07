@@ -1,5 +1,6 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Pressable, View } from 'react-native';
+import { useEffect } from 'react';
+import { LayoutAnimation, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { IconName } from '../icons';
 import { Icon } from './Icon';
@@ -23,6 +24,16 @@ export function FloatingTabBar({
 }: BottomTabBarProps & { tabs: TabSpec[] }) {
   const insets = useSafeAreaInsets();
   const specs = new Map(tabs.map((t) => [t.name, t]));
+  // The black pill grows on the new tab and shrinks on the old one in one eased move.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on tab change only
+  useEffect(() => {
+    LayoutAnimation.configureNext({
+      duration: 260,
+      create: { type: 'easeInEaseOut', property: 'opacity' },
+      update: { type: 'easeInEaseOut' },
+      delete: { type: 'easeInEaseOut', property: 'opacity' },
+    });
+  }, [state.index]);
   return (
     <View
       pointerEvents="box-none"

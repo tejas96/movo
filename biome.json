@@ -17,6 +17,7 @@
       "!packages/design-system/assets",
       "!packages/design-system/preview/dist",
       "!packages/design-system/src/icons/generated",
+      "!packages/design-system/src/components/generated",
       "!apps/api/src/generated",
       "!apps/mobile/global.css",
       "!docs/spatial/**/*.json",
