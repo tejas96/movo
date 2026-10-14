@@ -227,10 +227,12 @@ jobs:
           dc build backup
           dc up -d postgres backup
           # 1. A fresh backup, so a bad migration loses nothing (backups/predeploy, newest 5).
-          dc exec -T backup backup.sh predeploy
+          # </dev/null on every docker command: this script reaches bash over stdin, and a
+          # command that reads stdin would swallow the rest of the script.
+          dc exec -T backup backup.sh predeploy </dev/null
           # 2. Migrations with the new image while the old API still serves. If they fail, the
           #    old API keeps running and the deploy stops here.
-          if ! dc run --rm --no-deps -e MIGRATE_ONLY=1 api; then
+          if ! dc run --rm --no-deps -T -e MIGRATE_ONLY=1 api </dev/null; then
             [ -n "$PREV_IMAGE" ] && set_image "$PREV_IMAGE"
             echo "::error::migrations failed; the old API is still running"
             exit 1
@@ -249,6 +251,18 @@ jobs:
             fi
             exit 1
           fi
+          running=$(docker inspect -f '{{.Config.Image}}' "$(dc ps -q api)")
+          if [ "$running" != "$API_IMAGE" ]; then
+            echo "::error::api runs $running, expected $API_IMAGE"
+            exit 1
+          fi
           docker image prune -f
+          echo "MOVO-DEPLOY-DONE $API_IMAGE"
           REMOTE
-          } | ssh movo bash -s
+          } | ssh movo bash -s | tee /tmp/deploy.log
+          # The script ends with a marker. Without it, the script stopped early (for example a
+          # command swallowed its stdin) even if ssh exited 0.
+          grep -q "^MOVO-DEPLOY-DONE $IMAGE:$SHA\$" /tmp/deploy.log || {
+            echo "::error::the deploy script did not finish on the VM"
+            exit 1
+          }
