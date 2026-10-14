@@ -8,8 +8,8 @@ import {
   type OrderStatus,
 } from '@movo/contracts';
 import {
+  type BoldIconName,
   Icon,
-  type IconName,
   photos,
   StatusPill,
   type StatusTone,
@@ -27,7 +27,7 @@ import { dateTime } from '../../core/util/time';
 
 export const KINDS: readonly ListingKind[] = ['FOOD', 'PRODUCT', 'SERVICE', 'RESALE'];
 
-export const KIND_ICON: Record<ListingKind, IconName> = {
+export const KIND_ICON: Record<ListingKind, BoldIconName> = {
   FOOD: 'food',
   PRODUCT: 'bag',
   SERVICE: 'services',

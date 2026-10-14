@@ -1,16 +1,32 @@
-import { iconData } from './generated/icon-data';
-import { type IconName, iconMap } from './icon-map';
+import { expandNode } from './expand';
+import { type IconName, iconData } from './generated/icon-data';
+import { iconMap } from './icon-map';
 import type { IconNode, IconStyle } from './types';
 
-export type { IconName } from './icon-map';
-export type { IconNode, IconStyle } from './types';
+export type { BoldIconName, IconName } from './generated/icon-data';
+export type { IconMapName } from './icon-map';
+export type { IconNode, IconNodeData, IconStyle } from './types';
 export { iconData, iconMap };
 
-export const iconNames = Object.keys(iconMap) as readonly IconName[];
+export const iconNames = Object.keys(iconData) as readonly IconName[];
 
-/** SVG nodes for one icon in one style. The React Native Icon component renders these with react-native-svg. */
+const cache = new Map<string, readonly IconNode[]>();
+
+/**
+ * SVG nodes for one icon in one style, with the shared attributes put back.
+ * The React Native Icon component renders these with react-native-svg.
+ */
 export function iconNodes(name: IconName, style: IconStyle = 'linear'): readonly IconNode[] {
-  return iconData[name][style];
+  const key = `${name}/${style}`;
+  let nodes = cache.get(key);
+  if (!nodes) {
+    const data = iconData[name][style];
+    // TypeScript keeps bold slots to BoldIconName; this fallback only guards casts.
+    if (!data) console.warn(`Icon "${name}" has no ${style} style. Add it to boldIcons.`);
+    nodes = data ? data.map((n) => expandNode(n, style)) : iconNodes(name, 'linear');
+    cache.set(key, nodes);
+  }
+  return nodes;
 }
 
 /** Inline SVG markup for web surfaces (design preview, future web admin). */

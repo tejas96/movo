@@ -1,21 +1,25 @@
 import { type PressableProps, View } from 'react-native';
-import type { IconName, IconStyle } from '../icons';
+import type { BoldIconName, IconName, IconStyle } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { Press } from './Press';
 import { Text } from './Text';
 
-export interface TileProps extends Omit<PressableProps, 'children' | 'style'> {
-  icon: IconName;
-  iconVariant?: IconStyle;
-  label: string;
-  hint?: string | undefined;
-  /** Small black counter, top right. */
-  count?: number | undefined;
-  /** One shade deeper, for tiles inside a gray card. white for tiles inside a gray card that should pop. */
-  tone?: 'gray' | 'deep' | 'white';
-  className?: string;
-}
+/** The icon is bold unless `iconVariant="linear"`; a bold icon must be a BoldIconName. */
+type TileIcon =
+  | { icon: BoldIconName; iconVariant?: IconStyle }
+  | { icon: IconName; iconVariant: 'linear' };
+
+export type TileProps = Omit<PressableProps, 'children' | 'style'> &
+  TileIcon & {
+    label: string;
+    hint?: string | undefined;
+    /** Small black counter, top right. */
+    count?: number | undefined;
+    /** One shade deeper, for tiles inside a gray card. white for tiles inside a gray card that should pop. */
+    tone?: 'gray' | 'deep' | 'white';
+    className?: string;
+  };
 
 const TONE = {
   gray: 'bg-card active:bg-card-deep',
@@ -40,7 +44,7 @@ export function Tile({
       {...rest}
       className={cn('flex-1 min-h-[96px] justify-between rounded-md p-4', TONE[tone], className)}
     >
-      <Icon name={icon} variant={iconVariant} size={24} />
+      <Icon name={icon as BoldIconName} variant={iconVariant} size={24} />
       <View className="mt-3">
         <Text variant="caption" className="font-medium" numberOfLines={2}>
           {label}

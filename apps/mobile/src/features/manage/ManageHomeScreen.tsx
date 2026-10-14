@@ -1,7 +1,7 @@
 import {
+  type BoldIconName,
   Button,
   Card,
-  type IconName,
   Screen,
   Text,
   Tile,
@@ -23,7 +23,7 @@ const PADS = ['pad-a', 'pad-b'] as const;
 
 interface ManageTile {
   key: string;
-  icon: IconName;
+  icon: BoldIconName;
   label: string;
   hint?: string | undefined;
   count?: number | undefined;

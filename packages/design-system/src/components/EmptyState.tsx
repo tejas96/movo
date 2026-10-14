@@ -1,12 +1,12 @@
 import { Image, type ImageSourcePropType, View } from 'react-native';
-import type { IconName } from '../icons';
+import type { BoldIconName } from '../icons';
 import { Button } from './Button';
 import { cn } from './cn';
 import { IconSquare } from './IconButtons';
 import { Text } from './Text';
 
 export interface EmptyStateProps {
-  icon: IconName;
+  icon: BoldIconName;
   /** A soft photo above the text. Replaces the icon square. */
   photo?: ImageSourcePropType;
   title: string;

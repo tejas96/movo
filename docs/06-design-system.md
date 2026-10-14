@@ -102,10 +102,11 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 ## 4. Icons
 
 - Source: the `iconsax` npm package (free set, 1,211 icons, six styles). MOVO uses `linear` and `bold`.
-- `src/icons/icon-map.ts` maps MOVO names to Iconsax names (`home → home-2`, `notices → volume-high`, `duties → repeat`, ...). About 100 icons.
-- `pnpm --filter @movo/design-system icons` writes `src/icons/generated/icon-data.ts`: SVG nodes with colors normalised to `currentColor`.
-- React Native: an `Icon` component renders the nodes with `react-native-svg` (`<Icon name="bell" style="bold" size={24} />`). Web and the preview use `iconSvgMarkup()`.
-- Adding an icon: add one line to the map, run the script. Never import an icon from another package.
+- `src/icons/icon-map.ts` maps MOVO names to Iconsax names (`home → home-2`, `notices → volume-high`, `duties → repeat`, ...). About 130 names.
+- `pnpm --filter @movo/design-system icons` writes `src/icons/generated/icon-data.ts` with only the icons the app uses: a name ships when it appears as a string literal in `apps/mobile/src` or `packages/design-system/src` (or in the script's `KEEP` list). Colors are normalised to `currentColor`; attributes every node of a style shares (stroke width, caps, fill) are stored once in `src/icons/expand.ts`, so the file holds geometry only.
+- `bold` ships only for the names in `boldIcons` (icon-map.ts). The types enforce it: `IconName` is the shipped set and `BoldIconName` the bold set; `variant="bold"` and the bold-by-default slots (IconSquare, CircleButton, Tile, Pill, Row, EmptyState, tabs, photo pills) take a `BoldIconName`.
+- React Native: an `Icon` component renders the nodes with `react-native-svg` (`<Icon name="bell" variant="bold" size={24} />`). Web and the preview use `iconSvgMarkup()`.
+- Adding an icon: add one line to the map, use it, run the script. When TypeScript says a name is not a `BoldIconName`, add it to `boldIcons` and run the script again. Never import an icon from another package.
 
 ## 5. Primitives (built with the mobile scaffold)
 

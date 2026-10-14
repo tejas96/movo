@@ -1,9 +1,9 @@
 import type { Listing, OrderFulfilment } from '@movo/contracts';
 import {
+  type BoldIconName,
   BottomBar,
   Button,
   CircleButton,
-  type IconName,
   IconSquare,
   Input,
   OptionSheet,
@@ -357,7 +357,7 @@ export function ListingDetailScreen() {
 
 function Facts({ listing: l }: { listing: Listing }) {
   const { t } = useTranslation('market');
-  const facts: { key: string; icon: IconName; label: string; hint: string }[] = [
+  const facts: { key: string; icon: BoldIconName; label: string; hint: string }[] = [
     {
       key: 'handover',
       icon: l.fulfilment === 'PICKUP' ? 'bag' : 'truck',

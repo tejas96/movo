@@ -1,21 +1,25 @@
 import { View, type ViewProps } from 'react-native';
-import type { IconName, IconStyle } from '../icons';
+import type { BoldIconName, IconName, IconStyle } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { Text } from './Text';
 import { type StatusTone, theme } from './theme';
 
-export interface PillProps extends ViewProps {
-  label: string;
-  icon?: IconName;
-  iconVariant?: IconStyle;
-  /** white = inside a gray card (default). gray = on white. overlay = over a photo. */
-  tone?: 'white' | 'gray' | 'overlay';
-  size?: 'md' | 'sm';
-  className?: string;
-}
+/** The icon is bold unless `iconVariant="linear"`; a bold icon must be a BoldIconName. */
+type PillIcon =
+  | { icon?: BoldIconName; iconVariant?: IconStyle }
+  | { icon?: IconName; iconVariant: 'linear' };
 
-const TONE: Record<NonNullable<PillProps['tone']>, string> = {
+export type PillProps = ViewProps &
+  PillIcon & {
+    label: string;
+    /** white = inside a gray card (default). gray = on white. overlay = over a photo. */
+    tone?: 'white' | 'gray' | 'overlay';
+    size?: 'md' | 'sm';
+    className?: string;
+  };
+
+const TONE: Record<'white' | 'gray' | 'overlay', string> = {
   white: 'bg-card-nested',
   gray: 'bg-card',
   overlay: 'bg-overlay',
@@ -41,7 +45,9 @@ export function Pill({
         className,
       )}
     >
-      {icon ? <Icon name={icon} variant={iconVariant} size={size === 'md' ? 18 : 16} /> : null}
+      {icon ? (
+        <Icon name={icon as BoldIconName} variant={iconVariant} size={size === 'md' ? 18 : 16} />
+      ) : null}
       <Text
         variant={size === 'md' ? 'bodyMedium' : 'caption'}
         className={size === 'sm' ? 'font-medium' : undefined}

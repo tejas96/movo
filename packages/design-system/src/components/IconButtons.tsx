@@ -1,5 +1,5 @@
 import { type PressableProps, View } from 'react-native';
-import type { IconName, IconStyle } from '../icons';
+import type { BoldIconName, IconName, IconStyle } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { Press } from './Press';
@@ -18,16 +18,18 @@ const FG: Record<Tone, string> = {
   ink: theme.color.icon.onInk,
 };
 
-export interface IconSquareProps extends Omit<PressableProps, 'children' | 'style'> {
-  icon: IconName;
-  variant?: IconStyle;
-  tone?: Tone;
-  /** 52 (default) for header actions, 44 for rows. */
-  size?: 'md' | 'sm';
-  /** Small black dot for unread state. */
-  dot?: boolean;
-  className?: string;
-}
+/** Bold unless `variant="linear"`; a bold icon must be a BoldIconName. */
+type SlotIcon = { icon: BoldIconName; variant?: IconStyle } | { icon: IconName; variant: 'linear' };
+
+export type IconSquareProps = Omit<PressableProps, 'children' | 'style'> &
+  SlotIcon & {
+    tone?: Tone;
+    /** 52 (default) for header actions, 44 for rows. */
+    size?: 'md' | 'sm';
+    /** Small black dot for unread state. */
+    dot?: boolean;
+    className?: string;
+  };
 
 /** Rounded square, the reference's header action. Non-pressable when no onPress is given. */
 export function IconSquare({
@@ -44,7 +46,12 @@ export function IconSquare({
     size === 'md' ? 'w-icon-btn h-icon-btn rounded-md' : 'w-icon-btn-sm h-icon-btn-sm rounded-sm';
   const content = (
     <>
-      <Icon name={icon} variant={variant} size={size === 'md' ? 24 : 22} color={FG[tone]} />
+      <Icon
+        name={icon as BoldIconName}
+        variant={variant}
+        size={size === 'md' ? 24 : 22}
+        color={FG[tone]}
+      />
       {dot ? (
         <View className="absolute right-[13px] top-[13px] h-2 w-2 rounded-full bg-ink border-2 border-card" />
       ) : null}
@@ -69,13 +76,12 @@ export function IconSquare({
   );
 }
 
-export interface CircleButtonProps extends Omit<PressableProps, 'children' | 'style'> {
-  icon: IconName;
-  variant?: IconStyle;
-  tone?: Tone;
-  size?: number;
-  className?: string;
-}
+export type CircleButtonProps = Omit<PressableProps, 'children' | 'style'> &
+  SlotIcon & {
+    tone?: Tone;
+    size?: number;
+    className?: string;
+  };
 
 /** Round action: call, chat, favourite. */
 export function CircleButton({
@@ -94,7 +100,12 @@ export function CircleButton({
       style={{ width: size, height: size }}
       className={cn('items-center justify-center rounded-full', BG[tone], className)}
     >
-      <Icon name={icon} variant={variant} size={Math.round(size * 0.45)} color={FG[tone]} />
+      <Icon
+        name={icon as BoldIconName}
+        variant={variant}
+        size={Math.round(size * 0.45)}
+        color={FG[tone]}
+      />
     </Press>
   );
 }

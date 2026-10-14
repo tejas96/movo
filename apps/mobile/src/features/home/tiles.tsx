@@ -1,5 +1,5 @@
 import type { AttentionItem } from '@movo/contracts';
-import { Icon, type IconName, Press, Row, Text, theme } from '@movo/design-system';
+import { type BoldIconName, Icon, Press, Row, Text, theme } from '@movo/design-system';
 import {
   Image,
   type ImageSourcePropType,
@@ -29,7 +29,7 @@ export function HomeTile({
   onPress,
 }: {
   source: ImageSourcePropType;
-  icon: IconName;
+  icon: BoldIconName;
   label: string;
   hint: string;
   count?: number | undefined;
@@ -67,7 +67,7 @@ export function HomeTile({
 
 export interface QuickItem {
   key: string;
-  icon: IconName;
+  icon: BoldIconName;
   label: string;
   dot?: boolean;
   go: () => void;

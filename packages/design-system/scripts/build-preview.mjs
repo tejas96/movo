@@ -2,7 +2,7 @@
  * Builds preview/dist/index.html from preview/template.html.
  * - Injects every token as a CSS custom property (--color-light-bg-card, --radius-xl, ...).
  * - Embeds Poppins as base64 so the file opens anywhere without a server.
- * - Injects an SVG sprite with every MOVO icon in linear and bold styles.
+ * - Injects an SVG sprite with every shipped MOVO icon (linear, and bold where it ships).
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -13,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 const jiti = createJiti(import.meta.url);
 const { tokens } = await jiti.import(resolve(root, 'src/tokens/index.ts'));
-const { iconData } = await jiti.import(resolve(root, 'src/icons/generated/icon-data.ts'));
+const { iconData, iconNodes } = await jiti.import(resolve(root, 'src/icons/index.ts'));
 
 const kebab = (s) =>
   s
@@ -56,8 +56,8 @@ const fonts = [
 
 const symbols = [];
 for (const [name, styles] of Object.entries(iconData)) {
-  for (const [style, nodes] of Object.entries(styles)) {
-    const body = nodes
+  for (const style of Object.keys(styles)) {
+    const body = iconNodes(name, style)
       .map(
         (n) =>
           `<${n.tag} ${Object.entries(n.attrs)
@@ -73,7 +73,7 @@ const sprite = `<svg width="0" height="0" style="position:absolute" aria-hidden=
 const iconList = Object.keys(iconData)
   .map(
     (name) =>
-      `<div class="icon-cell"><svg class="ix"><use href="#ix-${name}-linear"/></svg><svg class="ix"><use href="#ix-${name}-bold"/></svg><span>${name}</span></div>`,
+      `<div class="icon-cell"><svg class="ix"><use href="#ix-${name}-linear"/></svg>${iconData[name].bold ? `<svg class="ix"><use href="#ix-${name}-bold"/></svg>` : ''}<span>${name}</span></div>`,
   )
   .join('');
 

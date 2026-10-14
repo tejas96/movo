@@ -1,7 +1,7 @@
 import type { AlertType, EmergencyContactType } from '@movo/contracts';
-import type { IconName } from '@movo/design-system';
+import type { BoldIconName } from '@movo/design-system';
 
-export const ALERT_ICON: Record<AlertType, IconName> = {
+export const ALERT_ICON: Record<AlertType, BoldIconName> = {
   MEDICAL: 'hospital',
   FIRE: 'fire',
   SECURITY: 'security',
@@ -10,7 +10,7 @@ export const ALERT_ICON: Record<AlertType, IconName> = {
   OTHER: 'warning',
 };
 
-export const CONTACT_ICON: Record<EmergencyContactType, IconName> = {
+export const CONTACT_ICON: Record<EmergencyContactType, BoldIconName> = {
   MEDICAL: 'hospital',
   FIRE: 'fire',
   POLICE: 'shield',

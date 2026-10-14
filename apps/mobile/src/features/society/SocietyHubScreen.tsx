@@ -1,7 +1,7 @@
 import type { ModuleKey } from '@movo/contracts';
 import {
+  type BoldIconName,
   CircleButton,
-  type IconName,
   IconSquare,
   PersonCard,
   PhotoCard,
@@ -24,7 +24,7 @@ import { useMembers } from '../directory/api';
 import { useSocietyProfile } from './api';
 
 type HubKey = ModuleKey | 'manage';
-type ModuleTile = { key: HubKey; icon: IconName; photo: PhotoName; labelKey: string };
+type ModuleTile = { key: HubKey; icon: BoldIconName; photo: PhotoName; labelKey: string };
 
 const ORDER: ModuleTile[] = [
   { key: 'notices', icon: 'notices', photo: 'notices', labelKey: 'notices' },
