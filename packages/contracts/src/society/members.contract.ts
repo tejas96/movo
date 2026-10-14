@@ -39,7 +39,7 @@ export type MemberDetail = z.infer<typeof MemberDetailSchema>;
 export const societyMemberRoutes = {
   listMembers: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/members',
+    path: '/societies/:societyId/members',
     summary: 'Member directory. Privacy is applied by the server.',
     module: 'directory',
     params: SocietyParamsSchema,
@@ -52,7 +52,7 @@ export const societyMemberRoutes = {
   }),
   getMember: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/members/:membershipId',
+    path: '/societies/:societyId/members/:membershipId',
     summary: 'One member, with vehicles when the society shows them',
     module: 'directory',
     params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
@@ -60,7 +60,7 @@ export const societyMemberRoutes = {
   }),
   updateMember: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/members/:membershipId',
+    path: '/societies/:societyId/members/:membershipId',
     summary: 'Change roles or status of a member',
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
@@ -74,7 +74,7 @@ export const societyMemberRoutes = {
   }),
   setOccupancies: defineRoute({
     method: 'PUT',
-    path: '/v1/societies/:societyId/members/:membershipId/flats',
+    path: '/societies/:societyId/members/:membershipId/flats',
     summary: 'Replace the flats a member occupies',
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
@@ -95,7 +95,7 @@ export const societyMemberRoutes = {
   }),
   issueResetCode: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/members/:membershipId/reset-code',
+    path: '/societies/:societyId/members/:membershipId/reset-code',
     summary: 'Issue a one-time password reset code for a member who has no email. Shown once.',
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
@@ -103,7 +103,7 @@ export const societyMemberRoutes = {
   }),
   getMyPrivacy: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/members/me/privacy',
+    path: '/societies/:societyId/members/me/privacy',
     summary:
       'What other members may see about me in this society, and whether showing my phone is allowed',
     params: SocietyParamsSchema,
@@ -116,7 +116,7 @@ export const societyMemberRoutes = {
   }),
   updateMyPrivacy: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/members/me/privacy',
+    path: '/societies/:societyId/members/me/privacy',
     summary: 'What other members may see about me in this society',
     params: SocietyParamsSchema,
     body: z

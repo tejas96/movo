@@ -50,7 +50,7 @@ const w = 'rewards' as const;
 export const rewardsContract = {
   mine: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/rewards/me',
+    path: '/societies/:societyId/rewards/me',
     summary: 'My points this year, all time, and history',
     module: w,
     params: SocietyParamsSchema,
@@ -58,7 +58,7 @@ export const rewardsContract = {
   }),
   member: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/rewards/members/:membershipId',
+    path: '/societies/:societyId/rewards/members/:membershipId',
     summary: 'A member’s points, for reward.adjust',
     module: w,
     permission: 'reward.adjust',
@@ -67,7 +67,7 @@ export const rewardsContract = {
   }),
   leaderboard: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/rewards/leaderboard',
+    path: '/societies/:societyId/rewards/leaderboard',
     summary: 'This year’s top contributors, by the rewards.leaderboard setting',
     module: w,
     params: SocietyParamsSchema,
@@ -75,7 +75,7 @@ export const rewardsContract = {
   }),
   adjust: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/rewards/adjustments',
+    path: '/societies/:societyId/rewards/adjustments',
     summary: 'Add or take away points with a note',
     module: w,
     permission: 'reward.adjust',

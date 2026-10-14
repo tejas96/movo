@@ -70,7 +70,7 @@ const NoteSchema = z.object({ note: z.string().trim().min(1).max(1000).optional(
 export const meetingsContract = {
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/meetings',
+    path: '/societies/:societyId/meetings',
     summary: 'Meetings for me. UPCOMING soonest first, PAST newest first.',
     module: 'meetings',
     params: SocietyParamsSchema,
@@ -79,7 +79,7 @@ export const meetingsContract = {
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/meetings/:meetingId',
+    path: '/societies/:societyId/meetings/:meetingId',
     summary: 'One meeting with its updates',
     module: 'meetings',
     params: meetingParams,
@@ -87,7 +87,7 @@ export const meetingsContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings',
+    path: '/societies/:societyId/meetings',
     summary: 'Schedule a meeting and notify the audience. Reminders follow the society settings.',
     module: 'meetings',
     permission: 'meeting.manage',
@@ -97,7 +97,7 @@ export const meetingsContract = {
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/meetings/:meetingId',
+    path: '/societies/:societyId/meetings/:meetingId',
     summary:
       'Edit a scheduled meeting. A new start time is recorded as RESCHEDULED, notifies the audience and resets reminders.',
     module: 'meetings',
@@ -108,7 +108,7 @@ export const meetingsContract = {
   }),
   addNote: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings/:meetingId/notes',
+    path: '/societies/:societyId/meetings/:meetingId/notes',
     summary: 'Post a short update, like a venue change, and notify the audience',
     module: 'meetings',
     permission: 'meeting.manage',
@@ -118,7 +118,7 @@ export const meetingsContract = {
   }),
   cancel: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings/:meetingId/cancel',
+    path: '/societies/:societyId/meetings/:meetingId/cancel',
     summary: 'Cancel a scheduled meeting and notify the audience',
     module: 'meetings',
     permission: 'meeting.manage',
@@ -128,7 +128,7 @@ export const meetingsContract = {
   }),
   complete: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings/:meetingId/complete',
+    path: '/societies/:societyId/meetings/:meetingId/complete',
     summary: 'Mark a meeting as held. Minutes and attendance come later.',
     module: 'meetings',
     permission: 'meeting.manage',

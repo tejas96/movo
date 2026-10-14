@@ -23,14 +23,14 @@ export type SocietyProfile = z.infer<typeof SocietyProfileSchema>;
 export const societyProfileRoutes = {
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId',
+    path: '/societies/:societyId',
     summary: 'Society profile and counts',
     params: SocietyParamsSchema,
     response: SocietyProfileSchema,
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId',
+    path: '/societies/:societyId',
     summary: 'Update the society profile or core settings',
     permission: 'society.settings.manage',
     params: SocietyParamsSchema,

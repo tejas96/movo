@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { IdSchema, SocietyParamsSchema } from '../core/common';
-import { defineRoute } from '../core/route';
+import { API_PREFIX, defineRoute } from '../core/route';
 
 /**
  * A stored photo. The url is a signed path on the API ("/v1/files/<id>?e=..&s=..") that works
@@ -10,8 +10,9 @@ export const FileRefSchema = z.object({ id: IdSchema, url: z.string() });
 export type FileRef = z.infer<typeof FileRefSchema>;
 
 /** Upload is multipart/form-data with one field "file". The app calls it with fetch + FormData. */
-export const FILE_UPLOAD_PATH = '/v1/societies/:societyId/files';
-export const AVATAR_UPLOAD_PATH = '/v1/me/avatar';
+export const FILE_UPLOAD_PATH = `${API_PREFIX}/societies/:societyId/files`;
+/** meContract.setAvatar and removeAvatar use this path. */
+export const AVATAR_UPLOAD_PATH = `${API_PREFIX}/me/avatar`;
 export const FILE_MAX_BYTES = 5 * 1024 * 1024;
 export const FILE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
@@ -33,7 +34,7 @@ export const MAX_TASK_PROOFS = 3;
 export const filesContract = {
   upload: defineRoute({
     method: 'POST',
-    path: FILE_UPLOAD_PATH,
+    path: '/societies/:societyId/files',
     summary:
       'Upload one photo (JPEG, PNG or WebP, 5 MB at most) for a listing, logo, bill, payment or task. Unused uploads go after a day.',
     params: SocietyParamsSchema,

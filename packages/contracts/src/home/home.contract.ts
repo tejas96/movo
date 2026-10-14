@@ -114,7 +114,7 @@ export type HomeSummary = z.infer<typeof HomeSummarySchema>;
 export const homeContract = {
   summary: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/home',
+    path: '/societies/:societyId/home',
     summary: 'What matters today for this member in this society',
     params: SocietyParamsSchema,
     response: HomeSummarySchema,

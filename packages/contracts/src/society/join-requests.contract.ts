@@ -31,7 +31,7 @@ export type JoinRequest = z.infer<typeof JoinRequestSchema>;
 export const societyJoinRequestRoutes = {
   listJoinRequests: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/join-requests',
+    path: '/societies/:societyId/join-requests',
     summary: 'Join requests waiting for a decision',
     permission: 'member.manage',
     params: SocietyParamsSchema,
@@ -40,7 +40,7 @@ export const societyJoinRequestRoutes = {
   }),
   approveJoinRequest: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/join-requests/:requestId/approve',
+    path: '/societies/:societyId/join-requests/:requestId/approve',
     summary: 'Approve a join request. Creates the membership and the flat occupancy.',
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ requestId: IdSchema }),
@@ -51,7 +51,7 @@ export const societyJoinRequestRoutes = {
   }),
   rejectJoinRequest: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/join-requests/:requestId/reject',
+    path: '/societies/:societyId/join-requests/:requestId/reject',
     summary: 'Reject a join request',
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ requestId: IdSchema }),

@@ -8,7 +8,7 @@ import { listingParams, marketModule, reasonBody } from './shared';
 export const marketModerationRoutes = {
   reportListing: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/listings/:listingId/report',
+    path: '/societies/:societyId/market/listings/:listingId/report',
     summary: 'Tell the committee a listing breaks the rules',
     module: marketModule,
     params: listingParams,
@@ -18,7 +18,7 @@ export const marketModerationRoutes = {
 
   listReports: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/market/reports',
+    path: '/societies/:societyId/market/reports',
     summary: 'Open reports, oldest first',
     module: marketModule,
     permission: 'marketplace.moderate',
@@ -27,7 +27,7 @@ export const marketModerationRoutes = {
   }),
   hideListing: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/listings/:listingId/hide',
+    path: '/societies/:societyId/market/listings/:listingId/hide',
     summary: 'Take a listing down. Closes its open reports and cancels open orders.',
     module: marketModule,
     permission: 'marketplace.moderate',
@@ -37,7 +37,7 @@ export const marketModerationRoutes = {
   }),
   unhideListing: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/listings/:listingId/unhide',
+    path: '/societies/:societyId/market/listings/:listingId/unhide',
     summary: 'Bring a hidden listing back as paused',
     module: marketModule,
     permission: 'marketplace.moderate',
@@ -46,7 +46,7 @@ export const marketModerationRoutes = {
   }),
   dismissReport: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/reports/:reportId/dismiss',
+    path: '/societies/:societyId/market/reports/:reportId/dismiss',
     summary: 'Close a report without action',
     module: marketModule,
     permission: 'marketplace.moderate',

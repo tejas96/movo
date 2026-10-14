@@ -36,7 +36,7 @@ export type Invitation = z.infer<typeof InvitationSchema>;
 export const societyInvitationRoutes = {
   listInvitations: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/invitations',
+    path: '/societies/:societyId/invitations',
     summary: 'Invitations, newest first',
     permission: 'member.manage',
     params: SocietyParamsSchema,
@@ -45,7 +45,7 @@ export const societyInvitationRoutes = {
   }),
   createInvitation: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/invitations',
+    path: '/societies/:societyId/invitations',
     summary: 'Invite a person to a flat. Share the code on WhatsApp.',
     permission: 'member.manage',
     params: SocietyParamsSchema,
@@ -64,7 +64,7 @@ export const societyInvitationRoutes = {
   }),
   revokeInvitation: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/invitations/:invitationId',
+    path: '/societies/:societyId/invitations/:invitationId',
     summary: 'Revoke an invitation',
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ invitationId: IdSchema }),

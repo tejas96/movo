@@ -156,7 +156,7 @@ const x = 'expenses' as const;
 export const expensesContract = {
   listCategories: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/expenses/categories',
+    path: '/societies/:societyId/expenses/categories',
     summary: 'Expense categories',
     module: x,
     params: SocietyParamsSchema,
@@ -164,7 +164,7 @@ export const expensesContract = {
   }),
   createCategory: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/expenses/categories',
+    path: '/societies/:societyId/expenses/categories',
     summary: 'Add a category',
     module: x,
     permission: 'expense.manage_categories',
@@ -179,7 +179,7 @@ export const expensesContract = {
   }),
   updateCategory: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/expenses/categories/:categoryId',
+    path: '/societies/:societyId/expenses/categories/:categoryId',
     summary: 'Rename a category or change its icon',
     module: x,
     permission: 'expense.manage_categories',
@@ -194,7 +194,7 @@ export const expensesContract = {
   }),
   deleteCategory: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/expenses/categories/:categoryId',
+    path: '/societies/:societyId/expenses/categories/:categoryId',
     summary: 'Remove an empty category',
     module: x,
     permission: 'expense.manage_categories',
@@ -203,7 +203,7 @@ export const expensesContract = {
   }),
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/expenses',
+    path: '/societies/:societyId/expenses',
     summary:
       'Expenses, newest first. Finance roles see every status; members see approved ones only when the society shares details.',
     module: x,
@@ -216,7 +216,7 @@ export const expensesContract = {
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/expenses/:expenseId',
+    path: '/societies/:societyId/expenses/:expenseId',
     summary: 'One expense',
     module: x,
     params: expenseParams,
@@ -224,7 +224,7 @@ export const expensesContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/expenses',
+    path: '/societies/:societyId/expenses',
     summary:
       'Add an expense. It needs approval when the society setting says so. A repeated idempotencyKey returns the first one.',
     module: x,
@@ -235,7 +235,7 @@ export const expensesContract = {
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/expenses/:expenseId',
+    path: '/societies/:societyId/expenses/:expenseId',
     summary: 'Edit a pending or rejected expense. It goes back for approval if needed.',
     module: x,
     params: expenseParams,
@@ -244,7 +244,7 @@ export const expensesContract = {
   }),
   approve: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/expenses/:expenseId/approve',
+    path: '/societies/:societyId/expenses/:expenseId/approve',
     summary: 'Approve. Not by the person who added it.',
     module: x,
     permission: 'expense.approve',
@@ -253,7 +253,7 @@ export const expensesContract = {
   }),
   reject: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/expenses/:expenseId/reject',
+    path: '/societies/:societyId/expenses/:expenseId/reject',
     summary: 'Reject with a reason. Not by the person who added it.',
     module: x,
     permission: 'expense.approve',
@@ -263,7 +263,7 @@ export const expensesContract = {
   }),
   remove: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/expenses/:expenseId',
+    path: '/societies/:societyId/expenses/:expenseId',
     summary: 'Remove a pending or rejected expense',
     module: x,
     params: expenseParams,
@@ -271,7 +271,7 @@ export const expensesContract = {
   }),
   listIncome: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/income',
+    path: '/societies/:societyId/income',
     summary: 'Income other than maintenance, for one financial year',
     module: x,
     permission: 'finance.reports.view',
@@ -281,7 +281,7 @@ export const expensesContract = {
   }),
   createIncome: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/income',
+    path: '/societies/:societyId/income',
     summary: 'Record income like a donation or hall booking',
     module: x,
     permission: 'expense.create',
@@ -298,7 +298,7 @@ export const expensesContract = {
   }),
   deleteIncome: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/income/:incomeId',
+    path: '/societies/:societyId/income/:incomeId',
     summary: 'Remove an income entry made by mistake',
     module: x,
     permission: 'expense.create',
@@ -307,7 +307,7 @@ export const expensesContract = {
   }),
   report: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/finance/report',
+    path: '/societies/:societyId/finance/report',
     summary:
       'Financial year summary. Finance roles always; members when the society shares a summary or details.',
     module: x,

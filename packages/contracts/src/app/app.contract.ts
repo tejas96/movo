@@ -12,7 +12,7 @@ export type AppConfig = z.infer<typeof AppConfigSchema>;
 export const appContract = {
   config: defineRoute({
     method: 'GET',
-    path: '/v1/app/config',
+    path: '/app/config',
     summary: 'Minimum supported app version and support links',
     auth: 'none',
     response: AppConfigSchema,
@@ -20,6 +20,7 @@ export const appContract = {
   health: defineRoute({
     method: 'GET',
     path: '/health',
+    versioned: false,
     summary: 'Liveness',
     auth: 'none',
     response: z.object({ status: z.literal('ok'), version: z.string(), time: z.string() }),

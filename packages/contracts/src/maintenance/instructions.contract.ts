@@ -8,7 +8,7 @@ import { instructionParams, maintenanceModule } from './shared';
 export const maintenanceInstructionRoutes = {
   listInstructions: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/instructions',
+    path: '/societies/:societyId/maintenance/instructions',
     summary: 'How to pay: UPI ids and bank details. Members see active ones.',
     module: maintenanceModule,
     params: SocietyParamsSchema,
@@ -16,7 +16,7 @@ export const maintenanceInstructionRoutes = {
   }),
   createInstruction: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/instructions',
+    path: '/societies/:societyId/maintenance/instructions',
     summary: 'Add a way to pay',
     module: maintenanceModule,
     permission: 'maintenance.settings.manage',
@@ -34,7 +34,7 @@ export const maintenanceInstructionRoutes = {
   }),
   updateInstruction: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/maintenance/instructions/:instructionId',
+    path: '/societies/:societyId/maintenance/instructions/:instructionId',
     summary: 'Edit a way to pay',
     module: maintenanceModule,
     permission: 'maintenance.settings.manage',
@@ -51,7 +51,7 @@ export const maintenanceInstructionRoutes = {
   }),
   deleteInstruction: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/maintenance/instructions/:instructionId',
+    path: '/societies/:societyId/maintenance/instructions/:instructionId',
     summary: 'Remove a way to pay',
     module: maintenanceModule,
     permission: 'maintenance.settings.manage',

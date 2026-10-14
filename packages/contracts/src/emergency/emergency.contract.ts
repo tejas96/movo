@@ -90,7 +90,7 @@ const ContactInputSchema = z.object({
 export const emergencyContract = {
   listContacts: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/emergency/contacts',
+    path: '/societies/:societyId/emergency/contacts',
     summary: 'Emergency contacts in display order',
     module: 'emergency',
     params: SocietyParamsSchema,
@@ -98,7 +98,7 @@ export const emergencyContract = {
   }),
   createContact: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/emergency/contacts',
+    path: '/societies/:societyId/emergency/contacts',
     summary: 'Add a contact',
     module: 'emergency',
     permission: 'emergency.contacts.manage',
@@ -108,7 +108,7 @@ export const emergencyContract = {
   }),
   updateContact: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/emergency/contacts/:contactId',
+    path: '/societies/:societyId/emergency/contacts/:contactId',
     summary: 'Edit a contact',
     module: 'emergency',
     permission: 'emergency.contacts.manage',
@@ -118,7 +118,7 @@ export const emergencyContract = {
   }),
   deleteContact: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/emergency/contacts/:contactId',
+    path: '/societies/:societyId/emergency/contacts/:contactId',
     summary: 'Remove a contact',
     module: 'emergency',
     permission: 'emergency.contacts.manage',
@@ -128,7 +128,7 @@ export const emergencyContract = {
 
   listAlerts: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/emergency/alerts',
+    path: '/societies/:societyId/emergency/alerts',
     summary: 'Alerts, newest first. Default: active ones.',
     module: 'emergency',
     params: SocietyParamsSchema,
@@ -137,7 +137,7 @@ export const emergencyContract = {
   }),
   getAlert: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/emergency/alerts/:alertId',
+    path: '/societies/:societyId/emergency/alerts/:alertId',
     summary: 'One alert',
     module: 'emergency',
     params: alertParams,
@@ -145,7 +145,7 @@ export const emergencyContract = {
   }),
   raiseAlert: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/emergency/alerts',
+    path: '/societies/:societyId/emergency/alerts',
     summary:
       'Raise an alert. Notifies the society at once. One alert per member per cooldown window.',
     module: 'emergency',
@@ -162,7 +162,7 @@ export const emergencyContract = {
   }),
   resolveAlert: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/emergency/alerts/:alertId/resolve',
+    path: '/societies/:societyId/emergency/alerts/:alertId/resolve',
     summary: 'Close an alert as resolved or a false alarm. The raiser or a resolver can do this.',
     module: 'emergency',
     params: alertParams,

@@ -16,7 +16,7 @@ import { billParams, flatParams, maintenanceModule, ReasonSchema } from './share
 export const maintenanceBillRoutes = {
   myDues: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/me',
+    path: '/societies/:societyId/maintenance/me',
     summary: 'Dues, advance and recent payments for each of my flats',
     module: maintenanceModule,
     params: SocietyParamsSchema,
@@ -24,7 +24,7 @@ export const maintenanceBillRoutes = {
   }),
   flatAccount: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/flats/:flatId',
+    path: '/societies/:societyId/maintenance/flats/:flatId',
     summary: 'One flat’s account. Members of the flat, or maintenance.view_all.',
     module: maintenanceModule,
     params: flatParams,
@@ -32,7 +32,7 @@ export const maintenanceBillRoutes = {
   }),
   listBills: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/bills',
+    path: '/societies/:societyId/maintenance/bills',
     summary: 'Bills, newest due first. Members see their own flats.',
     module: maintenanceModule,
     params: SocietyParamsSchema,
@@ -44,7 +44,7 @@ export const maintenanceBillRoutes = {
   }),
   getBill: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/bills/:billId',
+    path: '/societies/:societyId/maintenance/bills/:billId',
     summary: 'One bill with lines and payments',
     module: maintenanceModule,
     params: billParams,
@@ -52,7 +52,7 @@ export const maintenanceBillRoutes = {
   }),
   generateBills: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/bills/generate',
+    path: '/societies/:societyId/maintenance/bills/generate',
     summary: 'Create bills that are due now for every active plan. Safe to run again.',
     module: maintenanceModule,
     permission: 'maintenance.generate_bills',
@@ -61,7 +61,7 @@ export const maintenanceBillRoutes = {
   }),
   createAdhocBills: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/bills/adhoc',
+    path: '/societies/:societyId/maintenance/bills/adhoc',
     summary: 'One-off bill, like a repair fund, for all flats or chosen flats',
     module: maintenanceModule,
     permission: 'maintenance.generate_bills',
@@ -79,7 +79,7 @@ export const maintenanceBillRoutes = {
   }),
   waiveBill: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/bills/:billId/waive',
+    path: '/societies/:societyId/maintenance/bills/:billId/waive',
     summary: 'Waive what is left on a bill',
     module: maintenanceModule,
     permission: 'maintenance.waive',
@@ -89,7 +89,7 @@ export const maintenanceBillRoutes = {
   }),
   waiveLateFee: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/bills/:billId/waive-late-fee',
+    path: '/societies/:societyId/maintenance/bills/:billId/waive-late-fee',
     summary: 'Remove the late fee from a bill for good',
     module: maintenanceModule,
     permission: 'maintenance.waive',

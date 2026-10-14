@@ -20,14 +20,14 @@ const RoleInputSchema = z.object({
 export const societyRoleRoutes = {
   listRoles: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/roles',
+    path: '/societies/:societyId/roles',
     summary: 'Roles of this society',
     params: SocietyParamsSchema,
     response: z.array(RoleSchema),
   }),
   createRole: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/roles',
+    path: '/societies/:societyId/roles',
     summary: 'Add a role. You can only give permissions you hold yourself.',
     permission: 'society.roles.manage',
     params: SocietyParamsSchema,
@@ -36,7 +36,7 @@ export const societyRoleRoutes = {
   }),
   updateRole: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/roles/:roleId',
+    path: '/societies/:societyId/roles/:roleId',
     summary: 'Rename a role or change its permissions. The admin role keeps every permission.',
     permission: 'society.roles.manage',
     params: SocietyParamsSchema.extend({ roleId: IdSchema }),
@@ -45,7 +45,7 @@ export const societyRoleRoutes = {
   }),
   deleteRole: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/roles/:roleId',
+    path: '/societies/:societyId/roles/:roleId',
     summary: 'Delete a role you added. It must have no members or invitations.',
     permission: 'society.roles.manage',
     params: SocietyParamsSchema.extend({ roleId: IdSchema }),

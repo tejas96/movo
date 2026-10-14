@@ -8,7 +8,7 @@ import { ModuleStateSchema } from '../me/me.contract';
 export const societyModuleRoutes = {
   listModules: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/modules',
+    path: '/societies/:societyId/modules',
     summary: 'Module switches and settings',
     permission: 'society.settings.manage',
     params: SocietyParamsSchema,
@@ -16,7 +16,7 @@ export const societyModuleRoutes = {
   }),
   updateModule: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/modules/:moduleKey',
+    path: '/societies/:societyId/modules/:moduleKey',
     summary: 'Switch a module on or off, or change its settings',
     permission: 'society.settings.manage',
     params: SocietyParamsSchema.extend({ moduleKey: ModuleKeySchema }),

@@ -89,7 +89,7 @@ const r = 'responsibilities' as const;
 export const dutiesContract = {
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/duties',
+    path: '/societies/:societyId/duties',
     summary: 'Duties with the current and next turn. mine=true keeps the ones I take part in.',
     module: r,
     params: SocietyParamsSchema,
@@ -98,7 +98,7 @@ export const dutiesContract = {
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/duties/:dutyId',
+    path: '/societies/:societyId/duties/:dutyId',
     summary: 'One duty with its order, upcoming turns and history',
     module: r,
     params: dutyParams,
@@ -106,7 +106,7 @@ export const dutiesContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/duties',
+    path: '/societies/:societyId/duties',
     summary: 'Create a rotation. Turns are planned 12 periods ahead.',
     module: r,
     permission: 'duty.manage',
@@ -130,7 +130,7 @@ export const dutiesContract = {
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/duties/:dutyId',
+    path: '/societies/:societyId/duties/:dutyId',
     summary: 'Rename or change the rules. The schedule stays.',
     module: r,
     permission: 'duty.manage',
@@ -148,7 +148,7 @@ export const dutiesContract = {
   }),
   setParticipants: defineRoute({
     method: 'PUT',
-    path: '/v1/societies/:societyId/duties/:dutyId/participants',
+    path: '/societies/:societyId/duties/:dutyId/participants',
     summary:
       'New order of participants. Upcoming turns are planned again after whoever had the last one.',
     module: r,
@@ -159,7 +159,7 @@ export const dutiesContract = {
   }),
   setStatus: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/duties/:dutyId/status',
+    path: '/societies/:societyId/duties/:dutyId/status',
     summary: 'Pause, resume or end a duty',
     module: r,
     permission: 'duty.manage',
@@ -169,7 +169,7 @@ export const dutiesContract = {
   }),
   confirm: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/duties/:dutyId/assignments/:assignmentId/confirm',
+    path: '/societies/:societyId/duties/:dutyId/assignments/:assignmentId/confirm',
     summary: 'Mark my current turn as done',
     module: r,
     params: assignmentParams,
@@ -177,7 +177,7 @@ export const dutiesContract = {
   }),
   override: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/duties/:dutyId/assignments/:assignmentId/override',
+    path: '/societies/:societyId/duties/:dutyId/assignments/:assignmentId/override',
     summary: 'Skip a turn, give it to someone else, or mark it done for them',
     module: r,
     permission: 'duty.override',

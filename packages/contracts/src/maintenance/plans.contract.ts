@@ -28,7 +28,7 @@ const PlanInputSchema = z
 export const maintenancePlanRoutes = {
   listPlans: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/plans',
+    path: '/societies/:societyId/maintenance/plans',
     summary: 'Billing plans',
     module: maintenanceModule,
     permission: 'maintenance.view_all',
@@ -37,7 +37,7 @@ export const maintenancePlanRoutes = {
   }),
   createPlan: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/plans',
+    path: '/societies/:societyId/maintenance/plans',
     summary: 'Add a billing plan',
     module: maintenanceModule,
     permission: 'maintenance.settings.manage',
@@ -47,7 +47,7 @@ export const maintenancePlanRoutes = {
   }),
   updatePlan: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/maintenance/plans/:planId',
+    path: '/societies/:societyId/maintenance/plans/:planId',
     summary: 'Edit a plan. Bills already made keep their amounts.',
     module: maintenanceModule,
     permission: 'maintenance.settings.manage',
@@ -57,7 +57,7 @@ export const maintenancePlanRoutes = {
   }),
   setPlanOverride: defineRoute({
     method: 'PUT',
-    path: '/v1/societies/:societyId/maintenance/plans/:planId/overrides',
+    path: '/societies/:societyId/maintenance/plans/:planId/overrides',
     summary: 'A different amount for one flat. amountPaise null removes it.',
     module: maintenanceModule,
     permission: 'maintenance.settings.manage',

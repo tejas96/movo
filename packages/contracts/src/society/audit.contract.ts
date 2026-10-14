@@ -48,7 +48,7 @@ export type AuditEntry = z.infer<typeof AuditEntrySchema>;
 export const societyAuditRoutes = {
   listAudit: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/audit',
+    path: '/societies/:societyId/audit',
     summary: 'Audit log, newest first',
     permission: 'audit.view',
     params: SocietyParamsSchema,

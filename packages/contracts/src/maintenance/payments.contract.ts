@@ -21,7 +21,7 @@ import { maintenanceModule, paymentParams, ReasonSchema } from './shared';
 export const maintenancePaymentRoutes = {
   listPayments: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/payments',
+    path: '/societies/:societyId/maintenance/payments',
     summary: 'Payments, newest first. Members see their own flats.',
     module: maintenanceModule,
     params: SocietyParamsSchema,
@@ -30,7 +30,7 @@ export const maintenancePaymentRoutes = {
   }),
   getPayment: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/payments/:paymentId',
+    path: '/societies/:societyId/maintenance/payments/:paymentId',
     summary: 'One payment. This is the receipt.',
     module: maintenanceModule,
     params: paymentParams,
@@ -38,7 +38,7 @@ export const maintenancePaymentRoutes = {
   }),
   recordPayment: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/payments',
+    path: '/societies/:societyId/maintenance/payments',
     summary:
       'Record money received. Goes to the oldest open bills unless allocations are given; the rest is kept as advance. A repeated idempotencyKey returns the first payment.',
     module: maintenanceModule,
@@ -65,7 +65,7 @@ export const maintenancePaymentRoutes = {
   }),
   reversePayment: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/maintenance/payments/:paymentId/reverse',
+    path: '/societies/:societyId/maintenance/payments/:paymentId/reverse',
     summary:
       'Undo a payment entered by mistake. The recorder can do it for 10 minutes; later it needs maintenance.waive.',
     module: maintenanceModule,
@@ -76,7 +76,7 @@ export const maintenancePaymentRoutes = {
   }),
   collection: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/maintenance/collection',
+    path: '/societies/:societyId/maintenance/collection',
     summary:
       'Who has paid. maintenance.view_all sees amounts; other members only when the transparency setting allows.',
     module: maintenanceModule,

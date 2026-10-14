@@ -44,14 +44,14 @@ const FlatInputSchema = z.object({
 export const societyStructureRoutes = {
   listBuildings: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/buildings',
+    path: '/societies/:societyId/buildings',
     summary: 'Buildings or wings',
     params: SocietyParamsSchema,
     response: z.array(BuildingSchema),
   }),
   createBuilding: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/buildings',
+    path: '/societies/:societyId/buildings',
     summary: 'Add a building or wing',
     permission: 'society.structure.manage',
     params: SocietyParamsSchema,
@@ -65,7 +65,7 @@ export const societyStructureRoutes = {
   }),
   updateBuilding: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/buildings/:buildingId',
+    path: '/societies/:societyId/buildings/:buildingId',
     summary: 'Rename or reorder a building',
     permission: 'society.structure.manage',
     params: SocietyParamsSchema.extend({ buildingId: IdSchema }),
@@ -81,7 +81,7 @@ export const societyStructureRoutes = {
 
   listFlats: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/flats',
+    path: '/societies/:societyId/flats',
     summary: 'Flats with their occupants',
     params: SocietyParamsSchema,
     query: z.object({ buildingId: IdSchema.optional() }),
@@ -89,7 +89,7 @@ export const societyStructureRoutes = {
   }),
   createFlats: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/flats',
+    path: '/societies/:societyId/flats',
     summary: 'Add one or many flats',
     permission: 'society.structure.manage',
     params: SocietyParamsSchema,
@@ -98,7 +98,7 @@ export const societyStructureRoutes = {
   }),
   updateFlat: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/flats/:flatId',
+    path: '/societies/:societyId/flats/:flatId',
     summary: 'Edit a flat',
     permission: 'society.structure.manage',
     params: SocietyParamsSchema.extend({ flatId: IdSchema }),

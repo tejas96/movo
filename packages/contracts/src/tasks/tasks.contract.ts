@@ -86,7 +86,7 @@ const t = 'tasks' as const;
 export const tasksContract = {
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/tasks',
+    path: '/societies/:societyId/tasks',
     summary: 'Tasks by view. ACTIVE and DONE are everyone’s; TO_VERIFY needs task.verify.',
     module: t,
     params: SocietyParamsSchema,
@@ -95,7 +95,7 @@ export const tasksContract = {
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/tasks/:taskId',
+    path: '/societies/:societyId/tasks/:taskId',
     summary: 'One task with its history',
     module: t,
     params: taskParams,
@@ -103,7 +103,7 @@ export const tasksContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks',
+    path: '/societies/:societyId/tasks',
     summary: 'Create a task, assigned or open for volunteers',
     module: t,
     permission: 'task.manage',
@@ -113,7 +113,7 @@ export const tasksContract = {
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/tasks/:taskId',
+    path: '/societies/:societyId/tasks/:taskId',
     summary: 'Edit a task that is not finished',
     module: t,
     permission: 'task.manage',
@@ -123,7 +123,7 @@ export const tasksContract = {
   }),
   assign: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks/:taskId/assign',
+    path: '/societies/:societyId/tasks/:taskId/assign',
     summary: 'Give the task to a member, or open it for volunteers with null',
     module: t,
     permission: 'task.manage',
@@ -133,7 +133,7 @@ export const tasksContract = {
   }),
   volunteer: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks/:taskId/volunteer',
+    path: '/societies/:societyId/tasks/:taskId/volunteer',
     summary: 'Take an open task',
     module: t,
     params: taskParams,
@@ -141,7 +141,7 @@ export const tasksContract = {
   }),
   withdraw: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks/:taskId/withdraw',
+    path: '/societies/:societyId/tasks/:taskId/withdraw',
     summary: 'Give a task back so someone else can take it',
     module: t,
     params: taskParams,
@@ -149,7 +149,7 @@ export const tasksContract = {
   }),
   submit: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks/:taskId/submit',
+    path: '/societies/:societyId/tasks/:taskId/submit',
     summary: 'Say the task is done. Someone with task.verify checks it.',
     module: t,
     params: taskParams,
@@ -164,7 +164,7 @@ export const tasksContract = {
   }),
   verify: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks/:taskId/verify',
+    path: '/societies/:societyId/tasks/:taskId/verify',
     summary: 'Accept the work and award the points. Not by the person who did it.',
     module: t,
     permission: 'task.verify',
@@ -173,7 +173,7 @@ export const tasksContract = {
   }),
   sendBack: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks/:taskId/return',
+    path: '/societies/:societyId/tasks/:taskId/return',
     summary: 'Send the work back with a reason',
     module: t,
     permission: 'task.verify',
@@ -183,7 +183,7 @@ export const tasksContract = {
   }),
   cancel: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/tasks/:taskId/cancel',
+    path: '/societies/:societyId/tasks/:taskId/cancel',
     summary: 'Cancel a task that is not finished',
     module: t,
     permission: 'task.manage',

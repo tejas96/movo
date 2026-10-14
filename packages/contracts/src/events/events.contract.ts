@@ -85,7 +85,7 @@ const EventInputSchema = z
 export const eventsContract = {
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/events',
+    path: '/societies/:societyId/events',
     summary: 'Events for me. UPCOMING soonest first, PAST newest first.',
     module: 'events',
     params: SocietyParamsSchema,
@@ -94,7 +94,7 @@ export const eventsContract = {
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/events/:eventId',
+    path: '/societies/:societyId/events/:eventId',
     summary: 'One event with RSVP counts',
     module: 'events',
     params: eventParams,
@@ -102,7 +102,7 @@ export const eventsContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/events',
+    path: '/societies/:societyId/events',
     summary: 'Publish an event and notify the audience. A reminder goes out 1 day before.',
     module: 'events',
     permission: 'event.manage',
@@ -112,7 +112,7 @@ export const eventsContract = {
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/events/:eventId',
+    path: '/societies/:societyId/events/:eventId',
     summary: 'Edit an event. A new start time notifies the audience and resets the reminder.',
     module: 'events',
     permission: 'event.manage',
@@ -122,7 +122,7 @@ export const eventsContract = {
   }),
   cancel: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/events/:eventId/cancel',
+    path: '/societies/:societyId/events/:eventId/cancel',
     summary: 'Cancel an event and notify the audience',
     module: 'events',
     permission: 'event.manage',
@@ -132,7 +132,7 @@ export const eventsContract = {
   }),
   rsvp: defineRoute({
     method: 'PUT',
-    path: '/v1/societies/:societyId/events/:eventId/rsvp',
+    path: '/societies/:societyId/events/:eventId/rsvp',
     summary: 'Set my answer for an upcoming event',
     module: 'events',
     params: eventParams,
@@ -146,7 +146,7 @@ export const eventsContract = {
   }),
   listRsvps: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/events/:eventId/rsvps',
+    path: '/societies/:societyId/events/:eventId/rsvps',
     summary: 'Who answered, for organisers',
     module: 'events',
     permission: 'event.manage',

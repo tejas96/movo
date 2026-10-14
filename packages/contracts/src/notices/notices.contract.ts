@@ -69,7 +69,7 @@ const NoticeInputSchema = z
 export const noticesContract = {
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/notices',
+    path: '/societies/:societyId/notices',
     summary:
       'Notices for me. Pinned first, then newest. Managers also see drafts with status=DRAFT.',
     module: 'notices',
@@ -82,7 +82,7 @@ export const noticesContract = {
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/notices/:noticeId',
+    path: '/societies/:societyId/notices/:noticeId',
     summary: 'One notice. Reading it marks it read.',
     module: 'notices',
     params: noticeParams,
@@ -90,7 +90,7 @@ export const noticesContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/notices',
+    path: '/societies/:societyId/notices',
     summary: 'Create a notice, published or draft',
     module: 'notices',
     permission: 'notice.publish',
@@ -100,7 +100,7 @@ export const noticesContract = {
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/notices/:noticeId',
+    path: '/societies/:societyId/notices/:noticeId',
     summary: 'Edit a notice. Authors edit their own; notice.manage_all edits any.',
     module: 'notices',
     permission: 'notice.publish',
@@ -110,7 +110,7 @@ export const noticesContract = {
   }),
   publish: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/notices/:noticeId/publish',
+    path: '/societies/:societyId/notices/:noticeId/publish',
     summary: 'Publish a draft and notify the audience',
     module: 'notices',
     permission: 'notice.publish',
@@ -119,7 +119,7 @@ export const noticesContract = {
   }),
   archive: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/notices/:noticeId/archive',
+    path: '/societies/:societyId/notices/:noticeId/archive',
     summary: 'Archive a notice',
     module: 'notices',
     permission: 'notice.publish',
@@ -128,7 +128,7 @@ export const noticesContract = {
   }),
   setPinned: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/notices/:noticeId/pin',
+    path: '/societies/:societyId/notices/:noticeId/pin',
     summary: 'Pin or unpin',
     module: 'notices',
     permission: 'notice.publish',
@@ -138,7 +138,7 @@ export const noticesContract = {
   }),
   markRead: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/notices/:noticeId/read',
+    path: '/societies/:societyId/notices/:noticeId/read',
     summary: 'Mark read without opening',
     module: 'notices',
     params: noticeParams,

@@ -13,7 +13,7 @@ import { listingParams, marketModule, optionalReasonBody, orderParams } from './
 export const marketOrderRoutes = {
   createOrder: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/listings/:listingId/orders',
+    path: '/societies/:societyId/market/listings/:listingId/orders',
     summary: 'Ask the seller for this. Nothing is paid in the app.',
     module: marketModule,
     params: listingParams,
@@ -28,7 +28,7 @@ export const marketOrderRoutes = {
   }),
   listOrders: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/market/orders',
+    path: '/societies/:societyId/market/orders',
     summary: 'My orders as buyer or seller. Open ones first.',
     module: marketModule,
     params: SocietyParamsSchema,
@@ -37,7 +37,7 @@ export const marketOrderRoutes = {
   }),
   getOrder: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/market/orders/:orderId',
+    path: '/societies/:societyId/market/orders/:orderId',
     summary: 'One order with its messages. Reading it marks the messages read.',
     module: marketModule,
     params: orderParams,
@@ -45,7 +45,7 @@ export const marketOrderRoutes = {
   }),
   acceptOrder: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/orders/:orderId/accept',
+    path: '/societies/:societyId/market/orders/:orderId/accept',
     summary: 'Seller accepts. Takes the quantity from what is available.',
     module: marketModule,
     params: orderParams,
@@ -53,7 +53,7 @@ export const marketOrderRoutes = {
   }),
   rejectOrder: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/orders/:orderId/reject',
+    path: '/societies/:societyId/market/orders/:orderId/reject',
     summary: 'Seller says no',
     module: marketModule,
     params: orderParams,
@@ -62,7 +62,7 @@ export const marketOrderRoutes = {
   }),
   markOrderReady: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/orders/:orderId/ready',
+    path: '/societies/:societyId/market/orders/:orderId/ready',
     summary: 'Seller: ready for pickup or on the way',
     module: marketModule,
     params: orderParams,
@@ -70,7 +70,7 @@ export const marketOrderRoutes = {
   }),
   completeOrder: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/orders/:orderId/complete',
+    path: '/societies/:societyId/market/orders/:orderId/complete',
     summary: 'Either side: handed over and paid',
     module: marketModule,
     params: orderParams,
@@ -78,7 +78,7 @@ export const marketOrderRoutes = {
   }),
   cancelOrder: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/orders/:orderId/cancel',
+    path: '/societies/:societyId/market/orders/:orderId/cancel',
     summary: 'Buyer before it is ready, or seller after accepting. Gives the quantity back.',
     module: marketModule,
     params: orderParams,
@@ -87,7 +87,7 @@ export const marketOrderRoutes = {
   }),
   sendMessage: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/orders/:orderId/messages',
+    path: '/societies/:societyId/market/orders/:orderId/messages',
     summary: 'Short message to the other side of the order',
     module: marketModule,
     params: orderParams,
@@ -96,7 +96,7 @@ export const marketOrderRoutes = {
   }),
   reviewOrder: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/orders/:orderId/review',
+    path: '/societies/:societyId/market/orders/:orderId/review',
     summary: 'Buyer rates a completed order, once',
     module: marketModule,
     params: orderParams,

@@ -117,7 +117,7 @@ const VendorInputSchema = z.object({
 export const vendorsContract = {
   listCategories: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/vendor-categories',
+    path: '/societies/:societyId/vendor-categories',
     summary: 'Service categories with vendor counts',
     module: 'vendors',
     params: SocietyParamsSchema,
@@ -125,7 +125,7 @@ export const vendorsContract = {
   }),
   createCategory: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/vendor-categories',
+    path: '/societies/:societyId/vendor-categories',
     summary: 'Add a category',
     module: 'vendors',
     permission: 'vendor.manage',
@@ -135,7 +135,7 @@ export const vendorsContract = {
   }),
   updateCategory: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/vendor-categories/:categoryId',
+    path: '/societies/:societyId/vendor-categories/:categoryId',
     summary: 'Rename, re-icon or reorder a category',
     module: 'vendors',
     permission: 'vendor.manage',
@@ -147,7 +147,7 @@ export const vendorsContract = {
   }),
   deleteCategory: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/vendor-categories/:categoryId',
+    path: '/societies/:societyId/vendor-categories/:categoryId',
     summary: 'Delete an empty category',
     module: 'vendors',
     permission: 'vendor.manage',
@@ -157,7 +157,7 @@ export const vendorsContract = {
 
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/vendors',
+    path: '/societies/:societyId/vendors',
     summary:
       'Vendors. Members see approved and trial ones plus their own suggestions. Managers see all.',
     module: 'vendors',
@@ -171,7 +171,7 @@ export const vendorsContract = {
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/vendors/:vendorId',
+    path: '/societies/:societyId/vendors/:vendorId',
     summary: 'One vendor',
     module: 'vendors',
     params: vendorParams,
@@ -179,7 +179,7 @@ export const vendorsContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/vendors',
+    path: '/societies/:societyId/vendors',
     summary:
       'Add a vendor. Managers add it directly. Members suggest one when the society allows it.',
     module: 'vendors',
@@ -189,7 +189,7 @@ export const vendorsContract = {
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/vendors/:vendorId',
+    path: '/societies/:societyId/vendors/:vendorId',
     summary: 'Edit a vendor, approve a suggestion, or block one',
     module: 'vendors',
     permission: 'vendor.manage',
@@ -199,7 +199,7 @@ export const vendorsContract = {
   }),
   remove: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/vendors/:vendorId',
+    path: '/societies/:societyId/vendors/:vendorId',
     summary: 'Delete a vendor, usually a rejected suggestion. Block instead to keep history.',
     module: 'vendors',
     permission: 'vendor.manage',

@@ -46,7 +46,7 @@ const ListingInputSchema = z
 export const marketListingRoutes = {
   listListings: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/market/listings',
+    path: '/societies/:societyId/market/listings',
     summary: 'Active listings in this society, newest first. Sold out ones come last.',
     module: marketModule,
     params: SocietyParamsSchema,
@@ -58,7 +58,7 @@ export const marketListingRoutes = {
   }),
   myListings: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/market/my-listings',
+    path: '/societies/:societyId/market/my-listings',
     summary: 'My listings in every status except archived',
     module: marketModule,
     params: SocietyParamsSchema,
@@ -66,7 +66,7 @@ export const marketListingRoutes = {
   }),
   getListing: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/market/listings/:listingId',
+    path: '/societies/:societyId/market/listings/:listingId',
     summary: 'One listing with photos and reviews',
     module: marketModule,
     params: listingParams,
@@ -74,7 +74,7 @@ export const marketListingRoutes = {
   }),
   createListing: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/listings',
+    path: '/societies/:societyId/market/listings',
     summary: 'Sell something. Food needs a diet mark.',
     module: marketModule,
     params: SocietyParamsSchema,
@@ -83,7 +83,7 @@ export const marketListingRoutes = {
   }),
   updateListing: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/market/listings/:listingId',
+    path: '/societies/:societyId/market/listings/:listingId',
     summary: 'Edit my listing',
     module: marketModule,
     params: listingParams,
@@ -92,7 +92,7 @@ export const marketListingRoutes = {
   }),
   setListingStatus: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/market/listings/:listingId/status',
+    path: '/societies/:societyId/market/listings/:listingId/status',
     summary: 'Pause, resume or archive my listing',
     module: marketModule,
     params: listingParams,
