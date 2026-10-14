@@ -132,7 +132,7 @@ export class EmergencyService {
     const ctx = requireTenant();
     const row = await this.db.emergencyContact.findUnique({ where: { id: contactId } });
     if (!row) throw ApiException.notFound('Contact not found');
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.emergencyContact.deleteMany({ where: { id: contactId, societyId: ctx.societyId } });
       await this.audit.record(
         {
@@ -199,7 +199,7 @@ export class EmergencyService {
       const flat = await this.db.flat.findUnique({ where: { id: flatId } });
       if (!flat) throw ApiException.notFound('Flat not found');
     }
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       const a = await tx.alert.create({
         data: {
           societyId: ctx.societyId,
@@ -256,7 +256,7 @@ export class EmergencyService {
     if (before.status !== 'ACTIVE')
       throw ApiException.conflict('CONFLICT', 'This alert is already closed');
 
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       const updated = await tx.alert.updateMany({
         where: { id: alertId, societyId: ctx.societyId, status: 'ACTIVE' },
         data: {

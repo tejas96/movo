@@ -10,7 +10,6 @@ import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { isUniqueViolation } from '../../common/errors/prisma-errors';
-import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
@@ -66,7 +65,6 @@ export function toVehicleDto(v: VehicleRow): Vehicle {
 export class ParkingService {
   constructor(
     private readonly tenant: TenantPrismaService,
-    private readonly prisma: PrismaService,
     private readonly audit: AuditService,
   ) {}
 
@@ -123,7 +121,7 @@ export class ParkingService {
     const codes = body.slots.map((s) => s.code.toUpperCase());
     if (new Set(codes).size !== codes.length)
       throw ApiException.validation([{ path: ['slots'], message: 'Slot codes repeat' }]);
-    const created = await this.prisma.$transaction(async (tx) => {
+    const created = await this.tenant.tx(async (tx) => {
       const rows = await tx.parkingSlot.createManyAndReturn({
         data: body.slots.map((s, i) => ({
           societyId: ctx.societyId,
@@ -186,7 +184,7 @@ export class ParkingService {
     const flat = await this.db.flat.findUnique({ where: { id: body.flatId } });
     if (!flat) throw ApiException.notFound('Flat not found');
     try {
-      await this.prisma.$transaction(async (tx) => {
+      await this.tenant.tx(async (tx) => {
         const a = await tx.parkingAllocation.create({
           data: {
             societyId: ctx.societyId,
@@ -220,7 +218,7 @@ export class ParkingService {
     const slot = await this.requireSlot(slotId);
     const active = slot.allocations[0];
     if (!active) return toSlotDto(slot);
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.parkingAllocation.updateMany({
         where: { id: active.id, societyId: ctx.societyId, toDate: null },
         data: { toDate: new Date() },
@@ -264,7 +262,7 @@ export class ParkingService {
     if (!flat) throw ApiException.notFound('Flat not found');
     await this.assertRegistrationFree(body.registrationNo);
     try {
-      const row = await this.prisma.$transaction(async (tx) => {
+      const row = await this.tenant.tx(async (tx) => {
         const v = await tx.vehicle.create({
           data: {
             societyId: ctx.societyId,
@@ -334,7 +332,7 @@ export class ParkingService {
     const ctx = requireTenant();
     const v = await this.requireVehicle(vehicleId);
     this.assertOwnFlatOrManager(ctx, v.flatId);
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.vehicle.deleteMany({ where: { id: vehicleId, societyId: ctx.societyId } });
       await this.audit.record(
         {

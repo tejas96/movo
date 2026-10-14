@@ -97,7 +97,7 @@ export class MeetingsService {
     const startsAt = new Date(body.startsAt);
     const endsAt = body.endsAt ? new Date(body.endsAt) : null;
     assertTimes(startsAt, endsAt, true);
-    const m = await this.prisma.$transaction(async (tx) => {
+    const m = await this.tenant.tx(async (tx) => {
       const row = await tx.meeting.create({
         data: {
           societyId: ctx.societyId,
@@ -134,7 +134,7 @@ export class MeetingsService {
       body.endsAt !== undefined ? (body.endsAt ? new Date(body.endsAt) : null) : before.endsAt;
     const moved = startsAt.getTime() !== before.startsAt.getTime();
     assertTimes(startsAt, endsAt, moved);
-    const m = await this.prisma.$transaction(async (tx) => {
+    const m = await this.tenant.tx(async (tx) => {
       const row = await tx.meeting.update({
         where: { id: meetingId, societyId: ctx.societyId },
         data: {
@@ -182,7 +182,7 @@ export class MeetingsService {
   async addNote(meetingId: string, note: string): Promise<Meeting> {
     const ctx = requireTenant();
     const m = await this.requireScheduled(meetingId);
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.meetingUpdate.create({
         data: {
           societyId: ctx.societyId,
@@ -281,7 +281,7 @@ export class MeetingsService {
     status: 'CANCELLED' | 'COMPLETED',
     note: string | undefined,
   ): Promise<MeetingRow> {
-    return this.prisma.$transaction(async (tx) => {
+    return this.tenant.tx(async (tx) => {
       const moved = await tx.meeting.updateMany({
         where: { id: meetingId, societyId: ctx.societyId, status: 'SCHEDULED' },
         data: { status },

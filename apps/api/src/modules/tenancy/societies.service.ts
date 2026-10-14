@@ -230,7 +230,7 @@ export class SocietiesService {
     const logoChanged = body.logoFileId !== undefined && body.logoFileId !== before.logoFileId;
     if (logoChanged && body.logoFileId)
       await this.files.claim(ctx, [body.logoFileId], 'SOCIETY_LOGO');
-    const society = await this.prisma.$transaction(async (tx) => {
+    const society = await this.tenant.tx(async (tx) => {
       if (logoChanged && body.logoFileId)
         await tx.storedFile.update({
           where: { id: body.logoFileId },

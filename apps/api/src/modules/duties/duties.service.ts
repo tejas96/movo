@@ -169,7 +169,7 @@ export class DutiesService {
       body.requiresConfirmation ??
       parseModuleSettings('responsibilities', ctx.moduleSettings.responsibilities)
         .defaultRequiresConfirmation;
-    const duty = await this.prisma.$transaction(async (tx) => {
+    const duty = await this.tenant.tx(async (tx) => {
       const d = await tx.responsibility.create({
         data: {
           societyId: ctx.societyId,
@@ -238,7 +238,7 @@ export class DutiesService {
     const duty = await this.requireDuty(dutyId);
     await this.checkParticipants(duty.participantKind, ids);
     const today = todayIn(ctx.society.timezone);
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.responsibilityParticipant.deleteMany({ where: { responsibilityId: dutyId } });
       await tx.responsibilityParticipant.createMany({
         data: ids.map((id, position) => ({
@@ -272,7 +272,7 @@ export class DutiesService {
     if (duty.status === 'ENDED')
       throw ApiException.conflict('CONFLICT', 'An ended duty cannot restart');
     const today = todayIn(ctx.society.timezone);
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.responsibility.update({ where: { id: dutyId }, data: { status } });
       if (status === 'ACTIVE') await replan(tx, { ...duty, status }, today);
       else {
@@ -308,7 +308,7 @@ export class DutiesService {
       throw ApiException.conflict('CONFLICT', 'Only the current turn can be marked done');
     if (!this.isMine(ctx, participantIdOf(row)) && !can(ctx, 'duty.override'))
       throw ApiException.forbidden('This is not your turn');
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       // Status in the where: a second confirm at the same time finds nothing and awards nothing.
       const moved = await tx.responsibilityAssignment.updateMany({
         where: { id: assignmentId, societyId: ctx.societyId, status: 'ACTIVE' },
@@ -383,7 +383,7 @@ export class DutiesService {
         overrideNote: body.reason,
       };
     }
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.responsibilityAssignment.update({ where: { id: assignmentId }, data });
       await this.audit.record(
         {

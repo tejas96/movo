@@ -224,7 +224,7 @@ export class BillsService {
     if (body.flatIds && flats.length !== new Set(body.flatIds).size)
       throw ApiException.notFound('Flat not found');
     const created: NewBill[] = [];
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       for (const flat of flats) {
         const bill = await tx.bill.create({
           data: {
@@ -271,7 +271,7 @@ export class BillsService {
   async waive(billId: string, reason: string): Promise<Bill> {
     const ctx = requireTenant();
     const b = await this.requireOpen(billId);
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await lockFor(tx, `flat-dues:${b.flatId}`);
       const moved = await tx.bill.updateMany({
         where: { id: billId, societyId: ctx.societyId, status: { in: [...OPEN_STATUSES] } },
@@ -308,7 +308,7 @@ export class BillsService {
     const ctx = requireTenant();
     const b = await this.requireOpen(billId);
     const fee = b.lines.find((l) => l.type === 'LATE_FEE');
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.billLine.deleteMany({ where: { billId, type: 'LATE_FEE' } });
       await tx.bill.update({
         where: { id: billId, societyId: ctx.societyId },

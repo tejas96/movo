@@ -117,7 +117,7 @@ export class RewardsService {
     const ctx = requireTenant();
     const m = await this.db.membership.findUnique({ where: { id: membershipId } });
     if (!m) throw ApiException.notFound('Member not found');
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.pointsLedger.create({
         data: {
           societyId: ctx.societyId,

@@ -1,5 +1,8 @@
 import { PERMISSION_KEYS } from '@movo/contracts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { TenantPrismaService } from '../src/common/prisma/tenant-prisma.service';
+import { runWithStore } from '../src/common/request-store';
+import type { TenantContext } from '../src/common/tenant/tenant.types';
 import { RolesService } from '../src/modules/tenancy/roles.service';
 import { societyWithResident } from './fixtures';
 import { createHarness, type Harness, login } from './harness';
@@ -179,6 +182,25 @@ describe('tenancy', () => {
       PERMISSION_KEYS.length,
     );
     expect(await h.app.get(RolesService).syncAdminPermissions()).toBe(0);
+  });
+
+  it('filters by society inside a tenant transaction too', async () => {
+    const a = await societyWithResident(h, 'txa');
+    const b = await societyWithResident(h, 'txb');
+    const flatOfB = b.flats[0]?.id as string;
+    const tenant = h.app.get(TenantPrismaService);
+    const asA = { requestId: 'tx-test', ip: undefined, tenant: { societyId: a.societyId } };
+    const result = await runWithStore(
+      asA as { requestId: string; ip: undefined; tenant: TenantContext },
+      () =>
+        tenant.tx(async (tx) => ({
+          seen: await tx.flat.findUnique({ where: { id: flatOfB } }),
+          moved: await tx.flat.updateMany({ where: { id: flatOfB }, data: { number: 'X' } }),
+        })),
+    );
+    expect(result).toEqual({ seen: null, moved: { count: 0 } });
+    const flat = await h.prisma.flat.findUniqueOrThrow({ where: { id: flatOfB } });
+    expect(flat.number).not.toBe('X');
   });
 
   it('cross-tenant isolation: a member of society B never sees society A', async () => {
