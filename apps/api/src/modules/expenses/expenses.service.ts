@@ -20,16 +20,15 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-import { iso } from '../../common/util/dates';
-import { decodeCursor, encodeCursor } from '../../common/util/pagination';
+import { dateOnly, dbDate, fyLabel, iso, todayIn } from '../../common/util/dates';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type {
   ExpenseCategory as CategoryRow,
   Expense as ExpenseRow,
 } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
-import { fyLabel, todayIn } from '../maintenance/billing';
-import { dateOnly, dbDate } from '../maintenance/ledger';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Recipients } from '../notifications/recipients.service';
 import { loadMemberNames } from '../tenancy/member-names';
 
 type CreateBody = RouteBody<typeof expensesContract.create>;
@@ -68,6 +67,7 @@ export class ExpensesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
     private readonly files: FilesService,
   ) {}
 
@@ -157,28 +157,14 @@ export class ExpensesService {
         ...(query.fy ? { financialYear: query.fy } : {}),
         ...(query.categoryId ? { categoryId: query.categoryId } : {}),
         ...(finance ? (query.status ? { status: query.status } : {}) : { status: 'APPROVED' }),
-        ...(cursor
-          ? {
-              OR: [
-                { incurredOn: { lt: cursor.at } },
-                { incurredOn: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {}),
+        ...afterCursor(cursor, 'incurredOn'),
       },
       include: { category: true },
       orderBy: [{ incurredOn: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
     });
-    const items = rows.slice(0, query.limit);
-    const last = items[items.length - 1];
-    return {
-      items: items.map(toSummary),
-      nextCursor:
-        rows.length > query.limit && last
-          ? encodeCursor({ at: last.incurredOn, id: last.id })
-          : null,
-    };
+    const page = slicePage(rows, query.limit, (e) => e.incurredOn);
+    return { items: page.items.map(toSummary), nextCursor: page.nextCursor };
   }
 
   async get(expenseId: string): Promise<Expense> {
@@ -335,23 +321,18 @@ export class ExpensesService {
       );
       return updated;
     });
-    const creator = await this.prisma.membership.findUnique({
-      where: { id: e.createdByMembershipId },
-      select: { userId: true },
-    });
-    if (creator)
-      await this.notifications.notifyUsers({
-        userIds: [creator.userId],
-        societyId: ctx.societyId,
-        category: 'EXPENSE',
-        render: (t, locale) => ({
-          title: t(approve ? 'expenses:push.approvedTitle' : 'expenses:push.rejectedTitle', {
-            amount: formatMoney(e.amountPaise, locale),
-          }),
-          body: approve ? e.payeeName : `${e.payeeName} · ${reason ?? ''}`,
+    await this.notifications.notifyUsers({
+      userIds: await this.recipients.ofMemberships([e.createdByMembershipId]),
+      societyId: ctx.societyId,
+      category: 'EXPENSE',
+      render: (t, locale) => ({
+        title: t(approve ? 'expenses:push.approvedTitle' : 'expenses:push.rejectedTitle', {
+          amount: formatMoney(e.amountPaise, locale),
         }),
-        data: { screen: 'expense', societyId: ctx.societyId, expenseId },
-      });
+        body: approve ? e.payeeName : `${e.payeeName} · ${reason ?? ''}`,
+      }),
+      data: { screen: 'expense', societyId: ctx.societyId, expenseId },
+    });
     return this.toDto(ctx, row);
   }
 
@@ -516,19 +497,10 @@ export class ExpensesService {
   }
 
   private async askApprovers(ctx: TenantContext, e: ExpenseWithCategory) {
-    const approvers = await this.prisma.membership.findMany({
-      where: {
-        societyId: ctx.societyId,
-        status: 'ACTIVE',
-        id: { not: e.createdByMembershipId },
-        roles: {
-          some: { role: { permissions: { some: { permissionKey: 'expense.approve' } } } },
-        },
-      },
-      select: { userId: true },
-    });
     await this.notifications.notifyUsers({
-      userIds: approvers.map((a) => a.userId),
+      userIds: await this.recipients.withPermission(ctx.societyId, 'expense.approve', {
+        exceptMembershipId: e.createdByMembershipId,
+      }),
       societyId: ctx.societyId,
       category: 'EXPENSE',
       render: (t, locale) => ({

@@ -1,5 +1,5 @@
 import type { DutyPeriodUnit } from '@movo/contracts';
-import { addDays, diffDays, fmt, ymd } from '../maintenance/billing';
+import { addDays, diffDays, fmt, ymd } from '../../common/util/dates';
 
 /** Pure rotation rules. Dates are ISO calendar dates in the society's time zone. */
 

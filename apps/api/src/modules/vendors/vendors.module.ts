@@ -1,11 +1,19 @@
-import { Module } from '@nestjs/common';
-import { AuditService } from '../../common/audit/audit.service';
+import { Module, type OnModuleInit } from '@nestjs/common';
+import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { VendorsController } from './vendors.controller';
-import { VendorsService } from './vendors.service';
+import { defaultVendorCategoryRows, VendorsService } from './vendors.service';
 
 @Module({
   controllers: [VendorsController],
-  providers: [VendorsService, AuditService],
+  providers: [VendorsService],
   exports: [VendorsService],
 })
-export class VendorsModule {}
+export class VendorsModule implements OnModuleInit {
+  constructor(private readonly lifecycle: Lifecycle) {}
+
+  onModuleInit(): void {
+    this.lifecycle.onSocietyCreated((tx, societyId) =>
+      tx.vendorCategory.createMany({ data: defaultVendorCategoryRows(societyId) }),
+    );
+  }
+}

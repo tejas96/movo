@@ -17,10 +17,11 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { iso, minutes } from '../../common/util/dates';
-import { decodeCursor, slicePage } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
-import { toFlatRef } from '../tenancy/mappers';
+import { Recipients } from '../notifications/recipients.service';
+import { flatLabel, toFlatRef } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 
 type ContactBody = RouteBody<typeof emergencyContract.createContact>;
@@ -59,6 +60,7 @@ export class EmergencyService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private get db() {
@@ -154,14 +156,7 @@ export class EmergencyService {
     const rows = await this.db.alert.findMany({
       where: {
         status: query.status === 'ACTIVE' ? 'ACTIVE' : { in: ['RESOLVED', 'FALSE_ALARM'] },
-        ...(cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.at } },
-                { createdAt: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {}),
+        ...afterCursor(cursor),
       },
       include: alertInclude,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -224,9 +219,9 @@ export class EmergencyService {
     });
 
     const raiser = (await loadMemberNames(this.prisma, [ctx.membershipId])).get(ctx.membershipId);
-    const recipients = await this.recipientUserIds(ctx, settings);
     await this.notifications.notifyUsers({
-      userIds: recipients.filter((id) => id !== ctx.userId),
+      userIds: await this.alertRecipients(ctx, settings),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'EMERGENCY',
       render: (t) => {
@@ -281,19 +276,12 @@ export class EmergencyService {
       return tx.alert.findUniqueOrThrow({ where: { id: alertId }, include: alertInclude });
     });
 
-    const recipients = await this.recipientUserIds(ctx, this.settings(ctx));
-    const raiserUserId = before.raisedByMembershipId
-      ? (
-          await this.prisma.membership.findUnique({
-            where: { id: before.raisedByMembershipId },
-            select: { userId: true },
-          })
-        )?.userId
-      : undefined;
     await this.notifications.notifyUsers({
-      userIds: [...recipients, ...(raiserUserId ? [raiserUserId] : [])].filter(
-        (id) => id !== ctx.userId,
-      ),
+      userIds: [
+        ...(await this.alertRecipients(ctx, this.settings(ctx))),
+        ...(await this.recipients.ofMemberships([before.raisedByMembershipId])),
+      ],
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'EMERGENCY',
       render: (t) => {
@@ -336,28 +324,16 @@ export class EmergencyService {
   }
 
   /** Everyone active, or the configured roles plus anyone who can resolve alerts. */
-  private async recipientUserIds(ctx: TenantContext, s: EmergencySettings): Promise<string[]> {
-    const where: Prisma.MembershipWhereInput = { societyId: ctx.societyId, status: 'ACTIVE' };
-    if (s.alertRecipients === 'ROLES') {
-      where.roles = {
-        some: {
-          OR: [
-            { roleId: { in: s.roleIds } },
-            { role: { permissions: { some: { permissionKey: 'emergency.alert.resolve' } } } },
-          ],
-        },
-      };
-    }
-    const rows = await this.prisma.membership.findMany({ where, select: { userId: true } });
-    return rows.map((r) => r.userId);
+  private alertRecipients(ctx: TenantContext, s: EmergencySettings): Promise<string[]> {
+    return s.alertRecipients === 'ROLES'
+      ? this.recipients.withPermission(ctx.societyId, 'emergency.alert.resolve', {
+          orRoleIds: s.roleIds,
+        })
+      : this.recipients.ofAudience(ctx.societyId, { type: 'ALL' });
   }
 
   private pushVars(t: TFunction, a: AlertRow, name: string) {
-    const place = a.flat
-      ? a.flat.building
-        ? `${a.flat.building.name}-${a.flat.number}`
-        : a.flat.number
-      : t('emergency:societyPlace');
+    const place = a.flat ? flatLabel(a.flat) : t('emergency:societyPlace');
     return { type: t(`emergency:type.${a.type as AlertType}`), place, name };
   }
 

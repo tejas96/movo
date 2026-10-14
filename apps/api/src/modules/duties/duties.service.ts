@@ -16,16 +16,17 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { addDays, dateOnly, dbDate, todayIn } from '../../common/util/dates';
 import type {
   ResponsibilityAssignment as AssignmentRow,
   Responsibility as DutyRow,
   ResponsibilityParticipant as ParticipantRow,
   Prisma,
 } from '../../generated/prisma/client';
-import { addDays, todayIn } from '../maintenance/billing';
-import { dateOnly, dbDate, flatUserIds } from '../maintenance/ledger';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Recipients } from '../notifications/recipients.service';
 import { awardContext, awardPoints } from '../rewards/rewards.service';
+import { flatLabel } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 import {
   type Cadence,
@@ -119,6 +120,7 @@ export class DutiesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private get db() {
@@ -524,19 +526,11 @@ export class DutiesService {
     kind: 'start' | 'remind' | 'missed',
     endDate: string,
   ) {
-    const society = await this.prisma.society.findUniqueOrThrow({ where: { id: duty.societyId } });
-    let userIds: string[];
-    if (duty.participantKind === 'FLAT')
-      userIds = (await flatUserIds(this.prisma, [participantId])).get(participantId) ?? [];
-    else {
-      const m = await this.prisma.membership.findUnique({
-        where: { id: participantId },
-        select: { userId: true, status: true },
-      });
-      userIds = m?.status === 'ACTIVE' ? [m.userId] : [];
-    }
     await this.notifications.notifyUsers({
-      userIds,
+      userIds:
+        duty.participantKind === 'FLAT'
+          ? await this.recipients.ofFlat(participantId)
+          : await this.recipients.ofMemberships([participantId], { activeOnly: true }),
       societyId: duty.societyId,
       category: 'DUTY',
       render: (t, locale) => {
@@ -556,7 +550,7 @@ export class DutiesService {
                 body: t('duties:push.missedBody', { date }),
               };
       },
-      data: { screen: 'duty', societyId: society.id, dutyId: duty.id },
+      data: { screen: 'duty', societyId: duty.societyId, dutyId: duty.id },
     });
   }
 
@@ -609,7 +603,7 @@ export class DutiesService {
       loadMemberNames(this.prisma, memberIds),
     ]);
     const out = new Map<string, string>();
-    for (const f of flats) out.set(f.id, f.building ? `${f.building.name}-${f.number}` : f.number);
+    for (const f of flats) out.set(f.id, flatLabel(f));
     for (const [id, n] of names) out.set(id, n.displayName);
     return out;
   }

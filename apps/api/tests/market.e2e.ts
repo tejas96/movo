@@ -363,6 +363,7 @@ describe('market', () => {
     expect(await notes(s.resident.token)).toContain(
       'Your listing was taken down: Suspicious pills',
     );
+    expect(await notes(s.admin)).toContain('Order cancelled: Suspicious pills');
     const sellerEdit = await h
       .http()
       .post(url(s, `/market/listings/${l.id}/status`))
@@ -401,5 +402,40 @@ describe('market', () => {
       .set(auth(b.admin))
       .send({ ...tiffin, imageIds: [photo.body.id] });
     expect(reuse.status).toBe(404);
+  });
+
+  it('archives listings and cancels open orders when an account is deleted', async () => {
+    const s = await market('m-del');
+    const mine = await listing(s, s.resident.token, { title: 'Old cycle' });
+    const theirs = await listing(s, s.admin, { title: 'Chai' });
+    const sold = await h
+      .http()
+      .post(url(s, `/market/listings/${mine.id}/orders`))
+      .set(auth(s.admin))
+      .send({ quantity: 1 });
+    const bought = await h
+      .http()
+      .post(url(s, `/market/listings/${theirs.id}/orders`))
+      .set(auth(s.resident.token))
+      .send({ quantity: 1 });
+    const del = await h
+      .http()
+      .delete('/v1/me')
+      .set(auth(s.resident.token))
+      .send({ password: 'correct horse battery' });
+    expect(del.status).toBe(200);
+
+    const listings = await h.prisma.listing.findMany({ where: { societyId: s.societyId } });
+    expect(Object.fromEntries(listings.map((l) => [l.title, l.status]))).toEqual({
+      'Old cycle': 'ARCHIVED',
+      Chai: 'ACTIVE',
+    });
+    const orders = await h.prisma.marketOrder.findMany({
+      where: { id: { in: [sold.body.id, bought.body.id] } },
+    });
+    expect(orders.map((o) => [o.status, o.reason])).toEqual([
+      ['CANCELLED', 'account deleted'],
+      ['CANCELLED', 'account deleted'],
+    ]);
   });
 });

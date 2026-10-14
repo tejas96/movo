@@ -10,7 +10,7 @@ import {
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import type { TenantContext } from '../../common/tenant/tenant.types';
+import type { TenantContext, TenantLookup } from '../../common/tenant/tenant.types';
 import { TtlCache } from '../../common/tenant/tenant-cache';
 import { iso } from '../../common/util/dates';
 import type { Prisma } from '../../generated/prisma/client';
@@ -26,11 +26,6 @@ const contextInclude = {
 } satisfies Prisma.MembershipInclude;
 
 type MembershipForContext = Prisma.MembershipGetPayload<{ include: typeof contextInclude }>;
-
-export type TenantLookup =
-  | { kind: 'none' }
-  | { kind: 'inactive' }
-  | { kind: 'ok'; ctx: TenantContext };
 
 /** Builds the app's navigation context and the per-request tenant context. Both from the same rows. */
 @Injectable()
@@ -96,10 +91,9 @@ export class ContextService {
     this.cache.deleteByPrefix(`tenant:${userId}:`);
   }
 
-  invalidateSociety(societyId: string): void {
-    // Keys are tenant:<user>:<society>; a society-wide change flushes everything. Cheap at our size.
+  /** A society-wide change (roles, modules, settings) flushes every cached tenant. Cheap at our size. */
+  invalidateAllTenants(): void {
     this.cache.deleteByPrefix('tenant:');
-    void societyId;
   }
 
   private modulesOf(

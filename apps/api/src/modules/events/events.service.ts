@@ -20,8 +20,9 @@ import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { days, iso } from '../../common/util/dates';
 import type { SocietyEvent as EventRow, Prisma } from '../../generated/prisma/client';
-import { audienceUserIds, matchesAudience } from '../notices/audience';
+import { matchesAudience } from '../notices/audience';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Recipients } from '../notifications/recipients.service';
 import { claimReminder, resetReminders } from '../reminders/ledger';
 import {
   assertTimes,
@@ -63,6 +64,7 @@ export class EventsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private get db() {
@@ -312,7 +314,7 @@ export class EventsService {
       );
       if (due === null) continue;
       const [audience, declined] = await Promise.all([
-        audienceUserIds(this.prisma, e.societyId, AudienceSchema.parse(e.audience)),
+        this.recipients.ofAudience(e.societyId, AudienceSchema.parse(e.audience)),
         this.prisma.eventRsvp.findMany({
           where: { eventId: e.id, response: 'NOT_GOING' },
           select: { membership: { select: { userId: true } } },
@@ -383,13 +385,9 @@ export class EventsService {
     kind: PushKind,
     extra?: string,
   ): Promise<void> {
-    const recipients = await audienceUserIds(
-      this.prisma,
-      ctx.societyId,
-      AudienceSchema.parse(e.audience),
-    );
     await this.notifications.notifyUsers({
-      userIds: recipients.filter((id) => id !== ctx.userId),
+      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(e.audience)),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'EVENT',
       render: (t, locale) => eventPush(t, locale, ctx.society.timezone, e, kind, extra),

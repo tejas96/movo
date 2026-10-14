@@ -6,7 +6,7 @@ import type {
 import { createI18n, type TFunction } from '@movo/i18n';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { decodeCursor, slicePage } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 
 export interface NotifyInput {
@@ -16,6 +16,8 @@ export interface NotifyInput {
   /** Called once per locale in the recipient set. */
   render: (t: TFunction, locale: Locale) => { title: string; body: string };
   data?: Record<string, unknown>;
+  /** Leave this user out, usually the person whose action caused the push. */
+  exceptUserId?: string;
 }
 
 @Injectable()
@@ -24,7 +26,7 @@ export class NotificationsService {
 
   /** Writes one notification per recipient in their language plus a pending push delivery. */
   async notifyUsers(input: NotifyInput): Promise<number> {
-    const userIds = [...new Set(input.userIds)];
+    const userIds = [...new Set(input.userIds)].filter((id) => id !== input.exceptUserId);
     if (userIds.length === 0) return 0;
     const users = await this.prisma.user.findMany({
       where: { id: { in: userIds }, status: 'ACTIVE' },
@@ -64,14 +66,7 @@ export class NotificationsService {
     const rows = await this.prisma.notification.findMany({
       where: {
         userId,
-        ...(cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.at } },
-                { createdAt: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {}),
+        ...afterCursor(cursor),
       },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,

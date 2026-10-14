@@ -3,11 +3,14 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
+import { AuditModule } from './common/audit/audit.module';
 import { ApiExceptionFilter } from './common/errors/api-exception.filter';
+import { LifecycleModule } from './common/lifecycle/lifecycle';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { getStore } from './common/request-store';
 import { ResponseValidationInterceptor } from './common/route/response-validation.interceptor';
 import { RouteGuard } from './common/route/route.guard';
+import { ROUTE_AUTH, type RouteAuth } from './common/route/route-auth';
 import { loadEnv } from './config/env';
 import { AppController } from './modules/app/app.controller';
 import { HeartbeatJob } from './modules/app/heartbeat.job';
@@ -18,6 +21,8 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
 import { FilesModule } from './modules/files/files.module';
 import { HomeModule } from './modules/home/home.module';
 import { IdentityModule } from './modules/identity/identity.module';
+import { SessionsService } from './modules/identity/sessions.service';
+import { UsersService } from './modules/identity/users.service';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { MarketModule } from './modules/market/market.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
@@ -27,6 +32,7 @@ import { ParkingModule } from './modules/parking/parking.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { ContextService } from './modules/tenancy/context.service';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 import { VendorsModule } from './modules/vendors/vendors.module';
 
@@ -52,6 +58,8 @@ const env = loadEnv();
     }),
     ...(env.NODE_ENV === 'test' ? [] : [ScheduleModule.forRoot()]),
     PrismaModule,
+    AuditModule,
+    LifecycleModule,
     IdentityModule,
     NotificationsModule,
     TenancyModule,
@@ -74,6 +82,19 @@ const env = loadEnv();
   controllers: [AppController],
   providers: [
     HeartbeatJob,
+    {
+      provide: ROUTE_AUTH,
+      inject: [SessionsService, UsersService, ContextService],
+      useFactory: (
+        sessions: SessionsService,
+        users: UsersService,
+        context: ContextService,
+      ): RouteAuth => ({
+        isSessionLive: (sessionId) => sessions.isSessionLive(sessionId),
+        findActiveUser: (userId) => users.findActiveById(userId),
+        lookupTenant: (userId, societyId) => context.lookupTenant(userId, societyId),
+      }),
+    },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: RouteGuard },
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

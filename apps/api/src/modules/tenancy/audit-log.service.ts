@@ -8,7 +8,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { decodeCursor, slicePage } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 
 type ListQuery = RouteQuery<typeof societyContract.listAudit>;
@@ -28,14 +28,7 @@ export class AuditLogService {
         query.area
           ? { OR: AUDIT_AREAS[query.area].map((prefix) => ({ action: { startsWith: prefix } })) }
           : {},
-        cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.at } },
-                { createdAt: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {},
+        afterCursor(cursor),
       ],
     };
     const rows = await this.prisma.auditLog.findMany({

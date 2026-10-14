@@ -12,9 +12,10 @@ import { ApiException } from '../../common/errors/api.exception';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
+import { dateOnly, dbDate } from '../../common/util/dates';
 import type { Prisma } from '../../generated/prisma/client';
 import { toFlatRef } from '../tenancy/mappers';
-import { dateOnly, dbDate, toInstruction } from './ledger';
+import { toInstruction } from './ledger';
 
 type PlanBody = RouteBody<typeof maintenanceContract.createPlan>;
 type PlanPatch = RouteBody<typeof maintenanceContract.updatePlan>;

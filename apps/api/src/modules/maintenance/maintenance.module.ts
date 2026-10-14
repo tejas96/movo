@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AuditService } from '../../common/audit/audit.service';
 import { FilesModule } from '../files/files.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AccountsService } from './accounts.service';
@@ -12,14 +11,7 @@ import { PlansService } from './plans.service';
 @Module({
   imports: [NotificationsModule, FilesModule],
   controllers: [MaintenanceController],
-  providers: [
-    AccountsService,
-    BillsService,
-    PaymentsService,
-    PlansService,
-    MaintenanceJob,
-    AuditService,
-  ],
+  providers: [AccountsService, BillsService, PaymentsService, PlansService, MaintenanceJob],
   exports: [AccountsService, MaintenanceJob, BillsService],
 })
 export class MaintenanceModule {}

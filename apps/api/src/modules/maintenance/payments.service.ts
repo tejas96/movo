@@ -9,25 +9,17 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-import { minutes } from '../../common/util/dates';
-import { decodeCursor, encodeCursor } from '../../common/util/pagination';
+import { dbDate, fyLabel, minutes, todayIn } from '../../common/util/dates';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { toFlatRef } from '../tenancy/mappers';
+import { Recipients } from '../notifications/recipients.service';
+import { flatLabel } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
-import { allocate, fyLabel, receiptNo, todayIn } from './billing';
+import { allocate, receiptNo } from './billing';
 import { BillsService } from './bills.service';
-import {
-  dbDate,
-  flatInclude,
-  flatLabel,
-  flatUserIds,
-  OPEN_STATUSES,
-  outstanding,
-  refreshBills,
-  toPaymentSummary,
-} from './ledger';
+import { flatInclude, OPEN_STATUSES, outstanding, refreshBills, toPaymentSummary } from './ledger';
 
 type RecordBody = RouteBody<typeof maintenanceContract.recordPayment>;
 type ListQuery = RouteQuery<typeof maintenanceContract.listPayments>;
@@ -49,6 +41,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
     private readonly bills: BillsService,
     private readonly files: FilesService,
   ) {}
@@ -64,28 +57,14 @@ export class PaymentsService {
     const rows = await this.db.payment.findMany({
       where: {
         ...(flatIds ? { flatId: { in: flatIds } } : {}),
-        ...(cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.at } },
-                { createdAt: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {}),
+        ...afterCursor(cursor),
       },
       include: flatInclude,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
     });
-    const items = rows.slice(0, query.limit);
-    const last = items[items.length - 1];
-    return {
-      items: items.map(toPaymentSummary),
-      nextCursor:
-        rows.length > query.limit && last
-          ? encodeCursor({ at: last.createdAt, id: last.id })
-          : null,
-    };
+    const page = slicePage(rows, query.limit);
+    return { items: page.items.map(toPaymentSummary), nextCursor: page.nextCursor };
   }
 
   async get(paymentId: string): Promise<Payment> {
@@ -199,16 +178,16 @@ export class PaymentsService {
     }
 
     const dto = await this.get(paymentId);
-    const users = (await flatUserIds(this.prisma, [flat.id])).get(flat.id) ?? [];
     await this.notifications.notifyUsers({
-      userIds: users.filter((u) => u !== ctx.userId),
+      userIds: await this.recipients.ofFlat(flat.id),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'MAINTENANCE',
       render: (t, locale) => ({
         title: t('money:push.paymentTitle', { amount: formatMoney(dto.amountPaise, locale) }),
         body: t('money:push.paymentBody', {
           receipt: dto.receiptNo,
-          flat: flatLabel(toFlatRef(flat)),
+          flat: flatLabel(flat),
         }),
       }),
       data: { screen: 'payment', societyId: ctx.societyId, paymentId },
@@ -256,9 +235,9 @@ export class PaymentsService {
         tx,
       );
     });
-    const users = (await flatUserIds(this.prisma, [p.flatId])).get(p.flatId) ?? [];
     await this.notifications.notifyUsers({
-      userIds: users.filter((u) => u !== ctx.userId),
+      userIds: await this.recipients.ofFlat(p.flatId),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'MAINTENANCE',
       render: (t, locale) => ({

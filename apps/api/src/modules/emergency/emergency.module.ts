@@ -1,13 +1,21 @@
-import { Module } from '@nestjs/common';
-import { AuditService } from '../../common/audit/audit.service';
+import { Module, type OnModuleInit } from '@nestjs/common';
+import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { EmergencyController } from './emergency.controller';
-import { EmergencyService } from './emergency.service';
+import { defaultEmergencyContactRows, EmergencyService } from './emergency.service';
 
 @Module({
   imports: [NotificationsModule],
   controllers: [EmergencyController],
-  providers: [EmergencyService, AuditService],
+  providers: [EmergencyService],
   exports: [EmergencyService],
 })
-export class EmergencyModule {}
+export class EmergencyModule implements OnModuleInit {
+  constructor(private readonly lifecycle: Lifecycle) {}
+
+  onModuleInit(): void {
+    this.lifecycle.onSocietyCreated((tx, societyId) =>
+      tx.emergencyContact.createMany({ data: defaultEmergencyContactRows(societyId) }),
+    );
+  }
+}

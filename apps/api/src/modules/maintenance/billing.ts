@@ -1,4 +1,5 @@
 import type { AmountRule, BillingFrequency, BillStatus, LateFeeRule } from '@movo/contracts';
+import { addDays, daysInMonth, diffDays, fmt, fyLabel, pad2, ymd } from '../../common/util/dates';
 
 /**
  * Pure billing rules. Dates are ISO calendar dates ("2026-10-10") in the society's time zone,
@@ -20,43 +21,10 @@ export interface Period {
   dueDate: string;
 }
 
-interface Ymd {
-  y: number;
-  m: number;
-  d: number;
-}
-
-const pad = (n: number) => String(n).padStart(2, '0');
-export const ymd = (s: string): Ymd => {
-  const [y, m, d] = s.split('-').map(Number);
-  return { y: y ?? 0, m: m ?? 1, d: d ?? 1 };
-};
-export const fmt = ({ y, m, d }: Ymd): string => `${y}-${pad(m)}-${pad(d)}`;
-const daysIn = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate();
-
 /** Adds whole months to a (year, month), keeping month in 1..12. */
 function addMonths(y: number, m: number, n: number): { y: number; m: number } {
   const i = y * 12 + (m - 1) + n;
   return { y: Math.floor(i / 12), m: (i % 12) + 1 };
-}
-
-export function addDays(date: string, n: number): string {
-  const { y, m, d } = ymd(date);
-  const t = new Date(Date.UTC(y, m - 1, d + n));
-  return fmt({ y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() });
-}
-
-export function diffDays(a: string, b: string): number {
-  const A = ymd(a);
-  const B = ymd(b);
-  return Math.round((Date.UTC(A.y, A.m - 1, A.d) - Date.UTC(B.y, B.m - 1, B.d)) / 86_400_000);
-}
-
-/** "2026-27" for a date, given the month the financial year starts (4 = April). */
-export function fyLabel(date: string, fyStartMonth: number): string {
-  const { y, m } = ymd(date);
-  const start = m >= fyStartMonth ? y : y - 1;
-  return fyStartMonth === 1 ? String(start) : `${start}-${pad((start + 1) % 100)}`;
 }
 
 /** The billing period that contains `date`. Longer periods line up with the financial year. */
@@ -72,7 +40,7 @@ export function periodFor(
   let key: string;
   if (frequency === 'MONTHLY') {
     startYm = { y, m };
-    key = `${y}-${pad(m)}`;
+    key = `${y}-${pad2(m)}`;
   } else {
     const offset = (m - fyStartMonth + 12) % 12;
     const index = Math.floor(offset / len);
@@ -85,8 +53,8 @@ export function periodFor(
   return {
     key,
     start: fmt({ ...startYm, d: 1 }),
-    end: fmt({ ...endYm, d: daysIn(endYm.y, endYm.m) }),
-    dueDate: fmt({ ...startYm, d: Math.min(dueDay, daysIn(startYm.y, startYm.m)) }),
+    end: fmt({ ...endYm, d: daysInMonth(endYm.y, endYm.m) }),
+    dueDate: fmt({ ...startYm, d: Math.min(dueDay, daysInMonth(startYm.y, startYm.m)) }),
   };
 }
 
@@ -188,13 +156,3 @@ export function openedDuesReminders(dueDate: string, today: string): string[] {
 
 /** Receipt number like R-2026-27-0007. */
 export const receiptNo = (fy: string, n: number): string => `R-${fy}-${String(n).padStart(4, '0')}`;
-
-/** Today's date in a time zone, as YYYY-MM-DD. */
-export function todayIn(timeZone: string, now = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
-}

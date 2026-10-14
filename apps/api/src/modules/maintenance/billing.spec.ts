@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { diffDays, fyLabel, todayIn } from '../../common/util/dates';
 import {
   allocate,
   amountFor,
   billStatus,
-  diffDays,
-  fyLabel,
   lateFeeFor,
   openedDuesReminders,
   periodFor,
   periodsToGenerate,
-  todayIn,
 } from './billing';
 
 describe('periodFor', () => {

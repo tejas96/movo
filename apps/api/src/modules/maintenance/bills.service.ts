@@ -15,25 +15,16 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-import { decodeCursor, encodeCursor } from '../../common/util/pagination';
+import { dateOnly, dbDate, fyLabel, todayIn } from '../../common/util/dates';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
-import { toFlatRef } from '../tenancy/mappers';
-import {
-  amountFor,
-  fyLabel,
-  lateFeeFor,
-  openedDuesReminders,
-  periodsToGenerate,
-  todayIn,
-} from './billing';
+import { Recipients } from '../notifications/recipients.service';
+import { flatLabel, toFlatRef } from '../tenancy/mappers';
+import { amountFor, lateFeeFor, openedDuesReminders, periodsToGenerate } from './billing';
 import {
   applyCredit,
-  dateOnly,
-  dbDate,
   flatInclude,
-  flatLabel,
-  flatUserIds,
   OPEN_STATUSES,
   outstanding,
   refreshBills,
@@ -64,6 +55,7 @@ export class BillsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private get db() {
@@ -78,23 +70,14 @@ export class BillsService {
       where: {
         ...(flatIds ? { flatId: { in: flatIds } } : {}),
         ...(query.open === 'true' ? { status: { in: [...OPEN_STATUSES] } } : {}),
-        ...(cursor
-          ? {
-              OR: [{ dueDate: { lt: cursor.at } }, { dueDate: cursor.at, id: { lt: cursor.id } }],
-            }
-          : {}),
+        ...afterCursor(cursor, 'dueDate'),
       },
       include: billInclude,
       orderBy: [{ dueDate: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
     });
-    const items = rows.slice(0, query.limit);
-    const last = items[items.length - 1];
-    return {
-      items: items.map(toBillSummary),
-      nextCursor:
-        rows.length > query.limit && last ? encodeCursor({ at: last.dueDate, id: last.id }) : null,
-    };
+    const page = slicePage(rows, query.limit, (b) => b.dueDate);
+    return { items: page.items.map(toBillSummary), nextCursor: page.nextCursor };
   }
 
   async get(billId: string): Promise<Bill> {
@@ -290,14 +273,14 @@ export class BillsService {
         tx,
       );
     });
-    const users = (await flatUserIds(this.prisma, [b.flatId])).get(b.flatId) ?? [];
     await this.notifications.notifyUsers({
-      userIds: users.filter((u) => u !== ctx.userId),
+      userIds: await this.recipients.ofFlat(b.flatId),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'MAINTENANCE',
       render: (t, locale) => ({
         title: t('money:push.waivedTitle', { name: billName(b.title, b.periodKey, locale) }),
-        body: t('money:push.waivedBody', { flat: flatLabel(toFlatRef(b.flat)), reason }),
+        body: t('money:push.waivedBody', { flat: flatLabel(b.flat), reason }),
       }),
       data: { screen: 'bill', societyId: ctx.societyId, billId },
     });
@@ -392,10 +375,7 @@ export class BillsService {
         where: { societyId: s.id, status: { in: [...OPEN_STATUSES] } },
         include: flatInclude,
       });
-      const users = await flatUserIds(
-        this.prisma,
-        bills.map((b) => b.flatId),
-      );
+      const users = await this.recipients.ofFlats(bills.map((b) => b.flatId));
       for (const b of bills) {
         const due = dateOnly(b.dueDate);
         const kinds = openedDuesReminders(due, today);
@@ -431,7 +411,7 @@ export class BillsService {
                 : latest === 'due-day'
                   ? t('money:push.reminderDue', { amount: formatMoney(amount, locale) })
                   : t('money:push.reminderOverdue', { amount: formatMoney(amount, locale) }),
-            body: `${billName(b.title, b.periodKey, locale)} · ${flatLabel(toFlatRef(b.flat))}`,
+            body: `${billName(b.title, b.periodKey, locale)} · ${flatLabel(b.flat)}`,
           }),
           data: { screen: 'bill', societyId: s.id, billId: b.id },
         });
@@ -473,10 +453,7 @@ export class BillsService {
       where: { id: { in: created.map((b) => b.id) } },
       include: flatInclude,
     });
-    const users = await flatUserIds(
-      this.prisma,
-      bills.map((b) => b.flatId),
-    );
+    const users = await this.recipients.ofFlats(bills.map((b) => b.flatId));
     for (const b of bills) {
       // Fully covered by advance: nothing to ask for.
       if (b.status === 'PAID') continue;
@@ -488,7 +465,7 @@ export class BillsService {
           title: t('money:push.billTitle', { amount: formatMoney(outstanding(b), locale) }),
           body: t('money:push.billBody', {
             name: billName(b.title, b.periodKey, locale),
-            flat: flatLabel(toFlatRef(b.flat)),
+            flat: flatLabel(b.flat),
             date: formatDate(b.dueDate, locale, 'short', 'UTC'),
           }),
         }),

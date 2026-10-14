@@ -19,6 +19,16 @@ export function toFlatRef(f: Flat & { building: Building | null }): FlatRef {
   return { id: f.id, number: f.number, buildingName: f.building?.name ?? null };
 }
 
+/** "A-101", or just "101" when the flat has no building. The one place this label is built. */
+export function flatLabel(f: {
+  number: string;
+  building?: { name: string } | null;
+  buildingName?: string | null;
+}): string {
+  if (f.building) return `${f.building.name}-${f.number}`;
+  return f.buildingName ? `${f.buildingName}-${f.number}` : f.number;
+}
+
 export const memberInclude = {
   user: true,
   roles: { include: { role: true } },

@@ -22,8 +22,9 @@ import type {
   MeetingUpdate as MeetingUpdateRow,
   Prisma,
 } from '../../generated/prisma/client';
-import { audienceUserIds, matchesAudience } from '../notices/audience';
+import { matchesAudience } from '../notices/audience';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Recipients } from '../notifications/recipients.service';
 import { claimReminder, resetReminders } from '../reminders/ledger';
 import {
   assertTimes,
@@ -49,6 +50,7 @@ export class MeetingsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private get db() {
@@ -257,13 +259,8 @@ export class MeetingsService {
       const windows = parseModuleSettings('meetings', mod?.settings).reminderHoursBefore;
       const due = await claimReminder(this.prisma, this.target(m), m.startsAt, windows, now);
       if (due === null) continue;
-      const userIds = await audienceUserIds(
-        this.prisma,
-        m.societyId,
-        AudienceSchema.parse(m.audience),
-      );
       await this.notifications.notifyUsers({
-        userIds,
+        userIds: await this.recipients.ofAudience(m.societyId, AudienceSchema.parse(m.audience)),
         societyId: m.societyId,
         category: 'MEETING',
         render: (t, locale) => meetingPush(t, locale, m.society.timezone, m, 'reminder'),
@@ -329,13 +326,9 @@ export class MeetingsService {
     kind: PushKind,
     extra?: string,
   ): Promise<void> {
-    const recipients = await audienceUserIds(
-      this.prisma,
-      ctx.societyId,
-      AudienceSchema.parse(m.audience),
-    );
     await this.notifications.notifyUsers({
-      userIds: recipients.filter((id) => id !== ctx.userId),
+      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(m.audience)),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'MEETING',
       render: (t, locale) => meetingPush(t, locale, ctx.society.timezone, m, kind, extra),

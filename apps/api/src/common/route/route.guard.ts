@@ -1,16 +1,14 @@
 import type { RouteDef } from '@movo/contracts';
-import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/common';
+import { type CanActivate, type ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
-import { SessionsService } from '../../modules/identity/sessions.service';
-import { UsersService } from '../../modules/identity/users.service';
-import { ContextService } from '../../modules/tenancy/context.service';
 import { JwtService } from '../auth/jwt.service';
 import { ApiException } from '../errors/api.exception';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireStore } from '../request-store';
 import { TtlCache } from '../tenant/tenant-cache';
 import { ROUTE_META } from './route.decorator';
+import { ROUTE_AUTH, type RouteAuth } from './route-auth';
 
 const USER_TTL_MS = 60_000;
 
@@ -24,9 +22,7 @@ export class RouteGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwt: JwtService,
-    private readonly sessions: SessionsService,
-    private readonly users: UsersService,
-    private readonly context: ContextService,
+    @Inject(ROUTE_AUTH) private readonly auth: RouteAuth,
     private readonly prisma: PrismaService,
     private readonly cache: TtlCache,
   ) {}
@@ -43,7 +39,7 @@ export class RouteGuard implements CanActivate {
       if (!token) throw ApiException.unauthenticated();
       const claims = await this.jwt.verify(token);
       if (!claims) throw ApiException.unauthenticated('Token is not valid');
-      if (!(await this.sessions.isSessionLive(claims.sid)))
+      if (!(await this.auth.isSessionLive(claims.sid)))
         throw ApiException.unauthenticated('Session ended');
       const user = await this.cachedUser(claims.sub);
       if (!user) throw ApiException.unauthenticated('Account is not active');
@@ -57,7 +53,7 @@ export class RouteGuard implements CanActivate {
 
     const societyId = (req.params as Record<string, string | undefined>).societyId;
     if (societyId && def.auth === 'user' && store.user) {
-      const lookup = await this.context.lookupTenant(store.user.id, societyId);
+      const lookup = await this.auth.lookupTenant(store.user.id, societyId);
       if (lookup.kind === 'none') throw ApiException.notFound('Society not found');
       if (lookup.kind === 'inactive')
         throw new ApiException(
@@ -85,7 +81,7 @@ export class RouteGuard implements CanActivate {
     const key = `user:${userId}`;
     const hit = this.cache.get<{ id: string; locale: 'en' | 'hi' | 'mr' } | null>(key);
     if (hit !== undefined) return hit;
-    const user = await this.users.findActiveById(userId);
+    const user = await this.auth.findActiveUser(userId);
     const value = user ? { id: user.id, locale: user.locale } : null;
     this.cache.set(key, value, USER_TTL_MS);
     return value;
