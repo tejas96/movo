@@ -9,6 +9,7 @@ import {
   OkSchema,
   PaiseSchema,
   page,
+  SocietyParamsSchema,
 } from '../core/common';
 import { defineRoute } from '../core/route';
 import { FileRefSchema, MAX_PAYMENT_PROOFS } from '../files/files.contract';
@@ -195,12 +196,11 @@ export const PaymentInstructionSchema = z.object({
 });
 export type PaymentInstruction = z.infer<typeof PaymentInstructionSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const planParams = societyParams.extend({ planId: IdSchema });
-const billParams = societyParams.extend({ billId: IdSchema });
-const paymentParams = societyParams.extend({ paymentId: IdSchema });
-const flatParams = societyParams.extend({ flatId: IdSchema });
-const instructionParams = societyParams.extend({ instructionId: IdSchema });
+const planParams = SocietyParamsSchema.extend({ planId: IdSchema });
+const billParams = SocietyParamsSchema.extend({ billId: IdSchema });
+const paymentParams = SocietyParamsSchema.extend({ paymentId: IdSchema });
+const flatParams = SocietyParamsSchema.extend({ flatId: IdSchema });
+const instructionParams = SocietyParamsSchema.extend({ instructionId: IdSchema });
 
 const PlanInputSchema = z
   .object({
@@ -227,7 +227,7 @@ export const maintenanceContract = {
     path: '/v1/societies/:societyId/maintenance/me',
     summary: 'Dues, advance and recent payments for each of my flats',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.object({ flats: z.array(FlatAccountSchema) }),
   }),
   flatAccount: defineRoute({
@@ -243,7 +243,7 @@ export const maintenanceContract = {
     path: '/v1/societies/:societyId/maintenance/bills',
     summary: 'Bills, newest due first. Members see their own flats.',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({
       flatId: IdSchema.optional(),
       open: z.enum(['true', 'false']).optional(),
@@ -264,7 +264,7 @@ export const maintenanceContract = {
     summary: 'Create bills that are due now for every active plan. Safe to run again.',
     module: m,
     permission: 'maintenance.generate_bills',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.object({ created: z.number().int(), skippedFlats: z.array(FlatRefSchema) }),
   }),
   createAdhocBills: defineRoute({
@@ -273,7 +273,7 @@ export const maintenanceContract = {
     summary: 'One-off bill, like a repair fund, for all flats or chosen flats',
     module: m,
     permission: 'maintenance.generate_bills',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         title: z.string().trim().min(2).max(80),
@@ -310,7 +310,7 @@ export const maintenanceContract = {
     path: '/v1/societies/:societyId/maintenance/payments',
     summary: 'Payments, newest first. Members see their own flats.',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({ flatId: IdSchema.optional() }),
     response: page(PaymentSummarySchema),
   }),
@@ -329,7 +329,7 @@ export const maintenanceContract = {
       'Record money received. Goes to the oldest open bills unless allocations are given; the rest is kept as advance. A repeated idempotencyKey returns the first payment.',
     module: m,
     permission: 'maintenance.record_payment',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         flatId: IdSchema,
@@ -366,7 +366,7 @@ export const maintenanceContract = {
     summary:
       'Who has paid. maintenance.view_all sees amounts; other members only when the transparency setting allows.',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: CollectionSchema,
   }),
   listPlans: defineRoute({
@@ -375,7 +375,7 @@ export const maintenanceContract = {
     summary: 'Billing plans',
     module: m,
     permission: 'maintenance.view_all',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(BillingPlanSchema),
   }),
   createPlan: defineRoute({
@@ -384,7 +384,7 @@ export const maintenanceContract = {
     summary: 'Add a billing plan',
     module: m,
     permission: 'maintenance.settings.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: PlanInputSchema,
     response: BillingPlanSchema,
   }),
@@ -413,7 +413,7 @@ export const maintenanceContract = {
     path: '/v1/societies/:societyId/maintenance/instructions',
     summary: 'How to pay: UPI ids and bank details. Members see active ones.',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(PaymentInstructionSchema),
   }),
   createInstruction: defineRoute({
@@ -422,7 +422,7 @@ export const maintenanceContract = {
     summary: 'Add a way to pay',
     module: m,
     permission: 'maintenance.settings.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         kind: PaymentInstructionKindSchema,

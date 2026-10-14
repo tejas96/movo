@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { ActorSchema, IdSchema, IsoDateSchema, IsoDateTimeSchema } from '../core/common';
+import {
+  ActorSchema,
+  IdSchema,
+  IsoDateSchema,
+  IsoDateTimeSchema,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 import { FileRefSchema, MAX_TASK_PROOFS } from '../files/files.contract';
 
@@ -62,8 +68,7 @@ export const TaskSchema = TaskSummarySchema.extend({
 });
 export type Task = z.infer<typeof TaskSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const taskParams = societyParams.extend({ taskId: IdSchema });
+const taskParams = SocietyParamsSchema.extend({ taskId: IdSchema });
 
 const TaskInputSchema = z
   .object({
@@ -84,7 +89,7 @@ export const tasksContract = {
     path: '/v1/societies/:societyId/tasks',
     summary: 'Tasks by view. ACTIVE and DONE are everyone’s; TO_VERIFY needs task.verify.',
     module: t,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({ view: TaskViewSchema.default('OPEN') }),
     response: z.array(TaskSummarySchema),
   }),
@@ -102,7 +107,7 @@ export const tasksContract = {
     summary: 'Create a task, assigned or open for volunteers',
     module: t,
     permission: 'task.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: TaskInputSchema,
     response: TaskSchema,
   }),

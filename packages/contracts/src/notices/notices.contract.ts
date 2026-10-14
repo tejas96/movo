@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { AudienceSchema } from '../core/audience';
-import { CursorQuerySchema, IdSchema, IsoDateTimeSchema, OkSchema, page } from '../core/common';
+import {
+  CursorQuerySchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  OkSchema,
+  page,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 
 export const NoticeCategorySchema = z.enum([
@@ -43,8 +50,7 @@ export const NoticeSchema = NoticeSummarySchema.extend({
 });
 export type Notice = z.infer<typeof NoticeSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const noticeParams = societyParams.extend({ noticeId: IdSchema });
+const noticeParams = SocietyParamsSchema.extend({ noticeId: IdSchema });
 
 const NoticeInputSchema = z
   .object({
@@ -67,7 +73,7 @@ export const noticesContract = {
     summary:
       'Notices for me. Pinned first, then newest. Managers also see drafts with status=DRAFT.',
     module: 'notices',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({
       status: NoticeStatusSchema.default('PUBLISHED'),
       category: NoticeCategorySchema.optional(),
@@ -88,7 +94,7 @@ export const noticesContract = {
     summary: 'Create a notice, published or draft',
     module: 'notices',
     permission: 'notice.publish',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: NoticeInputSchema,
     response: NoticeSchema,
   }),

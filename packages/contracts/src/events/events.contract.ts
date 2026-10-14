@@ -7,6 +7,7 @@ import {
   IdSchema,
   IsoDateTimeSchema,
   page,
+  SocietyParamsSchema,
 } from '../core/common';
 import { defineRoute } from '../core/route';
 import { TimeframeSchema } from '../meetings/meetings.contract';
@@ -66,8 +67,7 @@ export const EventRsvpSchema = z.object({
 });
 export type EventRsvp = z.infer<typeof EventRsvpSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const eventParams = societyParams.extend({ eventId: IdSchema });
+const eventParams = SocietyParamsSchema.extend({ eventId: IdSchema });
 
 const EventInputSchema = z
   .object({
@@ -88,7 +88,7 @@ export const eventsContract = {
     path: '/v1/societies/:societyId/events',
     summary: 'Events for me. UPCOMING soonest first, PAST newest first.',
     module: 'events',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({ when: TimeframeSchema.default('UPCOMING') }),
     response: page(EventSummarySchema),
   }),
@@ -106,7 +106,7 @@ export const eventsContract = {
     summary: 'Publish an event and notify the audience. A reminder goes out 1 day before.',
     module: 'events',
     permission: 'event.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: EventInputSchema,
     response: EventSchema,
   }),

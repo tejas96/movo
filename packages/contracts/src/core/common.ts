@@ -3,6 +3,10 @@ import { z } from 'zod';
 export const IdSchema = z.uuid();
 export type Id = z.infer<typeof IdSchema>;
 
+/** Path params of every society-scoped route: /v1/societies/:societyId/... */
+export const SocietyParamsSchema = z.object({ societyId: IdSchema });
+export type SocietyParams = z.infer<typeof SocietyParamsSchema>;
+
 export const IsoDateTimeSchema = z.iso.datetime({ offset: true });
 export const IsoDateSchema = z.iso.date();
 

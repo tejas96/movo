@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { FlatRefSchema, IdSchema, IsoDateSchema, IsoDateTimeSchema } from '../core/common';
+import {
+  FlatRefSchema,
+  IdSchema,
+  IsoDateSchema,
+  IsoDateTimeSchema,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 import { AlertTypeSchema } from '../emergency/emergency.contract';
 import { EventStatusSchema, MyRsvpSchema } from '../events/events.contract';
@@ -110,7 +116,7 @@ export const homeContract = {
     method: 'GET',
     path: '/v1/societies/:societyId/home',
     summary: 'What matters today for this member in this society',
-    params: z.object({ societyId: IdSchema }),
+    params: SocietyParamsSchema,
     response: HomeSummarySchema,
   }),
 };

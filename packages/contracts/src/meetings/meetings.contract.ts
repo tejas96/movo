@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { AudienceSchema } from '../core/audience';
-import { ActorSchema, CursorQuerySchema, IdSchema, IsoDateTimeSchema, page } from '../core/common';
+import {
+  ActorSchema,
+  CursorQuerySchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  page,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 
 export const MeetingStatusSchema = z.enum(['SCHEDULED', 'CANCELLED', 'COMPLETED']);
@@ -45,8 +52,7 @@ export const MeetingSchema = MeetingSummarySchema.extend({
 });
 export type Meeting = z.infer<typeof MeetingSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const meetingParams = societyParams.extend({ meetingId: IdSchema });
+const meetingParams = SocietyParamsSchema.extend({ meetingId: IdSchema });
 
 const MeetingInputSchema = z
   .object({
@@ -67,7 +73,7 @@ export const meetingsContract = {
     path: '/v1/societies/:societyId/meetings',
     summary: 'Meetings for me. UPCOMING soonest first, PAST newest first.',
     module: 'meetings',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({ when: TimeframeSchema.default('UPCOMING') }),
     response: page(MeetingSummarySchema),
   }),
@@ -85,7 +91,7 @@ export const meetingsContract = {
     summary: 'Schedule a meeting and notify the audience. Reminders follow the society settings.',
     module: 'meetings',
     permission: 'meeting.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: MeetingInputSchema,
     response: MeetingSchema,
   }),

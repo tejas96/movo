@@ -9,6 +9,7 @@ import {
   OkSchema,
   PhoneSchema,
   page,
+  SocietyParamsSchema,
 } from '../core/common';
 import {
   AuditActionSchema,
@@ -29,8 +30,6 @@ import {
 } from '../me/me.contract';
 import { VehicleSchema } from '../parking/parking.contract';
 import { SocietySettingsSchema } from '../settings';
-
-const societyParams = z.object({ societyId: IdSchema });
 
 export const SocietyProfileSchema = SocietySummarySchema.extend({
   state: z.string().nullable(),
@@ -193,7 +192,7 @@ export const societyContract = {
     method: 'GET',
     path: '/v1/societies/:societyId',
     summary: 'Society profile and counts',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: SocietyProfileSchema,
   }),
   update: defineRoute({
@@ -201,7 +200,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId',
     summary: 'Update the society profile or core settings',
     permission: 'society.settings.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         name: z.string().trim().min(2).max(80).optional(),
@@ -224,7 +223,7 @@ export const societyContract = {
     method: 'GET',
     path: '/v1/societies/:societyId/buildings',
     summary: 'Buildings or wings',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(BuildingSchema),
   }),
   createBuilding: defineRoute({
@@ -232,7 +231,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/buildings',
     summary: 'Add a building or wing',
     permission: 'society.structure.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         name: z.string().trim().min(1).max(40),
@@ -246,7 +245,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/buildings/:buildingId',
     summary: 'Rename or reorder a building',
     permission: 'society.structure.manage',
-    params: societyParams.extend({ buildingId: IdSchema }),
+    params: SocietyParamsSchema.extend({ buildingId: IdSchema }),
     body: z
       .object({
         name: z.string().trim().min(1).max(40).optional(),
@@ -261,7 +260,7 @@ export const societyContract = {
     method: 'GET',
     path: '/v1/societies/:societyId/flats',
     summary: 'Flats with their occupants',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({ buildingId: IdSchema.optional() }),
     response: z.array(FlatSchema),
   }),
@@ -270,7 +269,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/flats',
     summary: 'Add one or many flats',
     permission: 'society.structure.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z.object({ flats: z.array(FlatInputSchema).min(1).max(500) }).strict(),
     response: z.array(FlatSchema),
   }),
@@ -279,7 +278,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/flats/:flatId',
     summary: 'Edit a flat',
     permission: 'society.structure.manage',
-    params: societyParams.extend({ flatId: IdSchema }),
+    params: SocietyParamsSchema.extend({ flatId: IdSchema }),
     body: FlatInputSchema.partial().extend({ status: FlatStatusSchema.optional() }).strict(),
     response: FlatSchema,
   }),
@@ -289,7 +288,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/members',
     summary: 'Member directory. Privacy is applied by the server.',
     module: 'directory',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({
       q: z.string().trim().max(60).optional(),
       buildingId: IdSchema.optional(),
@@ -302,7 +301,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/members/:membershipId',
     summary: 'One member, with vehicles when the society shows them',
     module: 'directory',
-    params: societyParams.extend({ membershipId: IdSchema }),
+    params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
     response: MemberDetailSchema,
   }),
   updateMember: defineRoute({
@@ -310,7 +309,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/members/:membershipId',
     summary: 'Change roles or status of a member',
     permission: 'member.manage',
-    params: societyParams.extend({ membershipId: IdSchema }),
+    params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
     body: z
       .object({
         roleIds: z.array(IdSchema).min(1).max(5).optional(),
@@ -324,7 +323,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/members/:membershipId/flats',
     summary: 'Replace the flats a member occupies',
     permission: 'member.manage',
-    params: societyParams.extend({ membershipId: IdSchema }),
+    params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
     body: z
       .object({
         flats: z
@@ -345,7 +344,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/members/:membershipId/reset-code',
     summary: 'Issue a one-time password reset code for a member who has no email. Shown once.',
     permission: 'member.manage',
-    params: societyParams.extend({ membershipId: IdSchema }),
+    params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
     response: z.object({ code: z.string(), expiresAt: IsoDateTimeSchema }),
   }),
   getMyPrivacy: defineRoute({
@@ -353,7 +352,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/members/me/privacy',
     summary:
       'What other members may see about me in this society, and whether showing my phone is allowed',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.object({
       showPhone: z.boolean(),
       showEmail: z.boolean(),
@@ -365,7 +364,7 @@ export const societyContract = {
     method: 'PATCH',
     path: '/v1/societies/:societyId/members/me/privacy',
     summary: 'What other members may see about me in this society',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({ showPhone: z.boolean().optional(), showEmail: z.boolean().optional() })
       .strict(),
@@ -376,7 +375,7 @@ export const societyContract = {
     method: 'GET',
     path: '/v1/societies/:societyId/roles',
     summary: 'Roles of this society',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(RoleSchema),
   }),
   createRole: defineRoute({
@@ -384,7 +383,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/roles',
     summary: 'Add a role. You can only give permissions you hold yourself.',
     permission: 'society.roles.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: RoleInputSchema.strict(),
     response: RoleSchema,
   }),
@@ -393,7 +392,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/roles/:roleId',
     summary: 'Rename a role or change its permissions. The admin role keeps every permission.',
     permission: 'society.roles.manage',
-    params: societyParams.extend({ roleId: IdSchema }),
+    params: SocietyParamsSchema.extend({ roleId: IdSchema }),
     body: RoleInputSchema.partial().strict(),
     response: RoleSchema,
   }),
@@ -402,7 +401,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/roles/:roleId',
     summary: 'Delete a role you added. It must have no members or invitations.',
     permission: 'society.roles.manage',
-    params: societyParams.extend({ roleId: IdSchema }),
+    params: SocietyParamsSchema.extend({ roleId: IdSchema }),
     response: OkSchema,
   }),
 
@@ -411,7 +410,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/audit',
     summary: 'Audit log, newest first',
     permission: 'audit.view',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({
       area: AuditAreaSchema.optional(),
       entityId: z.string().max(64).optional(),
@@ -424,7 +423,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/invitations',
     summary: 'Invitations, newest first',
     permission: 'member.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({ status: InvitationStatusSchema.optional() }),
     response: page(InvitationSchema),
   }),
@@ -433,7 +432,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/invitations',
     summary: 'Invite a person to a flat. Share the code on WhatsApp.',
     permission: 'member.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         inviteeName: DisplayNameSchema,
@@ -452,7 +451,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/invitations/:invitationId',
     summary: 'Revoke an invitation',
     permission: 'member.manage',
-    params: societyParams.extend({ invitationId: IdSchema }),
+    params: SocietyParamsSchema.extend({ invitationId: IdSchema }),
     response: OkSchema,
   }),
 
@@ -461,7 +460,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/join-requests',
     summary: 'Join requests waiting for a decision',
     permission: 'member.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({ status: JoinRequestStatusSchema.default('PENDING') }),
     response: z.array(JoinRequestSchema),
   }),
@@ -470,7 +469,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/join-requests/:requestId/approve',
     summary: 'Approve a join request. Creates the membership and the flat occupancy.',
     permission: 'member.manage',
-    params: societyParams.extend({ requestId: IdSchema }),
+    params: SocietyParamsSchema.extend({ requestId: IdSchema }),
     body: z
       .object({ roleId: IdSchema.optional(), relation: OccupancyRelationSchema.optional() })
       .strict(),
@@ -481,7 +480,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/join-requests/:requestId/reject',
     summary: 'Reject a join request',
     permission: 'member.manage',
-    params: societyParams.extend({ requestId: IdSchema }),
+    params: SocietyParamsSchema.extend({ requestId: IdSchema }),
     body: z.object({ reason: z.string().trim().max(200).optional() }).strict(),
     response: OkSchema,
   }),
@@ -491,7 +490,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/modules',
     summary: 'Module switches and settings',
     permission: 'society.settings.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(ModuleStateSchema),
   }),
   updateModule: defineRoute({
@@ -499,7 +498,7 @@ export const societyContract = {
     path: '/v1/societies/:societyId/modules/:moduleKey',
     summary: 'Switch a module on or off, or change its settings',
     permission: 'society.settings.manage',
-    params: societyParams.extend({ moduleKey: ModuleKeySchema }),
+    params: SocietyParamsSchema.extend({ moduleKey: ModuleKeySchema }),
     body: z
       .object({
         enabled: z.boolean().optional(),

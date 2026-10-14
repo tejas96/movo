@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { IdSchema } from '../core/common';
+import { IdSchema, SocietyParamsSchema } from '../core/common';
 import { defineRoute } from '../core/route';
 
 /**
@@ -30,15 +30,13 @@ export const MAX_EXPENSE_RECEIPTS = 5;
 export const MAX_PAYMENT_PROOFS = 2;
 export const MAX_TASK_PROOFS = 3;
 
-const societyParams = z.object({ societyId: IdSchema });
-
 export const filesContract = {
   upload: defineRoute({
     method: 'POST',
     path: FILE_UPLOAD_PATH,
     summary:
       'Upload one photo (JPEG, PNG or WebP, 5 MB at most) for a listing, logo, bill, payment or task. Unused uploads go after a day.',
-    params: societyParams,
+    params: SocietyParamsSchema,
     // Older apps send no kind: their uploads are listing photos.
     query: z.object({ kind: UploadKindSchema.default('LISTING_IMAGE') }),
     response: FileRefSchema,

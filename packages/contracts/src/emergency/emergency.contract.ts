@@ -8,6 +8,7 @@ import {
   OkSchema,
   PhoneSchema,
   page,
+  SocietyParamsSchema,
 } from '../core/common';
 import { defineRoute } from '../core/route';
 
@@ -75,9 +76,8 @@ export const AlertSchema = z.object({
 });
 export type Alert = z.infer<typeof AlertSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const contactParams = societyParams.extend({ contactId: IdSchema });
-const alertParams = societyParams.extend({ alertId: IdSchema });
+const contactParams = SocietyParamsSchema.extend({ contactId: IdSchema });
+const alertParams = SocietyParamsSchema.extend({ alertId: IdSchema });
 
 const ContactInputSchema = z.object({
   label: z.string().trim().min(2).max(60),
@@ -93,7 +93,7 @@ export const emergencyContract = {
     path: '/v1/societies/:societyId/emergency/contacts',
     summary: 'Emergency contacts in display order',
     module: 'emergency',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(EmergencyContactSchema),
   }),
   createContact: defineRoute({
@@ -102,7 +102,7 @@ export const emergencyContract = {
     summary: 'Add a contact',
     module: 'emergency',
     permission: 'emergency.contacts.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: ContactInputSchema.strict(),
     response: EmergencyContactSchema,
   }),
@@ -131,7 +131,7 @@ export const emergencyContract = {
     path: '/v1/societies/:societyId/emergency/alerts',
     summary: 'Alerts, newest first. Default: active ones.',
     module: 'emergency',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({ status: z.enum(['ACTIVE', 'CLOSED']).default('ACTIVE') }),
     response: page(AlertSchema),
   }),
@@ -149,7 +149,7 @@ export const emergencyContract = {
     summary:
       'Raise an alert. Notifies the society at once. One alert per member per cooldown window.',
     module: 'emergency',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         type: AlertTypeSchema,

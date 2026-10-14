@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { ActorSchema, IdSchema, IsoDateTimeSchema, OkSchema, PhoneSchema } from '../core/common';
+import {
+  ActorSchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  OkSchema,
+  PhoneSchema,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 
 /** SUGGESTED = added by a member, waiting for the committee. Only APPROVED and TRIAL show to members. */
@@ -87,9 +94,8 @@ export const VendorSchema = z.object({
 });
 export type Vendor = z.infer<typeof VendorSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const categoryParams = societyParams.extend({ categoryId: IdSchema });
-const vendorParams = societyParams.extend({ vendorId: IdSchema });
+const categoryParams = SocietyParamsSchema.extend({ categoryId: IdSchema });
+const vendorParams = SocietyParamsSchema.extend({ vendorId: IdSchema });
 
 const CategoryInputSchema = z.object({
   name: z.string().trim().min(2).max(40),
@@ -114,7 +120,7 @@ export const vendorsContract = {
     path: '/v1/societies/:societyId/vendor-categories',
     summary: 'Service categories with vendor counts',
     module: 'vendors',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(VendorCategorySchema),
   }),
   createCategory: defineRoute({
@@ -123,7 +129,7 @@ export const vendorsContract = {
     summary: 'Add a category',
     module: 'vendors',
     permission: 'vendor.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: CategoryInputSchema.strict(),
     response: VendorCategorySchema,
   }),
@@ -155,7 +161,7 @@ export const vendorsContract = {
     summary:
       'Vendors. Members see approved and trial ones plus their own suggestions. Managers see all.',
     module: 'vendors',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({
       categoryId: IdSchema.optional(),
       q: z.string().trim().max(60).optional(),
@@ -177,7 +183,7 @@ export const vendorsContract = {
     summary:
       'Add a vendor. Managers add it directly. Members suggest one when the society allows it.',
     module: 'vendors',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: VendorInputSchema.strict(),
     response: VendorSchema,
   }),

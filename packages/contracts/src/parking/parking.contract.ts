@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { FlatRefSchema, IdSchema, IsoDateTimeSchema, OkSchema } from '../core/common';
+import {
+  FlatRefSchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  OkSchema,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 
 export const ParkingSlotTypeSchema = z.enum(['TWO_WHEELER', 'FOUR_WHEELER', 'EV', 'OTHER']);
@@ -64,9 +70,8 @@ export const MyParkingSchema = z.object({
 });
 export type MyParking = z.infer<typeof MyParkingSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const slotParams = societyParams.extend({ slotId: IdSchema });
-const vehicleParams = societyParams.extend({ vehicleId: IdSchema });
+const slotParams = SocietyParamsSchema.extend({ slotId: IdSchema });
+const vehicleParams = SocietyParamsSchema.extend({ vehicleId: IdSchema });
 
 const SlotInputSchema = z.object({
   code: z.string().trim().min(1).max(20),
@@ -88,7 +93,7 @@ export const parkingContract = {
     path: '/v1/societies/:societyId/parking/me',
     summary: 'Slots and vehicles of my flats',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: MyParkingSchema,
   }),
 
@@ -97,7 +102,7 @@ export const parkingContract = {
     path: '/v1/societies/:societyId/parking/slots',
     summary: 'Every slot with its allocation. Managers always; members when the society allows it.',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({
       status: ParkingSlotStatusSchema.optional(),
       free: z.enum(['true', 'false']).optional(),
@@ -110,7 +115,7 @@ export const parkingContract = {
     summary: 'Add one or many slots. Codes must be unique in the society.',
     module: 'parking',
     permission: 'parking.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z.object({ slots: z.array(SlotInputSchema).min(1).max(500) }).strict(),
     response: z.array(ParkingSlotSchema),
   }),
@@ -152,7 +157,7 @@ export const parkingContract = {
     summary:
       'Vehicles. Members see their own flats; managers, staff, or everyone (by setting) see all.',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({
       flatId: IdSchema.optional(),
       q: z.string().trim().max(20).optional(),
@@ -164,7 +169,7 @@ export const parkingContract = {
     path: '/v1/societies/:societyId/parking/vehicles',
     summary: 'Register a vehicle to a flat. Your own flat, or any flat with parking.manage.',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: VehicleInputSchema.strict(),
     response: VehicleSchema,
   }),

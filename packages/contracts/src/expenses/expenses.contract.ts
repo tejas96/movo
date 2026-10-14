@@ -8,6 +8,7 @@ import {
   OkSchema,
   PaiseSchema,
   page,
+  SocietyParamsSchema,
 } from '../core/common';
 import { defineRoute } from '../core/route';
 import { FileRefSchema, MAX_EXPENSE_RECEIPTS } from '../files/files.contract';
@@ -125,10 +126,9 @@ export const FinanceReportSchema = z.object({
 });
 export type FinanceReport = z.infer<typeof FinanceReportSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const expenseParams = societyParams.extend({ expenseId: IdSchema });
-const categoryParams = societyParams.extend({ categoryId: IdSchema });
-const incomeParams = societyParams.extend({ incomeId: IdSchema });
+const expenseParams = SocietyParamsSchema.extend({ expenseId: IdSchema });
+const categoryParams = SocietyParamsSchema.extend({ categoryId: IdSchema });
+const incomeParams = SocietyParamsSchema.extend({ incomeId: IdSchema });
 
 const ExpenseInputSchema = z
   .object({
@@ -159,7 +159,7 @@ export const expensesContract = {
     path: '/v1/societies/:societyId/expenses/categories',
     summary: 'Expense categories',
     module: x,
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(ExpenseCategorySchema),
   }),
   createCategory: defineRoute({
@@ -168,7 +168,7 @@ export const expensesContract = {
     summary: 'Add a category',
     module: x,
     permission: 'expense.manage_categories',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         name: z.string().trim().min(2).max(40),
@@ -207,7 +207,7 @@ export const expensesContract = {
     summary:
       'Expenses, newest first. Finance roles see every status; members see approved ones only when the society shares details.',
     module: x,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend(FyQuerySchema.shape).extend({
       status: ExpenseStatusSchema.optional(),
       categoryId: IdSchema.optional(),
@@ -229,7 +229,7 @@ export const expensesContract = {
       'Add an expense. It needs approval when the society setting says so. A repeated idempotencyKey returns the first one.',
     module: x,
     permission: 'expense.create',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: ExpenseInputSchema.extend({ idempotencyKey: z.string().min(8).max(64) }).strict(),
     response: ExpenseSchema,
   }),
@@ -275,7 +275,7 @@ export const expensesContract = {
     summary: 'Income other than maintenance, for one financial year',
     module: x,
     permission: 'finance.reports.view',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: FyQuerySchema,
     response: z.array(IncomeEntrySchema),
   }),
@@ -285,7 +285,7 @@ export const expensesContract = {
     summary: 'Record income like a donation or hall booking',
     module: x,
     permission: 'expense.create',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         kind: IncomeKindSchema,
@@ -311,7 +311,7 @@ export const expensesContract = {
     summary:
       'Financial year summary. Finance roles always; members when the society shares a summary or details.',
     module: x,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: FyQuerySchema,
     response: FinanceReportSchema,
   }),

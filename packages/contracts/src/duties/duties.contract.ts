@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { ActorSchema, IdSchema, IsoDateSchema, IsoDateTimeSchema } from '../core/common';
+import {
+  ActorSchema,
+  IdSchema,
+  IsoDateSchema,
+  IsoDateTimeSchema,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 
 export const DutyPeriodUnitSchema = z.enum(['DAY', 'WEEK', 'MONTH']);
@@ -69,8 +75,7 @@ export const DutySchema = DutySummarySchema.extend({
 });
 export type Duty = z.infer<typeof DutySchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const dutyParams = societyParams.extend({ dutyId: IdSchema });
+const dutyParams = SocietyParamsSchema.extend({ dutyId: IdSchema });
 const assignmentParams = dutyParams.extend({ assignmentId: IdSchema });
 
 const ParticipantIdsSchema = z
@@ -87,7 +92,7 @@ export const dutiesContract = {
     path: '/v1/societies/:societyId/duties',
     summary: 'Duties with the current and next turn. mine=true keeps the ones I take part in.',
     module: r,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({ mine: z.enum(['true', 'false']).optional() }),
     response: z.array(DutySummarySchema),
   }),
@@ -105,7 +110,7 @@ export const dutiesContract = {
     summary: 'Create a rotation. Turns are planned 12 periods ahead.',
     module: r,
     permission: 'duty.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         title: z.string().trim().min(2).max(80),

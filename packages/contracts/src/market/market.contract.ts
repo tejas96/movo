@@ -7,6 +7,7 @@ import {
   PaiseSchema,
   PhoneSchema,
   page,
+  SocietyParamsSchema,
 } from '../core/common';
 import { defineRoute } from '../core/route';
 import { FileRefSchema, MAX_LISTING_PHOTOS } from '../files/files.contract';
@@ -203,9 +204,8 @@ export const ListingReportSchema = z.object({
 });
 export type ListingReport = z.infer<typeof ListingReportSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const listingParams = societyParams.extend({ listingId: IdSchema });
-const orderParams = societyParams.extend({ orderId: IdSchema });
+const listingParams = SocietyParamsSchema.extend({ listingId: IdSchema });
+const orderParams = SocietyParamsSchema.extend({ orderId: IdSchema });
 const m = 'marketplace' as const;
 const reasonBody = z.object({ reason: z.string().trim().min(2).max(300) }).strict();
 const optionalReasonBody = z.object({ reason: z.string().trim().max(300).optional() }).strict();
@@ -216,7 +216,7 @@ export const marketContract = {
     path: '/v1/societies/:societyId/market/listings',
     summary: 'Active listings in this society, newest first. Sold out ones come last.',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({
       kind: ListingKindSchema.optional(),
       q: z.string().trim().max(60).optional(),
@@ -228,7 +228,7 @@ export const marketContract = {
     path: '/v1/societies/:societyId/market/my-listings',
     summary: 'My listings in every status except archived',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(ListingSummarySchema),
   }),
   getListing: defineRoute({
@@ -244,7 +244,7 @@ export const marketContract = {
     path: '/v1/societies/:societyId/market/listings',
     summary: 'Sell something. Food needs a diet mark.',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: ListingInputSchema,
     response: ListingSchema,
   }),
@@ -282,7 +282,7 @@ export const marketContract = {
     summary: 'Open reports, oldest first',
     module: m,
     permission: 'marketplace.moderate',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(ListingReportSchema),
   }),
   hideListing: defineRoute({
@@ -310,7 +310,7 @@ export const marketContract = {
     summary: 'Close a report without action',
     module: m,
     permission: 'marketplace.moderate',
-    params: societyParams.extend({ reportId: IdSchema }),
+    params: SocietyParamsSchema.extend({ reportId: IdSchema }),
     response: OkSchema,
   }),
 
@@ -334,7 +334,7 @@ export const marketContract = {
     path: '/v1/societies/:societyId/market/orders',
     summary: 'My orders as buyer or seller. Open ones first.',
     module: m,
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({ role: OrderRoleSchema.default('BUYING') }),
     response: z.array(OrderSummarySchema),
   }),
