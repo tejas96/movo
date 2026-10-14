@@ -24,10 +24,13 @@ type Input<T extends RouteDef> = Partial<RouteInput<T>>;
 const REFRESH_SKEW_MS = 30_000;
 let refreshing: Promise<AuthTokens | null> | null = null;
 
+/** What a request sends: a JSON body, or a multipart form built fresh for each try. */
+type Payload = { json: unknown } | { form: () => FormData };
+
 async function rawFetch(
   method: string,
   url: string,
-  body: unknown,
+  payload: Payload,
   headers: Record<string, string>,
 ): Promise<{ status: number; json: Record<string, unknown> }> {
   let res: Response;
@@ -35,7 +38,12 @@ async function rawFetch(
     res = await fetch(url, {
       method,
       headers,
-      body: method === 'GET' ? undefined : JSON.stringify(body ?? {}),
+      body:
+        'form' in payload
+          ? payload.form()
+          : method === 'GET'
+            ? undefined
+            : JSON.stringify(payload.json ?? {}),
     });
   } catch {
     throw new ApiError('NETWORK', 'Cannot reach the server', 0);
@@ -52,9 +60,10 @@ async function rawFetch(
   return { status: res.status, json };
 }
 
-function baseHeaders(): Record<string, string> {
+/** Multipart bodies set their own content-type (with the boundary), so only JSON names one. */
+function baseHeaders(json = true): Record<string, string> {
   return {
-    'content-type': 'application/json',
+    ...(json ? { 'content-type': 'application/json' } : {}),
     accept: 'application/json',
     'x-app-version': APP_VERSION,
     'accept-language': i18n.language,
@@ -74,7 +83,7 @@ export function refreshTokens(): Promise<AuthTokens | null> {
       const { status, json } = await rawFetch(
         'POST',
         `${API_URL}${authContract.refresh.path}`,
-        { refreshToken },
+        { json: { refreshToken } },
         baseHeaders(),
       );
       if (status === 401 || status === 403) return null;
@@ -114,34 +123,39 @@ export async function signOutLocally(): Promise<void> {
   queryClient.clear();
 }
 
+function routeUrl<T extends RouteDef>(route: T, input: Input<T>): string {
+  return `${API_URL}${buildPath(route.path, input.params as Record<string, string> | undefined)}${buildQuery(input.query as Record<string, unknown> | undefined)}`;
+}
+
 /**
- * The only way the app talks to the API. Typed by the contract: params, query, body in,
- * response out. Handles auth headers, silent refresh, error shaping, and dev-time contract checks.
+ * The one request path under api() and the photo upload: auth header, one silent refresh and
+ * retry on 401 (sign out when that fails), error shaping, and dev-time contract checks.
  */
-export async function api<T extends RouteDef>(
+async function request<T extends RouteDef>(
   route: T,
-  input: Input<T> = {},
+  url: string,
+  payload: Payload,
+  failMessage: string,
   retry = true,
 ): Promise<RouteResponse<T>> {
-  const url = `${API_URL}${buildPath(route.path, input.params as Record<string, string> | undefined)}${buildQuery(input.query as Record<string, unknown> | undefined)}`;
-  const headers = baseHeaders();
+  const headers = baseHeaders(!('form' in payload));
   if (route.auth !== 'none') {
     const token = await ensureAccessToken();
     if (token) headers.authorization = `Bearer ${token}`;
   }
-  const { status, json } = await rawFetch(route.method, url, input.body, headers);
+  const { status, json } = await rawFetch(route.method, url, payload, headers);
 
   if (status === 401 && route.auth !== 'none') {
     if (retry) {
       const tokens = await refreshTokens();
-      if (tokens) return api(route, input, false);
+      if (tokens) return request(route, url, payload, failMessage, false);
     }
     await signOutLocally();
   }
   if (status >= 400) {
     throw new ApiError(
       (json.code as ApiError['code']) ?? 'INTERNAL',
-      (json.message as string) ?? 'Request failed',
+      (json.message as string) ?? failMessage,
       status,
       json.details,
       json.requestId as string | undefined,
@@ -155,60 +169,40 @@ export async function api<T extends RouteDef>(
   return json as RouteResponse<T>;
 }
 
+/**
+ * The only way the app talks to the API. Typed by the contract: params, query, body in,
+ * response out.
+ */
+export function api<T extends RouteDef>(
+  route: T,
+  input: Input<T> = {},
+  /** False: no refresh-and-retry on 401 (used while signing out). */
+  retry = true,
+): Promise<RouteResponse<T>> {
+  return request(route, routeUrl(route, input), { json: input.body }, 'Request failed', retry);
+}
+
 export interface UploadAsset {
   uri: string;
   fileName?: string | undefined;
   type?: string | undefined;
 }
 
-/**
- * Multipart upload of one photo (field "file"). Not a JSON route, so it lives beside api().
- * Same auth header and one silent refresh on 401.
- */
-async function postPhoto<T>(path: string, asset: UploadAsset, retry = true): Promise<T> {
-  const url = `${API_URL}${path}`;
-  const form = new FormData();
+/** Multipart upload of one photo (field "file") to a contract route. */
+function postPhoto<T extends RouteDef>(
+  route: T,
+  input: Input<T>,
+  asset: UploadAsset,
+): Promise<RouteResponse<T>> {
   const type = asset.type ?? 'image/jpeg';
   const name = asset.fileName ?? `photo.${type.split('/')[1] ?? 'jpg'}`;
-  // React Native's FormData takes a {uri, name, type} object for files.
-  form.append('file', { uri: asset.uri, name, type } as unknown as Blob);
-  const headers: Record<string, string> = {
-    accept: 'application/json',
-    'x-app-version': APP_VERSION,
-    'accept-language': i18n.language,
+  const form = () => {
+    const data = new FormData();
+    // React Native's FormData takes a {uri, name, type} object for files.
+    data.append('file', { uri: asset.uri, name, type } as unknown as Blob);
+    return data;
   };
-  const token = await ensureAccessToken();
-  if (token) headers.authorization = `Bearer ${token}`;
-  let res: Response;
-  try {
-    res = await fetch(url, { method: 'POST', headers, body: form });
-  } catch {
-    throw new ApiError('NETWORK', 'Cannot reach the server', 0);
-  }
-  if (res.status === 401) {
-    if (retry) {
-      const tokens = await refreshTokens();
-      if (tokens) return postPhoto<T>(path, asset, false);
-    }
-    await signOutLocally();
-  }
-  const text = await res.text();
-  let json: Record<string, unknown> = {};
-  try {
-    json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
-  } catch {
-    json = {};
-  }
-  if (res.status >= 400) {
-    throw new ApiError(
-      (json.code as ApiError['code']) ?? 'INTERNAL',
-      (json.message as string) ?? 'Upload failed',
-      res.status,
-      json.details,
-      json.requestId as string | undefined,
-    );
-  }
-  return json as unknown as T;
+  return request(route, routeUrl(route, input), { form }, 'Upload failed');
 }
 
 /** A society photo. It stays unused until a form saves it with its id. */
@@ -217,15 +211,12 @@ export function uploadFile(
   asset: UploadAsset,
   kind: UploadKind,
 ): Promise<FileRef> {
-  return postPhoto<FileRef>(
-    `${buildPath(filesContract.upload.path, { societyId })}?kind=${kind}`,
-    asset,
-  );
+  return postPhoto(filesContract.upload, { params: { societyId }, query: { kind } }, asset);
 }
 
 /** Sets my profile photo and returns my updated profile. */
 export function uploadAvatar(asset: UploadAsset): Promise<User> {
-  return postPhoto<User>(meContract.setAvatar.path, asset);
+  return postPhoto(meContract.setAvatar, {}, asset);
 }
 
 /** A stored file's url is a relative signed path. Images load it straight, no auth header. */
