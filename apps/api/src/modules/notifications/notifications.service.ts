@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
+import { DeliveryJob, deliveryPriority } from './delivery.job';
 
 export interface NotifyInput {
   userIds: string[];
@@ -22,9 +23,15 @@ export interface NotifyInput {
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly delivery: DeliveryJob,
+  ) {}
 
-  /** Writes one notification per recipient in their language plus a pending push delivery. */
+  /**
+   * Writes one notification per recipient in their language plus a pending push delivery.
+   * EMERGENCY pushes are sent at once instead of waiting for the next job tick.
+   */
   async notifyUsers(input: NotifyInput): Promise<number> {
     const userIds = [...new Set(input.userIds)].filter((id) => id !== input.exceptUserId);
     if (userIds.length === 0) return 0;
@@ -55,9 +62,12 @@ export class NotificationsService {
       data: rows,
       select: { id: true },
     });
-    await this.prisma.notificationDelivery.createMany({
-      data: created.map((n) => ({ notificationId: n.id, channel: 'PUSH' as const })),
+    const priority = deliveryPriority(input.category);
+    const deliveries = await this.prisma.notificationDelivery.createManyAndReturn({
+      data: created.map((n) => ({ notificationId: n.id, channel: 'PUSH' as const, priority })),
+      select: { id: true },
     });
+    if (input.category === 'EMERGENCY') await this.delivery.deliverNow(deliveries.map((d) => d.id));
     return created.length;
   }
 

@@ -1366,14 +1366,18 @@ model NotificationDelivery {
   notificationId String          @db.Uuid
   channel        DeliveryChannel
   status         DeliveryStatus  @default(PENDING)
+  /// Lower goes first: 0 EMERGENCY, 1 MEMBERSHIP/SYSTEM, 2 day-to-day, 3 MAINTENANCE/EXPENSE.
+  priority       Int             @default(2) @db.SmallInt
   attempts       Int             @default(0)
   lastError      String?
   sentAt         DateTime?
+  /// Set while a sender holds the row; a crashed sender's claim runs out and the row is retried.
+  claimedUntil   DateTime?
   createdAt      DateTime        @default(now())
 
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
-  @@index([status, createdAt])
+  @@index([status, priority, createdAt])
 }
 
 model NotificationPreference {

@@ -1,3 +1,4 @@
+import type { NotificationCategory } from '@movo/contracts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/common/prisma/prisma.service';
 import { DeliveryJob, MAX_ATTEMPTS } from '../src/modules/notifications/delivery.job';
@@ -7,6 +8,7 @@ import {
   type PushResult,
   PushTransport,
 } from '../src/modules/notifications/push.transport';
+import { societyWithResident } from './fixtures';
 import { createHarness, type Harness } from './harness';
 
 let h: Harness;
@@ -42,9 +44,16 @@ async function setup() {
       .send({ token, platform: 'ANDROID', appVersion: '0.1.0' });
     expect(res.status).toBe(201);
   }
-  const notifications = h.app.get(NotificationsService);
-  const notify = (category: 'NOTICE' | 'EMERGENCY', societyId: string | null = null) =>
-    notifications.notifyUsers({
+  /** With a transport, EMERGENCY pushes go out through it at once (else the app's no-op one). */
+  const notify = (
+    category: NotificationCategory,
+    societyId: string | null = null,
+    transport?: PushTransport,
+  ) =>
+    (transport
+      ? new NotificationsService(h.app.get(PrismaService), job(transport))
+      : h.app.get(NotificationsService)
+    ).notifyUsers({
       userIds: [user.userId],
       societyId,
       category,
@@ -114,9 +123,9 @@ describe('push delivery job', () => {
       await h.prisma.notificationPreference.create({
         data: { userId: user.userId, societyId, category, pushEnabled: false },
       });
-    await notify('NOTICE', societyId);
-    await notify('EMERGENCY', societyId);
     const t = new FakeTransport((m) => ({ deliveryId: m.deliveryId, status: 'SENT' }));
+    await notify('NOTICE', societyId, t);
+    await notify('EMERGENCY', societyId, t);
     await job(t).deliverPending();
     expect(t.sent.map((m) => m.category)).toEqual(['EMERGENCY']);
     const rows = await h.prisma.notificationDelivery.findMany({
@@ -137,5 +146,90 @@ describe('push delivery job', () => {
     expect(t.sent).toHaveLength(0);
     const d = await h.prisma.notificationDelivery.findFirstOrThrow();
     expect(d.status).toBe('SKIPPED');
+  });
+
+  it('sends an EMERGENCY push at once, and the job never sends it again', async () => {
+    const { notify } = await setup();
+    const t = new FakeTransport((m) => ({ deliveryId: m.deliveryId, status: 'SENT' }));
+    await notify('NOTICE', null, t);
+    await notify('EMERGENCY', null, t);
+    // No job ran: only the emergency went out.
+    expect(t.sent.map((m) => m.category)).toEqual(['EMERGENCY']);
+    const rows = await h.prisma.notificationDelivery.findMany({ include: { notification: true } });
+    const sos = rows.find((r) => r.notification.category === 'EMERGENCY');
+    expect(sos).toMatchObject({ status: 'SENT', attempts: 1, claimedUntil: null });
+    expect(sos?.priority).toBe(0);
+    await job(t).deliverPending();
+    await job(t).deliverPending();
+    expect(t.sent.map((m) => m.category)).toEqual(['EMERGENCY', 'NOTICE']);
+  });
+
+  it('works through the queue by priority, then age', async () => {
+    const { notify } = await setup();
+    await notify('MAINTENANCE');
+    await notify('NOTICE');
+    await notify('MEMBERSHIP');
+    const t = new FakeTransport((m) => ({ deliveryId: m.deliveryId, status: 'SENT' }));
+    await job(t).deliverPending();
+    expect(t.sent.map((m) => m.category)).toEqual(['MEMBERSHIP', 'NOTICE', 'MAINTENANCE']);
+  });
+
+  it('lets two senders share the queue without sending a row twice', async () => {
+    const { notify } = await setup();
+    for (let i = 0; i < 12; i++) await notify('NOTICE');
+    const slow = () =>
+      new (class extends FakeTransport {
+        override async send(messages: PushMessage[]) {
+          await new Promise((r) => setTimeout(r, 50));
+          return super.send(messages);
+        }
+      })((m) => ({ deliveryId: m.deliveryId, status: 'SENT' }));
+    const [a, b] = [slow(), slow()];
+    await Promise.all([job(a).deliverPending(), job(b).deliverPending(), job(a).deliverPending()]);
+    const ids = [...a.sent, ...b.sent].map((m) => m.deliveryId);
+    expect(ids).toHaveLength(12);
+    expect(new Set(ids).size).toBe(12);
+    expect(await h.prisma.notificationDelivery.count({ where: { status: 'SENT' } })).toBe(12);
+  });
+
+  it('leaves a claimed row alone until the claim runs out', async () => {
+    const { notify } = await setup();
+    await notify('NOTICE');
+    const t = new FakeTransport((m) => ({ deliveryId: m.deliveryId, status: 'SENT' }));
+    await h.prisma.notificationDelivery.updateMany({
+      data: { claimedUntil: new Date(Date.now() + 60_000) },
+    });
+    expect(await job(t).deliverPending()).toBe(0);
+    // The sender holding it died: once the claim is over, the job picks it up.
+    await h.prisma.notificationDelivery.updateMany({
+      data: { claimedUntil: new Date(Date.now() - 1_000) },
+    });
+    expect(await job(t).deliverPending()).toBe(1);
+    expect(t.sent).toHaveLength(1);
+  });
+
+  it('delivers an SOS from the API without waiting for the job', async () => {
+    const s = await societyWithResident(h, 'sos-now');
+    await h
+      .http()
+      .post('/v1/me/devices')
+      .set(auth(s.resident.token))
+      .send({ token: TOKEN_A, platform: 'ANDROID', appVersion: '0.1.0' });
+    const raised = await h
+      .http()
+      .post(`/v1/societies/${s.societyId}/emergency/alerts`)
+      .set(auth(s.admin))
+      .send({ type: 'MEDICAL' });
+    expect(raised.status).toBe(201);
+    const rows = await h.prisma.notificationDelivery.findMany({
+      where: { notification: { category: 'EMERGENCY', userId: s.resident.userId } },
+    });
+    // Tests run without Firebase: the no-op transport answered, so the row is done, not queued.
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      status: 'SKIPPED',
+      attempts: 1,
+      lastError: 'push not configured',
+    });
   });
 });
