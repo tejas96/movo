@@ -282,10 +282,13 @@ export class MeetingsService {
     note: string | undefined,
   ): Promise<MeetingRow> {
     return this.prisma.$transaction(async (tx) => {
-      const row = await tx.meeting.update({
-        where: { id: meetingId, societyId: ctx.societyId },
+      const moved = await tx.meeting.updateMany({
+        where: { id: meetingId, societyId: ctx.societyId, status: 'SCHEDULED' },
         data: { status },
       });
+      if (moved.count === 0)
+        throw ApiException.conflict('CONFLICT', 'Only a scheduled meeting can change');
+      const row = await tx.meeting.findUniqueOrThrow({ where: { id: meetingId } });
       await tx.meetingUpdate.create({
         data: {
           societyId: ctx.societyId,

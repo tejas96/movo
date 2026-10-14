@@ -309,14 +309,17 @@ export class DutiesService {
     if (!this.isMine(ctx, participantIdOf(row)) && !can(ctx, 'duty.override'))
       throw ApiException.forbidden('This is not your turn');
     await this.prisma.$transaction(async (tx) => {
-      await tx.responsibilityAssignment.update({
-        where: { id: assignmentId, societyId: ctx.societyId },
+      // Status in the where: a second confirm at the same time finds nothing and awards nothing.
+      const moved = await tx.responsibilityAssignment.updateMany({
+        where: { id: assignmentId, societyId: ctx.societyId, status: 'ACTIVE' },
         data: {
           status: 'COMPLETED',
           confirmedAt: new Date(),
           confirmedByMembershipId: ctx.membershipId,
         },
       });
+      if (moved.count === 0)
+        throw ApiException.conflict('CONFLICT', 'Only the current turn can be marked done');
       const rewards = parseModuleSettings('rewards', ctx.moduleSettings.rewards);
       if (ctx.enabledModules.has('rewards') && rewards.dutiesEarnPoints && duty.points)
         await awardPoints(tx, {

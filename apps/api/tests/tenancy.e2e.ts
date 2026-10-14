@@ -1,4 +1,6 @@
+import { PERMISSION_KEYS } from '@movo/contracts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { RolesService } from '../src/modules/tenancy/roles.service';
 import { societyWithResident } from './fixtures';
 import { createHarness, type Harness, login } from './harness';
 
@@ -161,6 +163,22 @@ describe('tenancy', () => {
     expect(home.status).toBe(200);
     const notif = await h.http().get('/v1/me/notifications').set(auth(resident.token));
     expect(notif.body.items[0].title).toContain('Sunrise Residency');
+  });
+
+  it("gives an older society's admin role a permission added after it was made", async () => {
+    const s = await societyWithResident(h, 'perm');
+    const admin = await h.prisma.role.findFirstOrThrow({
+      where: { societyId: s.societyId, key: 'admin' },
+    });
+    // As if 'notice.publish' were new: the society was made before the key existed.
+    await h.prisma.rolePermission.delete({
+      where: { roleId_permissionKey: { roleId: admin.id, permissionKey: 'notice.publish' } },
+    });
+    expect(await h.app.get(RolesService).syncAdminPermissions()).toBe(1);
+    expect(await h.prisma.rolePermission.count({ where: { roleId: admin.id } })).toBe(
+      PERMISSION_KEYS.length,
+    );
+    expect(await h.app.get(RolesService).syncAdminPermissions()).toBe(0);
   });
 
   it('cross-tenant isolation: a member of society B never sees society A', async () => {

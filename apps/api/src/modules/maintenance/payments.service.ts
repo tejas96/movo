@@ -6,6 +6,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { isUniqueViolation } from '../../common/errors/prisma-errors';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
+import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { minutes } from '../../common/util/dates';
@@ -121,6 +122,8 @@ export class PaymentsService {
     let paymentId: string;
     try {
       paymentId = await this.prisma.$transaction(async (tx) => {
+        // One dues change per flat at a time, so two payments cannot cover the same bill.
+        await lockFor(tx, `flat-dues:${flat.id}`);
         const open = await tx.bill.findMany({
           where: {
             societyId: ctx.societyId,
@@ -226,12 +229,15 @@ export class PaymentsService {
       throw ApiException.forbidden('Ask someone who can waive dues to reverse this payment');
     const today = todayIn(ctx.society.timezone);
     await this.prisma.$transaction(async (tx) => {
-      const billIds = p.allocations.map((a) => a.billId);
-      await tx.paymentAllocation.deleteMany({ where: { paymentId } });
-      await tx.payment.update({
-        where: { id: paymentId, societyId: ctx.societyId },
+      await lockFor(tx, `flat-dues:${p.flatId}`);
+      const moved = await tx.payment.updateMany({
+        where: { id: paymentId, societyId: ctx.societyId, status: { not: 'REVERSED' } },
         data: { status: 'REVERSED', reversedReason: reason, reversedAt: new Date() },
       });
+      if (moved.count === 0)
+        throw ApiException.conflict('CONFLICT', 'This payment is already reversed');
+      const billIds = p.allocations.map((a) => a.billId);
+      await tx.paymentAllocation.deleteMany({ where: { paymentId } });
       await refreshBills(tx, billIds, today);
       await this.audit.record(
         {

@@ -9,6 +9,7 @@ import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
+import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import type { Prisma } from '../../generated/prisma/client';
@@ -36,6 +37,8 @@ export interface AwardInput {
  */
 export async function awardPoints(tx: Prisma.TransactionClient, a: AwardInput): Promise<number> {
   if (a.points <= 0) return 0;
+  // One award at a time per member, so two at once cannot both pass the monthly cap.
+  await lockFor(tx, `points:${a.membershipId}`);
   const { maxPointsPerMonth } = parseModuleSettings('rewards', a.settings);
   const today = todayIn(a.timeZone);
   let points = a.points;
