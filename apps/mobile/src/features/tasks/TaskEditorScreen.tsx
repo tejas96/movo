@@ -21,8 +21,7 @@ import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, fromIsoDay, isoDay } from '../../core/util/money';
-import { localeTag } from '../../core/util/time';
+import { day, fromIsoDay, isoDay, localeTag } from '../../core/util/date';
 import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useSaveTask, useTask } from './api';
 

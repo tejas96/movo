@@ -1,6 +1,6 @@
 import { photos, StatusPill } from '@movo/design-system';
 import { formatFlat } from '../../core/tenant/hooks';
-import { relative } from '../../core/util/time';
+import { relative } from '../../core/util/date';
 import type { AttentionOf, FeatureHome, HomeT } from '../home/types';
 import { ALERT_ICON } from './shared';
 

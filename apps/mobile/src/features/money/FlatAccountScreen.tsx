@@ -17,7 +17,8 @@ import { View } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, money } from '../../core/util/money';
+import { day } from '../../core/util/date';
+import { money } from '../../core/util/money';
 import { useFlatAccount } from './api';
 import { BillRow, PaymentRow } from './shared';
 

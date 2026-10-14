@@ -33,8 +33,8 @@ import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
+import { relative } from '../../core/util/date';
 import { formatPhone } from '../../core/util/phone';
-import { relative } from '../../core/util/time';
 import {
   useAlerts,
   useDeleteContact,

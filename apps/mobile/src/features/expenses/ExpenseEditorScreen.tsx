@@ -30,16 +30,8 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import {
-  day,
-  fromIsoDay,
-  isoDay,
-  money,
-  newIdempotencyKey,
-  parseRupees,
-  rupeesText,
-} from '../../core/util/money';
-import { localeTag } from '../../core/util/time';
+import { day, fromIsoDay, isoDay, localeTag } from '../../core/util/date';
+import { money, newIdempotencyKey, parseRupees, rupeesText } from '../../core/util/money';
 import { useExpense, useExpenseCategories, useSaveExpense } from './api';
 import { expenseCategoryLabel } from './shared';
 

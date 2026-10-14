@@ -26,7 +26,8 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, money } from '../../core/util/money';
+import { day } from '../../core/util/date';
+import { money } from '../../core/util/money';
 import { useCollection, useGenerateBills, useMyDues } from './api';
 import { BillRow, CollectionPill, PaymentRow } from './shared';
 

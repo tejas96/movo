@@ -3,7 +3,7 @@ import { Button, Press, photos, StatusPill, Text } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
-import { whenRange } from '../../core/util/time';
+import { whenRange } from '../../core/util/date';
 import { CountUp, PhotoScrim, photoStyles } from './effects';
 import { attentionEntry } from './registry';
 import type { HeroSpec, HomeCtx } from './types';

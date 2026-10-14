@@ -19,7 +19,7 @@ import { useSessionStore } from '../../core/auth/session.store';
 import { useNav } from '../../core/navigation/types';
 import { useCanManageSociety, useMeContext, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { greetingKey, relative, whenRange } from '../../core/util/time';
+import { greetingKey, relative, whenRange } from '../../core/util/date';
 import { EventPill } from '../events/EventsScreen';
 import { MeetingStatusPill } from '../meetings/MeetingsScreen';
 import { useHomeSummary } from './api';

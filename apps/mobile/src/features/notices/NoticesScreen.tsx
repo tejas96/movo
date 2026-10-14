@@ -17,7 +17,7 @@ import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-import { relative } from '../../core/util/time';
+import { relative } from '../../core/util/date';
 import { useNotices } from './api';
 
 /** NORMAL shows no pill. */

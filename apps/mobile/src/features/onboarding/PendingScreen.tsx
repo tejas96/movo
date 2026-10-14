@@ -13,7 +13,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useMeContext } from '../../core/tenant/hooks';
-import { dateTime } from '../../core/util/time';
+import { dateTime } from '../../core/util/date';
 import { useCancelJoinRequest } from './api';
 
 /** The wait for approval, shown as the society you asked for and three steps. */

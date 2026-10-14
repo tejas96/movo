@@ -24,7 +24,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day } from '../../core/util/money';
+import { day } from '../../core/util/date';
 import { useMembers } from '../directory/api';
 import { useFlats } from '../manage/api';
 import { useDuty, useDutyAction } from './api';

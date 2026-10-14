@@ -24,10 +24,10 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { relative, shortWhen } from '../../core/util/date';
 import { money } from '../../core/util/money';
-import { relative } from '../../core/util/time';
 import { type OrderAction, useOrder, useOrderAction } from './api';
-import { coverSource, OrderStatusPill, Stars, shortWhen } from './shared';
+import { coverSource, OrderStatusPill, Stars } from './shared';
 
 export function OrderDetailScreen() {
   const { t } = useTranslation(['market', 'common']);

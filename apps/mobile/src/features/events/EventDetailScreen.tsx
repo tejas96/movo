@@ -30,7 +30,7 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-import { whenRange } from '../../core/util/time';
+import { whenRange } from '../../core/util/date';
 import { useCancelEvent, useEvent, useEventRsvps, useRsvp } from './api';
 
 type MenuKey = 'edit' | 'cancel';

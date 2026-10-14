@@ -19,7 +19,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { relative } from '../../core/util/time';
+import { relative } from '../../core/util/date';
 import { useDismissReport, useListingAction, useMarketReports } from './api';
 import { priceLabel, Thumb } from './shared';
 

@@ -1,13 +1,12 @@
 import type { BillStatus, BillSummary, CollectionStatus, PaymentSummary } from '@movo/contracts';
 import { Row, StatusPill as SoftPill, Text } from '@movo/design-system';
-import { formatPeriod } from '@movo/i18n';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { currentLocale } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-import { day, money } from '../../core/util/money';
+import { day, periodLabel } from '../../core/util/date';
+import { money } from '../../core/util/money';
 
 const BILL_TONE: StatusTones<BillStatus> = {
   DUE: 'warning',
@@ -34,7 +33,7 @@ export function CollectionPill({ status }: { status: CollectionStatus }) {
 
 /** "Maintenance · Oct 2026", or just the title for a one-off bill. */
 export function billName(b: { title: string; periodKey: string | null }): string {
-  return b.periodKey ? `${b.title} · ${formatPeriod(b.periodKey, currentLocale())}` : b.title;
+  return b.periodKey ? `${b.title} · ${periodLabel(b.periodKey)}` : b.title;
 }
 
 function Amount({ paise, children }: { paise: number; children?: ReactNode }) {

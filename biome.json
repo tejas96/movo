@@ -145,7 +145,7 @@
               "level": "error",
               "options": {
                 "deniedGlobals": {
-                  "Intl": "Format dates and numbers with the helpers in @movo/i18n or apps/mobile/src/core/util/time.ts, so every language gets the same format."
+                  "Intl": "Format dates and numbers with the helpers in @movo/i18n or apps/mobile/src/core/util/date.ts, so every language gets the same format."
                 }
               }
             }
@@ -155,7 +155,7 @@
     },
     {
       "includes": [
-        "apps/mobile/src/core/util/time.ts",
+        "apps/mobile/src/core/util/date.ts",
         "apps/mobile/src/core/i18n/**",
         "packages/design-system/src/components/DateTimeSheet.tsx"
       ],

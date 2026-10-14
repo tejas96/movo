@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { api } from '../api/client';
 import { meKey } from '../api/query-keys';
 import { useSessionStore } from '../auth/session.store';
+import { setSocietyTimeZone } from '../util/date';
 import { useTenantStore } from './tenant.store';
 
 /** The signed-in user's memberships and permissions. */
@@ -36,6 +37,9 @@ export function useActiveMembership(): MembershipContext | null {
   useEffect(() => {
     if (chosen && chosen.society.id !== activeId) setActive(chosen.society.id);
   }, [chosen, activeId, setActive]);
+  // Dates and times show in the society's zone (core/util/date.ts).
+  const timeZone = chosen?.society.timezone;
+  useEffect(() => setSocietyTimeZone(timeZone), [timeZone]);
   return chosen;
 }
 

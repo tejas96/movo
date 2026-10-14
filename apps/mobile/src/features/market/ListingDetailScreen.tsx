@@ -31,8 +31,8 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoViewer } from '../../core/photos/PhotoViewer';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { relative, timeAndDay } from '../../core/util/date';
 import { money } from '../../core/util/money';
-import { relative } from '../../core/util/time';
 import { type ListingAction, useCreateOrder, useListing, useListingAction } from './api';
 import {
   coverSource,
@@ -42,7 +42,6 @@ import {
   priceLabel,
   ratingLabel,
   Stars,
-  timeAndDay,
 } from './shared';
 
 type MenuKey = 'edit' | 'pause' | 'resume' | 'archive' | 'hide' | 'unhide' | 'report';

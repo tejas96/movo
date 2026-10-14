@@ -43,10 +43,10 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoPickerRow, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { localeTag, shortWhen } from '../../core/util/date';
 import { parseRupees, rupeesText } from '../../core/util/money';
-import { localeTag } from '../../core/util/time';
 import { useListing, useSaveListing } from './api';
-import { DietMark, KIND_ICON, shortWhen, useAllowedKinds, useMarketSettings } from './shared';
+import { DietMark, KIND_ICON, useAllowedKinds, useMarketSettings } from './shared';
 
 const UNITS = ['plate', 'piece', 'kg', 'box', 'hour'] as const;
 type ErrorKey = 'name' | 'price' | 'priceMax' | 'unit' | 'diet' | 'times' | 'quantity';

@@ -21,7 +21,7 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
-import { mediumDate } from '../../core/util/time';
+import { mediumDate } from '../../core/util/date';
 import { useNotice, useNoticeAction } from './api';
 import { PRIORITY_TONE } from './NoticesScreen';
 

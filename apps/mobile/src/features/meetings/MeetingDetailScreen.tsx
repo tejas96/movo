@@ -25,7 +25,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { dateTime, relative, whenRange } from '../../core/util/time';
+import { dateTime, relative, whenRange } from '../../core/util/date';
 import { type MeetingAction, useMeeting, useMeetingAction } from './api';
 import { MeetingStatusPill } from './MeetingsScreen';
 

@@ -3,7 +3,7 @@ import { Button, Sheet, Text } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-import { day } from '../../core/util/money';
+import { day } from '../../core/util/date';
 
 export const TURN_TONE: StatusTones<AssignmentStatus> = {
   UPCOMING: 'neutral',

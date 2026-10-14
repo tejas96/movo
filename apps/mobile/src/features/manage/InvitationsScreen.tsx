@@ -18,7 +18,7 @@ import { useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-import { shortDate } from '../../core/util/time';
+import { shortDate } from '../../core/util/date';
 import { useInvitations, useRevokeInvitation } from './api';
 
 const TONE: StatusTones<Invitation['status']> = {

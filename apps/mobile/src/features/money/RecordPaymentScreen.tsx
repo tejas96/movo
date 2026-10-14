@@ -29,15 +29,8 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import {
-  day,
-  isoDay,
-  money,
-  newIdempotencyKey,
-  parseRupees,
-  rupeesText,
-} from '../../core/util/money';
-import { localeTag } from '../../core/util/time';
+import { day, isoDay, localeTag } from '../../core/util/date';
+import { money, newIdempotencyKey, parseRupees, rupeesText } from '../../core/util/money';
 import { useCollection, useFlatAccount, useRecordPayment } from './api';
 
 interface PaymentForm {

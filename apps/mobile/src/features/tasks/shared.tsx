@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-import { day } from '../../core/util/money';
+import { day } from '../../core/util/date';
 
 const TONE: StatusTones<TaskStatus> = {
   OPEN: 'info',
