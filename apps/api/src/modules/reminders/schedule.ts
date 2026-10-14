@@ -40,11 +40,9 @@ export function isOver(item: Omit<Timed, 'id'>, now: Date): boolean {
   return item.startsAt.getTime() + OPEN_ENDED_MS <= now.getTime();
 }
 
-const WINDOW = 150;
-
 /**
- * Keyset pages over (startsAt, id): ascending for UPCOMING, descending for PAST. Rows are
- * filtered by audience after the query, so it reads a window and keeps what the viewer may see.
+ * Keyset pages over (startsAt, id): ascending for UPCOMING, descending for PAST. The caller's
+ * fetch filters by audience in SQL, so limit+1 rows are enough.
  */
 export async function pageByStart<T extends Timed>(opts: {
   when: Timeframe;
@@ -55,22 +53,15 @@ export async function pageByStart<T extends Timed>(opts: {
     orderBy: [{ startsAt: 'asc' | 'desc' }, { id: 'asc' | 'desc' }];
     take: number;
   }) => Promise<T[]>;
-  visible: (row: T) => boolean;
 }): Promise<{ items: T[]; nextCursor: string | null }> {
   const dir = opts.when === 'UPCOMING' ? 'asc' : 'desc';
   const cursorWhere = afterCursor(decodeCursor(opts.cursor), 'startsAt', dir);
   const rows = await opts.fetch({
     cursorWhere,
     orderBy: [{ startsAt: dir }, { id: dir }],
-    take: WINDOW,
+    take: opts.limit + 1,
   });
-  const visible = rows.filter(opts.visible);
-  return slicePage(
-    visible,
-    opts.limit,
-    (r) => r.startsAt,
-    visible.length > opts.limit || rows.length === WINDOW,
-  );
+  return slicePage(rows, opts.limit, (r) => r.startsAt);
 }
 
 /** Reminder kinds are stored as "before-24h". */

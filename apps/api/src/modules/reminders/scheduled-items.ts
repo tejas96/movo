@@ -11,7 +11,7 @@ import type { PrismaService } from '../../common/prisma/prisma.service';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { days } from '../../common/util/dates';
 import type { Prisma } from '../../generated/prisma/client';
-import { matchesAudience } from '../notices/audience';
+import { audienceWhere, matchesAudience } from '../notices/audience';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { Recipients } from '../notifications/recipients.service';
 import { claimReminder, type ReminderEntity, resetReminders } from './ledger';
@@ -78,6 +78,11 @@ export class ScheduledItems<Row extends ScheduledRow, Kind extends string> {
     );
   }
 
+  /** Where for the items the viewer may see: everything for managers, else their audience. */
+  visibleWhere(ctx: TenantContext): object {
+    return can(ctx, this.kind.managePermission) ? {} : audienceWhere(ctx);
+  }
+
   target(row: Pick<Row, 'id' | 'societyId'>) {
     return { societyId: row.societyId, entityType: this.kind.entityType, entityId: row.id };
   }
@@ -94,8 +99,7 @@ export class ScheduledItems<Row extends ScheduledRow, Kind extends string> {
       cursor: query.cursor,
       limit: query.limit,
       fetch: ({ cursorWhere, orderBy, take }) =>
-        find({ where: { AND: [timeWhere, cursorWhere] }, orderBy, take }),
-      visible: (row) => this.visibleTo(ctx, row),
+        find({ where: { AND: [timeWhere, cursorWhere, this.visibleWhere(ctx)] }, orderBy, take }),
     });
   }
 
@@ -111,12 +115,13 @@ export class ScheduledItems<Row extends ScheduledRow, Kind extends string> {
         AND: [
           notOverWhere(now),
           { ...extraWhere, startsAt: { lte: new Date(now.getTime() + days(UPCOMING_DAYS)) } },
+          this.visibleWhere(ctx),
         ],
       },
       orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
       take: 20,
     });
-    return rows.filter((row) => this.visibleTo(ctx, row));
+    return rows;
   }
 
   /** After create or a move, in the same transaction: windows already open count as sent. */
