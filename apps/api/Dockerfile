@@ -18,8 +18,16 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && corepack enable
 WORKDIR /repo
-COPY . .
+# Manifests first, so a source-only change reuses the cached install layer. The API's
+# postinstall runs `prisma generate`, which needs the schema and prisma.config.ts.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/api/package.json apps/api/prisma.config.ts apps/api/
+COPY apps/api/prisma apps/api/prisma
+COPY packages/contracts/package.json packages/contracts/
+COPY packages/i18n/package.json packages/i18n/
+COPY packages/config packages/config
 RUN pnpm install --frozen-lockfile --filter @movo/api...
+COPY . .
 # @movo/contracts and @movo/i18n first; the API imports their dist output.
 RUN pnpm --filter @movo/contracts --filter @movo/i18n build \
  && pnpm --filter @movo/api db:generate \
@@ -37,8 +45,11 @@ RUN pnpm --filter @movo/api --prod --legacy deploy /out \
 
 # ---------- runtime ----------
 FROM ${NODE_IMAGE}
+# The git commit this image is built from; /health reports it. Deploy passes the real sha.
+ARG GIT_SHA=dev
 ENV NODE_ENV=production \
     API_PORT=4000 \
+    APP_VERSION=${GIT_SHA} \
     TZ=Asia/Kolkata
 RUN apt-get update \
  && apt-get install -y --no-install-recommends openssl ca-certificates tini \
