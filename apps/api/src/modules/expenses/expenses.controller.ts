@@ -2,7 +2,9 @@ import { expensesContract, type RouteInput, type RouteResponse } from '@movo/con
 import { Controller } from '@nestjs/common';
 import { Input } from '../../common/route/input.decorator';
 import { Route } from '../../common/route/route.decorator';
+import { ExpenseCategoriesService } from './categories.service';
 import { ExpensesService } from './expenses.service';
+import { IncomeService } from './income.service';
 import { ReportService } from './report.service';
 
 const c = expensesContract;
@@ -13,27 +15,29 @@ type Out<K extends keyof typeof c> = Promise<RouteResponse<(typeof c)[K]>>;
 @Controller()
 export class ExpensesController {
   constructor(
+    private readonly categories: ExpenseCategoriesService,
     private readonly expenses: ExpensesService,
+    private readonly income: IncomeService,
     private readonly reports: ReportService,
   ) {}
 
   @Route(c.listCategories) listCategories(): Out<'listCategories'> {
-    return this.expenses.listCategories();
+    return this.categories.listCategories();
   }
   @Route(c.createCategory) createCategory(
     @Input(c.createCategory) { body }: In<'createCategory'>,
   ): Out<'createCategory'> {
-    return this.expenses.createCategory(body.name, body.icon);
+    return this.categories.createCategory(body.name, body.icon);
   }
   @Route(c.updateCategory) updateCategory(
     @Input(c.updateCategory) { params, body }: In<'updateCategory'>,
   ): Out<'updateCategory'> {
-    return this.expenses.updateCategory(params.categoryId, body);
+    return this.categories.updateCategory(params.categoryId, body);
   }
   @Route(c.deleteCategory) async deleteCategory(
     @Input(c.deleteCategory) { params }: In<'deleteCategory'>,
   ): Out<'deleteCategory'> {
-    await this.expenses.deleteCategory(params.categoryId);
+    await this.categories.deleteCategory(params.categoryId);
     return { ok: true };
   }
 
@@ -63,17 +67,17 @@ export class ExpensesController {
   @Route(c.listIncome) listIncome(
     @Input(c.listIncome) { query }: In<'listIncome'>,
   ): Out<'listIncome'> {
-    return this.expenses.listIncome(query.fy);
+    return this.income.listIncome(query.fy);
   }
   @Route(c.createIncome) createIncome(
     @Input(c.createIncome) { body }: In<'createIncome'>,
   ): Out<'createIncome'> {
-    return this.expenses.createIncome(body);
+    return this.income.createIncome(body);
   }
   @Route(c.deleteIncome) async deleteIncome(
     @Input(c.deleteIncome) { params }: In<'deleteIncome'>,
   ): Out<'deleteIncome'> {
-    await this.expenses.deleteIncome(params.incomeId);
+    await this.income.deleteIncome(params.incomeId);
     return { ok: true };
   }
 

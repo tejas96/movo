@@ -1,15 +1,10 @@
-import {
-  type AttentionItem,
-  DEFAULT_EXPENSE_CATEGORIES,
-  type Expense,
-  type ExpenseCategory,
-  type ExpenseSummary,
-  type expensesContract,
-  type IncomeEntry,
-  parseModuleSettings,
-  type RouteBody,
-  type RouteQuery,
-  VendorCategoryIconSchema,
+import type {
+  AttentionItem,
+  Expense,
+  ExpenseSummary,
+  expensesContract,
+  RouteBody,
+  RouteQuery,
 } from '@movo/contracts';
 import { formatMoney } from '@movo/i18n';
 import { Injectable } from '@nestjs/common';
@@ -20,7 +15,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-import { dateOnly, dbDate, fyLabel, iso, todayIn } from '../../common/util/dates';
+import { dateOnly, dbDate, fyLabel, iso } from '../../common/util/dates';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type {
   ExpenseCategory as CategoryRow,
@@ -30,36 +25,15 @@ import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
 import { loadMemberNames } from '../tenancy/member-names';
+import { checkNotFuture, expensesSettings, isFinanceRole, toCategory } from './expense-rules';
 
 type CreateBody = RouteBody<typeof expensesContract.create>;
 type UpdateBody = RouteBody<typeof expensesContract.update>;
 type ListQuery = RouteQuery<typeof expensesContract.list>;
-type IncomeBody = RouteBody<typeof expensesContract.createIncome>;
 
 type ExpenseWithCategory = ExpenseRow & { category: CategoryRow };
 
-/** Rows for a new society. */
-export function defaultExpenseCategoryRows(societyId: string) {
-  return DEFAULT_EXPENSE_CATEGORIES.map((c, i) => ({
-    societyId,
-    key: c.key,
-    name: c.name,
-    icon: c.icon,
-    sortOrder: i,
-  }));
-}
-
-/** Anyone who handles society money sees every expense, whatever the member setting says. */
-export function isFinanceRole(ctx: TenantContext): boolean {
-  return (
-    can(ctx, 'finance.reports.view') || can(ctx, 'expense.create') || can(ctx, 'expense.approve')
-  );
-}
-
-export function expensesSettings(ctx: TenantContext) {
-  return parseModuleSettings('expenses', ctx.moduleSettings.expenses);
-}
-
+/** Expenses: record, approve or reject, edit until approved. */
 @Injectable()
 export class ExpensesService {
   constructor(
@@ -74,79 +48,6 @@ export class ExpensesService {
   private get db() {
     return this.tenant.client;
   }
-
-  // ---------- categories ----------
-
-  async listCategories(): Promise<ExpenseCategory[]> {
-    const rows = await this.db.expenseCategory.findMany({
-      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-    });
-    return rows.map(toCategory);
-  }
-
-  async createCategory(name: string, icon: string): Promise<ExpenseCategory> {
-    const ctx = requireTenant();
-    const count = await this.db.expenseCategory.count();
-    try {
-      const row = await this.db.expenseCategory.create({
-        data: { societyId: ctx.societyId, name, icon, sortOrder: count },
-      });
-      await this.audit.record({
-        action: 'expense.category.created',
-        entityType: 'ExpenseCategory',
-        entityId: row.id,
-        after: { name },
-      });
-      return toCategory(row);
-    } catch (error) {
-      if (isUniqueViolation(error))
-        throw ApiException.conflict('CONFLICT', 'A category with this name exists');
-      throw error;
-    }
-  }
-
-  async updateCategory(id: string, body: { name?: string; icon?: string }) {
-    const before = await this.db.expenseCategory.findUnique({ where: { id } });
-    if (!before) throw ApiException.notFound('Category not found');
-    try {
-      const row = await this.db.expenseCategory.update({
-        where: { id },
-        // A renamed seeded category shows the new name, not the translation.
-        data: {
-          ...(body.name !== undefined ? { name: body.name, key: null } : {}),
-          ...(body.icon !== undefined ? { icon: body.icon } : {}),
-        },
-      });
-      await this.audit.record({
-        action: 'expense.category.updated',
-        entityType: 'ExpenseCategory',
-        entityId: id,
-        before: { name: before.name },
-        after: { name: row.name },
-      });
-      return toCategory(row);
-    } catch (error) {
-      if (isUniqueViolation(error))
-        throw ApiException.conflict('CONFLICT', 'A category with this name exists');
-      throw error;
-    }
-  }
-
-  async deleteCategory(id: string): Promise<void> {
-    const row = await this.db.expenseCategory.findUnique({ where: { id } });
-    if (!row) throw ApiException.notFound('Category not found');
-    if ((await this.db.expense.count({ where: { categoryId: id } })) > 0)
-      throw ApiException.conflict('CATEGORY_NOT_EMPTY', 'Move or remove its expenses first');
-    await this.db.expenseCategory.delete({ where: { id } });
-    await this.audit.record({
-      action: 'expense.category.deleted',
-      entityType: 'ExpenseCategory',
-      entityId: id,
-      before: { name: row.name },
-    });
-  }
-
-  // ---------- expenses ----------
 
   async list(query: ListQuery) {
     const ctx = requireTenant();
@@ -186,7 +87,7 @@ export class ExpensesService {
     });
     if (repeat) return this.get(repeat.id);
     await this.requireCategory(body.categoryId);
-    this.checkDate(ctx, body.incurredOn);
+    checkNotFuture(ctx, body.incurredOn);
     const receiptIds = await this.files.claim(ctx, body.receiptIds ?? [], 'EXPENSE_RECEIPT');
     const status = this.needsApproval(ctx, body.amountPaise) ? 'PENDING' : 'APPROVED';
     let row: ExpenseWithCategory;
@@ -238,7 +139,7 @@ export class ExpensesService {
     const before = await this.requireEditable(ctx, expenseId);
     if (body.categoryId) await this.requireCategory(body.categoryId);
     const incurredOn = body.incurredOn ?? dateOnly(before.incurredOn);
-    if (body.incurredOn) this.checkDate(ctx, body.incurredOn);
+    if (body.incurredOn) checkNotFuture(ctx, body.incurredOn);
     const amountPaise = body.amountPaise ?? before.amountPaise;
     const status = this.needsApproval(ctx, amountPaise) ? 'PENDING' : 'APPROVED';
     const receipts = body.receiptIds
@@ -374,82 +275,6 @@ export class ExpensesService {
       : [];
   }
 
-  // ---------- income ----------
-
-  async listIncome(fy: string | undefined): Promise<IncomeEntry[]> {
-    const ctx = requireTenant();
-    const year = fy ?? fyLabel(todayIn(ctx.society.timezone), ctx.society.fyStartMonth);
-    const rows = await this.db.incomeEntry.findMany({
-      where: { financialYear: year },
-      orderBy: [{ receivedOn: 'desc' }, { createdAt: 'desc' }],
-    });
-    const names = await loadMemberNames(
-      this.prisma,
-      rows.map((r) => r.createdByMembershipId),
-    );
-    return rows.map((r) => ({
-      id: r.id,
-      kind: r.kind,
-      amountPaise: r.amountPaise,
-      receivedOn: dateOnly(r.receivedOn),
-      description: r.description,
-      createdBy: {
-        membershipId: r.createdByMembershipId,
-        displayName: names.get(r.createdByMembershipId)?.displayName ?? 'Committee',
-      },
-      createdAt: r.createdAt.toISOString(),
-    }));
-  }
-
-  async createIncome(body: IncomeBody): Promise<IncomeEntry> {
-    const ctx = requireTenant();
-    this.checkDate(ctx, body.receivedOn);
-    const row = await this.db.incomeEntry.create({
-      data: {
-        societyId: ctx.societyId,
-        kind: body.kind,
-        amountPaise: body.amountPaise,
-        receivedOn: dbDate(body.receivedOn),
-        description: body.description || null,
-        financialYear: fyLabel(body.receivedOn, ctx.society.fyStartMonth),
-        createdByMembershipId: ctx.membershipId,
-      },
-    });
-    await this.audit.record({
-      action: 'income.created',
-      entityType: 'IncomeEntry',
-      entityId: row.id,
-      after: { kind: row.kind, amountPaise: row.amountPaise },
-    });
-    const names = await loadMemberNames(this.prisma, [ctx.membershipId]);
-    return {
-      id: row.id,
-      kind: row.kind,
-      amountPaise: row.amountPaise,
-      receivedOn: dateOnly(row.receivedOn),
-      description: row.description,
-      createdBy: {
-        membershipId: ctx.membershipId,
-        displayName: names.get(ctx.membershipId)?.displayName ?? 'Committee',
-      },
-      createdAt: row.createdAt.toISOString(),
-    };
-  }
-
-  async deleteIncome(id: string): Promise<void> {
-    const row = await this.db.incomeEntry.findUnique({ where: { id } });
-    if (!row) throw ApiException.notFound('Income not found');
-    await this.db.incomeEntry.delete({ where: { id } });
-    await this.audit.record({
-      action: 'income.deleted',
-      entityType: 'IncomeEntry',
-      entityId: id,
-      before: { kind: row.kind, amountPaise: row.amountPaise },
-    });
-  }
-
-  // ---------- helpers ----------
-
   /** true = finance role (all statuses). Members get approved ones only with DETAILED sharing. */
   private requireListAccess(ctx: TenantContext): boolean {
     if (isFinanceRole(ctx)) return true;
@@ -463,13 +288,6 @@ export class ExpensesService {
       s.approval === 'ALWAYS' ||
       (s.approval === 'ABOVE_AMOUNT' && amountPaise > s.approvalThresholdPaise)
     );
-  }
-
-  private checkDate(ctx: TenantContext, date: string) {
-    if (date > todayIn(ctx.society.timezone))
-      throw ApiException.validation([
-        { path: ['date'], message: 'Cannot be in the future', in: 'body' },
-      ]);
   }
 
   private async requireCategory(id: string) {
@@ -538,17 +356,6 @@ export class ExpensesService {
       canEdit: this.mayEdit(ctx, e),
     };
   }
-}
-
-export function toCategory(c: CategoryRow): ExpenseCategory {
-  const icon = VendorCategoryIconSchema.safeParse(c.icon);
-  return {
-    id: c.id,
-    key: c.key,
-    name: c.name,
-    icon: icon.success ? icon.data : 'box',
-    sortOrder: c.sortOrder,
-  };
 }
 
 function toSummary(e: ExpenseWithCategory): ExpenseSummary {

@@ -6,7 +6,7 @@ import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
 import { dateOnly, fyLabel, todayIn } from '../../common/util/dates';
 import { OPEN_STATUSES, outstanding } from '../maintenance/ledger';
-import { expensesSettings, isFinanceRole, toCategory } from './expenses.service';
+import { expensesSettings, isFinanceRole, toCategory } from './expense-rules';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 

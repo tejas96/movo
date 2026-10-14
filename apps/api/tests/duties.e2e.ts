@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { addDays, todayIn } from '../src/common/util/dates';
-import { DutiesService } from '../src/modules/duties/duties.service';
+import { DutiesJob } from '../src/modules/duties/duties.job';
 import { auth, type SocietyFixture, societyWithResident } from './fixtures';
 import { createHarness, type Harness } from './harness';
 
@@ -104,7 +104,7 @@ describe('duties', () => {
       .http()
       .get(url(s, `/${duty.id}`))
       .set(auth(s.admin));
-    const service = h.app.get(DutiesService);
+    const service = h.app.get(DutiesJob);
     await service.advance(at(nextMonthStart(TODAY)));
     const moved = await h
       .http()
@@ -123,7 +123,7 @@ describe('duties', () => {
 
   it('marks unconfirmed turns missed, carries them over when asked, and reminds before the end', async () => {
     const s = await societyWithResident(h, 'd2');
-    const service = h.app.get(DutiesService);
+    const service = h.app.get(DutiesJob);
     const plain = await createDuty(s, { title: 'Tank cleaning' });
     const carry = await createDuty(s, { title: 'Terrace check', onMiss: 'CARRY_OVER' });
     const monthEnd = addDays(nextMonthStart(TODAY), -1);
