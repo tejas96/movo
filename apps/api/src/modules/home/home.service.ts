@@ -9,7 +9,7 @@ import { EmergencyService } from '../emergency/emergency.service';
 import { EventsService } from '../events/events.service';
 import { ExpensesService } from '../expenses/expenses.service';
 import { AccountsService } from '../maintenance/accounts.service';
-import { MarketService } from '../market/market.service';
+import { OrdersService } from '../market/orders.service';
 import { MeetingsService } from '../meetings/meetings.service';
 import { NoticesService } from '../notices/notices.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -36,7 +36,7 @@ export class HomeService {
     private readonly expenses: ExpensesService,
     private readonly duties: DutiesService,
     private readonly tasks: TasksService,
-    private readonly market: MarketService,
+    private readonly market: OrdersService,
     private readonly rewards: RewardsService,
   ) {}
 
