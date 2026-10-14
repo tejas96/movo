@@ -15,24 +15,17 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import type { TenantContext } from '../../common/tenant/tenant.types';
 import { days, iso } from '../../common/util/dates';
 import type {
   Meeting as MeetingRow,
   MeetingUpdate as MeetingUpdateRow,
   Prisma,
 } from '../../generated/prisma/client';
-import { matchesAudience } from '../notices/audience';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
-import { claimReminder, resetReminders } from '../reminders/ledger';
-import {
-  assertTimes,
-  notOverWhere,
-  overWhere,
-  pageByStart,
-  UPCOMING_DAYS,
-} from '../reminders/schedule';
+import { assertTimes, notOverWhere, overWhere } from '../reminders/schedule';
+import { ScheduledItems } from '../reminders/scheduled-items';
 import { loadMemberNames } from '../tenancy/member-names';
 
 type CreateBody = RouteBody<typeof meetingsContract.create>;
@@ -43,22 +36,29 @@ type PushKind = 'scheduled' | 'moved' | 'note' | 'cancelled' | 'reminder';
 
 @Injectable()
 export class MeetingsService {
-  private readonly logger = new Logger(MeetingsService.name);
+  private readonly items: ScheduledItems<MeetingRow, PushKind>;
 
   constructor(
     private readonly tenant: TenantPrismaService,
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly notifications: NotificationsService,
-    private readonly recipients: Recipients,
-  ) {}
+    notifications: NotificationsService,
+    recipients: Recipients,
+  ) {
+    this.items = new ScheduledItems<MeetingRow, PushKind>(prisma, notifications, recipients, {
+      entityType: 'Meeting',
+      label: 'meeting',
+      managePermission: 'meeting.manage',
+      category: 'MEETING',
+      screen: 'meeting',
+      idKey: 'meetingId',
+      push: meetingPush,
+      logger: new Logger(MeetingsService.name),
+    });
+  }
 
   private get db() {
     return this.tenant.client;
-  }
-
-  private visibleTo(ctx: TenantContext, m: MeetingRow): boolean {
-    return can(ctx, 'meeting.manage') || matchesAudience(AudienceSchema.parse(m.audience), ctx);
   }
 
   private windows(ctx: TenantContext): number[] {
@@ -72,25 +72,16 @@ export class MeetingsService {
       query.when === 'UPCOMING'
         ? { AND: [notOverWhere(now), { status: { not: 'COMPLETED' } }] }
         : { OR: [...overWhere(now).OR, { status: 'COMPLETED' }] };
-    const page = await pageByStart({
-      when: query.when,
-      cursor: query.cursor,
-      limit: query.limit,
-      fetch: ({ cursorWhere, orderBy, take }) =>
-        this.db.meeting.findMany({
-          where: { AND: [timeWhere, cursorWhere as Prisma.MeetingWhereInput] },
-          orderBy,
-          take,
-        }),
-      visible: (m) => this.visibleTo(ctx, m),
-    });
+    const page = await this.items.page(ctx, query, timeWhere, ({ where, orderBy, take }) =>
+      this.db.meeting.findMany({ where: where as Prisma.MeetingWhereInput, orderBy, take }),
+    );
     return { items: page.items.map(toSummary), nextCursor: page.nextCursor };
   }
 
   async get(meetingId: string): Promise<Meeting> {
     const ctx = requireTenant();
     const m = await this.db.meeting.findUnique({ where: { id: meetingId } });
-    if (!m || !this.visibleTo(ctx, m)) throw ApiException.notFound('Meeting not found');
+    if (!m || !this.items.visibleTo(ctx, m)) throw ApiException.notFound('Meeting not found');
     return this.toDto(m);
   }
 
@@ -123,8 +114,8 @@ export class MeetingsService {
       );
       return row;
     });
-    await resetReminders(this.prisma, this.target(m), m.startsAt, this.windows(ctx));
-    await this.fanOut(ctx, m, 'scheduled');
+    await this.items.resetReminders(m, this.windows(ctx));
+    await this.items.fanOut(ctx, m, 'scheduled');
     return this.toDto(m);
   }
 
@@ -175,8 +166,8 @@ export class MeetingsService {
       return row;
     });
     if (moved) {
-      await resetReminders(this.prisma, this.target(m), m.startsAt, this.windows(ctx));
-      await this.fanOut(ctx, m, 'moved', body.note);
+      await this.items.resetReminders(m, this.windows(ctx));
+      await this.items.fanOut(ctx, m, 'moved', body.note);
     }
     return this.toDto(m);
   }
@@ -199,7 +190,7 @@ export class MeetingsService {
         tx,
       );
     });
-    await this.fanOut(ctx, m, 'note', note);
+    await this.items.fanOut(ctx, m, 'note', note);
     return this.toDto(m);
   }
 
@@ -207,7 +198,7 @@ export class MeetingsService {
     const ctx = requireTenant();
     await this.requireScheduled(meetingId);
     const m = await this.close(ctx, meetingId, 'CANCELLED', note);
-    await this.fanOut(ctx, m, 'cancelled', note);
+    await this.items.fanOut(ctx, m, 'cancelled', note);
     return this.toDto(m);
   }
 
@@ -221,22 +212,14 @@ export class MeetingsService {
 
   /** Scheduled or cancelled meetings in the next 14 days that the viewer may see. */
   async forHome(ctx: TenantContext, now = new Date()): Promise<UpcomingItem[]> {
-    const rows = await this.db.meeting.findMany({
-      where: {
-        AND: [
-          notOverWhere(now),
-          {
-            status: { not: 'COMPLETED' },
-            startsAt: { lte: new Date(now.getTime() + days(UPCOMING_DAYS)) },
-          },
-        ],
-      },
-      orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
-      take: 20,
-    });
-    return rows
-      .filter((m) => this.visibleTo(ctx, m))
-      .map((m) => ({ kind: 'MEETING' as const, ...toSummary(m) }));
+    const rows = await this.items.upcoming(
+      ctx,
+      now,
+      ({ where, orderBy, take }) =>
+        this.db.meeting.findMany({ where: where as Prisma.MeetingWhereInput, orderBy, take }),
+      { status: { not: 'COMPLETED' } },
+    );
+    return rows.map((m) => ({ kind: 'MEETING' as const, ...toSummary(m) }));
   }
 
   /**
@@ -252,24 +235,10 @@ export class MeetingsService {
       },
       include: { society: { include: { modules: { where: { moduleKey: 'meetings' } } } } },
     });
-    let sent = 0;
-    for (const m of rows) {
-      const mod = m.society.modules[0];
-      if (mod && !mod.enabled) continue;
-      const windows = parseModuleSettings('meetings', mod?.settings).reminderHoursBefore;
-      const due = await claimReminder(this.prisma, this.target(m), m.startsAt, windows, now);
-      if (due === null) continue;
-      await this.notifications.notifyUsers({
-        userIds: await this.recipients.ofAudience(m.societyId, AudienceSchema.parse(m.audience)),
-        societyId: m.societyId,
-        category: 'MEETING',
-        render: (t, locale) => meetingPush(t, locale, m.society.timezone, m, 'reminder'),
-        data: { screen: 'meeting', societyId: m.societyId, meetingId: m.id },
-      });
-      sent += 1;
-    }
-    if (sent > 0) this.logger.log(`sent ${sent} meeting reminder(s)`);
-    return sent;
+    return this.items.sendDueReminders(now, rows, {
+      windows: (m) =>
+        parseModuleSettings('meetings', m.society.modules[0]?.settings).reminderHoursBefore,
+    });
   }
 
   private async close(
@@ -314,26 +283,6 @@ export class MeetingsService {
     if (m.status !== 'SCHEDULED')
       throw ApiException.conflict('CONFLICT', 'Only a scheduled meeting can change');
     return m;
-  }
-
-  private target(m: MeetingRow) {
-    return { societyId: m.societyId, entityType: 'Meeting' as const, entityId: m.id };
-  }
-
-  private async fanOut(
-    ctx: TenantContext,
-    m: MeetingRow,
-    kind: PushKind,
-    extra?: string,
-  ): Promise<void> {
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(m.audience)),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'MEETING',
-      render: (t, locale) => meetingPush(t, locale, ctx.society.timezone, m, kind, extra),
-      data: { screen: 'meeting', societyId: ctx.societyId, meetingId: m.id },
-    });
   }
 
   private async toDto(m: MeetingRow): Promise<Meeting> {

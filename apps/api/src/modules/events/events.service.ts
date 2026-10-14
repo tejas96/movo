@@ -17,21 +17,13 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import type { TenantContext } from '../../common/tenant/tenant.types';
 import { days, iso } from '../../common/util/dates';
 import type { SocietyEvent as EventRow, Prisma } from '../../generated/prisma/client';
-import { matchesAudience } from '../notices/audience';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
-import { claimReminder, resetReminders } from '../reminders/ledger';
-import {
-  assertTimes,
-  isOver,
-  notOverWhere,
-  overWhere,
-  pageByStart,
-  UPCOMING_DAYS,
-} from '../reminders/schedule';
+import { assertTimes, isOver, notOverWhere, overWhere } from '../reminders/schedule';
+import { ScheduledItems } from '../reminders/scheduled-items';
 import { toFlatRef } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 
@@ -57,22 +49,29 @@ const RESPONSE_ORDER = { GOING: 0, MAYBE: 1, NOT_GOING: 2 } as const;
 
 @Injectable()
 export class EventsService {
-  private readonly logger = new Logger(EventsService.name);
+  private readonly items: ScheduledItems<EventRow, PushKind>;
 
   constructor(
     private readonly tenant: TenantPrismaService,
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly notifications: NotificationsService,
-    private readonly recipients: Recipients,
-  ) {}
+    notifications: NotificationsService,
+    recipients: Recipients,
+  ) {
+    this.items = new ScheduledItems<EventRow, PushKind>(prisma, notifications, recipients, {
+      entityType: 'Event',
+      label: 'event',
+      managePermission: 'event.manage',
+      category: 'EVENT',
+      screen: 'event',
+      idKey: 'eventId',
+      push: eventPush,
+      logger: new Logger(EventsService.name),
+    });
+  }
 
   private get db() {
     return this.tenant.client;
-  }
-
-  private visibleTo(ctx: TenantContext, e: EventRow): boolean {
-    return can(ctx, 'event.manage') || matchesAudience(AudienceSchema.parse(e.audience), ctx);
   }
 
   async list(query: ListQuery) {
@@ -81,18 +80,13 @@ export class EventsService {
     const timeWhere = (
       query.when === 'UPCOMING' ? notOverWhere(now) : overWhere(now)
     ) as Prisma.SocietyEventWhereInput;
-    const page = await pageByStart({
-      when: query.when,
-      cursor: query.cursor,
-      limit: query.limit,
-      fetch: ({ cursorWhere, orderBy, take }) =>
-        this.db.societyEvent.findMany({
-          where: { AND: [timeWhere, cursorWhere as Prisma.SocietyEventWhereInput] },
-          orderBy,
-          take,
-        }),
-      visible: (e) => this.visibleTo(ctx, e),
-    });
+    const page = await this.items.page(ctx, query, timeWhere, ({ where, orderBy, take }) =>
+      this.db.societyEvent.findMany({
+        where: where as Prisma.SocietyEventWhereInput,
+        orderBy,
+        take,
+      }),
+    );
     const ids = page.items.map((e) => e.id);
     const [counts, mine] = await Promise.all([this.countsFor(ids), this.myRsvps(ctx, ids)]);
     return {
@@ -141,8 +135,8 @@ export class EventsService {
       );
       return row;
     });
-    await resetReminders(this.prisma, target(e), e.startsAt, EVENT_REMINDER_WINDOWS);
-    await this.fanOut(ctx, e, 'published');
+    await this.items.resetReminders(e, EVENT_REMINDER_WINDOWS);
+    await this.items.fanOut(ctx, e, 'published');
     return this.toDto(ctx, e);
   }
 
@@ -182,8 +176,8 @@ export class EventsService {
       return row;
     });
     if (moved) {
-      await resetReminders(this.prisma, target(e), e.startsAt, EVENT_REMINDER_WINDOWS);
-      await this.fanOut(ctx, e, 'moved');
+      await this.items.resetReminders(e, EVENT_REMINDER_WINDOWS);
+      await this.items.fanOut(ctx, e, 'moved');
     }
     return this.toDto(ctx, e);
   }
@@ -207,7 +201,7 @@ export class EventsService {
       );
       return row;
     });
-    await this.fanOut(ctx, e, 'cancelled', reason);
+    await this.items.fanOut(ctx, e, 'cancelled', reason);
     return this.toDto(ctx, e);
   }
 
@@ -266,17 +260,13 @@ export class EventsService {
 
   /** Events in the next 14 days that the viewer may see, with the viewer's answer. */
   async forHome(ctx: TenantContext, now = new Date()): Promise<UpcomingItem[]> {
-    const rows = await this.db.societyEvent.findMany({
-      where: {
-        AND: [
-          notOverWhere(now) as Prisma.SocietyEventWhereInput,
-          { startsAt: { lte: new Date(now.getTime() + days(UPCOMING_DAYS)) } },
-        ],
-      },
-      orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
-      take: 20,
-    });
-    const visible = rows.filter((e) => this.visibleTo(ctx, e));
+    const visible = await this.items.upcoming(ctx, now, ({ where, orderBy, take }) =>
+      this.db.societyEvent.findMany({
+        where: where as Prisma.SocietyEventWhereInput,
+        orderBy,
+        take,
+      }),
+    );
     const mine = await this.myRsvps(
       ctx,
       visible.map((e) => e.id),
@@ -302,41 +292,21 @@ export class EventsService {
       },
       include: { society: { include: { modules: { where: { moduleKey: 'events' } } } } },
     });
-    let sent = 0;
-    for (const e of rows) {
-      if (e.society.modules[0] && !e.society.modules[0].enabled) continue;
-      const due = await claimReminder(
-        this.prisma,
-        target(e),
-        e.startsAt,
-        EVENT_REMINDER_WINDOWS,
-        now,
-      );
-      if (due === null) continue;
-      const [audience, declined] = await Promise.all([
-        this.recipients.ofAudience(e.societyId, AudienceSchema.parse(e.audience)),
-        this.prisma.eventRsvp.findMany({
+    return this.items.sendDueReminders(now, rows, {
+      windows: () => EVENT_REMINDER_WINDOWS,
+      skipUserIds: async (e) => {
+        const declined = await this.prisma.eventRsvp.findMany({
           where: { eventId: e.id, response: 'NOT_GOING' },
           select: { membership: { select: { userId: true } } },
-        }),
-      ]);
-      const skip = new Set(declined.map((d) => d.membership.userId));
-      await this.notifications.notifyUsers({
-        userIds: audience.filter((id) => !skip.has(id)),
-        societyId: e.societyId,
-        category: 'EVENT',
-        render: (t, locale) => eventPush(t, locale, e.society.timezone, e, 'reminder'),
-        data: { screen: 'event', societyId: e.societyId, eventId: e.id },
-      });
-      sent += 1;
-    }
-    if (sent > 0) this.logger.log(`sent ${sent} event reminder(s)`);
-    return sent;
+        });
+        return declined.map((d) => d.membership.userId);
+      },
+    });
   }
 
   private async requireVisible(ctx: TenantContext, eventId: string): Promise<EventRow> {
     const e = await this.db.societyEvent.findUnique({ where: { id: eventId } });
-    if (!e || !this.visibleTo(ctx, e)) throw ApiException.notFound('Event not found');
+    if (!e || !this.items.visibleTo(ctx, e)) throw ApiException.notFound('Event not found');
     return e;
   }
 
@@ -379,22 +349,6 @@ export class EventsService {
     );
   }
 
-  private async fanOut(
-    ctx: TenantContext,
-    e: EventRow,
-    kind: PushKind,
-    extra?: string,
-  ): Promise<void> {
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(e.audience)),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'EVENT',
-      render: (t, locale) => eventPush(t, locale, ctx.society.timezone, e, kind, extra),
-      data: { screen: 'event', societyId: ctx.societyId, eventId: e.id },
-    });
-  }
-
   private async toDto(ctx: TenantContext, e: EventRow): Promise<SocietyEvent> {
     const [counts, mine, names] = await Promise.all([
       this.countsFor([e.id]),
@@ -415,10 +369,6 @@ export class EventsService {
       updatedAt: e.updatedAt.toISOString(),
     };
   }
-}
-
-function target(e: EventRow) {
-  return { societyId: e.societyId, entityType: 'Event' as const, entityId: e.id };
 }
 
 function toSummary(e: EventRow, c: Counts, myRsvp: MyRsvp | null): EventSummary {
