@@ -27,19 +27,21 @@ jobs:
           --health-interval 5s --health-timeout 3s --health-retries 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: ./.github/actions/setup
+      # Turbo's local cache: unchanged packages skip build and typecheck. One entry per commit,
+      # restored from the newest one with the same lockfile.
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm lint
-      - name: Build shared libraries
-        run: pnpm --filter @movo/contracts --filter @movo/i18n build
       - name: Generate Prisma client
         run: pnpm --filter @movo/api db:generate
         env:
           DATABASE_URL: postgresql://movo:movo@localhost:5433/movo_test
+      # typecheck dependsOn ^build, so this also builds (or restores) contracts and i18n dist,
+      # which the test steps below import.
       - run: pnpm typecheck
       - name: Migrate test database
         run: pnpm --filter @movo/api db:deploy
@@ -96,26 +98,64 @@ jobs:
           docker logs api
           exit 1
 
+  changes:
+    name: Changed paths
+    # Decides whether the 45-minute Android build is needed. Plain git, no third-party action.
+    # Any doubt (no base commit, git error) means "yes, build it".
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mobile: ${{ steps.diff.outputs.mobile }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # A PR checks out its merge commit: parent 1 is the base it merges into.
+          fetch-depth: 2
+      - id: diff
+        name: Did the app, packages or lockfile change?
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          mobile=true
+          if [ "$EVENT" = "pull_request" ]; then
+            base=$(git rev-parse HEAD^1 2>/dev/null || true)
+          else
+            base=""
+            if [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] &&
+              git fetch --no-tags --depth=1 origin "$BEFORE" 2>/dev/null; then
+              base=$BEFORE
+            fi
+          fi
+          if [ -n "$base" ] && files=$(git diff --name-only "$base" HEAD); then
+            echo "$files"
+            if echo "$files" | grep -qE '^(apps/mobile/|packages/|pnpm-lock\.yaml$|\.github/workflows/ci\.yml$|\.github/actions/setup/)'; then
+              mobile=true
+            else
+              mobile=false
+            fi
+          fi
+          echo "mobile=$mobile" | tee -a "$GITHUB_OUTPUT"
+
   android:
     name: Android release build
     # A release build runs checks a debug build skips (R8, resource verification, the HTTPS
     # API_URL guard). Debug-signed here, arm64 only to keep it fast; the Play build is
     # .github/workflows/release-android.yml.
+    # Runs only when the app could have changed. A skipped job counts as passed for a required
+    # check; if the changes job itself fails, it runs anyway instead of skipping.
+    needs: changes
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.mobile == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
+      - uses: ./.github/actions/setup
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: zulu
           java-version: "17"
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
-      - run: pnpm install --frozen-lockfile
       - name: Build shared libraries
         run: pnpm --filter @movo/contracts --filter @movo/i18n build
       - name: Release env

@@ -71,6 +71,9 @@
       },
       "complexity": {
         "noUselessFragments": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error"
       }
     }
   },
@@ -93,6 +96,16 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["**", "!apps/api/**"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "noFloatingPromises": "off"
+          }
+        }
+      }
+    },
     {
       "includes": ["**/scripts/**", "**/*.config.{js,ts,mjs,cjs}", "**/tailwind.preset.js"],
       "linter": {

@@ -1,4 +1,4 @@
-# Weekly update PRs for CI actions and Docker base images. npm gets security fixes only
+# Weekly update PRs for CI actions, Docker base images and the production compose images. npm gets security fixes only
 # (Dependabot security updates, repo Settings -> Code security); version bumps for the React
 # Native stack are done by hand because they need an app build and a device test.
 version: 2
@@ -17,6 +17,17 @@ updates:
 
   - package-ecosystem: docker
     directories: ["/apps/api", "/infra/backup"]
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Kolkata
+    commit-message:
+      prefix: "Docker"
+
+  # postgres and caddy in infra/docker-compose.prod.yml are pinned by digest (tag in a comment);
+  # this bumps both together.
+  - package-ecosystem: docker-compose
+    directory: /infra
     schedule:
       interval: weekly
       day: monday

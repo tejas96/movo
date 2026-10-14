@@ -14,8 +14,8 @@ import type { Prisma } from '../../generated/prisma/client';
 import { audienceWhere, matchesAudience } from '../notices/audience';
 import type { NotificationsService } from '../notifications/notifications.service';
 import type { Recipients } from '../notifications/recipients.service';
-import { claimReminder, type ReminderEntity, resetReminders } from './ledger';
-import { notOverWhere, pageByStart, UPCOMING_DAYS } from './schedule';
+import { type ReminderEntity, resetReminders } from './ledger';
+import { dueWindows, notOverWhere, pageByStart, reminderKind, UPCOMING_DAYS } from './schedule';
 
 /** The columns meetings and events share. */
 export interface ScheduledRow {
@@ -157,44 +157,103 @@ export class ScheduledItems<Row extends ScheduledRow, Kind extends string> {
 
   /**
    * Reminder job: at most one reminder per item per run, for the most urgent window that
-   * opened. Items of societies with the module switched off are skipped.
+   * opened. Items of societies with the module switched off are skipped. Per society: one
+   * read of the reminders already sent, one audience lookup per distinct audience, then the
+   * ReminderSent rows and the pushes in one transaction.
    */
   async sendDueReminders(
     now: Date,
     rows: DueRow<Row>[],
     opts: {
       windows: (row: DueRow<Row>) => readonly number[];
-      /** Users to leave out, e.g. members who said they will not come. */
-      skipUserIds?: (row: DueRow<Row>) => Promise<string[]>;
+      /** Users to leave out per item id, e.g. members who said they will not come. */
+      skipUserIds?: (rows: DueRow<Row>[]) => Promise<Map<string, string[]>>;
     },
   ): Promise<number> {
-    let sent = 0;
+    const bySociety = new Map<string, DueRow<Row>[]>();
     for (const row of rows) {
       const mod = row.society.modules[0];
       if (mod && !mod.enabled) continue;
-      const due = await claimReminder(
-        this.prisma,
-        this.target(row),
-        row.startsAt,
-        opts.windows(row),
-        now,
-      );
-      if (due === null) continue;
-      const [audience, skipped] = await Promise.all([
-        this.recipients.ofAudience(row.societyId, AudienceSchema.parse(row.audience)),
-        opts.skipUserIds ? opts.skipUserIds(row) : Promise.resolve([]),
-      ]);
-      const skip = new Set(skipped);
-      await this.notifications.notifyUsers({
-        userIds: audience.filter((id) => !skip.has(id)),
-        societyId: row.societyId,
-        category: this.kind.category,
-        render: (t, locale) => this.kind.push(t, locale, row.society.timezone, row, 'reminder'),
-        data: { screen: this.kind.screen, societyId: row.societyId, [this.kind.idKey]: row.id },
-      });
-      sent += 1;
+      bySociety.set(row.societyId, [...(bySociety.get(row.societyId) ?? []), row]);
     }
+    let sent = 0;
+    for (const list of bySociety.values()) sent += await this.remindSociety(now, list, opts);
     if (sent > 0) this.kind.logger.log(`sent ${sent} ${this.kind.label} reminder(s)`);
     return sent;
+  }
+
+  private async remindSociety(
+    now: Date,
+    rows: DueRow<Row>[],
+    opts: {
+      windows: (row: DueRow<Row>) => readonly number[];
+      skipUserIds?: (rows: DueRow<Row>[]) => Promise<Map<string, string[]>>;
+    },
+  ): Promise<number> {
+    // The smallest open window is the reminder to send; larger open ones are marked sent with it.
+    const due = rows.flatMap((row) => {
+      const open = dueWindows(row.startsAt, now, opts.windows(row));
+      const smallest = open[0];
+      return smallest === undefined ? [] : [{ row, open, kind: reminderKind(smallest) }];
+    });
+    if (due.length === 0) return 0;
+    const already = new Set(
+      (
+        await this.prisma.reminderSent.findMany({
+          where: { entityType: this.kind.entityType, entityId: { in: due.map((d) => d.row.id) } },
+          select: { entityId: true, kind: true },
+        })
+      ).map((r) => `${r.entityId}|${r.kind}`),
+    );
+    const toSend = due.filter((d) => !already.has(`${d.row.id}|${d.kind}`));
+    if (toSend.length === 0) return 0;
+
+    const audiences = new Map<string, Promise<string[]>>();
+    const audienceOf = (row: DueRow<Row>) => {
+      const audience = AudienceSchema.parse(row.audience);
+      const key = JSON.stringify(audience);
+      let users = audiences.get(key);
+      if (!users) {
+        users = this.recipients.ofAudience(row.societyId, audience);
+        audiences.set(key, users);
+      }
+      return users;
+    };
+    const sendRows = toSend.map((d) => d.row);
+    const [userIds, skipped] = await Promise.all([
+      Promise.all(sendRows.map(audienceOf)),
+      opts.skipUserIds ? opts.skipUserIds(sendRows) : Promise.resolve(new Map<string, string[]>()),
+    ]);
+
+    await this.prisma.$transaction(
+      async (tx) => {
+        await tx.reminderSent.createMany({
+          data: toSend.flatMap((d) =>
+            d.open.map((h) => ({ ...this.target(d.row), kind: reminderKind(h) })),
+          ),
+          skipDuplicates: true,
+        });
+        await this.notifications.notifyMany(
+          sendRows.map((row, i) => {
+            const skip = new Set(skipped.get(row.id) ?? []);
+            return {
+              userIds: (userIds[i] ?? []).filter((id) => !skip.has(id)),
+              societyId: row.societyId,
+              category: this.kind.category,
+              render: (t: TFunction, locale: Locale) =>
+                this.kind.push(t, locale, row.society.timezone, row, 'reminder'),
+              data: {
+                screen: this.kind.screen,
+                societyId: row.societyId,
+                [this.kind.idKey]: row.id,
+              },
+            };
+          }),
+          tx,
+        );
+      },
+      { timeout: 60_000 },
+    );
+    return toSend.length;
   }
 }

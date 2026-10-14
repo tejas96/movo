@@ -22,6 +22,20 @@ export interface NotifyInput {
   exceptUserId?: string;
 }
 
+/**
+ * One i18next instance per locale for the life of the process. The resources are bundled and
+ * never change, so building one per notify call only cost time and memory.
+ */
+const translators = new Map<Locale, TFunction>();
+function translatorFor(locale: Locale): TFunction {
+  let t = translators.get(locale);
+  if (!t) {
+    t = createI18n({ locale }).getFixedT(locale);
+    translators.set(locale, t);
+  }
+  return t;
+}
+
 type Db =
   | Pick<PrismaService, 'user' | 'notification' | 'notificationDelivery'>
   | Prisma.TransactionClient;
@@ -63,15 +77,6 @@ export class NotificationsService {
       select: { id: true, locale: true },
     });
     const localeOf = new Map(users.map((u) => [u.id, u.locale]));
-    const translators = new Map<Locale, TFunction>();
-    const tFor = (locale: Locale) => {
-      let t = translators.get(locale);
-      if (!t) {
-        t = createI18n({ locale }).getFixedT(locale);
-        translators.set(locale, t);
-      }
-      return t;
-    };
 
     const rows: Prisma.NotificationCreateManyInput[] = [];
     inputs.forEach((input, i) => {
@@ -81,7 +86,7 @@ export class NotificationsService {
         if (locale) byLocale.set(locale, [...(byLocale.get(locale) ?? []), id]);
       }
       for (const [locale, ids] of byLocale) {
-        const { title, body } = input.render(tFor(locale), locale);
+        const { title, body } = input.render(translatorFor(locale), locale);
         for (const userId of ids)
           rows.push({
             userId,

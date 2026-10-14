@@ -199,6 +199,7 @@ On the VM, fill in `/opt/movo/.env.prod` (`nano /opt/movo/.env.prod`), then `chm
 
 - `API_DOMAIN`: `movo-society.duckdns.org` (or `api.<domain>`), `ACME_EMAIL`: your email.
 - `POSTGRES_PASSWORD`: `openssl rand -hex 24` (hex keeps the database URL valid). `JWT_SECRET`: `openssl rand -base64 48`.
+- `FILES_URL_SECRET`: signs photo links, `openssl rand -base64 48`. Empty = `JWT_SECRET` signs them. Set it before you ever rotate `JWT_SECRET`: with it set, a new `JWT_SECRET` signs everyone out but photo links keep working. Changing `FILES_URL_SECRET` itself breaks today's photo links; the app gets new ones on its next load.
 - `PLATFORM_ADMIN_EMAIL`, `PLATFORM_ADMIN_PASSWORD`: for the seed in section 3.
 - `UPTIME_HEARTBEAT_URL`, `BACKUP_HEARTBEAT_URL`: section 5. `RCLONE_*`: section 4. `FIREBASE_SERVICE_ACCOUNT_JSON`: section 6. All can be filled later.
 

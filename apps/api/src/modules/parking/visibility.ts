@@ -1,6 +1,5 @@
+import { parseModuleSettings } from '@movo/contracts';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-
-type ShowVehicles = 'OFF' | 'ADMINS' | 'ALL';
 
 /**
  * Who may see vehicles of other flats. Parking managers always can. The directory setting
@@ -8,9 +7,7 @@ type ShowVehicles = 'OFF' | 'ADMINS' | 'ALL';
  */
 export function seesAllVehicles(ctx: TenantContext): boolean {
   if (can(ctx, 'parking.manage')) return true;
-  const show =
-    (ctx.moduleSettings.directory as { showVehicles?: ShowVehicles } | undefined)?.showVehicles ??
-    'ADMINS';
+  const show = parseModuleSettings('directory', ctx.moduleSettings.directory).showVehicles;
   if (show === 'ALL') return true;
   if (show === 'ADMINS') return can(ctx, 'member.view_contact');
   return false;
@@ -19,8 +16,5 @@ export function seesAllVehicles(ctx: TenantContext): boolean {
 /** Who may see every slot and its flat. Managers, or everyone when the society allows it. */
 export function seesAllSlots(ctx: TenantContext): boolean {
   if (can(ctx, 'parking.manage')) return true;
-  return Boolean(
-    (ctx.moduleSettings.parking as { membersSeeAllAllocations?: boolean } | undefined)
-      ?.membersSeeAllAllocations,
-  );
+  return parseModuleSettings('parking', ctx.moduleSettings.parking).membersSeeAllAllocations;
 }

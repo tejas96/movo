@@ -13,7 +13,8 @@ x-logging: &logging
 
 services:
   postgres:
-    image: postgres:17-alpine
+    # postgres:17-alpine, pinned by digest on 2026-10-14; Dependabot (docker-compose) bumps it.
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-movo}
@@ -42,6 +43,8 @@ services:
       # POSTGRES_PASSWORD must be URL-safe (openssl rand -hex 24).
       DATABASE_URL: postgresql://${POSTGRES_USER:-movo}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-movo}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env.prod}
+      # Signs photo links. Empty = JWT_SECRET (see .env.prod.example).
+      FILES_URL_SECRET: ${FILES_URL_SECRET:-}
       ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES:-15}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
       APP_BASE_URL: ${APP_BASE_URL:-movo://}
@@ -72,7 +75,8 @@ services:
     logging: *logging
 
   caddy:
-    image: caddy:2-alpine
+    # caddy:2-alpine, pinned by digest on 2026-10-14; Dependabot (docker-compose) bumps it.
+    image: caddy:2-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
     restart: unless-stopped
     depends_on:
       - api

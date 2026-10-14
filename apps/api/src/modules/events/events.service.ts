@@ -294,12 +294,15 @@ export class EventsService {
     });
     return this.items.sendDueReminders(now, rows, {
       windows: () => EVENT_REMINDER_WINDOWS,
-      skipUserIds: async (e) => {
+      skipUserIds: async (events) => {
         const declined = await this.prisma.eventRsvp.findMany({
-          where: { eventId: e.id, response: 'NOT_GOING' },
-          select: { membership: { select: { userId: true } } },
+          where: { eventId: { in: events.map((e) => e.id) }, response: 'NOT_GOING' },
+          select: { eventId: true, membership: { select: { userId: true } } },
         });
-        return declined.map((d) => d.membership.userId);
+        const byEvent = new Map<string, string[]>();
+        for (const d of declined)
+          byEvent.set(d.eventId, [...(byEvent.get(d.eventId) ?? []), d.membership.userId]);
+        return byEvent;
       },
     });
   }

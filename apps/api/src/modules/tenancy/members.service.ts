@@ -1,10 +1,11 @@
-import type {
-  MemberCard,
-  MemberDetail,
-  PermissionKey,
-  RouteBody,
-  RouteQuery,
-  societyContract,
+import {
+  type MemberCard,
+  type MemberDetail,
+  type PermissionKey,
+  parseModuleSettings,
+  type RouteBody,
+  type RouteQuery,
+  type societyContract,
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
@@ -47,9 +48,8 @@ export class MembersService {
     const ctx = requireTenant();
     const cursor = decodeCursor(query.cursor);
     const staffVisible =
-      Boolean(
-        (ctx.moduleSettings.directory as { staffVisible?: boolean } | undefined)?.staffVisible,
-      ) || can(ctx, 'member.manage');
+      parseModuleSettings('directory', ctx.moduleSettings.directory).staffVisible ||
+      can(ctx, 'member.manage');
     const where: Prisma.MembershipWhereInput = {
       status: query.status ?? 'ACTIVE',
       ...(query.q ? { user: { displayName: { contains: query.q, mode: 'insensitive' } } } : {}),
@@ -256,9 +256,10 @@ export class MembersService {
   async getMyPrivacy() {
     const ctx = requireTenant();
     const m = await this.db.membership.findUniqueOrThrow({ where: { id: ctx.membershipId } });
-    const allowPhone =
-      (ctx.moduleSettings.directory as { allowPhoneOptIn?: boolean } | undefined)
-        ?.allowPhoneOptIn ?? true;
+    const allowPhone = parseModuleSettings(
+      'directory',
+      ctx.moduleSettings.directory,
+    ).allowPhoneOptIn;
     return {
       showPhone: allowPhone && m.privacyShowPhone,
       showEmail: m.privacyShowEmail,
@@ -268,9 +269,10 @@ export class MembersService {
 
   async updateMyPrivacy(body: RouteBody<typeof societyContract.updateMyPrivacy>) {
     const ctx = requireTenant();
-    const allowPhone =
-      (ctx.moduleSettings.directory as { allowPhoneOptIn?: boolean } | undefined)
-        ?.allowPhoneOptIn ?? true;
+    const allowPhone = parseModuleSettings(
+      'directory',
+      ctx.moduleSettings.directory,
+    ).allowPhoneOptIn;
     const m = await this.db.membership.update({
       where: { id: ctx.membershipId },
       data: {

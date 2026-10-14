@@ -8,6 +8,11 @@ const EnvSchema = z
     API_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     DATABASE_URL: z.string().min(1),
     JWT_SECRET: z.string().min(32),
+    /**
+     * Signs photo links. Empty = JWT_SECRET, which signed them before this existed. Set it so
+     * JWT_SECRET can be rotated without breaking every photo link.
+     */
+    FILES_URL_SECRET: z.union([z.literal(''), z.string().min(32)]).default(''),
     ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().min(1).max(120).default(15),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
     APP_BASE_URL: z.string().default('movo://'),
@@ -52,14 +57,18 @@ export type Env = z.infer<typeof EnvSchema>;
 
 let cached: Env | undefined;
 
-/** Validated once. A missing or malformed variable stops the process at boot with a clear message. */
-export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  if (cached) return cached;
+/** Validates an environment; throws one readable error listing every bad variable. */
+export function parseEnv(source: NodeJS.ProcessEnv): Env {
   const parsed = EnvSchema.safeParse(source);
   if (!parsed.success) {
     const lines = parsed.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment:\n${lines}`);
   }
-  cached = parsed.data;
+  return parsed.data;
+}
+
+/** Validated once. A missing or malformed variable stops the process at boot with a clear message. */
+export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
+  cached ??= parseEnv(source);
   return cached;
 }

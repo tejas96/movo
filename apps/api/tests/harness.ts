@@ -1,3 +1,4 @@
+import type { AddressInfo } from 'node:net';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/app';
@@ -28,10 +29,18 @@ const PASSWORD = 'correct horse battery';
 
 export async function createHarness(): Promise<Harness> {
   const app = await createApp();
-  await app.init();
+  // Listen once, on 127.0.0.1, and send every request to that url. Handing supertest the bare
+  // server made it listen(0) on [::] and close again for each request, then connect to
+  // 127.0.0.1:<port>. macOS gives a [::] listener a port that another process already holds
+  // on 127.0.0.1 only (Gradle and IDE daemons do), and 127.0.0.1 traffic goes to that other
+  // listener: "Parse Error: Expected HTTP/" on a random test. A 127.0.0.1 bind cannot get
+  // such a port, and one listener per file means a few ports per run instead of thousands.
+  await app.listen(0, '127.0.0.1');
+  const { port } = app.getHttpServer().address() as AddressInfo;
+  const baseUrl = `http://127.0.0.1:${port}`;
   const prisma = app.get(PrismaService);
   const passwords = app.get(PasswordService);
-  const http = () => request(app.getHttpServer());
+  const http = () => request(baseUrl);
 
   const reset = async () => {
     const tables = await prisma.$queryRaw<

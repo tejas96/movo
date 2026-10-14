@@ -3,6 +3,7 @@ import {
   type Notice,
   type NoticeSummary,
   type noticesContract,
+  parseModuleSettings,
   type RouteBody,
   type RouteQuery,
 } from '@movo/contracts';
@@ -320,9 +321,7 @@ export class NoticesService {
 
   /** Oldest pinned notice is unpinned when the society's pin limit would be exceeded. */
   private async enforcePinLimit(tx: Prisma.TransactionClient, ctx: TenantContext): Promise<void> {
-    const max = Number(
-      (ctx.moduleSettings.notices as { maxPinned?: number } | undefined)?.maxPinned ?? 3,
-    );
+    const max = parseModuleSettings('notices', ctx.moduleSettings.notices).maxPinned;
     const pinned = await tx.notice.findMany({
       where: { societyId: ctx.societyId, isPinned: true, status: 'PUBLISHED' },
       orderBy: { publishedAt: 'asc' },

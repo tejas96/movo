@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { todayIn } from '../src/common/util/dates';
 import { newId } from '../src/common/util/ids';
+import { fileRef } from '../src/modules/files/file-url';
+import { FilesService } from '../src/modules/files/files.service';
 import { auth, type SocietyFixture, societyWithResident } from './fixtures';
 import { createHarness, type Harness, TEST_PASSWORD } from './harness';
 
@@ -257,5 +259,47 @@ describe('photos', () => {
     const fromA = await upload(a, a.admin, 'SOCIETY_LOGO');
     const res = await h.http().patch(url(b)).set(auth(b.admin)).send({ logoFileId: fromA });
     expect(res.status).toBe(404);
+  });
+
+  it('serves a photo only from a good link; a bad one is a 404 with a request id', async () => {
+    const s = await societyWithResident(h, 'p8');
+    const id = await upload(s, s.admin);
+    const good = fileRef(id).url;
+    expect(good.startsWith(`/v1/files/${id}?e=`)).toBe(true);
+    const ok = await h.http().get(good);
+    expect(ok.status).toBe(200);
+    expect(ok.headers['content-type']).toBe('image/jpeg');
+
+    for (const bad of [
+      good.replace(/s=[^&]+$/, 's=nope'),
+      `/v1/files/${id}`,
+      `/v1/files/${newId()}?e=1&s=x`,
+    ]) {
+      const res = await h.http().get(bad);
+      expect(res.status).toBe(404);
+      expect(res.body.code).toBe('NOT_FOUND');
+      expect(res.body.requestId).toEqual(expect.any(String));
+    }
+  });
+
+  it('removes unused uploads in batches until none are left, up to the cap', async () => {
+    const s = await societyWithResident(h, 'p9');
+    const old = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    await h.prisma.storedFile.createMany({
+      data: Array.from({ length: 1203 }, (_, i) => ({
+        societyId: s.societyId,
+        kind: 'LISTING_IMAGE' as const,
+        mime: 'image/jpeg',
+        sizeBytes: 1,
+        storageKey: `${s.societyId}/unused-${i}.jpg`,
+        createdAt: old,
+      })),
+    });
+    const fresh = await upload(s, s.admin);
+    const files = h.app.get(FilesService);
+    expect(await files.removeUnused(new Date(), 1000)).toBe(1000);
+    expect(await files.removeUnused()).toBe(203);
+    expect(await h.prisma.storedFile.count()).toBe(1);
+    expect(await fileRows([fresh])).toBe(1);
   });
 });
