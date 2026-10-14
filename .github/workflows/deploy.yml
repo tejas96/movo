@@ -1,12 +1,15 @@
 name: Deploy
 
 # Builds the API image, pushes it to GHCR, then updates the VM over SSH: copies the compose
-# files, `docker compose pull`, `up -d`, waits for the api to be healthy. Runs after CI passes
+# files, pulls, takes a backup, runs migrations with the new image while the old API still
+# serves, swaps the API, and waits for it to be healthy. If it is not, it goes back to the
+# previous image. Runs after CI passes
 # on main, or by hand. Until the DEPLOY_* secrets exist every job is skipped, so this workflow
 # never fails on a repo that has no server yet. Runbook: docs/08-release-and-ops.md.
 #
-# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY (private key, no passphrase)
-# Optional: DEPLOY_KNOWN_HOSTS (ssh-keyscan output; pinned host key), DEPLOY_PORT,
+# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY (private key, no passphrase),
+#          DEPLOY_KNOWN_HOSTS (ssh-keyscan output; the pinned host key)
+# Optional: DEPLOY_PORT,
 #           GHCR_PULL_TOKEN (read:packages; default is this run's own token, so the GHCR
 #           package can stay private)
 # Optional variables: DEPLOY_PATH (default /opt/movo)
@@ -77,22 +80,22 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ needs.gate.outputs.sha }}
       # Only needed when arm64 is built on an x86 runner (ARM_RUNNER=ubuntu-latest).
       - if: matrix.arch == 'arm64' && runner.arch != 'ARM64'
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
         with:
           platforms: arm64
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - id: build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           file: apps/api/Dockerfile
@@ -100,6 +103,7 @@ jobs:
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=api-${{ matrix.arch }}
           cache-to: type=gha,scope=api-${{ matrix.arch }},mode=max
+          build-args: GIT_SHA=${{ needs.gate.outputs.sha }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
       - name: Save digest
         run: |
@@ -107,7 +111,7 @@ jobs:
           touch "/tmp/digests/${DIGEST#sha256:}"
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: digest-${{ matrix.arch }}
           path: /tmp/digests/*
@@ -121,13 +125,13 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: digest-*
           merge-multiple: true
           path: /tmp/digests
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -159,7 +163,7 @@ jobs:
       DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/movo' }}
       SHA: ${{ needs.gate.outputs.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ needs.gate.outputs.sha }}
           sparse-checkout: infra
@@ -171,12 +175,11 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          if [ -n "$DEPLOY_KNOWN_HOSTS" ]; then
-            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            echo "::warning::DEPLOY_KNOWN_HOSTS is not set; trusting the host key on first use."
-            ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" > ~/.ssh/known_hosts
+          if [ -z "$DEPLOY_KNOWN_HOSTS" ]; then
+            echo "::error::DEPLOY_KNOWN_HOSTS is not set. Add the ssh-keyscan output of the VM as that secret."
+            exit 1
           fi
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host movo\n  HostName %s\n  User %s\n  Port %s\n  IdentityFile ~/.ssh/id_deploy\n  ServerAliveInterval 30\n' \
             "$DEPLOY_HOST" "$DEPLOY_USER" "$DEPLOY_PORT" > ~/.ssh/config
       - name: Copy compose files
@@ -201,22 +204,51 @@ jobs:
           echo "$GHCR_PULL_TOKEN" | docker login ghcr.io -u "$OWNER" --password-stdin
           trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
           test -f .env.prod || { echo ".env.prod is missing in $PWD"; exit 1; }
-          # Remember the running tag so a later manual `up` uses the same image.
-          if grep -q '^API_IMAGE=' .env.prod; then
-            sed -i "s#^API_IMAGE=.*#API_IMAGE=$API_IMAGE#" .env.prod
-          else
-            echo "API_IMAGE=$API_IMAGE" >> .env.prod
-          fi
           dc() { docker compose -f docker-compose.prod.yml --env-file .env.prod "$@"; }
+          # Remember the running tag so a later manual `up` uses the same image.
+          set_image() {
+            if grep -q '^API_IMAGE=' .env.prod; then
+              sed -i "s#^API_IMAGE=.*#API_IMAGE=$1#" .env.prod
+            else
+              echo "API_IMAGE=$1" >> .env.prod
+            fi
+          }
+          wait_healthy() {
+            for i in $(seq 1 60); do
+              s=$(docker inspect -f '{{.State.Health.Status}}' "$(dc ps -q api)")
+              if [ "$s" = healthy ]; then return 0; fi
+              sleep 5
+            done
+            return 1
+          }
+          PREV_IMAGE=$(sed -n 's/^API_IMAGE=//p' .env.prod)
+          set_image "$API_IMAGE"
           dc pull api caddy postgres
           dc build backup
+          dc up -d postgres backup
+          # 1. A fresh backup, so a bad migration loses nothing (backups/predeploy, newest 5).
+          dc exec -T backup backup.sh predeploy
+          # 2. Migrations with the new image while the old API still serves. If they fail, the
+          #    old API keeps running and the deploy stops here.
+          if ! dc run --rm --no-deps -e MIGRATE_ONLY=1 api; then
+            [ -n "$PREV_IMAGE" ] && set_image "$PREV_IMAGE"
+            echo "::error::migrations failed; the old API is still running"
+            exit 1
+          fi
+          # 3. Swap the API.
           dc up -d --remove-orphans
-          for i in $(seq 1 60); do
-            s=$(docker inspect -f '{{.State.Health.Status}}' "$(dc ps -q api)")
-            if [ "$s" = healthy ]; then echo "api healthy on $API_IMAGE"; break; fi
-            if [ "$i" = 60 ]; then dc logs --tail 80 api; exit 1; fi
-            sleep 5
-          done
+          if wait_healthy; then
+            echo "api healthy on $API_IMAGE"
+          else
+            dc logs --tail 80 api
+            if [ -n "$PREV_IMAGE" ] && [ "$PREV_IMAGE" != "$API_IMAGE" ]; then
+              echo "::error::new API is not healthy; going back to $PREV_IMAGE"
+              set_image "$PREV_IMAGE"
+              dc up -d api
+              wait_healthy && echo "back on $PREV_IMAGE" || echo "::error::previous image is not healthy either"
+            fi
+            exit 1
+          fi
           docker image prune -f
           REMOTE
           } | ssh movo bash -s
