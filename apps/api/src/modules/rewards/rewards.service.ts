@@ -12,8 +12,8 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { fyLabel, todayIn } from '../../common/util/dates';
 import type { Prisma } from '../../generated/prisma/client';
-import { fyLabel, todayIn } from '../maintenance/billing';
 import { flatLabel } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 

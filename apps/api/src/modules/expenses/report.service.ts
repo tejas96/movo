@@ -4,8 +4,8 @@ import { ApiException } from '../../common/errors/api.exception';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
-import { fyLabel, todayIn } from '../maintenance/billing';
-import { dateOnly, OPEN_STATUSES, outstanding } from '../maintenance/ledger';
+import { dateOnly, fyLabel, todayIn } from '../../common/util/dates';
+import { OPEN_STATUSES, outstanding } from '../maintenance/ledger';
 import { expensesSettings, isFinanceRole, toCategory } from './expenses.service';
 
 const pad = (n: number) => String(n).padStart(2, '0');

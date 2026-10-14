@@ -29,6 +29,11 @@ export interface TenantContext {
   userLocale: Locale;
 }
 
+export type TenantLookup =
+  | { kind: 'none' }
+  | { kind: 'inactive' }
+  | { kind: 'ok'; ctx: TenantContext };
+
 export function can(ctx: TenantContext, permission: PermissionKey): boolean {
   return ctx.permissions.has(permission);
 }

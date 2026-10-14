@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { addDays, todayIn } from '../src/common/util/dates';
 import { newId } from '../src/common/util/ids';
-import { addDays, todayIn } from '../src/modules/maintenance/billing';
 import { auth, type SocietyFixture, societyWithResident } from './fixtures';
 import { createHarness, type Harness } from './harness';
 

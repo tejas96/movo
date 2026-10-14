@@ -66,7 +66,7 @@ export class ModulesService {
       before: { enabled: row?.enabled, settings: current },
       after: { enabled, settings: next },
     });
-    this.context.invalidateSociety(ctx.societyId);
+    this.context.invalidateAllTenants();
     return {
       key,
       enabled: updated.enabled,

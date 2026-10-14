@@ -269,7 +269,7 @@ export class SocietiesService {
       return updated;
     });
     if (logoChanged && before.logoFileId) await this.files.remove([before.logoFileId]);
-    this.context.invalidateSociety(ctx.societyId);
+    this.context.invalidateAllTenants();
     return this.toProfile(society, society._count, true);
   }
 

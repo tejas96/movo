@@ -16,14 +16,13 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { addDays, dateOnly, dbDate, todayIn } from '../../common/util/dates';
 import type {
   ResponsibilityAssignment as AssignmentRow,
   Responsibility as DutyRow,
   ResponsibilityParticipant as ParticipantRow,
   Prisma,
 } from '../../generated/prisma/client';
-import { addDays, todayIn } from '../maintenance/billing';
-import { dateOnly, dbDate } from '../maintenance/ledger';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
 import { awardContext, awardPoints } from '../rewards/rewards.service';
@@ -527,7 +526,6 @@ export class DutiesService {
     kind: 'start' | 'remind' | 'missed',
     endDate: string,
   ) {
-    const society = await this.prisma.society.findUniqueOrThrow({ where: { id: duty.societyId } });
     await this.notifications.notifyUsers({
       userIds:
         duty.participantKind === 'FLAT'
@@ -552,7 +550,7 @@ export class DutiesService {
                 body: t('duties:push.missedBody', { date }),
               };
       },
-      data: { screen: 'duty', societyId: society.id, dutyId: duty.id },
+      data: { screen: 'duty', societyId: duty.societyId, dutyId: duty.id },
     });
   }
 

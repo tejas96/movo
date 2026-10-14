@@ -192,7 +192,7 @@ export class RolesService implements OnApplicationBootstrap {
       );
       return r;
     });
-    this.context.invalidateSociety(ctx.societyId);
+    this.context.invalidateAllTenants();
     return toRole(role);
   }
 

@@ -1,14 +1,11 @@
 import type { BillSummary, PaymentInstruction, PaymentSummary } from '@movo/contracts';
 import { lockFor } from '../../common/prisma/tx-lock';
+import { dateOnly } from '../../common/util/dates';
 import type { Prisma } from '../../generated/prisma/client';
 import { toFlatRef } from '../tenancy/mappers';
 import { allocate, billStatus } from './billing';
 
 type Tx = Prisma.TransactionClient;
-
-/** Prisma @db.Date values come back as UTC midnight. */
-export const dateOnly = (d: Date): string => d.toISOString().slice(0, 10);
-export const dbDate = (s: string): Date => new Date(`${s}T00:00:00Z`);
 
 export const flatInclude = { flat: { include: { building: true } } } as const;
 

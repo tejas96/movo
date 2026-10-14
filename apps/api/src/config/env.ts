@@ -63,7 +63,3 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   cached = parsed.data;
   return cached;
 }
-
-export function resetEnvForTests(): void {
-  cached = undefined;
-}
