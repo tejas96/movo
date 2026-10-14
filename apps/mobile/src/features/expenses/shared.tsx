@@ -1,13 +1,13 @@
 import type { ExpenseCategory, ExpenseStatus, ExpenseSummary } from '@movo/contracts';
-import { Row, StatusPill, type StatusTone, Text } from '@movo/design-system';
-import { useTranslation } from 'react-i18next';
+import { Row, Text } from '@movo/design-system';
 import { View } from 'react-native';
 import { i18n } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 import { day, money } from '../../core/util/money';
 import { CATEGORY_ICON } from '../services/shared';
 
-const TONE: Record<ExpenseStatus, StatusTone> = {
+const TONE: StatusTones<ExpenseStatus> = {
   PENDING: 'warning',
   APPROVED: 'success',
   REJECTED: 'danger',
@@ -22,8 +22,7 @@ export function expenseCategoryLabel(c: Pick<ExpenseCategory, 'key' | 'name'>): 
 }
 
 export function ExpenseStatusPill({ status }: { status: ExpenseStatus }) {
-  const { t } = useTranslation('expenses');
-  return <StatusPill label={t(`status.${status}`)} tone={TONE[status]} />;
+  return <StatusPill value={status} tones={TONE} labels="expenses:status" />;
 }
 
 export function ExpenseRow({ expense }: { expense: ExpenseSummary }) {

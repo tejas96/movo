@@ -8,7 +8,6 @@ import {
   Row,
   Screen,
   Skeleton,
-  StatusPill,
   Text,
   TitleBar,
   useToast,
@@ -21,6 +20,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { StatusPill } from '../../core/ui/StatusPill';
 import { formatPhone } from '../../core/util/phone';
 import { useDeleteVendor, useUpdateVendor, useVendor, useVendorCategories } from './api';
 import { CATEGORY_ICON, categoryLabel, STATUS_TONE } from './shared';
@@ -88,8 +88,9 @@ export function VendorDetailScreen() {
               </Text>
               {v.status !== 'APPROVED' ? (
                 <StatusPill
-                  label={t(`services:status.${v.status}`)}
-                  tone={STATUS_TONE[v.status]}
+                  value={v.status}
+                  tones={STATUS_TONE}
+                  labels="services:status"
                   className="mt-2 self-center"
                 />
               ) : null}

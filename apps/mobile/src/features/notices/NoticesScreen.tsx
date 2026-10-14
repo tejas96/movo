@@ -9,7 +9,6 @@ import {
   Screen,
   Segmented,
   Skeleton,
-  StatusPill,
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -17,8 +16,16 @@ import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 import { relative } from '../../core/util/time';
 import { useNotices } from './api';
+
+/** NORMAL shows no pill. */
+export const PRIORITY_TONE: StatusTones<NoticeSummary['priority']> = {
+  NORMAL: 'neutral',
+  IMPORTANT: 'warning',
+  EMERGENCY: 'danger',
+};
 
 type Tab = 'PUBLISHED' | 'DRAFT';
 
@@ -55,8 +62,9 @@ export function NoticesScreen() {
               trailing={
                 item.priority !== 'NORMAL' ? (
                   <StatusPill
-                    label={t(`notices:priority.${item.priority}`)}
-                    tone={item.priority === 'EMERGENCY' ? 'danger' : 'warning'}
+                    value={item.priority}
+                    tones={PRIORITY_TONE}
+                    labels="notices:priority"
                   />
                 ) : !item.readAt && item.status === 'PUBLISHED' ? (
                   <View className="h-2 w-2 rounded-full bg-ink" />

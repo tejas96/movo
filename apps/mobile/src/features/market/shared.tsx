@@ -7,21 +7,14 @@ import {
   MarketplaceSettingsSchema,
   type OrderStatus,
 } from '@movo/contracts';
-import {
-  type BoldIconName,
-  Icon,
-  photos,
-  StatusPill,
-  type StatusTone,
-  Text,
-  theme,
-} from '@movo/design-system';
+import { type BoldIconName, Icon, photos, Text, theme } from '@movo/design-system';
 import { formatDate, formatTime } from '@movo/i18n';
 import { useTranslation } from 'react-i18next';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 import { fileUri } from '../../core/api/client';
 import { currentLocale, i18n } from '../../core/i18n';
 import { useActiveMembership } from '../../core/tenant/hooks';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 import { money } from '../../core/util/money';
 import { dateTime } from '../../core/util/time';
 
@@ -172,7 +165,7 @@ export function Thumb({
   );
 }
 
-const ORDER_TONE: Record<OrderStatus, StatusTone> = {
+const ORDER_TONE: StatusTones<OrderStatus> = {
   REQUESTED: 'warning',
   ACCEPTED: 'info',
   READY: 'ink',
@@ -182,11 +175,10 @@ const ORDER_TONE: Record<OrderStatus, StatusTone> = {
 };
 
 export function OrderStatusPill({ status }: { status: OrderStatus }) {
-  const { t } = useTranslation('market');
-  return <StatusPill label={t(`orderStatus.${status}`)} tone={ORDER_TONE[status]} />;
+  return <StatusPill value={status} tones={ORDER_TONE} labels="market:orderStatus" />;
 }
 
-const LISTING_TONE: Record<ListingStatus, StatusTone> = {
+const LISTING_TONE: StatusTones<ListingStatus> = {
   ACTIVE: 'success',
   PAUSED: 'neutral',
   ARCHIVED: 'neutral',
@@ -194,8 +186,7 @@ const LISTING_TONE: Record<ListingStatus, StatusTone> = {
 };
 
 export function ListingStatusPill({ status }: { status: ListingStatus }) {
-  const { t } = useTranslation('market');
-  return <StatusPill label={t(`status.${status}`)} tone={LISTING_TONE[status]} />;
+  return <StatusPill value={status} tones={LISTING_TONE} labels="market:status" />;
 }
 
 /** "4.5 (12)" */

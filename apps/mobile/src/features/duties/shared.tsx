@@ -1,10 +1,11 @@
 import type { AssignmentStatus, DutyAssignment, DutySummary } from '@movo/contracts';
-import { Button, Sheet, StatusPill, type StatusTone, Text } from '@movo/design-system';
+import { Button, Sheet, Text } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 import { day } from '../../core/util/money';
 
-export const TURN_TONE: Record<AssignmentStatus, StatusTone> = {
+export const TURN_TONE: StatusTones<AssignmentStatus> = {
   UPCOMING: 'neutral',
   ACTIVE: 'ink',
   COMPLETED: 'success',
@@ -13,8 +14,7 @@ export const TURN_TONE: Record<AssignmentStatus, StatusTone> = {
 };
 
 export function TurnPill({ status }: { status: AssignmentStatus }) {
-  const { t } = useTranslation('duties');
-  return <StatusPill label={t(`status.${status}`)} tone={TURN_TONE[status]} />;
+  return <StatusPill value={status} tones={TURN_TONE} labels="duties:status" />;
 }
 
 export function cadenceLabel(
