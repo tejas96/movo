@@ -1,6 +1,7 @@
 import type { NotificationCategory } from '@movo/contracts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { PrismaService } from '../src/common/prisma/prisma.service';
+import { TenantPrismaService } from '../src/common/prisma/tenant-prisma.service';
 import { DeliveryJob, MAX_ATTEMPTS } from '../src/modules/notifications/delivery.job';
 import { NotificationsService } from '../src/modules/notifications/notifications.service';
 import {
@@ -230,6 +231,39 @@ describe('push delivery job', () => {
       status: 'SKIPPED',
       attempts: 1,
       lastError: 'push not configured',
+    });
+  });
+
+  it('writes a push with the caller’s transaction and sends an emergency only after commit', async () => {
+    const { user } = await setup();
+    const t = new FakeTransport((m) => ({ deliveryId: m.deliveryId, status: 'SENT' }));
+    const notifications = new NotificationsService(h.app.get(PrismaService), job(t));
+    const tenant = h.app.get(TenantPrismaService);
+    const sos = {
+      userIds: [user.userId],
+      societyId: null,
+      category: 'EMERGENCY' as const,
+      render: () => ({ title: 'SOS', body: 'Gate' }),
+    };
+
+    // Rolled back: no notification, no outbox row, nothing sent.
+    await expect(
+      tenant.tx(async (tx) => {
+        await notifications.notifyUsers(sos, tx);
+        throw new Error('write failed');
+      }),
+    ).rejects.toThrow('write failed');
+    expect(await h.prisma.notification.count()).toBe(0);
+    expect(t.sent).toHaveLength(0);
+
+    // Committed: sent once the transaction is over, not inside it.
+    await tenant.tx(async (tx) => {
+      await notifications.notifyUsers(sos, tx);
+      expect(t.sent).toHaveLength(0);
+    });
+    expect(t.sent).toHaveLength(1);
+    expect(await h.prisma.notificationDelivery.findFirstOrThrow()).toMatchObject({
+      status: 'SENT',
     });
   });
 });

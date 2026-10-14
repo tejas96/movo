@@ -116,9 +116,9 @@ export class TasksService {
         },
         tx,
       );
+      if (t.assigneeMembershipId) await this.tellAssignee(tx, ctx, t, 'assigned');
       return t;
     });
-    if (task.assigneeMembershipId) await this.tellAssignee(ctx, task, 'assigned');
     return this.toDto(ctx, task);
   }
 
@@ -154,10 +154,10 @@ export class TasksService {
         data: assignData(membershipId),
       });
       await this.assignmentChanged(tx, ctx, taskId, before.assigneeMembershipId, membershipId);
+      if (membershipId && membershipId !== before.assigneeMembershipId)
+        await this.tellAssignee(tx, ctx, t, 'assigned');
       return t;
     });
-    if (membershipId && membershipId !== before.assigneeMembershipId)
-      await this.tellAssignee(ctx, task, 'assigned');
     return this.toDto(ctx, task);
   }
 
@@ -211,6 +211,9 @@ export class TasksService {
     const proofs = proofIds
       ? await this.files.plan(ctx, await this.files.linked({ taskId }), proofIds, 'TASK_PROOF')
       : null;
+    const checkers = await this.recipients.withPermission(ctx.societyId, 'task.verify', {
+      exceptMembershipId: ctx.membershipId,
+    });
     const task = await this.tenant.tx(async (tx) => {
       if (proofs) await this.files.link(tx, proofs.final, { taskId });
       const updated = await tx.task.update({
@@ -218,21 +221,22 @@ export class TasksService {
         data: { status: 'SUBMITTED', submissionNote: note ?? null, submittedAt: new Date() },
       });
       await this.event(tx, ctx, taskId, 'SUBMITTED', note);
+      await this.notifications.notifyUsers(
+        {
+          userIds: checkers,
+          societyId: ctx.societyId,
+          category: 'TASK',
+          render: (tr) => ({
+            title: tr('tasks:push.submittedTitle', { title: updated.title }),
+            body: note ?? '',
+          }),
+          data: { screen: 'task', societyId: ctx.societyId, taskId },
+        },
+        tx,
+      );
       return updated;
     });
     if (proofs) await this.files.remove(proofs.dropped);
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.withPermission(ctx.societyId, 'task.verify', {
-        exceptMembershipId: ctx.membershipId,
-      }),
-      societyId: ctx.societyId,
-      category: 'TASK',
-      render: (tr) => ({
-        title: tr('tasks:push.submittedTitle', { title: task.title }),
-        body: note ?? '',
-      }),
-      data: { screen: 'task', societyId: ctx.societyId, taskId },
-    });
     return this.toDto(ctx, task);
   }
 
@@ -278,9 +282,9 @@ export class TasksService {
         },
         tx,
       );
+      await this.tellAssignee(tx, ctx, updated, 'verified', undefined, awarded);
       return updated;
     });
-    await this.tellAssignee(ctx, task, 'verified', undefined, awarded);
     return this.toDto(ctx, task);
   }
 
@@ -301,9 +305,9 @@ export class TasksService {
         { action: 'task.returned', entityType: 'Task', entityId: taskId, after: { reason } },
         tx,
       );
+      await this.tellAssignee(tx, ctx, updated, 'returned', reason);
       return updated;
     });
-    await this.tellAssignee(ctx, task, 'returned', reason);
     return this.toDto(ctx, task);
   }
 
@@ -415,6 +419,7 @@ export class TasksService {
   }
 
   private async tellAssignee(
+    tx: Tx,
     ctx: TenantContext,
     t: TaskRow,
     kind: 'assigned' | 'verified' | 'returned',
@@ -422,21 +427,27 @@ export class TasksService {
     points = 0,
   ) {
     if (!t.assigneeMembershipId || t.assigneeMembershipId === ctx.membershipId) return;
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofMemberships([t.assigneeMembershipId]),
-      societyId: ctx.societyId,
-      category: 'TASK',
-      render: (tr) =>
-        kind === 'assigned'
-          ? { title: tr('tasks:push.assignedTitle', { title: t.title }), body: t.description ?? '' }
-          : kind === 'verified'
+    await this.notifications.notifyUsers(
+      {
+        userIds: await this.recipients.in(tx).ofMemberships([t.assigneeMembershipId]),
+        societyId: ctx.societyId,
+        category: 'TASK',
+        render: (tr) =>
+          kind === 'assigned'
             ? {
-                title: tr('tasks:push.verifiedTitle', { title: t.title }),
-                body: points > 0 ? tr('tasks:push.pointsBody', { count: points }) : '',
+                title: tr('tasks:push.assignedTitle', { title: t.title }),
+                body: t.description ?? '',
               }
-            : { title: tr('tasks:push.returnedTitle', { title: t.title }), body: reason ?? '' },
-      data: { screen: 'task', societyId: ctx.societyId, taskId: t.id },
-    });
+            : kind === 'verified'
+              ? {
+                  title: tr('tasks:push.verifiedTitle', { title: t.title }),
+                  body: points > 0 ? tr('tasks:push.pointsBody', { count: points }) : '',
+                }
+              : { title: tr('tasks:push.returnedTitle', { title: t.title }), body: reason ?? '' },
+        data: { screen: 'task', societyId: ctx.societyId, taskId: t.id },
+      },
+      tx,
+    );
   }
 
   private async requireTask(taskId: string): Promise<TaskRow> {

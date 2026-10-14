@@ -4,7 +4,8 @@ import type {
   Notification as NotificationDto,
 } from '@movo/contracts';
 import { createI18n, type TFunction } from '@movo/i18n';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { afterCommit } from '../../common/prisma/after-commit';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
@@ -21,8 +22,14 @@ export interface NotifyInput {
   exceptUserId?: string;
 }
 
+type Db =
+  | Pick<PrismaService, 'user' | 'notification' | 'notificationDelivery'>
+  | Prisma.TransactionClient;
+
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly delivery: DeliveryJob,
@@ -31,11 +38,16 @@ export class NotificationsService {
   /**
    * Writes one notification per recipient in their language plus a pending push delivery.
    * EMERGENCY pushes are sent at once instead of waiting for the next job tick.
+   *
+   * Pass the request's `tx` when the push follows a write: the notification and its outbox
+   * row then commit (or roll back) with that write, so a crash in between cannot lose the
+   * push. An EMERGENCY push is sent once that transaction has committed.
    */
-  async notifyUsers(input: NotifyInput): Promise<number> {
+  async notifyUsers(input: NotifyInput, tx?: Prisma.TransactionClient): Promise<number> {
+    const db: Db = tx ?? this.prisma;
     const userIds = [...new Set(input.userIds)].filter((id) => id !== input.exceptUserId);
     if (userIds.length === 0) return 0;
-    const users = await this.prisma.user.findMany({
+    const users = await db.user.findMany({
       where: { id: { in: userIds }, status: 'ACTIVE' },
       select: { id: true, locale: true },
     });
@@ -58,16 +70,22 @@ export class NotificationsService {
         });
       }
     }
-    const created = await this.prisma.notification.createManyAndReturn({
+    const created = await db.notification.createManyAndReturn({
       data: rows,
       select: { id: true },
     });
     const priority = deliveryPriority(input.category);
-    const deliveries = await this.prisma.notificationDelivery.createManyAndReturn({
+    const deliveries = await db.notificationDelivery.createManyAndReturn({
       data: created.map((n) => ({ notificationId: n.id, channel: 'PUSH' as const, priority })),
       select: { id: true },
     });
-    if (input.category === 'EMERGENCY') await this.delivery.deliverNow(deliveries.map((d) => d.id));
+    if (input.category === 'EMERGENCY') {
+      const ids = deliveries.map((d) => d.id);
+      const send = () => this.delivery.deliverNow(ids);
+      if (!tx) await send();
+      else if (!afterCommit(tx, send))
+        this.logger.warn('emergency push in an untracked transaction; the job will send it');
+    }
     return created.length;
   }
 

@@ -1,4 +1,5 @@
 import type { PrismaService } from '../../common/prisma/prisma.service';
+import type { Prisma } from '../../generated/prisma/client';
 import { dueWindows, reminderKind } from './schedule';
 
 export type ReminderEntity = 'Meeting' | 'Event';
@@ -14,7 +15,7 @@ interface Target {
  * because the "scheduled" or "moved" push already told everyone.
  */
 export async function resetReminders(
-  prisma: PrismaService,
+  prisma: Pick<PrismaService, 'reminderSent'> | Prisma.TransactionClient,
   target: Target,
   startsAt: Date,
   windows: readonly number[],

@@ -191,10 +191,10 @@ export class BillsService {
           }
         }
         await this.afterCreate(tx, societyId, created, today);
+        await this.notifyNewBills(tx, societyId, created);
       },
       { timeout: 60_000 },
     );
-    await this.notifyNewBills(societyId, created);
     return { created: created.length, skippedFlats: [...skipped.values()] };
   }
 
@@ -246,8 +246,8 @@ export class BillsService {
         },
         tx,
       );
+      await this.notifyNewBills(tx, ctx.societyId, created);
     });
-    await this.notifyNewBills(ctx.societyId, created);
     return { created: created.length };
   }
 
@@ -272,17 +272,20 @@ export class BillsService {
         },
         tx,
       );
-    });
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofFlat(b.flatId),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'MAINTENANCE',
-      render: (t, locale) => ({
-        title: t('money:push.waivedTitle', { name: billName(b.title, b.periodKey, locale) }),
-        body: t('money:push.waivedBody', { flat: flatLabel(b.flat), reason }),
-      }),
-      data: { screen: 'bill', societyId: ctx.societyId, billId },
+      await this.notifications.notifyUsers(
+        {
+          userIds: await this.recipients.in(tx).ofFlat(b.flatId),
+          exceptUserId: ctx.userId,
+          societyId: ctx.societyId,
+          category: 'MAINTENANCE',
+          render: (t, locale) => ({
+            title: t('money:push.waivedTitle', { name: billName(b.title, b.periodKey, locale) }),
+            body: t('money:push.waivedBody', { flat: flatLabel(b.flat), reason }),
+          }),
+          data: { screen: 'bill', societyId: ctx.societyId, billId },
+        },
+        tx,
+      );
     });
     return this.get(billId);
   }
@@ -447,30 +450,38 @@ export class BillsService {
     if (opened.length > 0) await tx.reminderSent.createMany({ data: opened, skipDuplicates: true });
   }
 
-  private async notifyNewBills(societyId: string, created: NewBill[]) {
+  /** "New bill" pushes, written in the transaction that created the bills. */
+  private async notifyNewBills(
+    tx: Prisma.TransactionClient,
+    societyId: string,
+    created: NewBill[],
+  ) {
     if (created.length === 0) return;
-    const bills = await this.prisma.bill.findMany({
+    const bills = await tx.bill.findMany({
       where: { id: { in: created.map((b) => b.id) } },
       include: flatInclude,
     });
-    const users = await this.recipients.ofFlats(bills.map((b) => b.flatId));
+    const users = await this.recipients.in(tx).ofFlats(bills.map((b) => b.flatId));
     for (const b of bills) {
       // Fully covered by advance: nothing to ask for.
       if (b.status === 'PAID') continue;
-      await this.notifications.notifyUsers({
-        userIds: users.get(b.flatId) ?? [],
-        societyId,
-        category: 'MAINTENANCE',
-        render: (t, locale) => ({
-          title: t('money:push.billTitle', { amount: formatMoney(outstanding(b), locale) }),
-          body: t('money:push.billBody', {
-            name: billName(b.title, b.periodKey, locale),
-            flat: flatLabel(b.flat),
-            date: formatDate(b.dueDate, locale, 'short', 'UTC'),
+      await this.notifications.notifyUsers(
+        {
+          userIds: users.get(b.flatId) ?? [],
+          societyId,
+          category: 'MAINTENANCE',
+          render: (t, locale) => ({
+            title: t('money:push.billTitle', { amount: formatMoney(outstanding(b), locale) }),
+            body: t('money:push.billBody', {
+              name: billName(b.title, b.periodKey, locale),
+              flat: flatLabel(b.flat),
+              date: formatDate(b.dueDate, locale, 'short', 'UTC'),
+            }),
           }),
-        }),
-        data: { screen: 'bill', societyId, billId: b.id },
-      });
+          data: { screen: 'bill', societyId, billId: b.id },
+        },
+        tx,
+      );
     }
   }
 

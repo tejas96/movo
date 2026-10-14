@@ -155,9 +155,9 @@ export class NoticesService {
         },
         tx,
       );
+      if (row.status === 'PUBLISHED') await this.fanOut(ctx, row, tx);
       return row;
     });
-    if (n.status === 'PUBLISHED') await this.fanOut(ctx, n);
     return this.toDto(n, null, await this.authorName(n.createdByMembershipId), 0);
   }
 
@@ -221,9 +221,9 @@ export class NoticesService {
         },
         tx,
       );
+      await this.fanOut(ctx, row, tx);
       return row;
     });
-    await this.fanOut(ctx, n);
     return this.toDto(n, null, await this.authorName(n.createdByMembershipId), 0);
   }
 
@@ -337,21 +337,27 @@ export class NoticesService {
     }
   }
 
-  private async fanOut(ctx: TenantContext, n: NoticeRow): Promise<void> {
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(n.audience)),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'NOTICE',
-      render: () => ({
-        title:
-          n.priority === 'NORMAL'
-            ? n.title
-            : `${n.priority === 'EMERGENCY' ? '🚨 ' : '❗ '}${n.title}`,
-        body: n.body.slice(0, 140),
-      }),
-      data: { screen: 'notice', societyId: ctx.societyId, noticeId: n.id, priority: n.priority },
-    });
+  /** Queues the push in the transaction that publishes the notice. */
+  private async fanOut(ctx: TenantContext, n: NoticeRow, tx: Prisma.TransactionClient) {
+    await this.notifications.notifyUsers(
+      {
+        userIds: await this.recipients
+          .in(tx)
+          .ofAudience(ctx.societyId, AudienceSchema.parse(n.audience)),
+        exceptUserId: ctx.userId,
+        societyId: ctx.societyId,
+        category: 'NOTICE',
+        render: () => ({
+          title:
+            n.priority === 'NORMAL'
+              ? n.title
+              : `${n.priority === 'EMERGENCY' ? '🚨 ' : '❗ '}${n.title}`,
+          body: n.body.slice(0, 140),
+        }),
+        data: { screen: 'notice', societyId: ctx.societyId, noticeId: n.id, priority: n.priority },
+      },
+      tx,
+    );
   }
 
   private async readsFor(membershipId: string, noticeIds: string[]): Promise<Map<string, Date>> {

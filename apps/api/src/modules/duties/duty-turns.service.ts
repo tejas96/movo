@@ -4,9 +4,12 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { dateOnly, dbDate } from '../../common/util/dates';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
-import { type DutyRow, type DutyWithParticipants, participantIdOf } from './duty-plan';
+import { type DutyRow, type DutyWithParticipants, participantIdOf, type Tx } from './duty-plan';
 
-/** Starting turns and telling participants, used by requests and by the hourly job. */
+/**
+ * Starting turns and telling participants, used by requests and by the hourly job. Requests
+ * pass their transaction, so the turn change and its push commit together.
+ */
 @Injectable()
 export class DutyTurns {
   constructor(
@@ -16,8 +19,9 @@ export class DutyTurns {
   ) {}
 
   /** Starts turns whose first day has come and tells the participant. */
-  async activate(duty: DutyWithParticipants, today: string): Promise<number> {
-    const rows = await this.prisma.responsibilityAssignment.findMany({
+  async activate(duty: DutyWithParticipants, today: string, tx?: Tx): Promise<number> {
+    const db = tx ?? this.prisma;
+    const rows = await db.responsibilityAssignment.findMany({
       where: {
         responsibilityId: duty.id,
         status: 'UPCOMING',
@@ -25,11 +29,11 @@ export class DutyTurns {
       },
     });
     for (const r of rows) {
-      await this.prisma.responsibilityAssignment.update({
+      await db.responsibilityAssignment.update({
         where: { id: r.id },
         data: { status: 'ACTIVE' },
       });
-      await this.tell(duty, participantIdOf(r), 'start', dateOnly(r.periodEnd));
+      await this.tell(duty, participantIdOf(r), 'start', dateOnly(r.periodEnd), tx);
     }
     return rows.length;
   }
@@ -39,32 +43,37 @@ export class DutyTurns {
     participantId: string,
     kind: 'start' | 'remind' | 'missed',
     endDate: string,
+    tx?: Tx,
   ) {
-    await this.notifications.notifyUsers({
-      userIds:
-        duty.participantKind === 'FLAT'
-          ? await this.recipients.ofFlat(participantId)
-          : await this.recipients.ofMemberships([participantId], { activeOnly: true }),
-      societyId: duty.societyId,
-      category: 'DUTY',
-      render: (t, locale) => {
-        const date = formatDate(dbDate(endDate), locale, 'short', 'UTC');
-        return kind === 'start'
-          ? {
-              title: t('duties:push.startTitle', { title: duty.title }),
-              body: t('duties:push.startBody', { date }),
-            }
-          : kind === 'remind'
+    const recipients = tx ? this.recipients.in(tx) : this.recipients;
+    await this.notifications.notifyUsers(
+      {
+        userIds:
+          duty.participantKind === 'FLAT'
+            ? await recipients.ofFlat(participantId)
+            : await recipients.ofMemberships([participantId], { activeOnly: true }),
+        societyId: duty.societyId,
+        category: 'DUTY',
+        render: (t, locale) => {
+          const date = formatDate(dbDate(endDate), locale, 'short', 'UTC');
+          return kind === 'start'
             ? {
-                title: t('duties:push.remindTitle', { title: duty.title }),
-                body: t('duties:push.remindBody', { date }),
+                title: t('duties:push.startTitle', { title: duty.title }),
+                body: t('duties:push.startBody', { date }),
               }
-            : {
-                title: t('duties:push.missedTitle', { title: duty.title }),
-                body: t('duties:push.missedBody', { date }),
-              };
+            : kind === 'remind'
+              ? {
+                  title: t('duties:push.remindTitle', { title: duty.title }),
+                  body: t('duties:push.remindBody', { date }),
+                }
+              : {
+                  title: t('duties:push.missedTitle', { title: duty.title }),
+                  body: t('duties:push.missedBody', { date }),
+                };
+        },
+        data: { screen: 'duty', societyId: duty.societyId, dutyId: duty.id },
       },
-      data: { screen: 'duty', societyId: duty.societyId, dutyId: duty.id },
-    });
+      tx,
+    );
   }
 }

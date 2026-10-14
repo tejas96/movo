@@ -119,21 +119,35 @@ export class ScheduledItems<Row extends ScheduledRow, Kind extends string> {
     return rows.filter((row) => this.visibleTo(ctx, row));
   }
 
-  /** After create or a move: windows already open count as sent. */
-  resetReminders(row: Row, windows: readonly number[]): Promise<void> {
-    return resetReminders(this.prisma, this.target(row), row.startsAt, windows);
+  /** After create or a move, in the same transaction: windows already open count as sent. */
+  resetReminders(tx: Prisma.TransactionClient, row: Row, windows: readonly number[]) {
+    return resetReminders(tx, this.target(row), row.startsAt, windows);
   }
 
-  /** Tells the item's audience, except the person who acted. */
-  async fanOut(ctx: TenantContext, row: Row, kind: Kind, extra?: string): Promise<void> {
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(row.audience)),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: this.kind.category,
-      render: (t, locale) => this.kind.push(t, locale, ctx.society.timezone, row, kind, extra),
-      data: { screen: this.kind.screen, societyId: ctx.societyId, [this.kind.idKey]: row.id },
-    });
+  /**
+   * Tells the item's audience, except the person who acted. The push is written in `tx`, the
+   * transaction that made the change.
+   */
+  async fanOut(
+    tx: Prisma.TransactionClient,
+    ctx: TenantContext,
+    row: Row,
+    kind: Kind,
+    extra?: string,
+  ): Promise<void> {
+    await this.notifications.notifyUsers(
+      {
+        userIds: await this.recipients
+          .in(tx)
+          .ofAudience(ctx.societyId, AudienceSchema.parse(row.audience)),
+        exceptUserId: ctx.userId,
+        societyId: ctx.societyId,
+        category: this.kind.category,
+        render: (t, locale) => this.kind.push(t, locale, ctx.society.timezone, row, kind, extra),
+        data: { screen: this.kind.screen, societyId: ctx.societyId, [this.kind.idKey]: row.id },
+      },
+      tx,
+    );
   }
 
   /**

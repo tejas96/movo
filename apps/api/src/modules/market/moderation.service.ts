@@ -54,7 +54,7 @@ export class ModerationService {
   async hide(listingId: string, reason: string): Promise<Listing> {
     const ctx = requireTenant();
     const before = await this.views.requireListing(listingId);
-    const { row, cancelled } = await this.tenant.tx(async (tx) => {
+    const { row } = await this.tenant.tx(async (tx) => {
       const open = await tx.marketOrder.findMany({
         where: { listingId, societyId: ctx.societyId, status: { in: [...OPEN_ORDER] } },
       });
@@ -81,27 +81,34 @@ export class ModerationService {
         },
         tx,
       );
+      const recipients = this.recipients.in(tx);
+      await this.notifications.notifyUsers(
+        {
+          userIds: await recipients.ofMemberships([before.sellerMembershipId]),
+          societyId: ctx.societyId,
+          category: 'MARKETPLACE',
+          render: (t) => ({
+            title: t('market:push.hiddenTitle', { title: before.title }),
+            body: reason,
+          }),
+          data: { screen: 'listing', societyId: ctx.societyId, listingId },
+        },
+        tx,
+      );
+      await this.notifications.notifyUsers(
+        {
+          userIds: await recipients.ofMemberships(open.map((o) => o.buyerMembershipId)),
+          societyId: ctx.societyId,
+          category: 'MARKETPLACE',
+          render: (t) => ({
+            title: t('market:push.cancelledTitle', { title: before.title }),
+            body: '',
+          }),
+          data: { screen: 'listing', societyId: ctx.societyId, listingId },
+        },
+        tx,
+      );
       return { row: l, cancelled: open };
-    });
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofMemberships([before.sellerMembershipId]),
-      societyId: ctx.societyId,
-      category: 'MARKETPLACE',
-      render: (t) => ({
-        title: t('market:push.hiddenTitle', { title: before.title }),
-        body: reason,
-      }),
-      data: { screen: 'listing', societyId: ctx.societyId, listingId },
-    });
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofMemberships(cancelled.map((o) => o.buyerMembershipId)),
-      societyId: ctx.societyId,
-      category: 'MARKETPLACE',
-      render: (t) => ({
-        title: t('market:push.cancelledTitle', { title: before.title }),
-        body: '',
-      }),
-      data: { screen: 'listing', societyId: ctx.societyId, listingId },
     });
     return this.views.detail(ctx, row);
   }
