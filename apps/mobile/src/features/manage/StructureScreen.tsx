@@ -13,6 +13,7 @@ import {
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -202,14 +203,12 @@ export function StructureScreen() {
             value={buildingOptions.find((o) => o.value === flatBuilding)?.label}
             onPress={() => setPickBuilding(true)}
           />
-          <Input
+          <TextArea
             white
             label={t('manage:structureForm.flatNumbers')}
             helper={t('manage:structureForm.flatNumbersHelp')}
             value={flatNumbers}
             onChangeText={setFlatNumbers}
-            multiline
-            style={{ minHeight: 96, textAlignVertical: 'top' }}
           />
           <Text variant="micro" tone="secondary" className="font-normal">
             {t('manage:structureForm.flatNumbersHelp')}

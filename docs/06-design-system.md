@@ -31,6 +31,11 @@ A copy of the reference real-estate app's language, applied to society life:
 | bg.inkPressed | `#000000` | pressed state |
 | bg.overlay | `rgba(255,255,255,0.92)` | pills over photos |
 | bg.tabBar | `rgba(255,255,255,0.88)` | floating tab bar, with 20px blur |
+| overlay.base | `#111111` | behind a full-screen photo before it paints (Welcome) |
+| overlay.shade | `#000000` | gradient shade on photos; each stop sets its opacity |
+| overlay.textStrong / textSoft / textDim | white at 0.82 / 0.78 / 0.72 | white text on photos |
+| overlay.glass | `rgba(255,255,255,0.18)` | small control on a photo (Skip) |
+| overlay.darken | `rgba(0,0,0,0.28)` | fill of a held HoldButton |
 | text.primary | `#151515` | titles, values |
 | text.secondary | `#767676` | labels, meta, "See all", placeholders |
 | text.tertiary | `#AFAFAF` | hints |
@@ -130,6 +135,7 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 | DateBlock | 56 x 60 white block with day and month |
 | DateTimeSheet | bottom sheet with a day strip, an hour strip and quarter-hour minutes. `mode="date"` hides the time; `pastDays` allows past dates. Pure JS, phone time zone |
 | Input, Select | 56, radius 20; label above in gray 13; helper and error below |
+| TextArea | multi-line Input, text at the top, grows from `minHeight` (96 default) |
 | Segmented | gray pill track 48, ink active pill |
 | Toggle | ink when on |
 | FloatingTabBar | 60 pill, blur, shadow; active item is an ink pill with bold icon and label |

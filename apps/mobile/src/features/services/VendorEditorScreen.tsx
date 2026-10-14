@@ -8,6 +8,7 @@ import {
   Segmented,
   SelectField,
   Text,
+  TextArea,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -209,13 +210,11 @@ export function VendorEditorScreen() {
             control={form.control}
             name="description"
             render={({ field }) => (
-              <Input
+              <TextArea
                 label={t('services:form.description')}
                 value={field.value}
                 onChangeText={field.onChange}
-                multiline
                 maxLength={500}
-                style={{ minHeight: 96, textAlignVertical: 'top' }}
               />
             )}
           />
@@ -239,13 +238,12 @@ export function VendorEditorScreen() {
                 control={form.control}
                 name="adminNotes"
                 render={({ field }) => (
-                  <Input
+                  <TextArea
                     label={t('services:form.adminNotes')}
                     value={field.value}
                     onChangeText={field.onChange}
-                    multiline
                     maxLength={500}
-                    style={{ minHeight: 80, textAlignVertical: 'top' }}
+                    minHeight={80}
                   />
                 )}
               />

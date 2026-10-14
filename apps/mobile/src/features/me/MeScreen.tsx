@@ -1,4 +1,14 @@
-import { Avatar, Button, Card, photos, Row, Screen, Text, TitleBar } from '@movo/design-system';
+import {
+  Avatar,
+  Button,
+  Card,
+  photos,
+  Row,
+  Screen,
+  Text,
+  TitleBar,
+  theme,
+} from '@movo/design-system';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Linking, StyleSheet, View } from 'react-native';
@@ -157,7 +167,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     padding: 3,
     borderRadius: 999,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.color.bg.canvas,
   },
   identity: { marginTop: 8, paddingHorizontal: 4, gap: 1 },
 });

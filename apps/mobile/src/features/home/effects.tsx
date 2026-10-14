@@ -1,4 +1,4 @@
-import { Text } from '@movo/design-system';
+import { Text, theme } from '@movo/design-system';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -48,9 +48,13 @@ export function PhotoScrim({ top, bottom }: { top: number; bottom: number }) {
     <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
       <Defs>
         <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#000" stopOpacity={top} />
-          <Stop offset="0.45" stopColor="#000" stopOpacity={(top + bottom) / 4} />
-          <Stop offset="1" stopColor="#000" stopOpacity={bottom} />
+          <Stop offset="0" stopColor={theme.color.overlay.shade} stopOpacity={top} />
+          <Stop
+            offset="0.45"
+            stopColor={theme.color.overlay.shade}
+            stopOpacity={(top + bottom) / 4}
+          />
+          <Stop offset="1" stopColor={theme.color.overlay.shade} stopOpacity={bottom} />
         </LinearGradient>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill={`url(#${id})`} />
@@ -69,7 +73,7 @@ export const photoStyles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  dim: { color: 'rgba(255, 255, 255, 0.72)' },
+  dim: { color: theme.color.overlay.textDim },
 });
 
 const styles = StyleSheet.create({

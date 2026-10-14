@@ -1,4 +1,4 @@
-import { Button, Screen } from '@movo/design-system';
+import { Button, Screen, theme } from '@movo/design-system';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -80,7 +80,7 @@ function Navigator({
       screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
-        contentStyle: { backgroundColor: '#FFFFFF' },
+        contentStyle: { backgroundColor: theme.color.bg.canvas },
       }}
     >
       <Stack.Group>

@@ -17,6 +17,7 @@ import {
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   Tile,
   useToast,
 } from '@movo/design-system';
@@ -327,9 +328,8 @@ export function ListingDetailScreen() {
           />
         }
       >
-        <Input
+        <TextArea
           white
-          multiline
           label={
             reasonSheet === 'hide'
               ? t('market:listing.hideReason')
@@ -341,7 +341,7 @@ export function ListingDetailScreen() {
           value={reason}
           onChangeText={setReason}
           maxLength={300}
-          style={{ minHeight: 90, textAlignVertical: 'top' }}
+          minHeight={90}
         />
       </Sheet>
       {l ? <OrderSheet listing={l} visible={ordering} onClose={() => setOrdering(false)} /> : null}

@@ -5,6 +5,7 @@ import {
   Input,
   Screen,
   Text,
+  TextArea,
   TitleBar,
   Toggle,
   useToast,
@@ -166,13 +167,12 @@ export function EventEditorScreen() {
             control={form.control}
             name="description"
             render={({ field }) => (
-              <Input
+              <TextArea
                 label={t('events:form.description')}
                 value={field.value}
                 onChangeText={field.onChange}
-                multiline
                 maxLength={5000}
-                style={{ minHeight: 120, textAlignVertical: 'top' }}
+                minHeight={120}
               />
             )}
           />

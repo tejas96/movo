@@ -21,6 +21,7 @@ import {
   Segmented,
   SelectField,
   Text,
+  TextArea,
   TitleBar,
   Toggle,
   useToast,
@@ -294,14 +295,12 @@ export function ListingEditorScreen() {
             control={form.control}
             name="description"
             render={({ field }) => (
-              <Input
+              <TextArea
                 label={t('market:editor.description')}
                 placeholder={t('market:editor.descriptionHint')}
                 value={field.value}
                 onChangeText={field.onChange}
                 maxLength={2000}
-                multiline
-                style={{ minHeight: 96, textAlignVertical: 'top' }}
               />
             )}
           />

@@ -48,6 +48,24 @@ export interface SemanticColors {
     readonly divider: string;
     readonly focus: string;
   };
+  /**
+   * Over full-bleed photos (Welcome, sign-in, Home, Pending). Not new colours: black and white
+   * at the strengths those screens already used, so the photo stays the only colour.
+   */
+  readonly overlay: {
+    /** Behind a full-screen photo before it paints. */
+    readonly base: string;
+    /** Gradient shade on photos; each gradient stop sets its own opacity. */
+    readonly shade: string;
+    /** White text on a photo, from strongest to dimmest. */
+    readonly textStrong: string;
+    readonly textSoft: string;
+    readonly textDim: string;
+    /** Glass fill for a small control on a photo (Skip). */
+    readonly glass: string;
+    /** Dark layer that fills a black HoldButton while it is held. */
+    readonly darken: string;
+  };
   readonly status: {
     readonly success: ColorPair;
     readonly warning: ColorPair;
@@ -87,6 +105,15 @@ export const light: SemanticColors = {
   border: {
     divider: '#EAEAEA',
     focus: palette.black,
+  },
+  overlay: {
+    base: '#111111',
+    shade: '#000000',
+    textStrong: 'rgba(255, 255, 255, 0.82)',
+    textSoft: 'rgba(255, 255, 255, 0.78)',
+    textDim: 'rgba(255, 255, 255, 0.72)',
+    glass: 'rgba(255, 255, 255, 0.18)',
+    darken: 'rgba(0, 0, 0, 0.28)',
   },
   status: {
     success: { fg: palette.green[700], bg: palette.green[50] },

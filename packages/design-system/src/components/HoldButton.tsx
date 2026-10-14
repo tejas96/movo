@@ -90,7 +90,7 @@ export function HoldButton({
     >
       <Animated.View
         pointerEvents="none"
-        style={{ width: fill, backgroundColor: 'rgba(0, 0, 0, 0.28)' }}
+        style={{ width: fill, backgroundColor: theme.color.overlay.darken }}
         className="absolute bottom-0 left-0 top-0"
       />
       <View className="flex-1 flex-row items-center justify-center gap-2">

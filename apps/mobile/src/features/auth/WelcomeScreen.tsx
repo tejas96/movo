@@ -1,4 +1,4 @@
-import { Button, type PhotoName, photos, Text, Wordmark } from '@movo/design-system';
+import { Button, type PhotoName, photos, Text, theme, Wordmark } from '@movo/design-system';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, StatusBar, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -24,9 +24,6 @@ const SLIDES: readonly { key: SlideKey; photo: PhotoName }[] = [
 
 /** How much wider the photo is than the page, so it can drift slower than the text. */
 const PARALLAX = 0.12;
-const WHITE = '#FFFFFF';
-const WHITE_SOFT = 'rgba(255, 255, 255, 0.78)';
-const WHITE_PILL = 'rgba(255, 255, 255, 0.18)';
 
 /**
  * First open: three full-bleed photos, one line each, one white button.
@@ -79,7 +76,7 @@ export function WelcomeScreen() {
 
       {/* Fixed chrome over the pages: wordmark, skip, dots, buttons. */}
       <View style={[styles.top, { top: insets.top + 16 }]} pointerEvents="box-none">
-        <Wordmark width={92} color={WHITE} />
+        <Wordmark width={92} color={theme.color.text.inverse} />
         <Pressable
           accessibilityRole="button"
           onPress={() => leave('Login')}
@@ -104,7 +101,7 @@ export function WelcomeScreen() {
           onPress={() => leave('Login')}
           style={({ pressed }) => [styles.textButton, pressed && styles.pressed]}
         >
-          <Text variant="bodyMedium" center style={{ color: WHITE_SOFT }}>
+          <Text variant="bodyMedium" center style={{ color: theme.color.overlay.textSoft }}>
             {t('welcome.haveAccountShort')}
           </Text>
         </Pressable>
@@ -169,7 +166,7 @@ function Slide({
         <Text variant="h1" tone="inverse" style={styles.title}>
           {title}
         </Text>
-        <Text variant="body" style={{ color: WHITE_SOFT }}>
+        <Text variant="body" style={{ color: theme.color.overlay.textSoft }}>
           {body}
         </Text>
       </Animated.View>
@@ -183,10 +180,10 @@ function Scrim() {
     <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
       <Defs>
         <LinearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#000" stopOpacity="0.18" />
-          <Stop offset="0.35" stopColor="#000" stopOpacity="0" />
-          <Stop offset="0.68" stopColor="#000" stopOpacity="0.55" />
-          <Stop offset="1" stopColor="#000" stopOpacity="0.88" />
+          <Stop offset="0" stopColor={theme.color.overlay.shade} stopOpacity="0.18" />
+          <Stop offset="0.35" stopColor={theme.color.overlay.shade} stopOpacity="0" />
+          <Stop offset="0.68" stopColor={theme.color.overlay.shade} stopOpacity="0.55" />
+          <Stop offset="1" stopColor={theme.color.overlay.shade} stopOpacity="0.88" />
         </LinearGradient>
       </Defs>
       <Rect x="0" y="0" width="100%" height="100%" fill="url(#scrim)" />
@@ -212,7 +209,7 @@ function Dot({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#111111' },
+  root: { flex: 1, backgroundColor: theme.color.overlay.base },
   page: { overflow: 'hidden' },
   photo: { width: '100%', height: '100%' },
   copy: { position: 'absolute', left: 22, right: 22, gap: 8 },
@@ -229,13 +226,13 @@ const styles = StyleSheet.create({
     height: 32,
     paddingHorizontal: 14,
     borderRadius: 16,
-    backgroundColor: WHITE_PILL,
+    backgroundColor: theme.color.overlay.glass,
     alignItems: 'center',
     justifyContent: 'center',
   },
   bottom: { position: 'absolute', left: 22, right: 22, bottom: 0, gap: 12 },
   dots: { flexDirection: 'row', gap: 6, marginBottom: 8 },
-  dot: { height: 6, borderRadius: 3, backgroundColor: WHITE },
+  dot: { height: 6, borderRadius: 3, backgroundColor: theme.color.text.inverse },
   textButton: { height: 44, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.7 },
 });

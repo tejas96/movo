@@ -5,13 +5,13 @@ import {
   Divider,
   Icon,
   IconSquare,
-  Input,
   OptionSheet,
   Screen,
   SectionHeader,
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   TitleBar,
   theme,
   useToast,
@@ -180,15 +180,13 @@ export function MeetingDetailScreen() {
         }
       >
         {sheet ? (
-          <Input
+          <TextArea
             label={sheetCopy[sheet].label}
             placeholder={sheetCopy[sheet].hint || undefined}
             value={note}
             onChangeText={setNote}
-            multiline
             maxLength={1000}
             white
-            style={{ minHeight: 96, textAlignVertical: 'top' }}
           />
         ) : null}
       </Sheet>

@@ -50,8 +50,8 @@ export function PendingScreen() {
         <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
           <Defs>
             <LinearGradient id="pendingScrim" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0.3" stopColor="#000" stopOpacity="0" />
-              <Stop offset="1" stopColor="#000" stopOpacity="0.72" />
+              <Stop offset="0.3" stopColor={theme.color.overlay.shade} stopOpacity="0" />
+              <Stop offset="1" stopColor={theme.color.overlay.shade} stopOpacity="0.72" />
             </LinearGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" fill="url(#pendingScrim)" />
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   photo: { width: '100%', height: '100%' },
   photoText: { position: 'absolute', left: 16, right: 16, bottom: 14, gap: 2 },
-  photoSub: { color: 'rgba(255, 255, 255, 0.82)' },
+  photoSub: { color: theme.color.overlay.textStrong },
   step: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   stepText: { paddingTop: 1 },
   dotWrap: { width: DOT, height: DOT, alignItems: 'center', justifyContent: 'center' },

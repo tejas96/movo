@@ -13,6 +13,7 @@ import {
   Segmented,
   SelectField,
   Text,
+  TextArea,
   TitleBar,
   Toggle,
   useToast,
@@ -142,13 +143,12 @@ export function NoticeEditorScreen() {
             control={form.control}
             name="body"
             render={({ field }) => (
-              <Input
+              <TextArea
                 label={t('notices:form.body')}
                 value={field.value}
                 onChangeText={field.onChange}
-                multiline
                 maxLength={5000}
-                style={{ minHeight: 140, textAlignVertical: 'top' }}
+                minHeight={140}
                 containerClassName=""
               />
             )}

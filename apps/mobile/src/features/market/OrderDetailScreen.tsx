@@ -12,6 +12,7 @@ import {
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -241,14 +242,13 @@ export function OrderDetailScreen() {
           />
         }
       >
-        <Input
+        <TextArea
           white
-          multiline
           label={t('market:order.reasonOptional')}
           value={reason}
           onChangeText={setReason}
           maxLength={300}
-          style={{ minHeight: 90, textAlignVertical: 'top' }}
+          minHeight={90}
         />
       </Sheet>
     </Screen>
@@ -378,14 +378,13 @@ function ReviewForm({
     <>
       <SectionHeader title={t('order.review')} />
       <Stars value={rating} size={22} onChange={setRating} />
-      <Input
+      <TextArea
         containerClassName="mt-3"
         placeholder={t('order.reviewPlaceholder')}
         value={text}
         onChangeText={setText}
         maxLength={500}
-        multiline
-        style={{ minHeight: 72, textAlignVertical: 'top' }}
+        minHeight={72}
       />
       <Button
         className="mt-3"

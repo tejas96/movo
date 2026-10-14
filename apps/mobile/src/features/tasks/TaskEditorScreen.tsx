@@ -7,6 +7,7 @@ import {
   Screen,
   SelectField,
   Text,
+  TextArea,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -118,13 +119,12 @@ export function TaskEditorScreen() {
             control={form.control}
             name="description"
             render={({ field }) => (
-              <Input
+              <TextArea
                 label={t('tasks:form.description')}
                 value={field.value}
                 onChangeText={field.onChange}
-                multiline
                 maxLength={2000}
-                style={{ minHeight: 90, textAlignVertical: 'top' }}
+                minHeight={90}
               />
             )}
           />
