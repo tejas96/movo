@@ -5,7 +5,7 @@ import { FilesModule } from '../files/files.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ListingsService } from './listings.service';
 import { MarketController } from './market.controller';
-import { closeMarketForDeletedAccount } from './market.lifecycle';
+import { closeMarketForLeaver } from './market.lifecycle';
 import { MarketViews } from './market-views.service';
 import { ModerationService } from './moderation.service';
 import { OrdersService } from './orders.service';
@@ -24,7 +24,7 @@ export class MarketModule implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    this.lifecycle.onAccountDeleted(closeMarketForDeletedAccount);
+    this.lifecycle.onMemberLeft(closeMarketForLeaver);
     this.home.register({
       module: 'marketplace',
       order: HOME_ORDER.marketplace,

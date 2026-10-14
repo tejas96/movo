@@ -11,7 +11,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
-import type { AccountDeleted } from '../../common/lifecycle/lifecycle';
+import type { MemberLeft } from '../../common/lifecycle/lifecycle';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
@@ -361,14 +361,15 @@ export class TasksService {
   }
 
   /**
-   * Account deleted: tasks the user still had in any society go back to the open list with
-   * no assignee, written like a committee unassign (WITHDRAWN event, task.assigned audit).
-   * Nobody is notified, as with an unassign.
+   * Membership ended (set to LEFT, or account deleted): tasks the member still had in that
+   * society go back to the open list with no assignee, written like a committee unassign
+   * (WITHDRAWN event, task.assigned audit). Nobody is notified, as with an unassign.
    */
-  async releaseForDeletedAccount(tx: Tx, e: AccountDeleted): Promise<void> {
+  async releaseForLeaver(tx: Tx, e: MemberLeft): Promise<void> {
     const tasks = await tx.task.findMany({
       where: {
-        assigneeMembershipId: { in: e.membershipIds },
+        societyId: e.societyId,
+        assigneeMembershipId: e.membershipId,
         status: { notIn: ['COMPLETED', 'CANCELLED'] },
       },
     });

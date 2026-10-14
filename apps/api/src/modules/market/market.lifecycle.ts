@@ -1,22 +1,27 @@
-import type { AccountDeleted } from '../../common/lifecycle/lifecycle';
+import type { MemberLeft } from '../../common/lifecycle/lifecycle';
 import type { Prisma } from '../../generated/prisma/client';
 import { OPEN_ORDER } from './order-state';
 
-/** Account deleted: the user's listings go, open orders on either side are cancelled. */
-export async function closeMarketForDeletedAccount(
+/** Membership ended: the member's listings in that society go, open orders on either side are cancelled. */
+export async function closeMarketForLeaver(
   tx: Prisma.TransactionClient,
-  e: AccountDeleted,
+  e: MemberLeft,
 ): Promise<void> {
-  const mids = e.membershipIds;
+  const mid = e.membershipId;
   await tx.listing.updateMany({
-    where: { sellerMembershipId: { in: mids }, status: { not: 'ARCHIVED' } },
+    where: { societyId: e.societyId, sellerMembershipId: mid, status: { not: 'ARCHIVED' } },
     data: { status: 'ARCHIVED' },
   });
   await tx.marketOrder.updateMany({
     where: {
-      OR: [{ buyerMembershipId: { in: mids } }, { sellerMembershipId: { in: mids } }],
+      societyId: e.societyId,
+      OR: [{ buyerMembershipId: mid }, { sellerMembershipId: mid }],
       status: { in: [...OPEN_ORDER] },
     },
-    data: { status: 'CANCELLED', reason: 'account deleted', closedAt: new Date() },
+    data: {
+      status: 'CANCELLED',
+      reason: e.reason === 'account-deleted' ? 'account deleted' : 'member left',
+      closedAt: new Date(),
+    },
   });
 }

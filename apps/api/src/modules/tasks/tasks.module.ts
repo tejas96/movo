@@ -20,7 +20,7 @@ export class TasksModule implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    this.lifecycle.onAccountDeleted((tx, e) => this.tasks.releaseForDeletedAccount(tx, e));
+    this.lifecycle.onMemberLeft((tx, e) => this.tasks.releaseForLeaver(tx, e));
     this.home.register({
       module: 'tasks',
       order: HOME_ORDER.tasks,
