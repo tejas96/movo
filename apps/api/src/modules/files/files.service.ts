@@ -19,6 +19,10 @@ export interface UploadedBlob {
 export type FileLink = { expenseId: string } | { paymentId: string } | { taskId: string };
 
 const UNUSED_TTL_MS = 24 * 60 * 60 * 1000;
+/** Rows read and removed per round of the nightly cleanup. */
+const REMOVE_UNUSED_BATCH = 500;
+/** At most this many a night, so one bad night (a client stuck uploading) cannot run for hours. */
+const REMOVE_UNUSED_MAX = 20_000;
 
 /** Recognises the file by its first bytes, never by the name or the header the phone sent. */
 export function sniffImage(buf: Buffer): { mime: string; ext: string } | null {
@@ -152,18 +156,33 @@ export class FilesService {
     return body ? { mime: row.mime, body } : null;
   }
 
-  /** Files uploaded but never attached to anything, older than a day. */
-  async removeUnused(now = new Date()): Promise<number> {
-    const stale = await this.prisma.storedFile.findMany({
-      where: { attachedAt: null, createdAt: { lt: new Date(now.getTime() - UNUSED_TTL_MS) } },
-      take: 500,
-    });
-    for (const f of stale) {
-      await this.store.remove(f.storageKey);
-      await this.prisma.storedFile.delete({ where: { id: f.id } });
+  /**
+   * Files uploaded but never attached to anything, older than a day. Works in batches until
+   * none are left, up to `max` a night; anything over the cap goes the next night.
+   */
+  async removeUnused(now = new Date(), max = REMOVE_UNUSED_MAX): Promise<number> {
+    const where = { attachedAt: null, createdAt: { lt: new Date(now.getTime() - UNUSED_TTL_MS) } };
+    let removed = 0;
+    while (removed < max) {
+      const stale = await this.prisma.storedFile.findMany({
+        where,
+        orderBy: { createdAt: 'asc' },
+        take: Math.min(REMOVE_UNUSED_BATCH, max - removed),
+        select: { id: true, storageKey: true },
+      });
+      for (const f of stale) {
+        await this.store.remove(f.storageKey);
+        await this.prisma.storedFile.delete({ where: { id: f.id } });
+      }
+      removed += stale.length;
+      if (stale.length < REMOVE_UNUSED_BATCH) break;
     }
-    if (stale.length) this.logger.log(`removed ${stale.length} unused uploads`);
-    return stale.length;
+    if (removed >= max)
+      this.logger.warn(
+        `removed ${removed} unused uploads, the nightly cap; the rest go next night`,
+      );
+    else if (removed > 0) this.logger.log(`removed ${removed} unused uploads`);
+    return removed;
   }
 
   /** Deletes the bytes and the rows. Used when a photo is taken off something. */

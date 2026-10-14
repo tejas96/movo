@@ -1,5 +1,6 @@
 import {
   DEFAULT_VENDOR_CATEGORIES,
+  parseModuleSettings,
   type RouteBody,
   type RouteQuery,
   type Vendor,
@@ -207,10 +208,8 @@ export class VendorsService {
     const ctx = requireTenant();
     const manager = this.canManage(ctx);
     if (!manager) {
-      const allowed =
-        (ctx.moduleSettings.vendors as { membersCanSuggest?: boolean } | undefined)
-          ?.membersCanSuggest ?? true;
-      if (!allowed) throw ApiException.forbidden('Only the committee can add vendors');
+      if (!parseModuleSettings('vendors', ctx.moduleSettings.vendors).membersCanSuggest)
+        throw ApiException.forbidden('Only the committee can add vendors');
     }
     await this.requireCategory(body.categoryId);
     const status: VendorStatus = manager ? (body.status ?? 'APPROVED') : 'SUGGESTED';

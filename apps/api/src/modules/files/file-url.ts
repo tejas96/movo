@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import type { FileRef } from '@movo/contracts';
+import { buildPath, type FileRef, filesContract } from '@movo/contracts';
 import { loadEnv } from '../../config/env';
 
 /**
@@ -14,10 +14,11 @@ function sign(fileId: string, exp: number): string {
     .digest('base64url');
 }
 
-/** "/v1/files/<id>?e=<unix>&s=<hmac>". The app puts its API base in front. */
+/** "/v1/files/<id>?e=<unix>&s=<hmac>" (filesContract.get). The app puts its API base in front. */
 export function fileRef(fileId: string, now = Date.now()): FileRef {
   const e = Math.floor(((Math.floor(now / DAY_MS) + 2) * DAY_MS) / 1000);
-  return { id: fileId, url: `/v1/files/${fileId}?e=${e}&s=${sign(fileId, e)}` };
+  const path = buildPath(filesContract.get.path, { fileId });
+  return { id: fileId, url: `${path}?e=${e}&s=${sign(fileId, e)}` };
 }
 
 export function fileUrl(fileId: string | null | undefined): string | null {

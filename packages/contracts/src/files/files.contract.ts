@@ -42,4 +42,15 @@ export const filesContract = {
     query: z.object({ kind: UploadKindSchema.default('LISTING_IMAGE') }),
     response: FileRefSchema,
   }),
+  get: defineRoute({
+    method: 'GET',
+    path: '/files/:fileId',
+    summary:
+      'The photo itself (image/jpeg, png or webp), not JSON. Public: the signature in the url from a FileRef is the permission. 404 when the link is wrong or ran out.',
+    auth: 'none',
+    params: z.object({ fileId: z.string() }),
+    // A link with e or s missing is just a wrong link: 404, like a bad signature.
+    query: z.object({ e: z.string().default(''), s: z.string().default('') }),
+    response: z.unknown(),
+  }),
 };
