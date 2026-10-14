@@ -20,7 +20,6 @@ import {
   PermissionKeySchema,
 } from '../core/enums';
 import { defineRoute } from '../core/route';
-import { AVATAR_UPLOAD_PATH } from '../files/files.contract';
 import { SocietySettingsSchema } from '../settings';
 
 export const SocietySummarySchema = z.object({
@@ -103,13 +102,13 @@ export type Notification = z.infer<typeof NotificationSchema>;
 export const meContract = {
   get: defineRoute({
     method: 'GET',
-    path: '/v1/me',
+    path: '/me',
     summary: 'My profile',
     response: UserSchema,
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/me',
+    path: '/me',
     summary: 'Update my name or language',
     body: z
       .object({ displayName: DisplayNameSchema.optional(), locale: LocaleSchema.optional() })
@@ -118,34 +117,34 @@ export const meContract = {
   }),
   setAvatar: defineRoute({
     method: 'POST',
-    path: AVATAR_UPLOAD_PATH,
+    path: '/me/avatar',
     summary:
       'Set my profile photo: multipart/form-data with one field "file" (JPEG, PNG or WebP, 5 MB at most). Replaces the old one.',
     response: UserSchema,
   }),
   removeAvatar: defineRoute({
     method: 'DELETE',
-    path: AVATAR_UPLOAD_PATH,
+    path: '/me/avatar',
     summary: 'Remove my profile photo',
     response: UserSchema,
   }),
   context: defineRoute({
     method: 'GET',
-    path: '/v1/me/context',
+    path: '/me/context',
     summary:
       'Everything the app needs to build navigation: memberships, roles, permissions, flats, modules',
     response: MeContextSchema,
   }),
   deleteAccount: defineRoute({
     method: 'DELETE',
-    path: '/v1/me',
+    path: '/me',
     summary: 'Delete my account. Personal data is anonymised. Required by Google Play.',
     body: z.object({ password: PasswordSchema }).strict(),
     response: OkSchema,
   }),
   registerDevice: defineRoute({
     method: 'POST',
-    path: '/v1/me/devices',
+    path: '/me/devices',
     summary: 'Register a push token for this device',
     body: z
       .object({
@@ -158,28 +157,28 @@ export const meContract = {
   }),
   removeDevice: defineRoute({
     method: 'DELETE',
-    path: '/v1/me/devices',
+    path: '/me/devices',
     summary: 'Remove a push token',
     body: z.object({ token: z.string().min(10).max(4096) }).strict(),
     response: OkSchema,
   }),
   notifications: defineRoute({
     method: 'GET',
-    path: '/v1/me/notifications',
+    path: '/me/notifications',
     summary: 'My notification center, newest first',
     query: CursorQuerySchema,
     response: page(NotificationSchema).extend({ unreadCount: z.number().int() }),
   }),
   markNotificationRead: defineRoute({
     method: 'POST',
-    path: '/v1/me/notifications/:notificationId/read',
+    path: '/me/notifications/:notificationId/read',
     summary: 'Mark one notification read',
     params: z.object({ notificationId: IdSchema }),
     response: OkSchema,
   }),
   markAllNotificationsRead: defineRoute({
     method: 'POST',
-    path: '/v1/me/notifications/read-all',
+    path: '/me/notifications/read-all',
     summary: 'Mark every notification read',
     response: OkSchema,
   }),
@@ -204,21 +203,21 @@ export type JoinSocietyPreview = z.infer<typeof JoinSocietyPreviewSchema>;
 export const joinContract = {
   acceptInvite: defineRoute({
     method: 'POST',
-    path: '/v1/join/invite',
+    path: '/join/invite',
     summary: 'Join a society with an invite code. The membership becomes active at once.',
     body: z.object({ code: z.string().trim().min(6).max(16) }).strict(),
     response: z.object({ membershipId: IdSchema, society: SocietySummarySchema }),
   }),
   preview: defineRoute({
     method: 'GET',
-    path: '/v1/join/societies/:joinCode',
+    path: '/join/societies/:joinCode',
     summary: 'Look up a society by its join code and list its flats',
     params: z.object({ joinCode: z.string().trim().min(4).max(16) }),
     response: JoinSocietyPreviewSchema,
   }),
   request: defineRoute({
     method: 'POST',
-    path: '/v1/join/request',
+    path: '/join/request',
     summary: 'Ask to join a society as the occupant of a flat. An admin approves it.',
     body: z
       .object({
@@ -232,7 +231,7 @@ export const joinContract = {
   }),
   cancelRequest: defineRoute({
     method: 'DELETE',
-    path: '/v1/join/request/:requestId',
+    path: '/join/request/:requestId',
     summary: 'Withdraw my pending join request',
     params: z.object({ requestId: IdSchema }),
     response: OkSchema,

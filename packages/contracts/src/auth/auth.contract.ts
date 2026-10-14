@@ -63,7 +63,7 @@ export const LoginBodySchema = z
 export const authContract = {
   register: defineRoute({
     method: 'POST',
-    path: '/v1/auth/register',
+    path: '/auth/register',
     summary: 'Create an account with a phone or email and a password',
     auth: 'none',
     body: RegisterBodySchema,
@@ -71,7 +71,7 @@ export const authContract = {
   }),
   login: defineRoute({
     method: 'POST',
-    path: '/v1/auth/login',
+    path: '/auth/login',
     summary: 'Sign in',
     auth: 'none',
     body: LoginBodySchema,
@@ -79,7 +79,7 @@ export const authContract = {
   }),
   refresh: defineRoute({
     method: 'POST',
-    path: '/v1/auth/refresh',
+    path: '/auth/refresh',
     summary: 'Rotate the refresh token and get a new access token',
     auth: 'none',
     body: z.object({ refreshToken: z.string().min(20) }).strict(),
@@ -87,14 +87,14 @@ export const authContract = {
   }),
   logout: defineRoute({
     method: 'POST',
-    path: '/v1/auth/logout',
+    path: '/auth/logout',
     summary: 'Revoke the current session',
     body: z.object({ refreshToken: z.string().min(20).optional() }).strict(),
     response: OkSchema,
   }),
   forgotPassword: defineRoute({
     method: 'POST',
-    path: '/v1/auth/forgot-password',
+    path: '/auth/forgot-password',
     summary: 'Send a reset link by email when the account has one. Always answers ok.',
     auth: 'none',
     body: z.object({ identifier: IdentifierSchema }).strict(),
@@ -102,7 +102,7 @@ export const authContract = {
   }),
   resetPassword: defineRoute({
     method: 'POST',
-    path: '/v1/auth/reset-password',
+    path: '/auth/reset-password',
     summary: 'Set a new password with an emailed token or an admin-issued code',
     auth: 'none',
     body: z
@@ -116,7 +116,7 @@ export const authContract = {
   }),
   changePassword: defineRoute({
     method: 'POST',
-    path: '/v1/auth/change-password',
+    path: '/auth/change-password',
     summary: 'Change the password. Revokes every other session.',
     body: z.object({ currentPassword: PasswordSchema, newPassword: PasswordSchema }).strict(),
     response: OkSchema,

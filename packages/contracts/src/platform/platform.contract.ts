@@ -41,7 +41,7 @@ export const CreateSocietyBodySchema = z
 export const platformContract = {
   createSociety: defineRoute({
     method: 'POST',
-    path: '/v1/platform/societies',
+    path: '/platform/societies',
     summary: 'Create a society with default roles and modules and its first admin',
     auth: 'platform',
     body: CreateSocietyBodySchema,
@@ -54,7 +54,7 @@ export const platformContract = {
   }),
   listSocieties: defineRoute({
     method: 'GET',
-    path: '/v1/platform/societies',
+    path: '/platform/societies',
     summary: 'All societies on the platform',
     auth: 'platform',
     response: z.array(

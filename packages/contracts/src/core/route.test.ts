@@ -4,11 +4,22 @@ import { buildPath, buildQuery, defineRoute } from './route';
 
 describe('defineRoute', () => {
   it('fills defaults', () => {
-    const r = defineRoute({ method: 'GET', path: '/v1/x', summary: 's', response: z.object({}) });
+    const r = defineRoute({ method: 'GET', path: '/x', summary: 's', response: z.object({}) });
+    expect(r.path).toBe('/v1/x');
     expect(r.auth).toBe('user');
     expect(r.module).toBe('core');
     expect(r.permission).toBeNull();
     expect(r.params.safeParse({}).success).toBe(true);
+  });
+  it('leaves an unversioned path alone', () => {
+    const r = defineRoute({
+      method: 'GET',
+      path: '/health',
+      versioned: false,
+      summary: 's',
+      response: z.object({}),
+    });
+    expect(r.path).toBe('/health');
   });
   it('builds paths and queries', () => {
     expect(

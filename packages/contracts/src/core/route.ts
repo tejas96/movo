@@ -2,6 +2,9 @@ import type { z } from 'zod';
 import { EmptySchema } from './common';
 import type { ModuleKey, PermissionKey } from './enums';
 
+/** Version prefix of every API route. defineRoute puts it in front of each path. */
+export const API_PREFIX = '/v1';
+
 export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 /** none = public. user = any signed-in user. platform = platform admin only. */
@@ -35,7 +38,10 @@ interface RouteInit<
   R extends z.ZodType,
 > {
   method: HttpMethod;
-  path: string;
+  /** Path after API_PREFIX, for example /societies/:societyId/notices. */
+  path: `/${string}`;
+  /** false only for routes outside the version prefix, like /health. */
+  versioned?: boolean;
   summary: string;
   auth?: AuthKind;
   module?: ModuleKey | 'core';
@@ -57,7 +63,7 @@ export function defineRoute<
 >(init: RouteInit<P, Q, B, R>): RouteDef<P, Q, B, R> {
   return {
     method: init.method,
-    path: init.path,
+    path: init.versioned === false ? init.path : `${API_PREFIX}${init.path}`,
     summary: init.summary,
     auth: init.auth ?? 'user',
     module: init.module ?? 'core',

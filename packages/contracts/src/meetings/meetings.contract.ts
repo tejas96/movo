@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { AudienceSchema } from '../core/audience';
-import { ActorSchema, CursorQuerySchema, IdSchema, IsoDateTimeSchema, page } from '../core/common';
+import {
+  ActorSchema,
+  CursorQuerySchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  page,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 
 export const MeetingStatusSchema = z.enum(['SCHEDULED', 'CANCELLED', 'COMPLETED']);
@@ -45,8 +52,7 @@ export const MeetingSchema = MeetingSummarySchema.extend({
 });
 export type Meeting = z.infer<typeof MeetingSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const meetingParams = societyParams.extend({ meetingId: IdSchema });
+const meetingParams = SocietyParamsSchema.extend({ meetingId: IdSchema });
 
 const MeetingInputSchema = z
   .object({
@@ -64,16 +70,16 @@ const NoteSchema = z.object({ note: z.string().trim().min(1).max(1000).optional(
 export const meetingsContract = {
   list: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/meetings',
+    path: '/societies/:societyId/meetings',
     summary: 'Meetings for me. UPCOMING soonest first, PAST newest first.',
     module: 'meetings',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({ when: TimeframeSchema.default('UPCOMING') }),
     response: page(MeetingSummarySchema),
   }),
   get: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/meetings/:meetingId',
+    path: '/societies/:societyId/meetings/:meetingId',
     summary: 'One meeting with its updates',
     module: 'meetings',
     params: meetingParams,
@@ -81,17 +87,17 @@ export const meetingsContract = {
   }),
   create: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings',
+    path: '/societies/:societyId/meetings',
     summary: 'Schedule a meeting and notify the audience. Reminders follow the society settings.',
     module: 'meetings',
     permission: 'meeting.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: MeetingInputSchema,
     response: MeetingSchema,
   }),
   update: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/meetings/:meetingId',
+    path: '/societies/:societyId/meetings/:meetingId',
     summary:
       'Edit a scheduled meeting. A new start time is recorded as RESCHEDULED, notifies the audience and resets reminders.',
     module: 'meetings',
@@ -102,7 +108,7 @@ export const meetingsContract = {
   }),
   addNote: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings/:meetingId/notes',
+    path: '/societies/:societyId/meetings/:meetingId/notes',
     summary: 'Post a short update, like a venue change, and notify the audience',
     module: 'meetings',
     permission: 'meeting.manage',
@@ -112,7 +118,7 @@ export const meetingsContract = {
   }),
   cancel: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings/:meetingId/cancel',
+    path: '/societies/:societyId/meetings/:meetingId/cancel',
     summary: 'Cancel a scheduled meeting and notify the audience',
     module: 'meetings',
     permission: 'meeting.manage',
@@ -122,7 +128,7 @@ export const meetingsContract = {
   }),
   complete: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/meetings/:meetingId/complete',
+    path: '/societies/:societyId/meetings/:meetingId/complete',
     summary: 'Mark a meeting as held. Minutes and attendance come later.',
     module: 'meetings',
     permission: 'meeting.manage',

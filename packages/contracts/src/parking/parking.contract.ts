@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { FlatRefSchema, IdSchema, IsoDateTimeSchema, OkSchema } from '../core/common';
+import {
+  FlatRefSchema,
+  IdSchema,
+  IsoDateTimeSchema,
+  OkSchema,
+  SocietyParamsSchema,
+} from '../core/common';
 import { defineRoute } from '../core/route';
 
 export const ParkingSlotTypeSchema = z.enum(['TWO_WHEELER', 'FOUR_WHEELER', 'EV', 'OTHER']);
@@ -64,9 +70,8 @@ export const MyParkingSchema = z.object({
 });
 export type MyParking = z.infer<typeof MyParkingSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const slotParams = societyParams.extend({ slotId: IdSchema });
-const vehicleParams = societyParams.extend({ vehicleId: IdSchema });
+const slotParams = SocietyParamsSchema.extend({ slotId: IdSchema });
+const vehicleParams = SocietyParamsSchema.extend({ vehicleId: IdSchema });
 
 const SlotInputSchema = z.object({
   code: z.string().trim().min(1).max(20),
@@ -85,19 +90,19 @@ const VehicleInputSchema = z.object({
 export const parkingContract = {
   mine: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/parking/me',
+    path: '/societies/:societyId/parking/me',
     summary: 'Slots and vehicles of my flats',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: MyParkingSchema,
   }),
 
   listSlots: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/parking/slots',
+    path: '/societies/:societyId/parking/slots',
     summary: 'Every slot with its allocation. Managers always; members when the society allows it.',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({
       status: ParkingSlotStatusSchema.optional(),
       free: z.enum(['true', 'false']).optional(),
@@ -106,17 +111,17 @@ export const parkingContract = {
   }),
   createSlots: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/parking/slots',
+    path: '/societies/:societyId/parking/slots',
     summary: 'Add one or many slots. Codes must be unique in the society.',
     module: 'parking',
     permission: 'parking.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z.object({ slots: z.array(SlotInputSchema).min(1).max(500) }).strict(),
     response: z.array(ParkingSlotSchema),
   }),
   updateSlot: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/parking/slots/:slotId',
+    path: '/societies/:societyId/parking/slots/:slotId',
     summary: 'Rename, retype or block a slot',
     module: 'parking',
     permission: 'parking.manage',
@@ -126,7 +131,7 @@ export const parkingContract = {
   }),
   allocate: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/parking/slots/:slotId/allocation',
+    path: '/societies/:societyId/parking/slots/:slotId/allocation',
     summary: 'Give a free slot to a flat. A taken slot must be released first.',
     module: 'parking',
     permission: 'parking.manage',
@@ -138,7 +143,7 @@ export const parkingContract = {
   }),
   release: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/parking/slots/:slotId/allocation',
+    path: '/societies/:societyId/parking/slots/:slotId/allocation',
     summary: 'End the current allocation of a slot',
     module: 'parking',
     permission: 'parking.manage',
@@ -148,11 +153,11 @@ export const parkingContract = {
 
   listVehicles: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/parking/vehicles',
+    path: '/societies/:societyId/parking/vehicles',
     summary:
       'Vehicles. Members see their own flats; managers, staff, or everyone (by setting) see all.',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: z.object({
       flatId: IdSchema.optional(),
       q: z.string().trim().max(20).optional(),
@@ -161,16 +166,16 @@ export const parkingContract = {
   }),
   createVehicle: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/parking/vehicles',
+    path: '/societies/:societyId/parking/vehicles',
     summary: 'Register a vehicle to a flat. Your own flat, or any flat with parking.manage.',
     module: 'parking',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: VehicleInputSchema.strict(),
     response: VehicleSchema,
   }),
   updateVehicle: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/parking/vehicles/:vehicleId',
+    path: '/societies/:societyId/parking/vehicles/:vehicleId',
     summary: 'Edit a vehicle',
     module: 'parking',
     params: vehicleParams,
@@ -179,7 +184,7 @@ export const parkingContract = {
   }),
   deleteVehicle: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/parking/vehicles/:vehicleId',
+    path: '/societies/:societyId/parking/vehicles/:vehicleId',
     summary: 'Remove a vehicle',
     module: 'parking',
     params: vehicleParams,

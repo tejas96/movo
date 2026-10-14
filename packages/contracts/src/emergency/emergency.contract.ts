@@ -8,6 +8,7 @@ import {
   OkSchema,
   PhoneSchema,
   page,
+  SocietyParamsSchema,
 } from '../core/common';
 import { defineRoute } from '../core/route';
 
@@ -75,9 +76,8 @@ export const AlertSchema = z.object({
 });
 export type Alert = z.infer<typeof AlertSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-const contactParams = societyParams.extend({ contactId: IdSchema });
-const alertParams = societyParams.extend({ alertId: IdSchema });
+const contactParams = SocietyParamsSchema.extend({ contactId: IdSchema });
+const alertParams = SocietyParamsSchema.extend({ alertId: IdSchema });
 
 const ContactInputSchema = z.object({
   label: z.string().trim().min(2).max(60),
@@ -90,25 +90,25 @@ const ContactInputSchema = z.object({
 export const emergencyContract = {
   listContacts: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/emergency/contacts',
+    path: '/societies/:societyId/emergency/contacts',
     summary: 'Emergency contacts in display order',
     module: 'emergency',
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: z.array(EmergencyContactSchema),
   }),
   createContact: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/emergency/contacts',
+    path: '/societies/:societyId/emergency/contacts',
     summary: 'Add a contact',
     module: 'emergency',
     permission: 'emergency.contacts.manage',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: ContactInputSchema.strict(),
     response: EmergencyContactSchema,
   }),
   updateContact: defineRoute({
     method: 'PATCH',
-    path: '/v1/societies/:societyId/emergency/contacts/:contactId',
+    path: '/societies/:societyId/emergency/contacts/:contactId',
     summary: 'Edit a contact',
     module: 'emergency',
     permission: 'emergency.contacts.manage',
@@ -118,7 +118,7 @@ export const emergencyContract = {
   }),
   deleteContact: defineRoute({
     method: 'DELETE',
-    path: '/v1/societies/:societyId/emergency/contacts/:contactId',
+    path: '/societies/:societyId/emergency/contacts/:contactId',
     summary: 'Remove a contact',
     module: 'emergency',
     permission: 'emergency.contacts.manage',
@@ -128,16 +128,16 @@ export const emergencyContract = {
 
   listAlerts: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/emergency/alerts',
+    path: '/societies/:societyId/emergency/alerts',
     summary: 'Alerts, newest first. Default: active ones.',
     module: 'emergency',
-    params: societyParams,
+    params: SocietyParamsSchema,
     query: CursorQuerySchema.extend({ status: z.enum(['ACTIVE', 'CLOSED']).default('ACTIVE') }),
     response: page(AlertSchema),
   }),
   getAlert: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/emergency/alerts/:alertId',
+    path: '/societies/:societyId/emergency/alerts/:alertId',
     summary: 'One alert',
     module: 'emergency',
     params: alertParams,
@@ -145,11 +145,11 @@ export const emergencyContract = {
   }),
   raiseAlert: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/emergency/alerts',
+    path: '/societies/:societyId/emergency/alerts',
     summary:
       'Raise an alert. Notifies the society at once. One alert per member per cooldown window.',
     module: 'emergency',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         type: AlertTypeSchema,
@@ -162,7 +162,7 @@ export const emergencyContract = {
   }),
   resolveAlert: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/emergency/alerts/:alertId/resolve',
+    path: '/societies/:societyId/emergency/alerts/:alertId/resolve',
     summary: 'Close an alert as resolved or a false alarm. The raiser or a resolver can do this.',
     module: 'emergency',
     params: alertParams,

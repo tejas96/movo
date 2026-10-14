@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ActorSchema, IdSchema, IsoDateTimeSchema } from '../core/common';
+import { ActorSchema, IdSchema, IsoDateTimeSchema, SocietyParamsSchema } from '../core/common';
 import { defineRoute } from '../core/route';
 
 export const PointsReasonSchema = z.enum(['TASK', 'DUTY', 'ADJUSTMENT']);
@@ -45,43 +45,41 @@ export const LeaderboardSchema = z.object({
 });
 export type Leaderboard = z.infer<typeof LeaderboardSchema>;
 
-const societyParams = z.object({ societyId: IdSchema });
-
 const w = 'rewards' as const;
 
 export const rewardsContract = {
   mine: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/rewards/me',
+    path: '/societies/:societyId/rewards/me',
     summary: 'My points this year, all time, and history',
     module: w,
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: MemberPointsSchema,
   }),
   member: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/rewards/members/:membershipId',
+    path: '/societies/:societyId/rewards/members/:membershipId',
     summary: 'A member’s points, for reward.adjust',
     module: w,
     permission: 'reward.adjust',
-    params: societyParams.extend({ membershipId: IdSchema }),
+    params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
     response: MemberPointsSchema,
   }),
   leaderboard: defineRoute({
     method: 'GET',
-    path: '/v1/societies/:societyId/rewards/leaderboard',
+    path: '/societies/:societyId/rewards/leaderboard',
     summary: 'This year’s top contributors, by the rewards.leaderboard setting',
     module: w,
-    params: societyParams,
+    params: SocietyParamsSchema,
     response: LeaderboardSchema,
   }),
   adjust: defineRoute({
     method: 'POST',
-    path: '/v1/societies/:societyId/rewards/adjustments',
+    path: '/societies/:societyId/rewards/adjustments',
     summary: 'Add or take away points with a note',
     module: w,
     permission: 'reward.adjust',
-    params: societyParams,
+    params: SocietyParamsSchema,
     body: z
       .object({
         membershipId: IdSchema,
