@@ -134,7 +134,7 @@ export class MarketService {
     const ctx = requireTenant();
     const data = this.validate(ctx, body);
     const imageIds = await this.requireOwnImages(ctx, body.imageIds);
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       const l = await tx.listing.create({
         data: {
           ...data,
@@ -195,7 +195,7 @@ export class MarketService {
       : [];
     const finalIds = patch.imageIds ?? oldIds;
     const dropped = oldIds.filter((id) => !finalIds.includes(id));
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       if (patch.imageIds) {
         await tx.listingImage.deleteMany({ where: { listingId } });
         await tx.listingImage.createMany({
@@ -283,7 +283,7 @@ export class MarketService {
   async hide(listingId: string, reason: string): Promise<Listing> {
     const ctx = requireTenant();
     const before = await this.requireListing(listingId);
-    const { row, cancelled } = await this.prisma.$transaction(async (tx) => {
+    const { row, cancelled } = await this.tenant.tx(async (tx) => {
       const open = await tx.marketOrder.findMany({
         where: { listingId, societyId: ctx.societyId, status: { in: OPEN } },
       });
@@ -343,7 +343,7 @@ export class MarketService {
     const ctx = requireTenant();
     const before = await this.requireListing(listingId);
     if (before.status !== 'HIDDEN') return this.detail(ctx, before);
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       const l = await tx.listing.update({
         where: { id: listingId, societyId: ctx.societyId },
         data: { status: 'PAUSED', hiddenReason: null },
@@ -448,7 +448,7 @@ export class MarketService {
     const ctx = requireTenant();
     const o = await this.requireOrder(ctx, orderId);
     if (o.sellerMembershipId !== ctx.membershipId) throw ApiException.forbidden();
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       const moved = await tx.marketOrder.updateMany({
         where: { id: orderId, societyId: ctx.societyId, status: 'REQUESTED' },
         data: { status: 'ACCEPTED', acceptedAt: new Date() },
@@ -520,7 +520,7 @@ export class MarketService {
     const o = await this.requireOrder(ctx, orderId);
     const buyer = o.buyerMembershipId === ctx.membershipId;
     const allowed: OrderStatus[] = buyer ? ['REQUESTED', 'ACCEPTED'] : ['ACCEPTED', 'READY'];
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       const moved = await tx.marketOrder.updateMany({
         where: { id: orderId, societyId: ctx.societyId, status: { in: allowed } },
         data: { status: 'CANCELLED', reason: reason || null, closedAt: new Date() },
@@ -545,7 +545,7 @@ export class MarketService {
     const o = await this.requireOrder(ctx, orderId);
     if (!canMessage(o.status)) throw ApiException.conflict('CONFLICT', 'This order is closed');
     const buyer = o.buyerMembershipId === ctx.membershipId;
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.orderMessage.create({
         data: {
           societyId: ctx.societyId,
@@ -576,7 +576,7 @@ export class MarketService {
     if (o.status !== 'COMPLETED')
       throw ApiException.conflict('CONFLICT', 'You can review once the order is completed');
     if (o.review) throw ApiException.conflict('CONFLICT', 'You already reviewed this order');
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.listingReview.create({
         data: {
           societyId: ctx.societyId,

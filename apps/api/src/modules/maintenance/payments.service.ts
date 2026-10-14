@@ -121,7 +121,7 @@ export class PaymentsService {
 
     let paymentId: string;
     try {
-      paymentId = await this.prisma.$transaction(async (tx) => {
+      paymentId = await this.tenant.tx(async (tx) => {
         // One dues change per flat at a time, so two payments cannot cover the same bill.
         await lockFor(tx, `flat-dues:${flat.id}`);
         const open = await tx.bill.findMany({
@@ -228,7 +228,7 @@ export class PaymentsService {
     if (!this.canReverse(ctx, p))
       throw ApiException.forbidden('Ask someone who can waive dues to reverse this payment');
     const today = todayIn(ctx.society.timezone);
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await lockFor(tx, `flat-dues:${p.flatId}`);
       const moved = await tx.payment.updateMany({
         where: { id: paymentId, societyId: ctx.societyId, status: { not: 'REVERSED' } },

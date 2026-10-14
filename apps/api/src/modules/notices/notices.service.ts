@@ -142,7 +142,7 @@ export class NoticesService {
   async create(body: CreateBody): Promise<Notice> {
     const ctx = requireTenant();
     const publishedAt = body.publish ? new Date() : null;
-    const n = await this.prisma.$transaction(async (tx) => {
+    const n = await this.tenant.tx(async (tx) => {
       if (body.isPinned) await this.enforcePinLimit(tx, ctx);
       const row = await tx.notice.create({
         data: {
@@ -177,7 +177,7 @@ export class NoticesService {
   async update(noticeId: string, body: UpdateBody): Promise<Notice> {
     const ctx = requireTenant();
     const before = await this.requireEditable(ctx, noticeId);
-    const n = await this.prisma.$transaction(async (tx) => {
+    const n = await this.tenant.tx(async (tx) => {
       if (body.isPinned && !before.isPinned) await this.enforcePinLimit(tx, ctx);
       const row = await tx.notice.update({
         where: { id: noticeId, societyId: ctx.societyId },
@@ -220,7 +220,7 @@ export class NoticesService {
     const before = await this.requireEditable(ctx, noticeId);
     if (before.status !== 'DRAFT')
       throw ApiException.conflict('CONFLICT', 'Only drafts can be published');
-    const n = await this.prisma.$transaction(async (tx) => {
+    const n = await this.tenant.tx(async (tx) => {
       const row = await tx.notice.update({
         where: { id: noticeId, societyId: ctx.societyId },
         data: { status: 'PUBLISHED', publishedAt: new Date() },
@@ -259,7 +259,7 @@ export class NoticesService {
   async setPinned(noticeId: string, isPinned: boolean): Promise<Notice> {
     const ctx = requireTenant();
     const before = await this.requireEditable(ctx, noticeId);
-    const n = await this.prisma.$transaction(async (tx) => {
+    const n = await this.tenant.tx(async (tx) => {
       if (isPinned && !before.isPinned) await this.enforcePinLimit(tx, ctx);
       const row = await tx.notice.update({
         where: { id: noticeId, societyId: ctx.societyId },

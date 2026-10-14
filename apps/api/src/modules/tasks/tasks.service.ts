@@ -78,7 +78,7 @@ export class TasksService {
   async create(body: CreateBody): Promise<Task> {
     const ctx = requireTenant();
     if (body.assigneeMembershipId) await this.requireMember(body.assigneeMembershipId);
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       const t = await tx.task.create({
         data: {
           societyId: ctx.societyId,
@@ -134,7 +134,7 @@ export class TasksService {
     const ctx = requireTenant();
     const before = await this.requireLive(taskId);
     if (membershipId) await this.requireMember(membershipId);
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       const t = await tx.task.update({
         where: { id: taskId, societyId: ctx.societyId },
         data: {
@@ -170,7 +170,7 @@ export class TasksService {
     if (t.status !== 'OPEN')
       throw ApiException.conflict('CONFLICT', 'Someone has already taken this task');
     // Only one volunteer can win a race: the update matches while the task is still open.
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       const { count } = await tx.task.updateMany({
         where: { id: taskId, societyId: ctx.societyId, status: 'OPEN' },
         data: { assigneeMembershipId: ctx.membershipId, status: 'IN_PROGRESS' },
@@ -188,7 +188,7 @@ export class TasksService {
     const t = await this.requireTask(taskId);
     if (t.assigneeMembershipId !== ctx.membershipId || t.status !== 'IN_PROGRESS')
       throw ApiException.forbidden('Only the person doing a task can give it back');
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       const updated = await tx.task.update({
         where: { id: taskId, societyId: ctx.societyId },
         data: { assigneeMembershipId: null, status: 'OPEN' },
@@ -212,7 +212,7 @@ export class TasksService {
     const proofs = proofIds
       ? await this.files.plan(ctx, await this.files.linked({ taskId }), proofIds, 'TASK_PROOF')
       : null;
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       if (proofs) await this.files.link(tx, proofs.final, { taskId });
       const updated = await tx.task.update({
         where: { id: taskId, societyId: ctx.societyId },
@@ -252,7 +252,7 @@ export class TasksService {
     if (t.assigneeMembershipId === ctx.membershipId)
       throw ApiException.forbidden('Someone else must check your own task');
     let awarded = 0;
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       // Status in the where: a second verify at the same time finds nothing and awards nothing.
       const moved = await tx.task.updateMany({
         where: { id: taskId, societyId: ctx.societyId, status: 'SUBMITTED' },
@@ -299,7 +299,7 @@ export class TasksService {
       throw ApiException.conflict('CONFLICT', 'This task is not waiting for a check');
     if (t.assigneeMembershipId === ctx.membershipId)
       throw ApiException.forbidden('Someone else must check your own task');
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       const updated = await tx.task.update({
         where: { id: taskId, societyId: ctx.societyId },
         data: { status: 'IN_PROGRESS' },
@@ -318,7 +318,7 @@ export class TasksService {
   async cancel(taskId: string): Promise<Task> {
     const ctx = requireTenant();
     await this.requireLive(taskId);
-    const task = await this.prisma.$transaction(async (tx) => {
+    const task = await this.tenant.tx(async (tx) => {
       const updated = await tx.task.update({
         where: { id: taskId, societyId: ctx.societyId },
         data: { status: 'CANCELLED' },

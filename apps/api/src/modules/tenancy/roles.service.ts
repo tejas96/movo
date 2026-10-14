@@ -123,7 +123,7 @@ export class RolesService implements OnApplicationBootstrap {
     assertCanGrant(permissions);
     await this.assertNameFree(body.name);
     const last = await this.tenant.client.role.findFirst({ orderBy: { sortOrder: 'desc' } });
-    const role = await this.prisma.$transaction(async (tx) => {
+    const role = await this.tenant.tx(async (tx) => {
       const r = await tx.role.create({
         data: {
           societyId: ctx.societyId,
@@ -168,7 +168,7 @@ export class RolesService implements OnApplicationBootstrap {
     assertCanGrant([...next].filter((p) => !current.has(p)));
     assertCanGrant([...current].filter((p) => !next.has(p)));
 
-    const role = await this.prisma.$transaction(async (tx) => {
+    const role = await this.tenant.tx(async (tx) => {
       if (body.permissions) {
         await tx.rolePermission.deleteMany({ where: { roleId } });
         await tx.rolePermission.createMany({
@@ -206,7 +206,7 @@ export class RolesService implements OnApplicationBootstrap {
     if (role.isSystem) throw ApiException.forbidden('Built-in roles cannot be deleted');
     if (role._count.members > 0 || role._count.invitations > 0)
       throw ApiException.conflict('ROLE_IN_USE', 'Move its members to another role first');
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.role.delete({ where: { id: roleId, societyId: ctx.societyId } });
       await this.audit.record(
         {

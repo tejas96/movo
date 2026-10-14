@@ -114,7 +114,7 @@ export class EventsService {
     const rsvpEnabled =
       body.rsvpEnabled ??
       parseModuleSettings('events', ctx.moduleSettings.events).rsvpEnabledByDefault;
-    const e = await this.prisma.$transaction(async (tx) => {
+    const e = await this.tenant.tx(async (tx) => {
       const row = await tx.societyEvent.create({
         data: {
           societyId: ctx.societyId,
@@ -152,7 +152,7 @@ export class EventsService {
       body.endsAt !== undefined ? (body.endsAt ? new Date(body.endsAt) : null) : before.endsAt;
     const moved = startsAt.getTime() !== before.startsAt.getTime();
     assertTimes(startsAt, endsAt, moved);
-    const e = await this.prisma.$transaction(async (tx) => {
+    const e = await this.tenant.tx(async (tx) => {
       const row = await tx.societyEvent.update({
         where: { id: eventId, societyId: ctx.societyId },
         data: {
@@ -189,7 +189,7 @@ export class EventsService {
   async cancel(eventId: string, reason: string | undefined): Promise<SocietyEvent> {
     const ctx = requireTenant();
     await this.requirePublished(eventId);
-    const e = await this.prisma.$transaction(async (tx) => {
+    const e = await this.tenant.tx(async (tx) => {
       const row = await tx.societyEvent.update({
         where: { id: eventId, societyId: ctx.societyId },
         data: { status: 'CANCELLED' },

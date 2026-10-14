@@ -9,7 +9,6 @@ import type {
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
-import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
@@ -28,7 +27,6 @@ type ListQuery = RouteQuery<typeof societyContract.listMembers>;
 export class MembersService {
   constructor(
     private readonly tenant: TenantPrismaService,
-    private readonly prisma: PrismaService,
     private readonly roles: RolesService,
     private readonly audit: AuditService,
     private readonly context: ContextService,
@@ -130,7 +128,7 @@ export class MembersService {
       throw ApiException.forbidden('You cannot suspend or remove yourself');
     }
 
-    const updated = await this.prisma.$transaction(async (tx) => {
+    const updated = await this.tenant.tx(async (tx) => {
       if (body.roleIds) {
         await tx.membershipRole.deleteMany({ where: { membershipId } });
         await tx.membershipRole.createMany({
@@ -181,7 +179,7 @@ export class MembersService {
       const found = await this.db.flat.count({ where: { id: { in: flatIds } } });
       if (found !== new Set(flatIds).size) throw ApiException.notFound('Flat not found');
     }
-    const updated = await this.prisma.$transaction(async (tx) => {
+    const updated = await this.tenant.tx(async (tx) => {
       await tx.flatOccupancy.updateMany({
         where: { membershipId, toDate: null },
         data: { toDate: new Date() },

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { PrismaClient } from '../../generated/prisma/client';
+import type { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { currentTenant } from '../request-store';
 import { PrismaService } from './prisma.service';
 
@@ -110,5 +110,18 @@ export class TenantPrismaService {
         },
       },
     }) as unknown as PrismaClient;
+  }
+
+  /**
+   * A transaction on the tenant client: every query on a tenant model inside it is filtered
+   * by the request's society too, like the queries outside it. Use it for writes in a request.
+   * Jobs and flows without a society context (society creation, accepting an invitation) keep
+   * PrismaService.$transaction and set societyId themselves.
+   */
+  tx<T>(
+    fn: (tx: Prisma.TransactionClient) => Promise<T>,
+    options?: { maxWait?: number; timeout?: number },
+  ): Promise<T> {
+    return this.client.$transaction(fn, options);
   }
 }

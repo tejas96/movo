@@ -214,7 +214,7 @@ export class VendorsService {
     }
     await this.requireCategory(body.categoryId);
     const status: VendorStatus = manager ? (body.status ?? 'APPROVED') : 'SUGGESTED';
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       const v = await tx.vendor.create({
         data: {
           societyId: ctx.societyId,
@@ -276,7 +276,7 @@ export class VendorsService {
     const ctx = requireTenant();
     const row = await this.db.vendor.findUnique({ where: { id: vendorId } });
     if (!row) throw ApiException.notFound('Vendor not found');
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.vendor.deleteMany({ where: { id: vendorId, societyId: ctx.societyId } });
       await this.audit.record(
         {

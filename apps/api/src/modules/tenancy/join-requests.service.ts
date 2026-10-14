@@ -188,7 +188,7 @@ export class JoinRequestsService {
     if (!role) throw ApiException.notFound('Role not found');
     const relation = body.relation ?? row.relationClaimed;
 
-    const membership = await this.prisma.$transaction(async (tx) => {
+    const membership = await this.tenant.tx(async (tx) => {
       const existing = await tx.membership.findUnique({
         where: { societyId_userId: { societyId: ctx.societyId, userId: row.userId } },
       });

@@ -205,7 +205,7 @@ export class ExpensesService {
     const status = this.needsApproval(ctx, body.amountPaise) ? 'PENDING' : 'APPROVED';
     let row: ExpenseWithCategory;
     try {
-      row = await this.prisma.$transaction(async (tx) => {
+      row = await this.tenant.tx(async (tx) => {
         const e = await tx.expense.create({
           data: {
             societyId: ctx.societyId,
@@ -263,7 +263,7 @@ export class ExpensesService {
           'EXPENSE_RECEIPT',
         )
       : null;
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       if (receipts) await this.files.link(tx, receipts.final, { expenseId });
       const e = await tx.expense.update({
         where: { id: expenseId, societyId: ctx.societyId },
@@ -308,7 +308,7 @@ export class ExpensesService {
       throw ApiException.conflict('CONFLICT', 'This expense is not waiting for approval');
     if (e.createdByMembershipId === ctx.membershipId)
       throw ApiException.forbidden('Someone else must approve an expense you added');
-    const row = await this.prisma.$transaction(async (tx) => {
+    const row = await this.tenant.tx(async (tx) => {
       const moved = await tx.expense.updateMany({
         where: { id: expenseId, societyId: ctx.societyId, status: 'PENDING' },
         data: {
@@ -359,7 +359,7 @@ export class ExpensesService {
     const ctx = requireTenant();
     const e = await this.requireEditable(ctx, expenseId);
     const receiptIds = await this.files.linked({ expenseId });
-    await this.prisma.$transaction(async (tx) => {
+    await this.tenant.tx(async (tx) => {
       await tx.expense.delete({ where: { id: expenseId } });
       await this.audit.record(
         {
