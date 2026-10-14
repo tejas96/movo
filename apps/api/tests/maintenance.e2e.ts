@@ -361,6 +361,33 @@ describe('maintenance', () => {
     expect(waiveAgain.status).toBe(409);
   });
 
+  it('adds no late fees while maintenance is switched off', async () => {
+    const s = await societyWithResident(h, 'b4-off');
+    await withPlan(s, {
+      lateFee: { type: 'PER_DAY', amountPaise: 1_000, graceDays: 2, capPaise: 5_000 },
+    });
+    const bills = h.app.get(BillsService);
+    await bills.generateForSociety(s.societyId, at('2030-01-05'));
+    const off = await h
+      .http()
+      .patch(`/v1/societies/${s.societyId}/modules/maintenance`)
+      .set(auth(s.admin))
+      .send({ enabled: false });
+    expect(off.status).toBe(200);
+    expect(await bills.applyLateFees(at('2030-01-15'))).toBe(0);
+    const fees = () =>
+      h.prisma.billLine.count({ where: { societyId: s.societyId, type: 'LATE_FEE' } });
+    expect(await fees()).toBe(0);
+
+    await h
+      .http()
+      .patch(`/v1/societies/${s.societyId}/modules/maintenance`)
+      .set(auth(s.admin))
+      .send({ enabled: true });
+    expect(await bills.applyLateFees(at('2030-01-15'))).toBe(2);
+    expect(await fees()).toBe(2);
+  });
+
   it('reminds 3 days before, on the day and weekly after, once each', async () => {
     const s = await societyWithResident(h, 'b5');
     await withPlan(s);

@@ -1003,6 +1003,15 @@ model ReminderSent {
   @@unique([entityType, entityId, kind])
 }
 
+/// Who runs a background job right now. A holder renews expiresAt while it works; once it
+/// lapses (the holder stopped or died) another instance may take the job.
+model JobLease {
+  name      String   @id
+  holder    String
+  expiresAt DateTime
+  updatedAt DateTime @updatedAt
+}
+
 // ---------- money: maintenance ----------
 model BillingPlan {
   id                 String           @id @default(uuid(7)) @db.Uuid

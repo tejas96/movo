@@ -42,6 +42,20 @@ export class Recipients {
     return [...new Set(rows.map((r) => r.userId))];
   }
 
+  /** The user behind each membership, keyed by membership. */
+  async byMembership(
+    membershipIds: readonly string[],
+    opts: { activeOnly?: boolean } = {},
+  ): Promise<Map<string, string>> {
+    const ids = [...new Set(membershipIds)];
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.membership.findMany({
+      where: { id: { in: ids }, ...(opts.activeOnly ? { status: 'ACTIVE' } : {}) },
+      select: { id: true, userId: true },
+    });
+    return new Map(rows.map((r) => [r.id, r.userId]));
+  }
+
   /**
    * Active members holding a permission, optionally plus anyone in `orRoleIds`, minus one
    * membership (usually the person who acted).

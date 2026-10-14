@@ -2,11 +2,12 @@ import {
   type Bill,
   type FlatRef,
   LateFeeRuleSchema,
+  type Locale,
   type maintenanceContract,
   type RouteBody,
   type RouteQuery,
 } from '@movo/contracts';
-import { formatDate, formatMoney, formatPeriod } from '@movo/i18n';
+import { formatDate, formatMoney, formatPeriod, type TFunction } from '@movo/i18n';
 import { Injectable, Logger } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
@@ -315,11 +316,18 @@ export class BillsService {
     return this.get(billId);
   }
 
-  /** Daily job: late fees and OVERDUE status for every society. */
+  /**
+   * Daily job: late fees and OVERDUE status for every society with maintenance switched on.
+   * Per society: one read of the overdue bills, then grouped writes.
+   */
   async applyLateFees(now: Date): Promise<number> {
-    const societies = await this.prisma.society.findMany({ where: { status: 'ACTIVE' } });
+    const societies = await this.prisma.society.findMany({
+      where: { status: 'ACTIVE' },
+      include: { modules: { where: { moduleKey: 'maintenance' } } },
+    });
     let changed = 0;
     for (const s of societies) {
+      if (s.modules[0] && !s.modules[0].enabled) continue;
       const today = todayIn(s.timezone, now);
       const bills = await this.prisma.bill.findMany({
         where: {
@@ -330,41 +338,58 @@ export class BillsService {
         include: { lines: true, plan: true },
       });
       if (bills.length === 0) continue;
-      await this.prisma.$transaction(async (tx) => {
-        for (const b of bills) {
-          if (b.plan && !b.lateFeeWaived) {
-            const rule = LateFeeRuleSchema.parse(b.plan.lateFee);
-            const base = b.lines.find((l) => l.type === 'BASE')?.amountPaise ?? 0;
-            const fee = lateFeeFor(rule, base, dateOnly(b.dueDate), today);
-            const line = b.lines.find((l) => l.type === 'LATE_FEE');
-            if (fee > 0 && line?.amountPaise !== fee) {
-              await tx.billLine.upsert({
-                where: { billId_type: { billId: b.id, type: 'LATE_FEE' } },
-                update: { amountPaise: fee },
-                create: {
-                  societyId: s.id,
-                  billId: b.id,
-                  type: 'LATE_FEE',
-                  label: 'Late fee',
-                  amountPaise: fee,
-                },
-              });
-              changed += 1;
-            }
-          }
+      const newLines: Prisma.BillLineCreateManyInput[] = [];
+      const newAmounts = new Map<number, string[]>();
+      const rules = new Map<string, ReturnType<typeof LateFeeRuleSchema.parse>>();
+      for (const b of bills) {
+        if (!b.plan || b.lateFeeWaived) continue;
+        let rule = rules.get(b.plan.id);
+        if (!rule) {
+          rule = LateFeeRuleSchema.parse(b.plan.lateFee);
+          rules.set(b.plan.id, rule);
         }
-        await refreshBills(
-          tx,
-          bills.map((b) => b.id),
-          today,
-        );
-      });
+        const base = b.lines.find((l) => l.type === 'BASE')?.amountPaise ?? 0;
+        const fee = lateFeeFor(rule, base, dateOnly(b.dueDate), today);
+        const line = b.lines.find((l) => l.type === 'LATE_FEE');
+        if (fee <= 0 || line?.amountPaise === fee) continue;
+        if (line) newAmounts.set(fee, [...(newAmounts.get(fee) ?? []), b.id]);
+        else
+          newLines.push({
+            societyId: s.id,
+            billId: b.id,
+            type: 'LATE_FEE',
+            label: 'Late fee',
+            amountPaise: fee,
+          });
+        changed += 1;
+      }
+      await this.prisma.$transaction(
+        async (tx) => {
+          if (newLines.length > 0)
+            await tx.billLine.createMany({ data: newLines, skipDuplicates: true });
+          for (const [fee, billIds] of newAmounts)
+            await tx.billLine.updateMany({
+              where: { billId: { in: billIds }, type: 'LATE_FEE' },
+              data: { amountPaise: fee },
+            });
+          await refreshBills(
+            tx,
+            bills.map((b) => b.id),
+            today,
+          );
+        },
+        { timeout: 60_000 },
+      );
     }
     if (changed > 0) this.logger.log(`late fees changed on ${changed} bill(s)`);
     return changed;
   }
 
-  /** Daily job: 3 days before, on the due date, then weekly while overdue (4 times at most). */
+  /**
+   * Daily job: 3 days before, on the due date, then weekly while overdue (4 times at most).
+   * Per society: one read of open bills and of reminders already sent, then the claims and
+   * pushes in one transaction.
+   */
   async sendDuesReminders(now: Date): Promise<number> {
     const societies = await this.prisma.society.findMany({
       where: { status: 'ACTIVE' },
@@ -378,48 +403,64 @@ export class BillsService {
         where: { societyId: s.id, status: { in: [...OPEN_STATUSES] } },
         include: flatInclude,
       });
-      const users = await this.recipients.ofFlats(bills.map((b) => b.flatId));
-      for (const b of bills) {
-        const due = dateOnly(b.dueDate);
-        const kinds = openedDuesReminders(due, today);
+      const due = bills.flatMap((b) => {
+        const kinds = openedDuesReminders(dateOnly(b.dueDate), today);
         const latest = kinds[kinds.length - 1];
-        if (!latest) continue;
-        const already = await this.prisma.reminderSent.findUnique({
-          where: {
-            entityType_entityId_kind: { entityType: 'Bill', entityId: b.id, kind: latest },
-          },
-        });
-        if (already) continue;
-        await this.prisma.reminderSent.createMany({
-          data: kinds.map((kind) => ({
-            societyId: s.id,
-            entityType: 'Bill',
-            entityId: b.id,
-            kind,
-          })),
-          skipDuplicates: true,
-        });
-        const amount = outstanding(b);
-        await this.notifications.notifyUsers({
-          userIds: users.get(b.flatId) ?? [],
-          societyId: s.id,
-          category: 'MAINTENANCE',
-          render: (t, locale) => ({
-            title:
-              latest === 'before-3d'
-                ? t('money:push.reminderBefore', {
-                    amount: formatMoney(amount, locale),
-                    date: formatDate(b.dueDate, locale, 'short', 'UTC'),
-                  })
-                : latest === 'due-day'
-                  ? t('money:push.reminderDue', { amount: formatMoney(amount, locale) })
-                  : t('money:push.reminderOverdue', { amount: formatMoney(amount, locale) }),
-            body: `${billName(b.title, b.periodKey, locale)} · ${flatLabel(b.flat)}`,
-          }),
-          data: { screen: 'bill', societyId: s.id, billId: b.id },
-        });
-        sent += 1;
-      }
+        return latest ? [{ bill: b, kinds, latest }] : [];
+      });
+      if (due.length === 0) continue;
+      const already = new Set(
+        (
+          await this.prisma.reminderSent.findMany({
+            where: { entityType: 'Bill', entityId: { in: due.map((d) => d.bill.id) } },
+            select: { entityId: true, kind: true },
+          })
+        ).map((r) => `${r.entityId}|${r.kind}`),
+      );
+      const toSend = due.filter((d) => !already.has(`${d.bill.id}|${d.latest}`));
+      if (toSend.length === 0) continue;
+      const users = await this.recipients.ofFlats(toSend.map((d) => d.bill.flatId));
+      await this.prisma.$transaction(
+        async (tx) => {
+          await tx.reminderSent.createMany({
+            data: toSend.flatMap((d) =>
+              d.kinds.map((kind) => ({
+                societyId: s.id,
+                entityType: 'Bill',
+                entityId: d.bill.id,
+                kind,
+              })),
+            ),
+            skipDuplicates: true,
+          });
+          await this.notifications.notifyMany(
+            toSend.map(({ bill: b, latest }) => {
+              const amount = outstanding(b);
+              return {
+                userIds: users.get(b.flatId) ?? [],
+                societyId: s.id,
+                category: 'MAINTENANCE' as const,
+                render: (t: TFunction, locale: Locale) => ({
+                  title:
+                    latest === 'before-3d'
+                      ? t('money:push.reminderBefore', {
+                          amount: formatMoney(amount, locale),
+                          date: formatDate(b.dueDate, locale, 'short', 'UTC'),
+                        })
+                      : latest === 'due-day'
+                        ? t('money:push.reminderDue', { amount: formatMoney(amount, locale) })
+                        : t('money:push.reminderOverdue', { amount: formatMoney(amount, locale) }),
+                  body: `${billName(b.title, b.periodKey, locale)} · ${flatLabel(b.flat)}`,
+                }),
+                data: { screen: 'bill', societyId: s.id, billId: b.id },
+              };
+            }),
+            tx,
+          );
+        },
+        { timeout: 60_000 },
+      );
+      sent += toSend.length;
     }
     if (sent > 0) this.logger.log(`sent ${sent} dues reminder(s)`);
     return sent;

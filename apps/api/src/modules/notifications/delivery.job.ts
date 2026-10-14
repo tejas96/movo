@@ -14,8 +14,9 @@ const ALWAYS_ON: readonly NotificationCategory[] = ['EMERGENCY', 'MEMBERSHIP'];
 const CLAIM_SECONDS = 120;
 
 /** Queue order: lower goes first. Bill reminders and expense notes wait behind everything else. */
+export const EMERGENCY_PRIORITY = 0;
 export function deliveryPriority(category: NotificationCategory): number {
-  if (category === 'EMERGENCY') return 0;
+  if (category === 'EMERGENCY') return EMERGENCY_PRIORITY;
   if (category === 'MEMBERSHIP' || category === 'SYSTEM') return 1;
   if (category === 'MAINTENANCE' || category === 'EXPENSE') return 3;
   return 2;

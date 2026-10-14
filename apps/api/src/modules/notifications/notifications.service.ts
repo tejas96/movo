@@ -9,7 +9,7 @@ import { afterCommit } from '../../common/prisma/after-commit';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
-import { DeliveryJob, deliveryPriority } from './delivery.job';
+import { DeliveryJob, deliveryPriority, EMERGENCY_PRIORITY } from './delivery.job';
 
 export interface NotifyInput {
   userIds: string[];
@@ -44,44 +44,71 @@ export class NotificationsService {
    * push. An EMERGENCY push is sent once that transaction has committed.
    */
   async notifyUsers(input: NotifyInput, tx?: Prisma.TransactionClient): Promise<number> {
+    return this.notifyMany([input], tx);
+  }
+
+  /**
+   * Several pushes at once (a job's run for one society): one user lookup and two inserts,
+   * however many pushes. Same rules as notifyUsers.
+   */
+  async notifyMany(inputs: readonly NotifyInput[], tx?: Prisma.TransactionClient): Promise<number> {
     const db: Db = tx ?? this.prisma;
-    const userIds = [...new Set(input.userIds)].filter((id) => id !== input.exceptUserId);
-    if (userIds.length === 0) return 0;
+    const wanted = inputs.map((input) =>
+      [...new Set(input.userIds)].filter((id) => id !== input.exceptUserId),
+    );
+    const allIds = [...new Set(wanted.flat())];
+    if (allIds.length === 0) return 0;
     const users = await db.user.findMany({
-      where: { id: { in: userIds }, status: 'ACTIVE' },
+      where: { id: { in: allIds }, status: 'ACTIVE' },
       select: { id: true, locale: true },
     });
-    if (users.length === 0) return 0;
-    const byLocale = new Map<Locale, string[]>();
-    for (const u of users) byLocale.set(u.locale, [...(byLocale.get(u.locale) ?? []), u.id]);
+    const localeOf = new Map(users.map((u) => [u.id, u.locale]));
+    const translators = new Map<Locale, TFunction>();
+    const tFor = (locale: Locale) => {
+      let t = translators.get(locale);
+      if (!t) {
+        t = createI18n({ locale }).getFixedT(locale);
+        translators.set(locale, t);
+      }
+      return t;
+    };
 
     const rows: Prisma.NotificationCreateManyInput[] = [];
-    for (const [locale, ids] of byLocale) {
-      const t = createI18n({ locale }).getFixedT(locale);
-      const { title, body } = input.render(t, locale);
-      for (const userId of ids) {
-        rows.push({
-          userId,
-          societyId: input.societyId,
-          category: input.category,
-          title,
-          body,
-          data: (input.data ?? {}) as Prisma.InputJsonValue,
-        });
+    inputs.forEach((input, i) => {
+      const byLocale = new Map<Locale, string[]>();
+      for (const id of wanted[i] ?? []) {
+        const locale = localeOf.get(id);
+        if (locale) byLocale.set(locale, [...(byLocale.get(locale) ?? []), id]);
       }
-    }
+      for (const [locale, ids] of byLocale) {
+        const { title, body } = input.render(tFor(locale), locale);
+        for (const userId of ids)
+          rows.push({
+            userId,
+            societyId: input.societyId,
+            category: input.category,
+            title,
+            body,
+            data: (input.data ?? {}) as Prisma.InputJsonValue,
+          });
+      }
+    });
+    if (rows.length === 0) return 0;
     const created = await db.notification.createManyAndReturn({
       data: rows,
-      select: { id: true },
+      select: { id: true, category: true },
     });
-    const priority = deliveryPriority(input.category);
     const deliveries = await db.notificationDelivery.createManyAndReturn({
-      data: created.map((n) => ({ notificationId: n.id, channel: 'PUSH' as const, priority })),
-      select: { id: true },
+      data: created.map((n) => ({
+        notificationId: n.id,
+        channel: 'PUSH' as const,
+        priority: deliveryPriority(n.category),
+      })),
+      select: { id: true, priority: true },
     });
-    if (input.category === 'EMERGENCY') {
-      const ids = deliveries.map((d) => d.id);
-      const send = () => this.delivery.deliverNow(ids);
+    const urgent = deliveries.filter((d) => d.priority === EMERGENCY_PRIORITY).map((d) => d.id);
+    if (urgent.length > 0) {
+      const send = () => this.delivery.deliverNow(urgent);
       if (!tx) await send();
       else if (!afterCommit(tx, send))
         this.logger.warn('emergency push in an untracked transaction; the job will send it');
