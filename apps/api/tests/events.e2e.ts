@@ -204,6 +204,38 @@ describe('events', () => {
     expect(await titles(s.resident.token, 'Tomorrow: Movie night')).toHaveLength(0);
   });
 
+  it('reminds per society in one run, each event to its own members, none where events are off', async () => {
+    const a = await societyWithResident(h, 'v5a');
+    const b = await societyWithResident(h, 'v5b');
+    const c = await societyWithResident(h, 'v5c');
+    const post = (s: typeof a, title: string) =>
+      h
+        .http()
+        .post(`/v1/societies/${s.societyId}/events`)
+        .set(auth(s.admin))
+        .send({ title, startsAt: inHours(40) });
+    const first = await post(a, 'Yoga A1');
+    await post(a, 'Yoga A2');
+    await post(b, 'Yoga B1');
+    await post(c, 'Yoga C1');
+    const off = await h
+      .http()
+      .patch(`/v1/societies/${c.societyId}/modules/events`)
+      .set(auth(c.admin))
+      .send({ enabled: false });
+    expect(off.status).toBe(200);
+    const job = h.app.get(RemindersJob);
+    const when = new Date(new Date(first.body.startsAt).getTime() - 23 * HOUR);
+    expect(await job.run(when)).toBe(3);
+    expect(await job.run(when)).toBe(0);
+    expect((await titles(a.resident.token, 'Tomorrow: Yoga')).sort()).toEqual([
+      'Tomorrow: Yoga A1',
+      'Tomorrow: Yoga A2',
+    ]);
+    expect(await titles(b.resident.token, 'Tomorrow: Yoga')).toEqual(['Tomorrow: Yoga B1']);
+    expect(await titles(c.resident.token, 'Tomorrow: Yoga')).toEqual([]);
+  });
+
   it('Home lists meetings and events together, soonest first', async () => {
     const s = await societyWithResident(h, 'v4');
     await h
