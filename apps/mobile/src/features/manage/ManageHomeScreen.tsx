@@ -13,6 +13,7 @@ import { Share, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useModuleEnabled, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useHomeSummary } from '../home/api';
 import { useSocietyProfile } from '../society/api';
 import { useRotateJoinCode } from './api';
@@ -166,7 +167,9 @@ export function ManageHomeScreen() {
         </View>
       ))}
 
-      {canMembers ? (
+      {canMembers && loadFailed(profile) ? (
+        <QueryError query={profile} className="mt-6" />
+      ) : canMembers ? (
         <Card className="mt-6">
           <Text variant="label" tone="secondary">
             {t('manage:joinCode')}

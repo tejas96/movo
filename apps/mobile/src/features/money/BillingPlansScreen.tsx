@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { money } from '../../core/util/money';
 import { usePlans } from './api';
 
@@ -54,6 +55,8 @@ export function BillingPlansScreen() {
       />
       {plans.isLoading ? (
         <Skeleton className="mt-6 h-24 rounded-xl" />
+      ) : loadFailed(plans) ? (
+        <QueryError query={plans} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

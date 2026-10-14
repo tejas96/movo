@@ -32,6 +32,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { currentLocale } from '../../core/i18n';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, isoDay, money, parseRupees } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
 import { CATEGORY_ICON } from '../services/shared';
@@ -140,6 +141,8 @@ export function ExpensesScreen() {
             ) : null}
             {list.isLoading ? (
               <Skeleton className="mt-4 h-40 rounded-xl" />
+            ) : loadFailed(list) ? (
+              <QueryError query={list} className="mt-10" />
             ) : items.length === 0 ? (
               <EmptyState
                 photo={photos.empty}
@@ -191,6 +194,7 @@ function ReportView() {
   const [fy, setFy] = useState<string | undefined>();
   const report = useReport(societyId, fy, true);
   const r = report.data;
+  if (loadFailed(report)) return <QueryError query={report} className="mt-5" />;
   if (report.isLoading || !r) return <Skeleton className="mt-5 h-72 rounded-xl" />;
   return (
     <>
@@ -403,7 +407,9 @@ function OtherIncome({ report, fy }: { report: FinanceReport; fy: string | undef
           setOpen(true);
         }}
       />
-      {canView && rows.length > 0 ? (
+      {canView && loadFailed(income) ? (
+        <QueryError query={income} />
+      ) : canView && rows.length > 0 ? (
         <Card tight className="gap-2">
           {rows.map((i) => (
             <Row

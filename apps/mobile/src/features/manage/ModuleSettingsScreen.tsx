@@ -20,6 +20,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { parseRupees, rupeesText } from '../../core/util/money';
 import { useRoles } from '../directory/api';
 import { useModules, useUpdateModule } from './api';
@@ -213,7 +214,9 @@ export function ModuleSettingsScreen() {
     <>
       <Screen bottomBar>
         <TitleBar title={t(`society:modules.${moduleKey}`)} onBack={() => nav.goBack()} />
-        {!current ? (
+        {loadFailed(modules) ? (
+          <QueryError query={modules} className="mt-6" />
+        ) : !current ? (
           <Skeleton className="mt-6 h-64 rounded-xl" />
         ) : (
           <View className="mt-6 gap-4">

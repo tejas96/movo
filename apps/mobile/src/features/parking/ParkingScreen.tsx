@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { mediumDate } from '../../core/util/time';
 import { useMyParking } from './api';
 import { formatRegistration, slotIcon } from './shared';
@@ -50,6 +51,8 @@ export function ParkingScreen() {
           <Skeleton className="h-24 rounded-xl" />
           <Skeleton className="h-40 rounded-xl" />
         </View>
+      ) : loadFailed(mine) ? (
+        <QueryError query={mine} className="mt-10" />
       ) : !data || data.flats.length === 0 ? (
         <EmptyState
           photo={photos.empty}

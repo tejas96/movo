@@ -24,6 +24,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { dateTime, relative, whenRange } from '../../core/util/time';
 import { type MeetingAction, useMeeting, useMeetingAction } from './api';
 import { MeetingStatusPill } from './MeetingsScreen';
@@ -116,7 +117,9 @@ export function MeetingDetailScreen() {
           ) : undefined
         }
       />
-      {meeting.isLoading || !m ? (
+      {loadFailed(meeting) ? (
+        <QueryError query={meeting} className="mt-6" />
+      ) : meeting.isLoading || !m ? (
         <View className="mt-6 gap-3">
           <Skeleton className="h-8 w-3/4" />
           <Skeleton className="h-48 rounded-xl" />

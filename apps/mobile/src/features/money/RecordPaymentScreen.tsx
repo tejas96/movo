@@ -21,6 +21,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import {
   day,
   isoDay,
@@ -94,6 +95,14 @@ export function RecordPaymentScreen() {
       setError(toMessage(e));
     }
   };
+
+  if (loadFailed(collection))
+    return (
+      <Screen>
+        <TitleBar title={t('money:record.title')} onBack={() => nav.goBack()} />
+        <QueryError query={collection} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>

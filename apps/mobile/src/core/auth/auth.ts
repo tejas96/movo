@@ -42,7 +42,10 @@ export async function signOut(): Promise<void> {
   await signOutLocally();
 }
 
-/** Called once at launch. Warm token -> signed in. Refresh token -> refresh -> signed in. Else signed out. */
+/**
+ * Called once at launch. Warm token -> signed in. Refresh token -> refresh -> signed in.
+ * Refresh cannot reach the server -> signed in with the saved session. Else signed out.
+ */
 export async function bootstrapSession(): Promise<void> {
   const store = useSessionStore.getState();
   const warm =
@@ -54,9 +57,16 @@ export async function bootstrapSession(): Promise<void> {
     void refreshProfile();
     return;
   }
-  const tokens = await refreshTokens();
-  if (!tokens) {
-    await signOutLocally();
+  try {
+    const tokens = await refreshTokens();
+    if (!tokens) {
+      await signOutLocally();
+      return;
+    }
+  } catch {
+    // Offline or the server is down: keep the saved session and open the app. The next
+    // request refreshes the token again; only a 401/403 from refresh ever signs out.
+    store.setBooted(true);
     return;
   }
   store.setBooted(true);

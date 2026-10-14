@@ -25,6 +25,7 @@ import { photoUri } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { formatRegistration, slotIcon } from '../parking/shared';
 import { useIssueResetCode, useMember, useRoles, useUpdateMember } from './api';
 import { MemberFlatsSheet } from './MemberFlatsSheet';
@@ -105,7 +106,9 @@ export function MemberDetailScreen() {
   return (
     <Screen>
       <TitleBar title={t('society:directory.title')} onBack={() => nav.goBack()} />
-      {!m ? (
+      {loadFailed(member) ? (
+        <QueryError query={member} className="mt-6" />
+      ) : !m ? (
         <View className="mt-6 gap-3">
           <Skeleton className="h-16 w-16 self-center rounded-full" />
           <Skeleton className="h-40 rounded-xl" />

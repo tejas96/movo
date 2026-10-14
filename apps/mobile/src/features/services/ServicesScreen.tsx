@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useVendorCategories, useVendors } from './api';
 import { CATEGORY_ICON, categoryLabel, VendorRow } from './shared';
 
@@ -77,6 +78,8 @@ export function ServicesScreen() {
             <Skeleton className="h-[68px]" />
             <Skeleton className="h-[68px]" />
           </View>
+        ) : loadFailed(results) ? (
+          <QueryError query={results} className="mt-8" />
         ) : (results.data ?? []).length === 0 ? (
           <EmptyState icon="search" title={t('services:noResults')} className="mt-8" />
         ) : (
@@ -109,6 +112,8 @@ export function ServicesScreen() {
               <Skeleton className="h-24 flex-1" />
               <Skeleton className="h-24 flex-1" />
             </View>
+          ) : loadFailed(categories) ? (
+            <QueryError query={categories} />
           ) : list.length === 0 ? (
             <EmptyState
               icon="services"

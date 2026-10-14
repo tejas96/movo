@@ -22,6 +22,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, money } from '../../core/util/money';
 import { useBill, useBillAction } from './api';
 import { BillStatusPill, billName } from './shared';
@@ -78,7 +79,9 @@ export function BillScreen() {
           ) : undefined
         }
       />
-      {bill.isLoading || !b ? (
+      {loadFailed(bill) ? (
+        <QueryError query={bill} className="mt-6" />
+      ) : bill.isLoading || !b ? (
         <Skeleton className="mt-6 h-64 rounded-xl" />
       ) : (
         <>

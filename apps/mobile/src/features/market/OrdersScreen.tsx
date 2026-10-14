@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { money } from '../../core/util/money';
 import { useHomeSummary } from '../home/api';
 import { useOrders } from './api';
@@ -46,6 +47,8 @@ export function OrdersScreen() {
       />
       {list.isLoading ? (
         <Skeleton className="mt-4 h-40 rounded-xl" />
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.market}

@@ -23,6 +23,7 @@ import { FlatList, Pressable, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useFlats } from '../manage/api';
 import { type SlotFilter, useCreateSlots, useParkingSlots, useSlotAction } from './api';
 import { slotIcon } from './shared';
@@ -160,6 +161,8 @@ export function ParkingSlotsScreen() {
           <Skeleton className="h-[68px]" />
           <Skeleton className="h-[68px]" />
         </View>
+      ) : loadFailed(slots) ? (
+        <QueryError query={slots} className="mt-10" />
       ) : (slots.data ?? []).length === 0 ? (
         <EmptyState
           photo={photos.empty}

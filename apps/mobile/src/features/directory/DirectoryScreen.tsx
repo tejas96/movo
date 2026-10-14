@@ -19,6 +19,7 @@ import { FlatList, Linking, ScrollView, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useBuildings } from '../manage/api';
 import { useMembers } from './api';
 
@@ -94,6 +95,8 @@ export function DirectoryScreen() {
           <Skeleton className="h-[68px] rounded-lg" />
           <Skeleton className="h-[68px] rounded-lg" />
         </View>
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

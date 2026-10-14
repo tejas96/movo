@@ -20,6 +20,7 @@ import { Linking, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { formatPhone } from '../../core/util/phone';
 import { relative } from '../../core/util/time';
 import { useAlert, useEmergencyContacts, useResolveAlert } from './api';
@@ -61,7 +62,9 @@ export function AlertDetailScreen() {
   return (
     <Screen refreshing={alert.isRefetching} onRefresh={() => void alert.refetch()}>
       <TitleBar title={t('emergency:title')} onBack={() => nav.goBack()} />
-      {!a ? (
+      {loadFailed(alert) ? (
+        <QueryError query={alert} className="mt-6" />
+      ) : !a ? (
         <View className="mt-6 gap-3">
           <Skeleton className="h-16 w-16 self-center" />
           <Skeleton className="h-32 rounded-xl" />

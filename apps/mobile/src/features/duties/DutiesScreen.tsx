@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/money';
 import { useDuties } from './api';
 import { cadenceLabel, turnLine } from './shared';
@@ -57,6 +58,8 @@ export function DutiesScreen() {
       />
       {list.isLoading ? (
         <Skeleton className="mt-4 h-32 rounded-xl" />
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useRoles } from '../directory/api';
 
 export function RolesScreen() {
@@ -30,6 +31,8 @@ export function RolesScreen() {
           <Skeleton className="h-[68px]" />
           <Skeleton className="h-[68px]" />
         </View>
+      ) : loadFailed(roles) ? (
+        <QueryError query={roles} className="mt-6" />
       ) : (
         <Card tight className="mt-6 gap-2">
           {(roles.data ?? []).map((r) => (

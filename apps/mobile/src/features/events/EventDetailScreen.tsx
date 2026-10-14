@@ -28,6 +28,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { whenRange } from '../../core/util/time';
 import { useCancelEvent, useEvent, useEventRsvps, useRsvp } from './api';
 
@@ -86,7 +87,9 @@ export function EventDetailScreen() {
           ) : undefined
         }
       />
-      {event.isLoading || !e ? (
+      {loadFailed(event) ? (
+        <QueryError query={event} className="mt-6" />
+      ) : event.isLoading || !e ? (
         <View className="mt-6 gap-3">
           <Skeleton className="h-8 w-3/4" />
           <Skeleton className="h-48 rounded-xl" />

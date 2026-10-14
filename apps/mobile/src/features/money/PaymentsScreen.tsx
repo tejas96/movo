@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, View } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { usePayments } from './api';
 import { PaymentRow } from './shared';
 
@@ -24,6 +25,8 @@ export function PaymentsScreen() {
           <Skeleton className="h-[68px]" />
           <Skeleton className="h-[68px]" />
         </View>
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState photo={photos.empty} icon="receipt" title={t('noPayments')} className="mt-10" />
       ) : (

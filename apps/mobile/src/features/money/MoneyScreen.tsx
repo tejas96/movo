@@ -25,6 +25,7 @@ import { Pressable, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, money } from '../../core/util/money';
 import { useCollection, useGenerateBills, useMyDues } from './api';
 import { BillRow, CollectionPill, PaymentRow } from './shared';
@@ -86,9 +87,13 @@ export function MoneyScreen() {
           />
         ) : dues.isLoading ? (
           <Skeleton className="mt-5 h-56 rounded-xl" />
+        ) : loadFailed(dues) ? (
+          <QueryError query={dues} className="mt-10" />
         ) : (
           dues.data?.flats.map((a) => <FlatDues key={a.flat.id} account={a} />)
         )
+      ) : loadFailed(collection) ? (
+        <QueryError query={collection} className="mt-10" />
       ) : (
         <SocietyCollection loading={collection.isLoading} data={collection.data} />
       )}

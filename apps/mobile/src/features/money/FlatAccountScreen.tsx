@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, money } from '../../core/util/money';
 import { useFlatAccount } from './api';
 import { BillRow, PaymentRow } from './shared';
@@ -38,7 +39,9 @@ export function FlatAccountScreen() {
         onRefresh={() => void account.refetch()}
       >
         <TitleBar title={a ? formatFlat(a.flat) : ''} onBack={() => nav.goBack()} />
-        {account.isLoading || !a ? (
+        {loadFailed(account) ? (
+          <QueryError query={account} className="mt-6" />
+        ) : account.isLoading || !a ? (
           <Skeleton className="mt-6 h-40 rounded-xl" />
         ) : (
           <>

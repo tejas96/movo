@@ -19,6 +19,7 @@ import { Linking, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCanManageSociety, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useMembers } from '../directory/api';
 import { useSocietyProfile } from './api';
 
@@ -120,6 +121,7 @@ export function SocietyHubScreen() {
           ) : null}
         </View>
       </PhotoCard>
+      {loadFailed(profile) ? <QueryError query={profile} className="mt-4" /> : null}
 
       <SectionHeader title={t('society:explore')} />
       <View className="gap-3">

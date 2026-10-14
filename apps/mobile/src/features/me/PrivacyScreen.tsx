@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useMyPrivacy, useUpdatePrivacy } from './api';
 
 export function PrivacyScreen() {
@@ -27,7 +28,9 @@ export function PrivacyScreen() {
   return (
     <Screen>
       <TitleBar title={t('privacy')} onBack={() => nav.goBack()} />
-      {!p ? (
+      {loadFailed(privacy) ? (
+        <QueryError query={privacy} className="mt-6" />
+      ) : !p ? (
         <Skeleton className="mt-6 h-40 rounded-xl" />
       ) : (
         <Card tight className="mt-6 gap-2">

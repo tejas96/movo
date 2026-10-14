@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useListingAction, useMyListings } from './api';
 import { ListingStatusPill, priceLabel, Thumb } from './shared';
 
@@ -45,6 +46,8 @@ export function MyListingsScreen() {
       />
       {list.isLoading ? (
         <Skeleton className="mt-6 h-40 rounded-xl" />
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.market}

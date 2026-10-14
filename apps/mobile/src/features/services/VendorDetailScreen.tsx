@@ -20,6 +20,7 @@ import { Linking, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { formatPhone } from '../../core/util/phone';
 import { useDeleteVendor, useUpdateVendor, useVendor, useVendorCategories } from './api';
 import { CATEGORY_ICON, categoryLabel, STATUS_TONE } from './shared';
@@ -75,7 +76,9 @@ export function VendorDetailScreen() {
             ) : undefined
           }
         />
-        {!v ? (
+        {loadFailed(vendor) ? (
+          <QueryError query={vendor} className="mt-6" />
+        ) : !v ? (
           <View className="mt-6 gap-3">
             <Skeleton className="h-16 w-16 self-center" />
             <Skeleton className="h-40 rounded-xl" />

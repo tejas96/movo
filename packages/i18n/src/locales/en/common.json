@@ -23,7 +23,8 @@
     "confirm": "Confirm",
     "approve": "Approve",
     "reject": "Reject",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "showMore": "Show more"
   },
   "tabs": {
     "home": "Home",

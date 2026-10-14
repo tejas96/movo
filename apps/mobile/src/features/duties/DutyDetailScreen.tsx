@@ -23,6 +23,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/money';
 import { useMembers } from '../directory/api';
 import { useFlats } from '../manage/api';
@@ -119,7 +120,9 @@ export function DutyDetailScreen() {
           ) : undefined
         }
       />
-      {duty.isLoading || !d ? (
+      {loadFailed(duty) ? (
+        <QueryError query={duty} className="mt-6" />
+      ) : duty.isLoading || !d ? (
         <Skeleton className="mt-6 h-48 rounded-xl" />
       ) : (
         <>

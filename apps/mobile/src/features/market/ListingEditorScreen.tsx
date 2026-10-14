@@ -32,6 +32,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoPickerRow, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { parseRupees, rupeesText } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
 import { useListing, useSaveListing } from './api';
@@ -157,6 +158,14 @@ export function ListingEditorScreen() {
     minutes: t('common:picker.minutes'),
     done: t('common:actions.done'),
   };
+
+  if (listingId && loadFailed(existing))
+    return (
+      <Screen>
+        <TitleBar title={t('market:editor.editTitle')} onBack={() => nav.goBack()} />
+        <QueryError query={existing} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>

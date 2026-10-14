@@ -37,6 +37,7 @@ import {
   useModuleEnabled,
   useTenant,
 } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, money } from '../../core/util/money';
 import { greetingKey, relative, whenRange } from '../../core/util/time';
 import { ALERT_ICON } from '../emergency/shared';
@@ -160,6 +161,8 @@ export function HomeScreen() {
       <Reveal order={1}>
         {summary.isLoading ? (
           <Skeleton className="mt-5 h-[172px] rounded-xl" />
+        ) : loadFailed(summary) ? (
+          <QueryError query={summary} className="mt-5" />
         ) : (
           <HeroCard hero={hero} next={upcoming[0]} />
         )}

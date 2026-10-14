@@ -22,6 +22,7 @@ import { FlatList, ScrollView, StatusBar, useWindowDimensions, View } from 'reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useHomeSummary } from '../home/api';
 import { useListings } from './api';
 import {
@@ -67,7 +68,8 @@ export function MarketScreen() {
   // The food row already shows food on "All", so the grid shows everything else.
   const grid = foodItems.length > 0 ? all.filter((l) => l.kind !== 'FOOD') : all;
   const loading = list.isLoading;
-  const empty = !loading && grid.length === 0 && foodItems.length === 0;
+  const failed = loadFailed(list);
+  const empty = !loading && !failed && grid.length === 0 && foodItems.length === 0;
 
   const refresh = () => {
     void list.refetch();
@@ -153,6 +155,7 @@ export function MarketScreen() {
           <Skeleton className="h-56 flex-1 rounded-xl" />
         </View>
       ) : null}
+      {failed ? <QueryError query={list} className="mt-4" /> : null}
       {empty ? (
         <EmptyState
           photo={photos.market}

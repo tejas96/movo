@@ -21,6 +21,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, money } from '../../core/util/money';
 import { usePayment, useReversePayment } from './api';
 import { Line } from './BillScreen';
@@ -75,7 +76,9 @@ export function ReceiptScreen() {
           ) : undefined
         }
       />
-      {payment.isLoading || !p ? (
+      {loadFailed(payment) ? (
+        <QueryError query={payment} className="mt-6" />
+      ) : payment.isLoading || !p ? (
         <Skeleton className="mt-6 h-72 rounded-xl" />
       ) : (
         <>

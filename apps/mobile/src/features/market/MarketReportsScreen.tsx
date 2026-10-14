@@ -18,6 +18,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { relative } from '../../core/util/time';
 import { useDismissReport, useListingAction, useMarketReports } from './api';
 import { priceLabel, Thumb } from './shared';
@@ -63,6 +64,8 @@ export function MarketReportsScreen() {
       <TitleBar title={t('market:reports.title')} onBack={() => nav.goBack()} />
       {list.isLoading ? (
         <Skeleton className="mt-6 h-40 rounded-xl" />
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

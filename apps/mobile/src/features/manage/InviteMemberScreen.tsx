@@ -15,6 +15,7 @@ import { Share, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { normalizePhone } from '../../core/util/phone';
 import { useRoles } from '../directory/api';
 import { useCreateInvitation, useFlats } from './api';
@@ -84,6 +85,15 @@ export function InviteMemberScreen() {
       message: t('manage:invite.shareText', { society: tenant.society.name, code: created.code }),
     });
   };
+
+  const failed = loadFailed(flats) ? flats : loadFailed(roles) ? roles : null;
+  if (failed)
+    return (
+      <Screen>
+        <TitleBar title={t('manage:invite.title')} onBack={() => nav.goBack()} />
+        <QueryError query={failed} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <Screen>

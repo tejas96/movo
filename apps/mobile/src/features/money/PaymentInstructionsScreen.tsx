@@ -23,6 +23,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useDeleteInstruction, useInstructions, useSaveInstruction } from './api';
 
 type Kind = PaymentInstruction['kind'];
@@ -91,6 +92,8 @@ export function PaymentInstructionsScreen() {
       />
       {list.isLoading ? (
         <Skeleton className="mt-6 h-24 rounded-xl" />
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

@@ -14,6 +14,7 @@ import { Pressable, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useModules, useUpdateModule } from './api';
 import { MANAGED_MODULES, MODULE_ICON, MODULE_SETTINGS } from './module-settings';
 
@@ -46,6 +47,8 @@ export function ModulesScreen() {
       </Text>
       {modules.isLoading ? (
         <Skeleton className="mt-4 h-96 rounded-xl" />
+      ) : loadFailed(modules) ? (
+        <QueryError query={modules} className="mt-6" />
       ) : (
         <Card tight className="mt-4 gap-2">
           {MANAGED_MODULES.map((key) => {

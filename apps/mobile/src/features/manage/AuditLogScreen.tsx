@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, ScrollView, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { dateTime, relative } from '../../core/util/time';
 import { useAuditLog } from './api';
 import { i18nKey } from './module-settings';
@@ -101,6 +102,8 @@ export function AuditLogScreen() {
           <Skeleton className="h-[68px]" />
           <Skeleton className="h-[68px]" />
         </View>
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}
