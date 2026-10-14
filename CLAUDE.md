@@ -31,8 +31,16 @@ Commit only the files of your change. Commit messages: short imperative subject,
 
 - Look: mono white / soft gray / black, Poppins, Iconsax icons, bundled Unsplash photos as the
   only colour. No new colour themes or icon packs. See `docs/06-design-system.md`.
-- Languages: English, Hindi, Marathi for every user-facing string (`packages/i18n`). Hermes on
-  Android has no `Intl.RelativeTimeFormat`; use the helper in `@movo/i18n`.
+- Languages: English, Hindi, Marathi for every user-facing string (`packages/i18n`). No
+  per-language test runs. Instead, at planning time write the en, hi and mr text in the plan:
+  - **Wording:** plain spoken words a resident uses, not a word-for-word translation. Keep
+    English words people say every day (OTP, app, parking).
+  - **Length:** buttons, tabs, pills and titles: short words. The UI must still hold text about
+    2x longer than English (wrap or `numberOfLines` + ellipsis, never a fixed width).
+  - **Dates and numbers:** only the helpers in `@movo/i18n` and `apps/mobile/src/core/util/time.ts`
+    (Hermes on Android has no `Intl.RelativeTimeFormat`). Lint blocks raw `Intl` in the app.
+  - **No English in code:** every visible word comes from `t()`. Lint blocks plain JSX text.
+  The PR review checks the same four points.
 - Tenancy: every society-scoped query is filtered by society; add a cross-tenant e2e test for
   new endpoints.
 - Cost: ₹0 a month. Nothing outside Oracle Always Free, Firebase Spark, GitHub free tiers
