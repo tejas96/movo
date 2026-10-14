@@ -1,4 +1,5 @@
 import { Module, type OnModuleInit } from '@nestjs/common';
+import { HOME_ORDER, HomeRegistry } from '../../common/home/home-registry';
 import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { FilesModule } from '../files/files.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -16,9 +17,23 @@ import { OrdersService } from './orders.service';
   exports: [OrdersService],
 })
 export class MarketModule implements OnModuleInit {
-  constructor(private readonly lifecycle: Lifecycle) {}
+  constructor(
+    private readonly lifecycle: Lifecycle,
+    private readonly home: HomeRegistry,
+    private readonly orders: OrdersService,
+  ) {}
 
   onModuleInit(): void {
     this.lifecycle.onAccountDeleted(closeMarketForDeletedAccount);
+    this.home.register({
+      module: 'marketplace',
+      order: HOME_ORDER.marketplace,
+      load: async (ctx) => {
+        const waiting = await this.orders.waitingCount(ctx.membershipId);
+        return {
+          attention: waiting > 0 ? [{ type: 'MARKET_ORDERS_WAITING', count: waiting }] : [],
+        };
+      },
+    });
   }
 }
