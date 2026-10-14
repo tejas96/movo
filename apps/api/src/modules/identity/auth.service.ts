@@ -2,6 +2,7 @@ import type { AuthSession, AuthTokens, Locale } from '@movo/contracts';
 import { Injectable, Logger } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
+import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { numericCode, secureToken } from '../../common/util/codes';
 import { addMs, minutes } from '../../common/util/dates';
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly email: EmailService,
     private readonly audit: AuditService,
     private readonly files: FilesService,
+    private readonly lifecycle: Lifecycle,
   ) {}
 
   async register(input: {
@@ -269,19 +271,10 @@ export class AuthService {
         where: { userId, status: 'PENDING' },
         data: { status: 'REJECTED', decisionReason: 'account deleted' },
       });
-      // Market: listings go, open orders on either side are cancelled.
       const memberships = await tx.membership.findMany({ where: { userId }, select: { id: true } });
-      const mids = memberships.map((m) => m.id);
-      await tx.listing.updateMany({
-        where: { sellerMembershipId: { in: mids }, status: { not: 'ARCHIVED' } },
-        data: { status: 'ARCHIVED' },
-      });
-      await tx.marketOrder.updateMany({
-        where: {
-          OR: [{ buyerMembershipId: { in: mids } }, { sellerMembershipId: { in: mids } }],
-          status: { in: ['REQUESTED', 'ACCEPTED', 'READY'] },
-        },
-        data: { status: 'CANCELLED', reason: 'account deleted', closedAt: new Date() },
+      await this.lifecycle.accountDeleted(tx, {
+        userId,
+        membershipIds: memberships.map((m) => m.id),
       });
       await this.audit.record({ action: 'user.deleted', entityType: 'User', entityId: userId }, tx);
     });

@@ -13,6 +13,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
+import type { AccountDeleted } from '../../common/lifecycle/lifecycle';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
@@ -42,6 +43,25 @@ const orderInclude = {
 type OrderRow = Prisma.MarketOrderGetPayload<{ include: typeof orderInclude }>;
 
 const OPEN: OrderStatus[] = ['REQUESTED', 'ACCEPTED', 'READY'];
+
+/** Account deleted: the user's listings go, open orders on either side are cancelled. */
+export async function closeMarketForDeletedAccount(
+  tx: Prisma.TransactionClient,
+  e: AccountDeleted,
+): Promise<void> {
+  const mids = e.membershipIds;
+  await tx.listing.updateMany({
+    where: { sellerMembershipId: { in: mids }, status: { not: 'ARCHIVED' } },
+    data: { status: 'ARCHIVED' },
+  });
+  await tx.marketOrder.updateMany({
+    where: {
+      OR: [{ buyerMembershipId: { in: mids } }, { sellerMembershipId: { in: mids } }],
+      status: { in: ['REQUESTED', 'ACCEPTED', 'READY'] },
+    },
+    data: { status: 'CANCELLED', reason: 'account deleted', closedAt: new Date() },
+  });
+}
 /** Food that was ready more than 12 hours ago drops out of the market by itself. */
 const FOOD_SHELF_MS = 12 * 60 * 60 * 1000;
 

@@ -11,18 +11,16 @@ import {
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
+import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
 import { readableCode } from '../../common/util/codes';
 import type { Prisma, Society } from '../../generated/prisma/client';
-import { defaultEmergencyContactRows } from '../emergency/emergency.service';
-import { defaultExpenseCategoryRows } from '../expenses/expenses.service';
 import { FilesService } from '../files/files.service';
 import { PasswordService } from '../identity/password.service';
 import { UsersService } from '../identity/users.service';
-import { defaultVendorCategoryRows } from '../vendors/vendors.service';
 import { ContextService } from './context.service';
 import { toSocietySummary } from './mappers';
 import { rolePermissionRows, roleTemplateRows } from './roles.service';
@@ -66,6 +64,7 @@ export class SocietiesService {
     private readonly audit: AuditService,
     private readonly context: ContextService,
     private readonly files: FilesService,
+    private readonly lifecycle: Lifecycle,
   ) {}
 
   private async uniqueSlug(base: string): Promise<string> {
@@ -152,9 +151,7 @@ export class SocietiesService {
           settings: {},
         })),
       });
-      await tx.vendorCategory.createMany({ data: defaultVendorCategoryRows(society.id) });
-      await tx.emergencyContact.createMany({ data: defaultEmergencyContactRows(society.id) });
-      await tx.expenseCategory.createMany({ data: defaultExpenseCategoryRows(society.id) });
+      await this.lifecycle.societyCreated(tx, society.id);
       const adminRoleId = byKey.admin;
       if (!adminRoleId) throw new Error('admin role missing');
       const membership = await tx.membership.create({
