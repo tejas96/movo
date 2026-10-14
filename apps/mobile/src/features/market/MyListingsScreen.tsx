@@ -13,7 +13,7 @@ import {
   useToast,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -80,17 +80,15 @@ function MyListingRow({ listing: l }: { listing: ListingSummary }) {
   const { t } = useTranslation(['market', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const action = useListingAction(societyId);
   const flip = async () => {
     const next = l.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
-    try {
+    await withErrorToast(async () => {
       await action.mutateAsync({ listingId: l.id, action: { kind: 'status', status: next } });
       toast.show(next === 'PAUSED' ? t('market:listing.paused') : t('market:listing.resumed'));
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
   return (
     <Row

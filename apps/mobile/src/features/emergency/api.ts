@@ -1,6 +1,7 @@
 import { emergencyContract, type RouteBody } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
+import { useCursorList } from '../../core/api/use-cursor-list';
 import { homeKeys } from '../home/keys';
 import { emergencyKeys } from './keys';
 
@@ -13,15 +14,13 @@ export function useEmergencyContacts(societyId: string) {
 }
 
 export function useAlerts(societyId: string, status: 'ACTIVE' | 'CLOSED') {
-  return useInfiniteQuery({
+  return useCursorList({
     queryKey: emergencyKeys(societyId).list(status),
-    queryFn: ({ pageParam }) =>
+    fetchPage: (cursor) =>
       api(emergencyContract.listAlerts, {
         params: { societyId },
-        query: { status, cursor: pageParam, limit: 20 },
+        query: { status, cursor, limit: 20 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
     // Active alerts change fast; keep them fresh while the screen is open.
     refetchInterval: status === 'ACTIVE' ? 20_000 : false,
   });

@@ -1,27 +1,24 @@
-import { Button, PasswordInput, Screen, Text, TitleBar, useToast } from '@movo/design-system';
+import { Button, PasswordInput, Screen, Text, TitleBar } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { signOutLocally } from '../../core/api/client';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useDeleteAccount } from './api';
 
 export function DeleteAccountScreen() {
   const { t } = useTranslation(['me', 'common']);
   const nav = useNav();
-  const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const del = useDeleteAccount();
   const [password, setPassword] = useState('');
 
   const confirm = async () => {
-    try {
+    await withErrorToast(async () => {
       await del.mutateAsync(password);
       await signOutLocally();
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

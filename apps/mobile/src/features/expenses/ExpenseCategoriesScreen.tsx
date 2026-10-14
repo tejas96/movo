@@ -14,7 +14,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -26,7 +26,7 @@ export function ExpenseCategoriesScreen() {
   const { t } = useTranslation(['expenses', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const categories = useExpenseCategories(societyId);
   const save = useSaveCategory(societyId);
@@ -40,27 +40,23 @@ export function ExpenseCategoriesScreen() {
   };
 
   const submit = async () => {
-    try {
+    await withErrorToast(async () => {
       await save.mutateAsync({
         id: editing && editing !== 'new' ? editing.id : undefined,
         name: name.trim(),
       });
       toast.show(t('expenses:categories.saved'));
       setEditing(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const drop = async () => {
     if (!editing || editing === 'new') return;
-    try {
+    await withErrorToast(async () => {
       await remove.mutateAsync(editing.id);
       toast.show(t('expenses:categories.removed'));
       setEditing(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

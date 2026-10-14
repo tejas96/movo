@@ -6,9 +6,10 @@ import {
   type RouteBody,
   societyContract,
 } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { societyKey } from '../../core/api/query-keys';
+import { useCursorList } from '../../core/api/use-cursor-list';
 import { invalidateContext } from '../../core/auth/auth';
 import { directoryKeys } from '../directory/keys';
 import { homeKeys } from '../home/keys';
@@ -48,15 +49,13 @@ export function useCreateFlats(societyId: string) {
 }
 
 export function useInvitations(societyId: string) {
-  return useInfiniteQuery({
+  return useCursorList({
     queryKey: manageKeys(societyId).invitations,
-    queryFn: ({ pageParam }) =>
+    fetchPage: (cursor) =>
       api(societyContract.listInvitations, {
         params: { societyId },
-        query: { cursor: pageParam, limit: 30 },
+        query: { cursor, limit: 30 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
 
@@ -194,14 +193,12 @@ export function useUpdateModule(societyId: string) {
 }
 
 export function useAuditLog(societyId: string, area: AuditArea | undefined) {
-  return useInfiniteQuery({
+  return useCursorList({
     queryKey: manageKeys(societyId).audit(area ?? 'all'),
-    queryFn: ({ pageParam }) =>
+    fetchPage: (cursor) =>
       api(societyContract.listAudit, {
         params: { societyId },
-        query: { area, cursor: pageParam, limit: 30 },
+        query: { area, cursor, limit: 30 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }

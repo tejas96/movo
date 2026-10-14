@@ -1,4 +1,4 @@
-import { Button, IconSquare, photos, Screen, Text, theme, useToast } from '@movo/design-system';
+import { Button, IconSquare, photos, Screen, Text, theme } from '@movo/design-system';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, View } from 'react-native';
@@ -10,7 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useMeContext } from '../../core/tenant/hooks';
 import { dateTime } from '../../core/util/time';
@@ -20,8 +20,7 @@ import { useCancelJoinRequest } from './api';
 export function PendingScreen() {
   const { t } = useTranslation(['onboarding', 'common']);
   const nav = useNav();
-  const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const ctx = useMeContext();
   const cancel = useCancelJoinRequest();
   const pending = ctx.data?.pendingJoinRequests[0];
@@ -33,12 +32,10 @@ export function PendingScreen() {
 
   const withdraw = async () => {
     if (!pending) return;
-    try {
+    await withErrorToast(async () => {
       await cancel.mutateAsync(pending.id);
       nav.navigate('Join');
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

@@ -1,6 +1,7 @@
 import { maintenanceContract, type RouteBody } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
+import { useCursorList } from '../../core/api/use-cursor-list';
 import { homeKeys } from '../home/keys';
 import { moneyKeys } from './keys';
 
@@ -29,15 +30,13 @@ export function useBill(societyId: string, billId: string) {
 }
 
 export function usePayments(societyId: string, flatId: string | undefined) {
-  return useInfiniteQuery({
+  return useCursorList({
     queryKey: moneyKeys(societyId).payments(flatId ?? 'all'),
-    queryFn: ({ pageParam }) =>
+    fetchPage: (cursor) =>
       api(c.listPayments, {
         params: { societyId },
-        query: { flatId, cursor: pageParam, limit: 20 },
+        query: { flatId, cursor, limit: 20 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
 

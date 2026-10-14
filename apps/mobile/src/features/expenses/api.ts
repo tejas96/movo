@@ -1,6 +1,7 @@
 import { type ExpenseStatus, expensesContract, type RouteBody } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
+import { useCursorList } from '../../core/api/use-cursor-list';
 import { homeKeys } from '../home/keys';
 import { financeKeys } from './keys';
 
@@ -11,12 +12,10 @@ export function useExpenses(
   status: ExpenseStatus | undefined,
   enabled: boolean,
 ) {
-  return useInfiniteQuery({
+  return useCursorList({
     queryKey: financeKeys(societyId).list(status ?? 'all'),
-    queryFn: ({ pageParam }) =>
-      api(c.list, { params: { societyId }, query: { status, cursor: pageParam, limit: 20 } }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    fetchPage: (cursor) =>
+      api(c.list, { params: { societyId }, query: { status, cursor, limit: 20 } }),
     enabled,
   });
 }

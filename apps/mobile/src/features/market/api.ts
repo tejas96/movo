@@ -1,6 +1,7 @@
 import { type ListingKind, marketContract, type OrderRole, type RouteBody } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
+import { useCursorList } from '../../core/api/use-cursor-list';
 import { homeKeys } from '../home/keys';
 import { marketKeys } from './keys';
 
@@ -12,16 +13,14 @@ export function useListings(
   q: string,
   enabled = true,
 ) {
-  return useInfiniteQuery({
+  return useCursorList({
     enabled,
     queryKey: marketKeys(societyId).listings(`${kind ?? 'ALL'}|${q}`),
-    queryFn: ({ pageParam }) =>
+    fetchPage: (cursor) =>
       api(c.listListings, {
         params: { societyId },
-        query: { kind, q: q || undefined, cursor: pageParam, limit: 20 },
+        query: { kind, q: q || undefined, cursor, limit: 20 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
 

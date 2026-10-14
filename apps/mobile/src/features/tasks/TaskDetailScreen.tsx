@@ -22,7 +22,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
@@ -40,7 +40,7 @@ export function TaskDetailScreen() {
   const { t } = useTranslation(['tasks', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const { taskId } = useRoute<RouteProp<RootStackParamList, 'TaskDetail'>>().params;
   const task = useTask(societyId, taskId);
@@ -53,13 +53,11 @@ export function TaskDetailScreen() {
   const x = task.data;
 
   const run = async (a: TaskAction, ok: string) => {
-    try {
+    await withErrorToast(async () => {
       await action.mutateAsync(a);
       toast.show(ok);
       setSheet(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const menuOptions: { value: MenuKey; label: string }[] = x?.canManage

@@ -22,7 +22,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -265,7 +265,7 @@ function TreasurerTools() {
   const { t } = useTranslation(['money', 'expenses']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const canRecord = useCan('maintenance.record_payment');
   const canGenerate = useCan('maintenance.generate_bills');
@@ -276,7 +276,7 @@ function TreasurerTools() {
   if (!canRecord && !canGenerate && !canSettings && !canExpenses) return null;
 
   const runGenerate = async () => {
-    try {
+    await withErrorToast(async () => {
       const r = await generate.mutateAsync();
       toast.show(
         r.created > 0
@@ -285,9 +285,7 @@ function TreasurerTools() {
       );
       if (r.skippedFlats.length > 0)
         toast.show(t('treasurer.skipped', { count: r.skippedFlats.length }), 'error');
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

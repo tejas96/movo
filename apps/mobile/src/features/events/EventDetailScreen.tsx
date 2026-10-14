@@ -25,7 +25,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -38,7 +38,7 @@ export function EventDetailScreen() {
   const { t } = useTranslation(['events', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const { eventId } = useRoute<RouteProp<RootStackParamList, 'EventDetail'>>().params;
   const event = useEvent(societyId, eventId);
@@ -56,22 +56,18 @@ export function EventDetailScreen() {
   const canAnswer = Boolean(e && e.status === 'PUBLISHED' && e.rsvpEnabled && !over);
 
   const answer = async (response: RsvpResponse, guestsCount = 0) => {
-    try {
+    await withErrorToast(async () => {
       await rsvp.mutateAsync({ response, guestsCount });
       toast.show(t('events:rsvp.saved'));
-    } catch (err) {
-      toast.show(toMessage(err), 'error');
-    }
+    });
   };
 
   const doCancel = async () => {
-    try {
+    await withErrorToast(async () => {
       await cancel.mutateAsync(reason.trim() || undefined);
       toast.show(t('events:actions.cancelled'));
       setCancelOpen(false);
-    } catch (err) {
-      toast.show(toMessage(err), 'error');
-    }
+    });
   };
 
   const guests = e?.myRsvp?.response === 'GOING' ? e.myRsvp.guestsCount : 0;

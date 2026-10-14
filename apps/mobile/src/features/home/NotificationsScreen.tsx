@@ -10,11 +10,11 @@ import {
   TitleBar,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
-import { FlatList, View } from 'react-native';
+import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { openNotificationTarget, switchSocietyFor } from '../../core/notifications/open-target';
 import { useMeContext } from '../../core/tenant/hooks';
-import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { PagedList } from '../../core/ui/PagedList';
 import { relative } from '../../core/util/time';
 import { useMarkAllRead, useNotifications } from './api';
 
@@ -37,7 +37,6 @@ export function NotificationsScreen() {
   const nav = useNav();
   const list = useNotifications();
   const markAll = useMarkAllRead();
-  const items = list.data?.pages.flatMap((p) => p.items) ?? [];
 
   const ctx = useMeContext();
   const activeSocietyIds =
@@ -57,44 +56,38 @@ export function NotificationsScreen() {
           <IconSquare icon="checkSquare" variant="linear" onPress={() => markAll.mutate()} />
         }
       />
-      {list.isLoading ? (
-        <View className="mt-4 gap-3">
-          <Skeleton className="h-[68px]" />
-          <Skeleton className="h-[68px]" />
-        </View>
-      ) : loadFailed(list) ? (
-        <QueryError query={list} className="mt-10" />
-      ) : items.length === 0 ? (
-        <EmptyState
-          photo={photos.empty}
-          icon="bell"
-          title={t('common:states.empty')}
-          className="mt-10"
-        />
-      ) : (
-        <FlatList
-          className="mt-4"
-          data={items}
-          keyExtractor={(n) => n.id}
-          onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
-          refreshing={list.isRefetching}
-          onRefresh={() => void list.refetch()}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          renderItem={({ item }) => (
-            <Card tight className="mb-2">
-              <Row
-                icon={ICONS[item.category]}
-                title={item.title}
-                subtitle={`${item.body}${item.body ? ' · ' : ''}${relative(item.createdAt)}`}
-                trailing={
-                  !item.readAt ? <View className="h-2 w-2 rounded-full bg-ink" /> : <View />
-                }
-                onPress={() => open(item)}
-              />
-            </Card>
-          )}
-        />
-      )}
+      <PagedList
+        list={list}
+        loading={
+          <View className="mt-4 gap-3">
+            <Skeleton className="h-[68px]" />
+            <Skeleton className="h-[68px]" />
+          </View>
+        }
+        errorClassName="mt-10"
+        empty={
+          <EmptyState
+            photo={photos.empty}
+            icon="bell"
+            title={t('common:states.empty')}
+            className="mt-10"
+          />
+        }
+        className="mt-4"
+        keyExtractor={(n) => n.id}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        renderItem={({ item }) => (
+          <Card tight className="mb-2">
+            <Row
+              icon={ICONS[item.category]}
+              title={item.title}
+              subtitle={`${item.body}${item.body ? ' · ' : ''}${relative(item.createdAt)}`}
+              trailing={!item.readAt ? <View className="h-2 w-2 rounded-full bg-ink" /> : <View />}
+              onPress={() => open(item)}
+            />
+          </Card>
+        )}
+      />
     </Screen>
   );
 }

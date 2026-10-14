@@ -4,9 +4,10 @@ import {
   noticesContract,
   type RouteBody,
 } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { z } from 'zod';
 import { api } from '../../core/api/client';
+import { useCursorList } from '../../core/api/use-cursor-list';
 import { homeKeys } from '../home/keys';
 import { noticesKeys } from './keys';
 
@@ -15,15 +16,13 @@ type CreateBody = RouteBody<typeof noticesContract.create>;
 type UpdateBody = RouteBody<typeof noticesContract.update>;
 
 export function useNotices(societyId: string, status: Status) {
-  return useInfiniteQuery({
+  return useCursorList({
     queryKey: noticesKeys(societyId).list(status),
-    queryFn: ({ pageParam }) =>
+    fetchPage: (cursor) =>
       api(noticesContract.list, {
         params: { societyId },
-        query: { status, cursor: pageParam, limit: 20 },
+        query: { status, cursor, limit: 20 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
 

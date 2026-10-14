@@ -26,7 +26,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Pressable, ScrollView, View } from 'react-native';
 import { fileUri } from '../../core/api/client';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoViewer } from '../../core/photos/PhotoViewer';
 import { useSocietyId } from '../../core/tenant/hooks';
@@ -51,7 +51,7 @@ export function ListingDetailScreen() {
   const { t } = useTranslation(['market', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const { listingId } = useRoute<RouteProp<RootStackParamList, 'Listing'>>().params;
   const listing = useListing(societyId, listingId);
@@ -63,17 +63,12 @@ export function ListingDetailScreen() {
   const [viewer, setViewer] = useState<number | null>(null);
   const l = listing.data;
 
-  const run = async (a: ListingAction, ok: string) => {
-    try {
+  const run = (a: ListingAction, ok: string) =>
+    withErrorToast(async () => {
       await action.mutateAsync({ listingId, action: a });
       toast.show(ok);
       setReasonSheet(null);
-      return true;
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-      return false;
-    }
-  };
+    });
 
   const menuOptions: { value: MenuKey; label: string }[] = !l
     ? []
@@ -432,7 +427,7 @@ function OrderSheet({
   const { t } = useTranslation(['market', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const create = useCreateOrder(societyId, l.id);
   const max = Math.min(l.quantityAvailable ?? 100, 100);
@@ -446,8 +441,8 @@ function OrderSheet({
       ? money(l.pricePaise * qty)
       : priceLabel(l);
 
-  const submit = async () => {
-    try {
+  const submit = () =>
+    withErrorToast(async () => {
       const order = await create.mutateAsync({
         quantity: qty,
         fulfilment,
@@ -456,10 +451,7 @@ function OrderSheet({
       toast.show(t('market:orderSheet.sent'));
       onClose();
       nav.navigate('OrderDetail', { orderId: order.id });
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
-  };
+    });
 
   return (
     <Sheet

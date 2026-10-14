@@ -1,7 +1,8 @@
 import { homeContract, meContract } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { anySocietyKey } from '../../core/api/query-keys';
+import { useCursorList } from '../../core/api/use-cursor-list';
 import { homeKeys, notificationKeys } from './keys';
 
 export function useHomeSummary(societyId: string) {
@@ -13,12 +14,9 @@ export function useHomeSummary(societyId: string) {
 }
 
 export function useNotifications() {
-  return useInfiniteQuery({
+  return useCursorList({
     queryKey: notificationKeys.all,
-    queryFn: ({ pageParam }) =>
-      api(meContract.notifications, { query: { cursor: pageParam, limit: 20 } }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    fetchPage: (cursor) => api(meContract.notifications, { query: { cursor, limit: 20 } }),
   });
 }
 

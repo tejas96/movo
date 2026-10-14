@@ -11,10 +11,10 @@ import {
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, View } from 'react-native';
+import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
-import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { PagedList } from '../../core/ui/PagedList';
 import { TimedCard } from '../calendar/shared';
 import { useMeetings } from './api';
 
@@ -36,16 +36,12 @@ export function MeetingsScreen() {
   const canManage = useCan('meeting.manage');
   const [when, setWhen] = useState<Timeframe>('UPCOMING');
   const list = useMeetings(societyId, when);
-  const items = list.data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <Screen scroll={false}>
-      <FlatList
-        data={items}
+      <PagedList
+        list={list}
         keyExtractor={(m) => m.id}
-        onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
-        refreshing={list.isRefetching}
-        onRefresh={() => void list.refetch()}
         contentContainerStyle={{ paddingBottom: 40, gap: 8 }}
         renderItem={({ item }) => (
           <TimedCard
@@ -92,18 +88,15 @@ export function MeetingsScreen() {
             ) : null}
           </View>
         }
-        ListEmptyComponent={
-          list.isLoading ? undefined : loadFailed(list) ? (
-            <QueryError query={list} className="mt-6" />
-          ) : (
-            <EmptyState
-              icon="meetings"
-              photo={photos.empty}
-              title={when === 'UPCOMING' ? t('meetings:empty') : t('meetings:emptyPast')}
-              body={when === 'UPCOMING' ? t('meetings:emptyBody') : undefined}
-              className="mt-6"
-            />
-          )
+        errorClassName="mt-6"
+        empty={
+          <EmptyState
+            icon="meetings"
+            photo={photos.empty}
+            title={when === 'UPCOMING' ? t('meetings:empty') : t('meetings:emptyPast')}
+            body={when === 'UPCOMING' ? t('meetings:emptyBody') : undefined}
+            className="mt-6"
+          />
         }
       />
     </Screen>

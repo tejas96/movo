@@ -20,7 +20,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -32,7 +32,7 @@ export function PaymentInstructionsScreen() {
   const { t } = useTranslation(['money', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const list = useInstructions(societyId);
   const save = useSaveInstruction(societyId);
@@ -54,7 +54,7 @@ export function PaymentInstructionsScreen() {
   };
 
   const submit = async () => {
-    try {
+    await withErrorToast(async () => {
       await save.mutateAsync({
         id: editing && editing !== 'new' ? editing.id : undefined,
         body: {
@@ -67,19 +67,15 @@ export function PaymentInstructionsScreen() {
       });
       toast.show(t('money:instructions.saved'));
       setEditing(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const drop = async () => {
     if (!editing || editing === 'new') return;
-    try {
+    await withErrorToast(async () => {
       await remove.mutateAsync(editing.id);
       setEditing(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const items = list.data ?? [];

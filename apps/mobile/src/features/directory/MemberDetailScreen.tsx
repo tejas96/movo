@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Linking, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -34,7 +34,7 @@ export function MemberDetailScreen() {
   const { t } = useTranslation(['society', 'common', 'manage']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const { membershipId } = useRoute<RouteProp<RootStackParamList, 'MemberDetail'>>().params;
@@ -62,22 +62,18 @@ export function MemberDetailScreen() {
       return next;
     });
   const saveRoles = async () => {
-    try {
+    await withErrorToast(async () => {
       await update.mutateAsync({ roleIds: [...roleIds] });
       toast.show(t('manage:member.updated'));
       setRoleOpen(false);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
   const setStatus = async (status: 'ACTIVE' | 'SUSPENDED' | 'LEFT') => {
-    try {
+    await withErrorToast(async () => {
       await update.mutateAsync({ status });
       toast.show(t('manage:member.updated'));
       if (status === 'LEFT') nav.goBack();
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
   const confirmStatus = (status: 'SUSPENDED' | 'LEFT') => {
     if (!m) return;
@@ -96,11 +92,9 @@ export function MemberDetailScreen() {
     );
   };
   const issueCode = async () => {
-    try {
+    await withErrorToast(async () => {
       setCode(await reset.mutateAsync());
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

@@ -13,10 +13,10 @@ import {
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, View } from 'react-native';
+import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
-import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { PagedList } from '../../core/ui/PagedList';
 import { relative } from '../../core/util/time';
 import { useNotices } from './api';
 
@@ -29,7 +29,6 @@ export function NoticesScreen() {
   const canPublish = useCan('notice.publish');
   const [tab, setTab] = useState<Tab>('PUBLISHED');
   const list = useNotices(societyId, tab);
-  const items = list.data?.pages.flatMap((p) => p.items) ?? [];
 
   const subtitle = (n: NoticeSummary) =>
     [
@@ -43,12 +42,9 @@ export function NoticesScreen() {
 
   return (
     <Screen scroll={false}>
-      <FlatList
-        data={items}
+      <PagedList
+        list={list}
         keyExtractor={(n) => n.id}
-        onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
-        refreshing={list.isRefetching}
-        onRefresh={() => void list.refetch()}
         contentContainerStyle={{ paddingBottom: 40 }}
         renderItem={({ item }) => (
           <Card tight className="mb-2">
@@ -107,18 +103,15 @@ export function NoticesScreen() {
             ) : null}
           </View>
         }
-        ListEmptyComponent={
-          list.isLoading ? undefined : loadFailed(list) ? (
-            <QueryError query={list} className="mt-6" />
-          ) : (
-            <EmptyState
-              icon="notices"
-              photo={photos.empty}
-              title={t('notices:empty')}
-              body={t('notices:emptyBody')}
-              className="mt-6"
-            />
-          )
+        errorClassName="mt-6"
+        empty={
+          <EmptyState
+            icon="notices"
+            photo={photos.empty}
+            title={t('notices:empty')}
+            body={t('notices:emptyBody')}
+            className="mt-6"
+          />
         }
       />
     </Screen>

@@ -19,7 +19,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -33,7 +33,7 @@ export function BillScreen() {
   const { t } = useTranslation(['money', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const { billId } = useRoute<RouteProp<RootStackParamList, 'Bill'>>().params;
@@ -59,13 +59,11 @@ export function BillScreen() {
 
   const submit = async () => {
     if (!sheet || reason.trim().length < 2) return;
-    try {
+    await withErrorToast(async () => {
       await action.mutateAsync({ action: sheet, reason: reason.trim() });
       toast.show(sheet === 'waive' ? t('money:bill.waived') : t('money:bill.lateFeeWaived'));
       setSheet(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

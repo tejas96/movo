@@ -13,10 +13,10 @@ import {
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
-import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { PagedList } from '../../core/ui/PagedList';
 import { dateTime, relative } from '../../core/util/time';
 import { useAuditLog } from './api';
 import { i18nKey } from './module-settings';
@@ -61,7 +61,6 @@ export function AuditLogScreen() {
   const [area, setArea] = useState<AuditArea | undefined>(undefined);
   const [open, setOpen] = useState<AuditEntry | null>(null);
   const list = useAuditLog(societyId, area);
-  const items = list.data?.pages.flatMap((p) => p.items) ?? [];
 
   const title = (e: AuditEntry) => {
     const label = t(`manage:audit.actions.${i18nKey(e.action)}`);
@@ -96,43 +95,39 @@ export function AuditLogScreen() {
           </View>
         </ScrollView>
       </View>
-      {list.isLoading ? (
-        <View className="mt-4 gap-3">
-          <Skeleton className="h-[68px]" />
-          <Skeleton className="h-[68px]" />
-          <Skeleton className="h-[68px]" />
-        </View>
-      ) : loadFailed(list) ? (
-        <QueryError query={list} className="mt-10" />
-      ) : items.length === 0 ? (
-        <EmptyState
-          photo={photos.empty}
-          icon="audit"
-          title={t('manage:audit.empty')}
-          body={t('manage:audit.emptyBody')}
-          className="mt-10"
-        />
-      ) : (
-        <FlatList
-          className="mt-4"
-          data={items}
-          keyExtractor={(i) => i.id}
-          onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
-          refreshing={list.isRefetching}
-          onRefresh={() => void list.refetch()}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          renderItem={({ item }) => (
-            <Card tight className="mb-2">
-              <Row
-                icon="audit"
-                title={title(item)}
-                subtitle={`${who(item)} · ${relative(item.createdAt)}`}
-                onPress={() => setOpen(item)}
-              />
-            </Card>
-          )}
-        />
-      )}
+      <PagedList
+        list={list}
+        loading={
+          <View className="mt-4 gap-3">
+            <Skeleton className="h-[68px]" />
+            <Skeleton className="h-[68px]" />
+            <Skeleton className="h-[68px]" />
+          </View>
+        }
+        errorClassName="mt-10"
+        empty={
+          <EmptyState
+            photo={photos.empty}
+            icon="audit"
+            title={t('manage:audit.empty')}
+            body={t('manage:audit.emptyBody')}
+            className="mt-10"
+          />
+        }
+        className="mt-4"
+        keyExtractor={(i) => i.id}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        renderItem={({ item }) => (
+          <Card tight className="mb-2">
+            <Row
+              icon="audit"
+              title={title(item)}
+              subtitle={`${who(item)} · ${relative(item.createdAt)}`}
+              onPress={() => setOpen(item)}
+            />
+          </Card>
+        )}
+      />
       <Sheet
         visible={open !== null}
         onClose={() => setOpen(null)}

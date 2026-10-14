@@ -11,7 +11,7 @@ import {
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -22,21 +22,19 @@ export function ModulesScreen() {
   const { t } = useTranslation(['manage', 'society', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const modules = useModules(societyId);
   const update = useUpdateModule(societyId);
   const byKey = new Map((modules.data ?? []).map((m) => [m.key, m]));
 
   const flip = async (key: (typeof MANAGED_MODULES)[number], enabled: boolean) => {
-    try {
+    await withErrorToast(async () => {
       await update.mutateAsync({ moduleKey: key, enabled });
       toast.show(
         enabled ? t('manage:modulesScreen.turnedOn') : t('manage:modulesScreen.turnedOff'),
       );
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

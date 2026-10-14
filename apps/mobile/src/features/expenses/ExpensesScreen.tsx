@@ -28,7 +28,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { currentLocale } from '../../core/i18n';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
@@ -350,7 +350,7 @@ function Months({ months }: { months: FinanceReport['months'] }) {
 function OtherIncome({ report, fy }: { report: FinanceReport; fy: string | undefined }) {
   const { t } = useTranslation(['expenses', 'common']);
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const canView = useCan('finance.reports.view');
   const canAdd = useCan('expense.create');
@@ -368,19 +368,17 @@ function OtherIncome({ report, fy }: { report: FinanceReport; fy: string | undef
 
   const drop = async () => {
     if (!removing) return;
-    try {
+    await withErrorToast(async () => {
       await remove.mutateAsync(removing);
       toast.show(t('expenses:income.removed'));
       setRemoving(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const save = async () => {
     const amountPaise = parseRupees(amount);
     if (!amountPaise) return;
-    try {
+    await withErrorToast(async () => {
       await create.mutateAsync({
         kind,
         amountPaise,
@@ -389,9 +387,7 @@ function OtherIncome({ report, fy }: { report: FinanceReport; fy: string | undef
       });
       toast.show(t('expenses:income.saved'));
       setOpen(false);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const rows = canView ? (income.data ?? []) : [];

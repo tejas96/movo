@@ -17,7 +17,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
@@ -33,7 +33,7 @@ export function ExpenseDetailScreen() {
   const { t } = useTranslation(['expenses', 'money', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const { expenseId } = useRoute<RouteProp<RootStackParamList, 'ExpenseDetail'>>().params;
@@ -46,23 +46,19 @@ export function ExpenseDetailScreen() {
   const mine = e?.createdBy.membershipId === tenant.id;
 
   const run = async (approve: boolean) => {
-    try {
+    await withErrorToast(async () => {
       await decide.mutateAsync({ approve, reason: reason.trim() });
       toast.show(approve ? t('expenses:detail.approved') : t('expenses:detail.rejected'));
       setSheet(null);
-    } catch (err) {
-      toast.show(toMessage(err), 'error');
-    }
+    });
   };
 
   const drop = async () => {
-    try {
+    await withErrorToast(async () => {
       await remove.mutateAsync();
       toast.show(t('expenses:detail.removed'));
       nav.goBack();
-    } catch (err) {
-      toast.show(toMessage(err), 'error');
-    }
+    });
   };
 
   return (

@@ -10,7 +10,7 @@ import {
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Share, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useModuleEnabled, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -34,7 +34,7 @@ export function ManageHomeScreen() {
   const { t } = useTranslation(['manage', 'common', 'society']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const profile = useSocietyProfile(societyId);
@@ -135,12 +135,10 @@ export function ManageHomeScreen() {
     });
   };
   const newCode = async () => {
-    try {
+    await withErrorToast(async () => {
       await rotate.mutateAsync();
       toast.show(t('common:actions.done'));
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (
