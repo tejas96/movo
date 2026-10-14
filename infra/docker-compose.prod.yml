@@ -42,6 +42,8 @@ services:
       # POSTGRES_PASSWORD must be URL-safe (openssl rand -hex 24).
       DATABASE_URL: postgresql://${POSTGRES_USER:-movo}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-movo}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env.prod}
+      # Signs photo links. Empty = JWT_SECRET (see .env.prod.example).
+      FILES_URL_SECRET: ${FILES_URL_SECRET:-}
       ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES:-15}
       REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
       APP_BASE_URL: ${APP_BASE_URL:-movo://}

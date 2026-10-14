@@ -8,10 +8,14 @@ import { loadEnv } from '../../config/env';
  */
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** FILES_URL_SECRET, or JWT_SECRET while that is empty (links signed before it existed). */
+function secret(): string {
+  const env = loadEnv();
+  return env.FILES_URL_SECRET || env.JWT_SECRET;
+}
+
 function sign(fileId: string, exp: number): string {
-  return createHmac('sha256', `files:${loadEnv().JWT_SECRET}`)
-    .update(`${fileId}.${exp}`)
-    .digest('base64url');
+  return createHmac('sha256', `files:${secret()}`).update(`${fileId}.${exp}`).digest('base64url');
 }
 
 /** "/v1/files/<id>?e=<unix>&s=<hmac>" (filesContract.get). The app puts its API base in front. */
