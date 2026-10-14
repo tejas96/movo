@@ -1,4 +1,5 @@
-import { MutationCache, QueryClient } from '@tanstack/react-query';
+import { focusManager, MutationCache, QueryClient } from '@tanstack/react-query';
+import { AppState } from 'react-native';
 import { isHomeKey } from '../../features/home/keys';
 import { isApiError } from './errors';
 
@@ -26,8 +27,18 @@ export const queryClient = new QueryClient({
       gcTime: 10 * 60_000,
       retry: (count, error) =>
         count < 2 && !(isApiError(error) && error.status > 0 && error.status < 500),
-      refetchOnWindowFocus: false,
+      // "Window focus" is the app coming back to the front (see focusManager below): data on
+      // screen that is older than staleTime refreshes then.
+      refetchOnWindowFocus: true,
     },
     mutations: { retry: 0 },
   },
+});
+
+// React Native has no window focus. Tell react-query when the app comes to the front or goes to
+// the back: coming back refreshes stale data on screen, and polls (market, active alerts) pause
+// while the app is in the background instead of using data and battery.
+focusManager.setEventListener((setFocused) => {
+  const sub = AppState.addEventListener('change', (state) => setFocused(state === 'active'));
+  return () => sub.remove();
 });
