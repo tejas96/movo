@@ -66,7 +66,7 @@ export async function bootstrapSession(): Promise<void> {
     }
   } catch {
     // Offline or the server is down: keep the saved session and open the app. The next
-    // request refreshes the token again; only a 401/403 from refresh ever signs out.
+    // request refreshes the token again; only a 4xx from refresh (token rejected) signs out.
     store.setBooted(true);
     return;
   }

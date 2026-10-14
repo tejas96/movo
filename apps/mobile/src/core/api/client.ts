@@ -72,7 +72,7 @@ function baseHeaders(json = true): Record<string, string> {
 
 /**
  * One refresh at a time. Everyone waiting gets the same result.
- * Null means the session is over (no saved token, or the server said 401/403): sign out.
+ * Null means the session is over (no saved token, or the server rejected it with a 4xx): sign out.
  * Anything else (offline, 5xx, a bad body) throws a retryable ApiError and keeps the saved token.
  */
 export function refreshTokens(): Promise<AuthTokens | null> {
@@ -86,7 +86,10 @@ export function refreshTokens(): Promise<AuthTokens | null> {
         { json: { refreshToken } },
         baseHeaders(),
       );
-      if (status === 401 || status === 403) return null;
+      // The server says the token is no good (400 TOKEN_INVALID: unknown, used, expired, or
+      // the account is not active; or 401/403): the session is over. 408 and 429 are only
+      // "try later", like 5xx and network errors below.
+      if (status >= 400 && status < 500 && status !== 408 && status !== 429) return null;
       if (status !== 201 && status !== 200) {
         throw new ApiError(
           (json.code as ApiError['code']) ?? 'INTERNAL',
