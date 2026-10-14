@@ -274,6 +274,32 @@ describe('duties', () => {
     });
   });
 
+  it("gives the points to whoever's turn it was when the committee marks it done", async () => {
+    const s = await societyWithResident(h, 'd5');
+    await h
+      .http()
+      .patch(`/v1/societies/${s.societyId}/modules/rewards`)
+      .set(auth(s.admin))
+      .send({ settings: { dutiesEarnPoints: true } });
+    const duty = await createDuty(s, {
+      title: 'Garden watering',
+      participantKind: 'MEMBER',
+      participantIds: [s.resident.membershipId, s.adminMembershipId],
+      periodUnit: 'WEEK',
+      startDate: TODAY,
+      points: 2,
+    });
+    const done = await h
+      .http()
+      .post(url(s, `/${duty.id}/assignments/${duty.current.id}/confirm`))
+      .set(auth(s.admin));
+    expect(done.status).toBe(201);
+    const points = (token: string) =>
+      h.http().get(`/v1/societies/${s.societyId}/rewards/me`).set(auth(token));
+    expect((await points(s.resident.token)).body.points).toBe(2);
+    expect((await points(s.admin)).body.points).toBe(0);
+  });
+
   it('never leaks duties across societies', async () => {
     const a = await societyWithResident(h, 'd5');
     const b = await societyWithResident(h, 'd6');

@@ -320,11 +320,15 @@ export class DutiesService {
       });
       if (moved.count === 0)
         throw ApiException.conflict('CONFLICT', 'Only the current turn can be marked done');
+      // Points go to whoever's turn it was, also when the committee marks it done. A flat's
+      // turn earns points only for a member of that flat who marks it done themselves.
+      const earner =
+        row.membershipId ?? (this.isMine(ctx, participantIdOf(row)) ? ctx.membershipId : null);
       const rewards = parseModuleSettings('rewards', ctx.moduleSettings.rewards);
-      if (ctx.enabledModules.has('rewards') && rewards.dutiesEarnPoints && duty.points)
+      if (ctx.enabledModules.has('rewards') && rewards.dutiesEarnPoints && duty.points && earner)
         await awardPoints(tx, {
           ...awardContext(ctx),
-          membershipId: ctx.membershipId,
+          membershipId: earner,
           points: duty.points,
           reason: 'DUTY',
           label: duty.title,
