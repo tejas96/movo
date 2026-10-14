@@ -87,3 +87,21 @@ export async function replan(tx: Tx, duty: DutyWithParticipants, today: string, 
   });
   await plan(tx, duty, today, carry);
 }
+
+/** Puts `ids` in as the duty's participants, in this order, and replans an active duty. */
+export async function replaceParticipants(tx: Tx, duty: DutyRow, ids: string[], today: string) {
+  await tx.responsibilityParticipant.deleteMany({ where: { responsibilityId: duty.id } });
+  await tx.responsibilityParticipant.createMany({
+    data: ids.map((id, position) => ({
+      societyId: duty.societyId,
+      responsibilityId: duty.id,
+      position,
+      ...participantData(duty.participantKind, id),
+    })),
+  });
+  const fresh = await tx.responsibility.findUniqueOrThrow({
+    where: { id: duty.id },
+    include: withParticipants,
+  });
+  if (fresh.status === 'ACTIVE') await replan(tx, fresh, today);
+}

@@ -29,6 +29,7 @@ import {
   participantData,
   participantIdOf,
   plan,
+  replaceParticipants,
   replan,
   withParticipants,
 } from './duty-plan';
@@ -165,20 +166,7 @@ export class DutiesService {
     await this.checkParticipants(duty.participantKind, ids);
     const today = todayIn(ctx.society.timezone);
     await this.tenant.tx(async (tx) => {
-      await tx.responsibilityParticipant.deleteMany({ where: { responsibilityId: dutyId } });
-      await tx.responsibilityParticipant.createMany({
-        data: ids.map((id, position) => ({
-          societyId: ctx.societyId,
-          responsibilityId: dutyId,
-          position,
-          ...participantData(duty.participantKind, id),
-        })),
-      });
-      const fresh = await tx.responsibility.findUniqueOrThrow({
-        where: { id: dutyId },
-        include: withParticipants,
-      });
-      if (fresh.status === 'ACTIVE') await replan(tx, fresh, today);
+      await replaceParticipants(tx, duty, ids, today);
       await this.audit.record(
         {
           action: 'duty.participants.updated',
