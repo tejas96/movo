@@ -8,7 +8,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { z } from 'zod';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys } from '../home/keys';
 import { noticesKeys } from './keys';
 
 type Status = z.infer<typeof NoticeStatusSchema>;
@@ -37,7 +36,6 @@ function useInvalidateNotices(societyId: string) {
   const qc = useQueryClient();
   return (notice?: Notice) => {
     void qc.invalidateQueries({ queryKey: noticesKeys(societyId).lists });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     if (notice) qc.setQueryData(noticesKeys(societyId).detail(notice.id), notice);
   };
 }

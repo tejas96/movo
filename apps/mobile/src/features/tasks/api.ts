@@ -1,7 +1,6 @@
 import { type RouteBody, type TaskView, tasksContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { homeKeys } from '../home/keys';
 import { rewardsKeys } from '../rewards/keys';
 import { tasksKeys } from './keys';
 
@@ -26,7 +25,6 @@ function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
     void qc.invalidateQueries({ queryKey: tasksKeys(societyId).all });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     void qc.invalidateQueries({ queryKey: rewardsKeys(societyId).all });
   };
 }

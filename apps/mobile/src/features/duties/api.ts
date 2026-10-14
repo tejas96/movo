@@ -1,7 +1,6 @@
 import { dutiesContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { homeKeys } from '../home/keys';
 import { rewardsKeys } from '../rewards/keys';
 import { dutiesKeys } from './keys';
 
@@ -26,7 +25,6 @@ function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
     void qc.invalidateQueries({ queryKey: dutiesKeys(societyId).all });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     void qc.invalidateQueries({ queryKey: rewardsKeys(societyId).all });
   };
 }

@@ -2,7 +2,6 @@ import { type ExpenseStatus, expensesContract, type RouteBody } from '@movo/cont
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys } from '../home/keys';
 import { financeKeys } from './keys';
 
 const c = expensesContract;
@@ -56,7 +55,6 @@ function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
     void qc.invalidateQueries({ queryKey: financeKeys(societyId).all });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 
