@@ -14,7 +14,7 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { iso } from '../../common/util/dates';
-import { decodeCursor, encodeCursor } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Notice as NoticeRow, Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
@@ -74,33 +74,18 @@ export class NoticesService {
       where: {
         ...base,
         isPinned: false,
-        ...(cursor
-          ? {
-              AND: [
-                {
-                  OR: [
-                    { [sortField]: { lt: cursor.at } },
-                    { [sortField]: cursor.at, id: { lt: cursor.id } },
-                  ],
-                },
-              ],
-            }
-          : {}),
+        AND: [afterCursor(cursor, sortField)],
       },
       orderBy: [{ [sortField]: 'desc' }, { id: 'desc' }],
       take: WINDOW,
     });
     const visibleUnpinned = unpinned.filter((n) => this.visibleTo(ctx, n));
-    const pageUnpinned = visibleUnpinned.slice(0, query.limit);
-    const last = pageUnpinned[pageUnpinned.length - 1];
-    const hasMore = visibleUnpinned.length > query.limit || unpinned.length === WINDOW;
-    const nextCursor =
-      hasMore && last
-        ? encodeCursor({
-            at: (sortField === 'publishedAt' ? last.publishedAt : last.createdAt) ?? last.createdAt,
-            id: last.id,
-          })
-        : null;
+    const { items: pageUnpinned, nextCursor } = slicePage(
+      visibleUnpinned,
+      query.limit,
+      (n) => (sortField === 'publishedAt' ? n.publishedAt : n.createdAt) ?? n.createdAt,
+      visibleUnpinned.length > query.limit || unpinned.length === WINDOW,
+    );
     const rows = [...pinned.filter((n) => this.visibleTo(ctx, n)), ...pageUnpinned];
     const reads = await this.readsFor(
       ctx.membershipId,

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AuditService } from '../../common/audit/audit.service';
 import { FilesModule } from '../files/files.module';
 import { IdentityModule } from '../identity/identity.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -29,7 +28,6 @@ import { StructureService } from './structure.service';
     InvitationsService,
     JoinRequestsService,
     ModulesService,
-    AuditService,
   ],
   exports: [ContextService, SocietiesService, RolesService],
 })

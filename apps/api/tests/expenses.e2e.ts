@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { newId } from '../src/common/util/ids';
-import { todayIn } from '../src/modules/maintenance/billing';
+import { addDays, todayIn } from '../src/modules/maintenance/billing';
 import { auth, type SocietyFixture, societyWithResident } from './fixtures';
 import { createHarness, type Harness } from './harness';
 
@@ -188,6 +188,38 @@ describe('expenses', () => {
       'expense.rejected',
       'expense.updated',
     ]);
+  });
+
+  it('pages by spend date, newest first, with the date|id cursor', async () => {
+    const s = await societyWithResident(h, 'xp');
+    const water = await categoryId(s, 'water');
+    for (const [payeeName, days] of [
+      ['Old', -3],
+      ['Mid A', -2],
+      ['Mid B', -2],
+      ['New', -1],
+    ] as const)
+      await spend(s, s.admin, {
+        categoryId: water,
+        amountPaise: 100,
+        payeeName,
+        incurredOn: addDays(TODAY, days),
+      });
+    const first = await h.http().get(url(s, '/expenses?limit=2')).set(auth(s.admin));
+    expect(first.body.items).toHaveLength(2);
+    const last = first.body.items[1];
+    expect(Buffer.from(first.body.nextCursor, 'base64url').toString()).toBe(
+      `${last.incurredOn}T00:00:00.000Z|${last.id}`,
+    );
+    const second = await h
+      .http()
+      .get(url(s, `/expenses?limit=2&cursor=${first.body.nextCursor}`))
+      .set(auth(s.admin));
+    expect(second.body.nextCursor).toBeNull();
+    const all = [...first.body.items, ...second.body.items];
+    expect(all.map((e: { payeeName: string }) => e.payeeName)[0]).toBe('New');
+    expect(all.map((e: { payeeName: string }) => e.payeeName)[3]).toBe('Old');
+    expect(new Set(all.map((e: { id: string }) => e.id)).size).toBe(4);
   });
 
   it('shows members a summary, details or nothing, by the society setting', async () => {

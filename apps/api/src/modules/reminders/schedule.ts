@@ -1,7 +1,7 @@
 import type { Timeframe } from '@movo/contracts';
 import { ApiException } from '../../common/errors/api.exception';
 import { hours, minutes } from '../../common/util/dates';
-import { decodeCursor, encodeCursor } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 
 /** A meeting or event with no end time counts as running for this long after it starts. */
 export const OPEN_ENDED_MS = hours(2);
@@ -51,33 +51,26 @@ export async function pageByStart<T extends Timed>(opts: {
   cursor: string | undefined;
   limit: number;
   fetch: (args: {
-    cursorWhere: Record<string, unknown>;
+    cursorWhere: object;
     orderBy: [{ startsAt: 'asc' | 'desc' }, { id: 'asc' | 'desc' }];
     take: number;
   }) => Promise<T[]>;
   visible: (row: T) => boolean;
 }): Promise<{ items: T[]; nextCursor: string | null }> {
   const dir = opts.when === 'UPCOMING' ? 'asc' : 'desc';
-  const op = dir === 'asc' ? 'gt' : 'lt';
-  const cursor = decodeCursor(opts.cursor);
-  const cursorWhere = cursor
-    ? {
-        OR: [{ startsAt: { [op]: cursor.at } }, { startsAt: cursor.at, id: { [op]: cursor.id } }],
-      }
-    : {};
+  const cursorWhere = afterCursor(decodeCursor(opts.cursor), 'startsAt', dir);
   const rows = await opts.fetch({
     cursorWhere,
     orderBy: [{ startsAt: dir }, { id: dir }],
     take: WINDOW,
   });
   const visible = rows.filter(opts.visible);
-  const items = visible.slice(0, opts.limit);
-  const last = items[items.length - 1];
-  const hasMore = visible.length > opts.limit || rows.length === WINDOW;
-  return {
-    items,
-    nextCursor: hasMore && last ? encodeCursor({ at: last.startsAt, id: last.id }) : null,
-  };
+  return slicePage(
+    visible,
+    opts.limit,
+    (r) => r.startsAt,
+    visible.length > opts.limit || rows.length === WINDOW,
+  );
 }
 
 /** Reminder kinds are stored as "before-24h". */

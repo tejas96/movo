@@ -17,7 +17,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-import { decodeCursor, slicePage } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -88,14 +88,7 @@ export class MarketService {
           {
             OR: [{ readyAt: null }, { readyAt: { gte: new Date(now.getTime() - FOOD_SHELF_MS) } }],
           },
-          cursor
-            ? {
-                OR: [
-                  { createdAt: { lt: cursor.at } },
-                  { createdAt: cursor.at, id: { lt: cursor.id } },
-                ],
-              }
-            : {},
+          afterCursor(cursor),
         ],
       },
       include: listingInclude,

@@ -15,7 +15,7 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-import { decodeCursor, encodeCursor } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
@@ -78,23 +78,14 @@ export class BillsService {
       where: {
         ...(flatIds ? { flatId: { in: flatIds } } : {}),
         ...(query.open === 'true' ? { status: { in: [...OPEN_STATUSES] } } : {}),
-        ...(cursor
-          ? {
-              OR: [{ dueDate: { lt: cursor.at } }, { dueDate: cursor.at, id: { lt: cursor.id } }],
-            }
-          : {}),
+        ...afterCursor(cursor, 'dueDate'),
       },
       include: billInclude,
       orderBy: [{ dueDate: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
     });
-    const items = rows.slice(0, query.limit);
-    const last = items[items.length - 1];
-    return {
-      items: items.map(toBillSummary),
-      nextCursor:
-        rows.length > query.limit && last ? encodeCursor({ at: last.dueDate, id: last.id }) : null,
-    };
+    const page = slicePage(rows, query.limit, (b) => b.dueDate);
+    return { items: page.items.map(toBillSummary), nextCursor: page.nextCursor };
   }
 
   async get(billId: string): Promise<Bill> {

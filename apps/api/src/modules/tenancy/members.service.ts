@@ -12,7 +12,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
-import { decodeCursor, slicePage } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { AuthService } from '../identity/auth.service';
 import { toVehicleDto } from '../parking/parking.service';
@@ -54,11 +54,7 @@ export class MembersService {
       ...(query.buildingId
         ? { occupancies: { some: { toDate: null, flat: { buildingId: query.buildingId } } } }
         : {}),
-      ...(cursor
-        ? {
-            OR: [{ createdAt: { lt: cursor.at } }, { createdAt: cursor.at, id: { lt: cursor.id } }],
-          }
-        : {}),
+      ...afterCursor(cursor),
     };
     // Fetch a little extra so hidden staff rows do not shrink the page.
     const rows = await this.db.membership.findMany({

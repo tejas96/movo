@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
+import { AuditModule } from './common/audit/audit.module';
 import { ApiExceptionFilter } from './common/errors/api-exception.filter';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { getStore } from './common/request-store';
@@ -52,6 +53,7 @@ const env = loadEnv();
     }),
     ...(env.NODE_ENV === 'test' ? [] : [ScheduleModule.forRoot()]),
     PrismaModule,
+    AuditModule,
     IdentityModule,
     NotificationsModule,
     TenancyModule,

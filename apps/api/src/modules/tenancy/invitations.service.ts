@@ -7,7 +7,7 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { readableCode } from '../../common/util/codes';
 import { addMs, days } from '../../common/util/dates';
-import { decodeCursor, slicePage } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { ContextService } from './context.service';
 import { toSocietySummary } from './mappers';
@@ -74,14 +74,7 @@ export class InvitationsService {
     const rows = await this.db.invitation.findMany({
       where: {
         ...(query.status ? { status: query.status } : {}),
-        ...(cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.at } },
-                { createdAt: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {}),
+        ...afterCursor(cursor),
       },
       include: invitationInclude,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],

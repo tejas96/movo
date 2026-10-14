@@ -10,7 +10,7 @@ import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { minutes } from '../../common/util/dates';
-import { decodeCursor, encodeCursor } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -64,28 +64,14 @@ export class PaymentsService {
     const rows = await this.db.payment.findMany({
       where: {
         ...(flatIds ? { flatId: { in: flatIds } } : {}),
-        ...(cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.at } },
-                { createdAt: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {}),
+        ...afterCursor(cursor),
       },
       include: flatInclude,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
     });
-    const items = rows.slice(0, query.limit);
-    const last = items[items.length - 1];
-    return {
-      items: items.map(toPaymentSummary),
-      nextCursor:
-        rows.length > query.limit && last
-          ? encodeCursor({ at: last.createdAt, id: last.id })
-          : null,
-    };
+    const page = slicePage(rows, query.limit);
+    return { items: page.items.map(toPaymentSummary), nextCursor: page.nextCursor };
   }
 
   async get(paymentId: string): Promise<Payment> {

@@ -17,7 +17,7 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { iso, minutes } from '../../common/util/dates';
-import { decodeCursor, slicePage } from '../../common/util/pagination';
+import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
@@ -156,14 +156,7 @@ export class EmergencyService {
     const rows = await this.db.alert.findMany({
       where: {
         status: query.status === 'ACTIVE' ? 'ACTIVE' : { in: ['RESOLVED', 'FALSE_ALARM'] },
-        ...(cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.at } },
-                { createdAt: cursor.at, id: { lt: cursor.id } },
-              ],
-            }
-          : {}),
+        ...afterCursor(cursor),
       },
       include: alertInclude,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
