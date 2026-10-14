@@ -113,28 +113,35 @@ export class JoinRequestsService {
         'You already have a pending request for this society',
       );
 
-    const row = await this.prisma.joinRequest.create({
-      data: {
-        societyId: society.id,
-        userId,
-        flatId: flat.id,
-        relationClaimed: body.relation,
-        message: body.message ?? null,
-      },
-      include: { user: true },
-    });
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.withPermission(society.id, 'member.manage'),
-      societyId: society.id,
-      category: 'MEMBERSHIP',
-      render: (t) => ({
-        title: t('common:push.joinRequestReceived.title'),
-        body: t('common:push.joinRequestReceived.body', {
-          name: row.user.displayName,
-          flat: flatLabel(flat),
-        }),
-      }),
-      data: { screen: 'manage/join-requests', societyId: society.id },
+    const managers = await this.recipients.withPermission(society.id, 'member.manage');
+    const row = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.joinRequest.create({
+        data: {
+          societyId: society.id,
+          userId,
+          flatId: flat.id,
+          relationClaimed: body.relation,
+          message: body.message ?? null,
+        },
+        include: { user: true },
+      });
+      await this.notifications.notifyUsers(
+        {
+          userIds: managers,
+          societyId: society.id,
+          category: 'MEMBERSHIP',
+          render: (t) => ({
+            title: t('common:push.joinRequestReceived.title'),
+            body: t('common:push.joinRequestReceived.body', {
+              name: created.user.displayName,
+              flat: flatLabel(flat),
+            }),
+          }),
+          data: { screen: 'manage/join-requests', societyId: society.id },
+        },
+        tx,
+      );
+      return created;
     });
     return {
       id: row.id,
@@ -228,19 +235,22 @@ export class JoinRequestsService {
         },
         tx,
       );
+      await this.notifications.notifyUsers(
+        {
+          userIds: [row.userId],
+          societyId: ctx.societyId,
+          category: 'MEMBERSHIP',
+          render: (t) => ({
+            title: t('common:push.membershipApproved.title', { society: ctx.society.name }),
+            body: t('common:push.membershipApproved.body'),
+          }),
+          data: { screen: 'home', societyId: ctx.societyId },
+        },
+        tx,
+      );
       return tx.membership.findUniqueOrThrow({ where: { id: m.id }, include: memberInclude });
     });
     this.context.invalidateUser(row.userId);
-    await this.notifications.notifyUsers({
-      userIds: [row.userId],
-      societyId: ctx.societyId,
-      category: 'MEMBERSHIP',
-      render: (t) => ({
-        title: t('common:push.membershipApproved.title', { society: ctx.society.name }),
-        body: t('common:push.membershipApproved.body'),
-      }),
-      data: { screen: 'home', societyId: ctx.societyId },
-    });
     return toMemberCard(membership, true);
   }
 
@@ -248,30 +258,38 @@ export class JoinRequestsService {
     const ctx = requireTenant();
     const row = await this.tenant.client.joinRequest.findUnique({ where: { id: requestId } });
     if (row?.status !== 'PENDING') throw ApiException.notFound('Request not found');
-    await this.tenant.client.joinRequest.update({
-      where: { id: requestId },
-      data: {
-        status: 'REJECTED',
-        decidedByMembershipId: ctx.membershipId,
-        decidedAt: new Date(),
-        decisionReason: reason ?? null,
-      },
-    });
-    await this.audit.record({
-      action: 'join_request.rejected',
-      entityType: 'JoinRequest',
-      entityId: requestId,
-      after: { reason: reason ?? null },
-    });
-    await this.notifications.notifyUsers({
-      userIds: [row.userId],
-      societyId: ctx.societyId,
-      category: 'MEMBERSHIP',
-      render: (t) => ({
-        title: t('common:push.membershipRejected.title', { society: ctx.society.name }),
-        body: reason ?? t('common:push.membershipRejected.body'),
-      }),
-      data: { screen: 'join', societyId: ctx.societyId },
+    await this.tenant.tx(async (tx) => {
+      await tx.joinRequest.update({
+        where: { id: requestId },
+        data: {
+          status: 'REJECTED',
+          decidedByMembershipId: ctx.membershipId,
+          decidedAt: new Date(),
+          decisionReason: reason ?? null,
+        },
+      });
+      await this.audit.record(
+        {
+          action: 'join_request.rejected',
+          entityType: 'JoinRequest',
+          entityId: requestId,
+          after: { reason: reason ?? null },
+        },
+        tx,
+      );
+      await this.notifications.notifyUsers(
+        {
+          userIds: [row.userId],
+          societyId: ctx.societyId,
+          category: 'MEMBERSHIP',
+          render: (t) => ({
+            title: t('common:push.membershipRejected.title', { society: ctx.society.name }),
+            body: reason ?? t('common:push.membershipRejected.body'),
+          }),
+          data: { screen: 'join', societyId: ctx.societyId },
+        },
+        tx,
+      );
     });
   }
 }

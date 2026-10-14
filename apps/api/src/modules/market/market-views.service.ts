@@ -28,6 +28,12 @@ export const orderInclude = {
 } as const satisfies Prisma.MarketOrderInclude;
 export type OrderRow = Prisma.MarketOrderGetPayload<{ include: typeof orderInclude }>;
 
+/** What an order list row needs: no messages, the unread count comes from SQL. */
+export const orderListInclude = {
+  listing: { include: listingInclude },
+} as const satisfies Prisma.MarketOrderInclude;
+export type OrderListRow = Prisma.MarketOrderGetPayload<{ include: typeof orderListInclude }>;
+
 export function marketSettings(ctx: TenantContext) {
   return parseModuleSettings('marketplace', ctx.moduleSettings.marketplace);
 }
@@ -167,14 +173,35 @@ export class MarketViews {
     };
   }
 
+  /**
+   * Messages from the other side newer than my last read, per order, counted by Postgres
+   * (the list used to load every message of 100 orders to count them).
+   */
+  async unreadCounts(ctx: TenantContext, orderIds: string[]): Promise<Map<string, number>> {
+    if (orderIds.length === 0) return new Map();
+    const me = ctx.membershipId;
+    const rows = await this.tenant.client.$queryRaw<{ orderId: string; n: number }[]>`
+      SELECT m."orderId"::text AS "orderId", COUNT(*)::int AS n
+      FROM "OrderMessage" m
+      JOIN "MarketOrder" o ON o."id" = m."orderId"
+      WHERE m."societyId" = ${ctx.societyId}::uuid
+        AND m."orderId" = ANY(${orderIds}::uuid[])
+        AND m."senderMembershipId" <> ${me}::uuid
+        AND m."createdAt" > COALESCE(
+          CASE WHEN o."buyerMembershipId" = ${me}::uuid THEN o."buyerReadAt" ELSE o."sellerReadAt" END,
+          '-infinity'::timestamp)
+      GROUP BY 1`;
+    return new Map(rows.map((r) => [r.orderId, r.n]));
+  }
+
   orderSummary(
     ctx: TenantContext,
-    o: OrderRow,
+    o: OrderListRow,
     names: Map<string, { displayName: string }>,
+    unreadMessages: number,
   ): OrderSummary {
     const buyer = o.buyerMembershipId === ctx.membershipId;
     const other = buyer ? o.sellerMembershipId : o.buyerMembershipId;
-    const readAt = buyer ? o.buyerReadAt : o.sellerReadAt;
     const cover = o.listing.images[0];
     return {
       id: o.id,
@@ -191,9 +218,7 @@ export class MarketViews {
       totalPaise: o.unitPricePaise === null ? null : o.unitPricePaise * o.quantity,
       fulfilment: o.fulfilment === 'DELIVERY' ? 'DELIVERY' : 'PICKUP',
       status: o.status,
-      unreadMessages: o.messages.filter(
-        (msg) => msg.senderMembershipId !== ctx.membershipId && msg.createdAt > readAt,
-      ).length,
+      unreadMessages,
       createdAt: o.createdAt.toISOString(),
       updatedAt: o.updatedAt.toISOString(),
     };
@@ -205,7 +230,7 @@ export class MarketViews {
       loadMemberNames(this.prisma, [...ids, ...o.messages.map((m) => m.senderMembershipId)]),
       this.flatLabels(ids),
     ]);
-    const s = this.orderSummary(ctx, o, names);
+    const s = this.orderSummary(ctx, o, names, 0);
     const agreed = isAgreed(o.status);
     const party = (membershipId: string, isSeller: boolean) => ({
       membershipId,

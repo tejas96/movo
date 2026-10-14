@@ -9,7 +9,7 @@ import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
 import { loadMemberNames } from '../tenancy/member-names';
-import { MarketViews, type OrderRow, orderInclude } from './market-views.service';
+import { MarketViews, type OrderRow, orderInclude, orderListInclude } from './market-views.service';
 import {
   allowedFrom,
   canMessageOrder,
@@ -55,27 +55,30 @@ export class OrdersService {
       where: { listingId, buyerMembershipId: ctx.membershipId, status: { in: [...OPEN_ORDER] } },
     });
     if (open) throw ApiException.conflict('CONFLICT', 'You already have an open order for this');
-    const o = await this.db.marketOrder.create({
-      data: {
-        societyId: ctx.societyId,
-        listingId,
-        buyerMembershipId: ctx.membershipId,
-        sellerMembershipId: l.sellerMembershipId,
-        quantity: body.quantity,
-        unitPricePaise: l.priceType === 'FREE' ? null : l.pricePaise,
-        fulfilment: body.fulfilment,
-        note: body.note ?? null,
-      },
-      include: orderInclude,
-    });
     const buyer = await loadMemberNames(this.prisma, [ctx.membershipId]);
-    await this.notifyParty(ctx, o, 'seller', (t) => ({
-      title: t('market:push.newOrderTitle', { title: l.title }),
-      body: t('market:push.newOrderBody', {
-        name: buyer.get(ctx.membershipId)?.displayName ?? '',
-        quantity: l.unit ? `${body.quantity} ${l.unit}` : String(body.quantity),
-      }),
-    }));
+    const o = await this.tenant.tx(async (tx) => {
+      const created = await tx.marketOrder.create({
+        data: {
+          societyId: ctx.societyId,
+          listingId,
+          buyerMembershipId: ctx.membershipId,
+          sellerMembershipId: l.sellerMembershipId,
+          quantity: body.quantity,
+          unitPricePaise: l.priceType === 'FREE' ? null : l.pricePaise,
+          fulfilment: body.fulfilment,
+          note: body.note ?? null,
+        },
+        include: orderInclude,
+      });
+      await this.notifyParty(tx, ctx, created, 'seller', (t) => ({
+        title: t('market:push.newOrderTitle', { title: l.title }),
+        body: t('market:push.newOrderBody', {
+          name: buyer.get(ctx.membershipId)?.displayName ?? '',
+          quantity: l.unit ? `${body.quantity} ${l.unit}` : String(body.quantity),
+        }),
+      }));
+      return created;
+    });
     return this.views.orderDto(ctx, o);
   }
 
@@ -86,16 +89,22 @@ export class OrdersService {
         role === 'BUYING'
           ? { buyerMembershipId: ctx.membershipId }
           : { sellerMembershipId: ctx.membershipId },
-      include: orderInclude,
+      include: orderListInclude,
       orderBy: [{ updatedAt: 'desc' }],
       take: 100,
     });
     rows.sort((a, b) => Number(isOpenOrder(b.status)) - Number(isOpenOrder(a.status)));
-    const names = await loadMemberNames(
-      this.prisma,
-      rows.flatMap((o) => [o.buyerMembershipId, o.sellerMembershipId]),
-    );
-    return rows.map((o) => this.views.orderSummary(ctx, o, names));
+    const [names, unread] = await Promise.all([
+      loadMemberNames(
+        this.prisma,
+        rows.flatMap((o) => [o.buyerMembershipId, o.sellerMembershipId]),
+      ),
+      this.views.unreadCounts(
+        ctx,
+        rows.map((o) => o.id),
+      ),
+    ]);
+    return rows.map((o) => this.views.orderSummary(ctx, o, names, unread.get(o.id) ?? 0));
   }
 
   async getOrder(orderId: string): Promise<Order> {
@@ -133,55 +142,66 @@ export class OrdersService {
             : { quantityAvailable: { decrement: o.quantity } },
       });
       if (took.count === 0) throw ApiException.conflict('OUT_OF_STOCK', 'Not enough left');
+      await this.notifyParty(tx, ctx, o, 'buyer', (t) => ({
+        title: t('market:push.acceptedTitle', { title: o.listing.title }),
+        body: '',
+      }));
     });
-    return this.afterChange(ctx, orderId, 'buyer', (t) => ({
-      title: t('market:push.acceptedTitle', { title: o.listing.title }),
-      body: '',
-    }));
+    return this.fresh(ctx, orderId);
   }
 
   async reject(orderId: string, reason: string | undefined): Promise<Order> {
     const ctx = requireTenant();
     const o = await this.views.requireOrder(ctx, orderId);
     if (o.sellerMembershipId !== ctx.membershipId) throw ApiException.forbidden();
-    await this.move(orderId, allowedFrom('reject', 'seller'), {
-      status: 'REJECTED',
-      reason: reason || null,
-      closedAt: new Date(),
-    });
-    return this.afterChange(ctx, orderId, 'buyer', (t) => ({
-      title: t('market:push.rejectedTitle', { title: o.listing.title }),
-      body: reason ?? '',
-    }));
+    await this.move(
+      ctx,
+      o,
+      allowedFrom('reject', 'seller'),
+      { status: 'REJECTED', reason: reason || null, closedAt: new Date() },
+      'buyer',
+      (t) => ({
+        title: t('market:push.rejectedTitle', { title: o.listing.title }),
+        body: reason ?? '',
+      }),
+    );
+    return this.fresh(ctx, orderId);
   }
 
   async ready(orderId: string): Promise<Order> {
     const ctx = requireTenant();
     const o = await this.views.requireOrder(ctx, orderId);
     if (o.sellerMembershipId !== ctx.membershipId) throw ApiException.forbidden();
-    await this.move(orderId, allowedFrom('ready', 'seller'), {
-      status: 'READY',
-      readyAt: new Date(),
-    });
-    return this.afterChange(ctx, orderId, 'buyer', (t) => ({
-      title: t('market:push.readyTitle', { title: o.listing.title }),
-      body:
-        o.fulfilment === 'DELIVERY' ? t('market:push.readyDelivery') : t('market:push.readyPickup'),
-    }));
+    await this.move(
+      ctx,
+      o,
+      allowedFrom('ready', 'seller'),
+      { status: 'READY', readyAt: new Date() },
+      'buyer',
+      (t) => ({
+        title: t('market:push.readyTitle', { title: o.listing.title }),
+        body:
+          o.fulfilment === 'DELIVERY'
+            ? t('market:push.readyDelivery')
+            : t('market:push.readyPickup'),
+      }),
+    );
+    return this.fresh(ctx, orderId);
   }
 
   async complete(orderId: string): Promise<Order> {
     const ctx = requireTenant();
     const o = await this.views.requireOrder(ctx, orderId);
     const side = sideOf(ctx, o);
-    await this.move(orderId, allowedFrom('complete', side), {
-      status: 'COMPLETED',
-      closedAt: new Date(),
-    });
-    return this.afterChange(ctx, orderId, otherSide(side), (t) => ({
-      title: t('market:push.completedTitle', { title: o.listing.title }),
-      body: '',
-    }));
+    await this.move(
+      ctx,
+      o,
+      allowedFrom('complete', side),
+      { status: 'COMPLETED', closedAt: new Date() },
+      otherSide(side),
+      (t) => ({ title: t('market:push.completedTitle', { title: o.listing.title }), body: '' }),
+    );
+    return this.fresh(ctx, orderId);
   }
 
   async cancel(orderId: string, reason: string | undefined): Promise<Order> {
@@ -205,11 +225,12 @@ export class OrdersService {
           where: { id: o.listingId, societyId: ctx.societyId, quantityAvailable: { not: null } },
           data: { quantityAvailable: { increment: o.quantity } },
         });
+      await this.notifyParty(tx, ctx, o, otherSide(side), (t) => ({
+        title: t('market:push.cancelledTitle', { title: o.listing.title }),
+        body: reason ?? '',
+      }));
     });
-    return this.afterChange(ctx, orderId, otherSide(side), (t) => ({
-      title: t('market:push.cancelledTitle', { title: o.listing.title }),
-      body: reason ?? '',
-    }));
+    return this.fresh(ctx, orderId);
   }
 
   async message(orderId: string, body: string): Promise<Order> {
@@ -217,6 +238,7 @@ export class OrdersService {
     const o = await this.views.requireOrder(ctx, orderId);
     if (!canMessageOrder(o.status)) throw ApiException.conflict('CONFLICT', 'This order is closed');
     const buyer = o.buyerMembershipId === ctx.membershipId;
+    const me = await loadMemberNames(this.prisma, [ctx.membershipId]);
     await this.tenant.tx(async (tx) => {
       await tx.orderMessage.create({
         data: {
@@ -230,15 +252,15 @@ export class OrdersService {
         where: { id: orderId, societyId: ctx.societyId },
         data: buyer ? { buyerReadAt: new Date() } : { sellerReadAt: new Date() },
       });
+      await this.notifyParty(tx, ctx, o, buyer ? 'seller' : 'buyer', (t) => ({
+        title: t('market:push.messageTitle', {
+          name: me.get(ctx.membershipId)?.displayName ?? '',
+          title: o.listing.title,
+        }),
+        body,
+      }));
     });
-    const me = await loadMemberNames(this.prisma, [ctx.membershipId]);
-    return this.afterChange(ctx, orderId, buyer ? 'seller' : 'buyer', (t) => ({
-      title: t('market:push.messageTitle', {
-        name: me.get(ctx.membershipId)?.displayName ?? '',
-        title: o.listing.title,
-      }),
-      body,
-    }));
+    return this.fresh(ctx, orderId);
   }
 
   async review(orderId: string, rating: number, text: string | null | undefined): Promise<Order> {
@@ -263,11 +285,12 @@ export class OrdersService {
         where: { id: o.listingId, societyId: ctx.societyId },
         data: { ratingSum: { increment: rating }, ratingCount: { increment: 1 } },
       });
+      await this.notifyParty(tx, ctx, o, 'seller', (t) => ({
+        title: t('market:push.reviewTitle', { title: o.listing.title }),
+        body: t('market:push.reviewBody', { rating }),
+      }));
     });
-    return this.afterChange(ctx, orderId, 'seller', (t) => ({
-      title: t('market:push.reviewTitle', { title: o.listing.title }),
-      body: t('market:push.reviewBody', { rating }),
-    }));
+    return this.fresh(ctx, orderId);
   }
 
   /** Home: new orders waiting for me as a seller. */
@@ -277,44 +300,49 @@ export class OrdersService {
     });
   }
 
+  /** Moves the order on if it is still in `from`, and tells the other party in the same transaction. */
   private async move(
-    orderId: string,
-    from: OrderStatus[],
-    data: Prisma.MarketOrderUpdateManyMutationInput,
-  ): Promise<void> {
-    const moved = await this.db.marketOrder.updateMany({
-      where: { id: orderId, status: { in: from } },
-      data,
-    });
-    if (moved.count === 0) throw ApiException.conflict('CONFLICT', 'This order has moved on');
-  }
-
-  private async afterChange(
-    ctx: TenantContext,
-    orderId: string,
-    notify: OrderSide,
-    render: Render,
-  ): Promise<Order> {
-    const o = await this.views.requireOrder(ctx, orderId);
-    await this.notifyParty(ctx, o, notify, render);
-    return this.views.orderDto(ctx, o);
-  }
-
-  private async notifyParty(
     ctx: TenantContext,
     o: OrderRow,
+    from: OrderStatus[],
+    data: Prisma.MarketOrderUpdateManyMutationInput,
+    notify: OrderSide,
+    render: Render,
+  ): Promise<void> {
+    await this.tenant.tx(async (tx) => {
+      const moved = await tx.marketOrder.updateMany({
+        where: { id: o.id, societyId: ctx.societyId, status: { in: from } },
+        data,
+      });
+      if (moved.count === 0) throw ApiException.conflict('CONFLICT', 'This order has moved on');
+      await this.notifyParty(tx, ctx, o, notify, render);
+    });
+  }
+
+  private async fresh(ctx: TenantContext, orderId: string): Promise<Order> {
+    return this.views.orderDto(ctx, await this.views.requireOrder(ctx, orderId));
+  }
+
+  /** The push to one side of the order, written in the transaction that changed it. */
+  private async notifyParty(
+    tx: Prisma.TransactionClient,
+    ctx: TenantContext,
+    o: Pick<OrderRow, 'id' | 'buyerMembershipId' | 'sellerMembershipId'>,
     who: OrderSide,
     render: Render,
   ): Promise<void> {
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofMemberships([
-        who === 'buyer' ? o.buyerMembershipId : o.sellerMembershipId,
-      ]),
-      societyId: ctx.societyId,
-      category: 'MARKETPLACE',
-      render: (t) => render(t as (key: string, opts?: Record<string, unknown>) => string),
-      data: { screen: 'order', societyId: ctx.societyId, orderId: o.id },
-    });
+    await this.notifications.notifyUsers(
+      {
+        userIds: await this.recipients
+          .in(tx)
+          .ofMemberships([who === 'buyer' ? o.buyerMembershipId : o.sellerMembershipId]),
+        societyId: ctx.societyId,
+        category: 'MARKETPLACE',
+        render: (t) => render(t as (key: string, opts?: Record<string, unknown>) => string),
+        data: { screen: 'order', societyId: ctx.societyId, orderId: o.id },
+      },
+      tx,
+    );
   }
 }
 

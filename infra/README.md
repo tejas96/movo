@@ -48,4 +48,22 @@ curl -k https://localhost/health
 docker compose -p movo-prodtest -f infra/docker-compose.prod.yml --env-file /tmp/movo.env down -v
 ```
 
+## Running more than one API replica
+
+Production runs one `api` container. A second one (rolling deploy, more load) is safe for
+data, with one limit:
+
+- **Caches** (sessions, users, tenant contexts in `common/tenant/tenant-cache.ts`) are per
+  process, but every delete is broadcast over Postgres `LISTEN/NOTIFY` (channel `movo_cache`),
+  so a logout, a suspension or a role change reaches every replica at once. A replica whose
+  listening connection drops clears its cache and reconnects. Each replica holds one extra
+  Postgres connection for this.
+- **Jobs** run under a lease in the `JobLease` table, so each cron job runs on one replica at
+  a time, however long it takes.
+- **Push outbox**: senders claim rows with `FOR UPDATE SKIP LOCKED`, so replicas share the
+  queue without sending a push twice.
+- **Limit: the rate limiter is per process** (`@nestjs/throttler`, 120 requests a minute per
+  IP). With N replicas behind Caddy a client can make up to N x 120. A shared store would need
+  Redis, which costs money, so it stays in memory; keep to one replica unless that is fine.
+
 Server setup, deploys, backups, uptime alerts and the Android release are in [docs/08-release-and-ops.md](../docs/08-release-and-ops.md).

@@ -271,11 +271,11 @@ export class AuthService {
         where: { userId, status: 'PENDING' },
         data: { status: 'REJECTED', decisionReason: 'account deleted' },
       });
-      const memberships = await tx.membership.findMany({ where: { userId }, select: { id: true } });
-      await this.lifecycle.accountDeleted(tx, {
-        userId,
-        membershipIds: memberships.map((m) => m.id),
+      const memberships = await tx.membership.findMany({
+        where: { userId },
+        select: { id: true, societyId: true },
       });
+      await this.lifecycle.accountDeleted(tx, { userId, memberships });
       await this.audit.record({ action: 'user.deleted', entityType: 'User', entityId: userId }, tx);
     });
     // The privacy policy promises the photo goes at once, bytes included.

@@ -9,6 +9,7 @@ import type {
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
+import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can } from '../../common/tenant/tenant.types';
@@ -31,6 +32,7 @@ export class MembersService {
     private readonly audit: AuditService,
     private readonly context: ContextService,
     private readonly auth: AuthService,
+    private readonly lifecycle: Lifecycle,
   ) {}
 
   private get db() {
@@ -138,10 +140,16 @@ export class MembersService {
           : {},
         include: memberInclude,
       });
-      if (body.status === 'LEFT') {
+      if (body.status === 'LEFT' && before.status !== 'LEFT') {
         await tx.flatOccupancy.updateMany({
           where: { membershipId, toDate: null },
           data: { toDate: new Date() },
+        });
+        await this.lifecycle.memberLeft(tx, {
+          membershipId,
+          societyId: ctx.societyId,
+          userId: m.userId,
+          reason: 'left',
         });
       }
       await this.audit.record(

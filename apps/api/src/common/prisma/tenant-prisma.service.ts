@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { currentTenant } from '../request-store';
+import { trackTransaction } from './after-commit';
 import { PrismaService } from './prisma.service';
 
 /** Models that carry a societyId and must always be filtered by it. */
@@ -117,11 +118,20 @@ export class TenantPrismaService {
    * by the request's society too, like the queries outside it. Use it for writes in a request.
    * Jobs and flows without a society context (society creation, accepting an invitation) keep
    * PrismaService.$transaction and set societyId themselves.
+   *
+   * Work queued with afterCommit(tx, ...) runs once the transaction has committed, and not at
+   * all when it rolls back.
    */
-  tx<T>(
+  async tx<T>(
     fn: (tx: Prisma.TransactionClient) => Promise<T>,
     options?: { maxWait?: number; timeout?: number },
   ): Promise<T> {
-    return this.client.$transaction(fn, options);
+    const queue: (() => Promise<unknown>)[] = [];
+    const result = await this.client.$transaction(async (tx) => {
+      trackTransaction(tx, queue);
+      return fn(tx);
+    }, options);
+    for (const work of queue) await work();
+    return result;
   }
 }

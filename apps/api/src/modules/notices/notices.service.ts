@@ -18,13 +18,11 @@ import { afterCursor, decodeCursor, slicePage } from '../../common/util/paginati
 import type { Notice as NoticeRow, Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
-import { matchesAudience } from './audience';
+import { audienceWhere, matchesAudience } from './audience';
 
 type CreateBody = RouteBody<typeof noticesContract.create>;
 type UpdateBody = RouteBody<typeof noticesContract.update>;
 type ListQuery = RouteQuery<typeof noticesContract.list>;
-
-const WINDOW = 150;
 
 @Injectable()
 export class NoticesService {
@@ -63,30 +61,30 @@ export class NoticesService {
     };
     const sortField = query.status === 'PUBLISHED' ? 'publishedAt' : 'createdAt';
 
+    // Audience in SQL: managers see every notice, others only theirs.
+    const audience = this.canManage(ctx) ? {} : (audienceWhere(ctx) as Prisma.NoticeWhereInput);
     // Pinned notices come whole on the first page; the cursor walks the unpinned ones.
     const pinned = cursor
       ? []
       : await this.db.notice.findMany({
-          where: { ...base, isPinned: true },
+          where: { ...base, isPinned: true, AND: [audience] },
           orderBy: [{ [sortField]: 'desc' }, { id: 'desc' }],
         });
     const unpinned = await this.db.notice.findMany({
       where: {
         ...base,
         isPinned: false,
-        AND: [afterCursor(cursor, sortField)],
+        AND: [afterCursor(cursor, sortField), audience],
       },
       orderBy: [{ [sortField]: 'desc' }, { id: 'desc' }],
-      take: WINDOW,
+      take: query.limit + 1,
     });
-    const visibleUnpinned = unpinned.filter((n) => this.visibleTo(ctx, n));
     const { items: pageUnpinned, nextCursor } = slicePage(
-      visibleUnpinned,
+      unpinned,
       query.limit,
       (n) => (sortField === 'publishedAt' ? n.publishedAt : n.createdAt) ?? n.createdAt,
-      visibleUnpinned.length > query.limit || unpinned.length === WINDOW,
     );
-    const rows = [...pinned.filter((n) => this.visibleTo(ctx, n)), ...pageUnpinned];
+    const rows = [...pinned, ...pageUnpinned];
     const reads = await this.readsFor(
       ctx.membershipId,
       rows.map((r) => r.id),
@@ -155,9 +153,9 @@ export class NoticesService {
         },
         tx,
       );
+      if (row.status === 'PUBLISHED') await this.fanOut(ctx, row, tx);
       return row;
     });
-    if (n.status === 'PUBLISHED') await this.fanOut(ctx, n);
     return this.toDto(n, null, await this.authorName(n.createdByMembershipId), 0);
   }
 
@@ -221,9 +219,9 @@ export class NoticesService {
         },
         tx,
       );
+      await this.fanOut(ctx, row, tx);
       return row;
     });
-    await this.fanOut(ctx, n);
     return this.toDto(n, null, await this.authorName(n.createdByMembershipId), 0);
   }
 
@@ -284,14 +282,15 @@ export class NoticesService {
     limit = 3,
   ): Promise<{ notices: NoticeSummary[]; unreadImportant: NoticeRow[] }> {
     const now = new Date();
-    const rows = await this.db.notice.findMany({
-      where: { status: 'PUBLISHED', OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+    const visible = await this.db.notice.findMany({
+      where: {
+        status: 'PUBLISHED',
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        AND: [this.canManage(ctx) ? {} : (audienceWhere(ctx) as Prisma.NoticeWhereInput)],
+      },
       orderBy: [{ isPinned: 'desc' }, { publishedAt: 'desc' }],
       take: 40,
     });
-    const visible = rows.filter(
-      (n) => matchesAudience(AudienceSchema.parse(n.audience), ctx) || this.canManage(ctx),
-    );
     const reads = await this.readsFor(
       ctx.membershipId,
       visible.map((r) => r.id),
@@ -337,21 +336,27 @@ export class NoticesService {
     }
   }
 
-  private async fanOut(ctx: TenantContext, n: NoticeRow): Promise<void> {
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(n.audience)),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'NOTICE',
-      render: () => ({
-        title:
-          n.priority === 'NORMAL'
-            ? n.title
-            : `${n.priority === 'EMERGENCY' ? '🚨 ' : '❗ '}${n.title}`,
-        body: n.body.slice(0, 140),
-      }),
-      data: { screen: 'notice', societyId: ctx.societyId, noticeId: n.id, priority: n.priority },
-    });
+  /** Queues the push in the transaction that publishes the notice. */
+  private async fanOut(ctx: TenantContext, n: NoticeRow, tx: Prisma.TransactionClient) {
+    await this.notifications.notifyUsers(
+      {
+        userIds: await this.recipients
+          .in(tx)
+          .ofAudience(ctx.societyId, AudienceSchema.parse(n.audience)),
+        exceptUserId: ctx.userId,
+        societyId: ctx.societyId,
+        category: 'NOTICE',
+        render: () => ({
+          title:
+            n.priority === 'NORMAL'
+              ? n.title
+              : `${n.priority === 'EMERGENCY' ? '🚨 ' : '❗ '}${n.title}`,
+          body: n.body.slice(0, 140),
+        }),
+        data: { screen: 'notice', societyId: ctx.societyId, noticeId: n.id, priority: n.priority },
+      },
+      tx,
+    );
   }
 
   private async readsFor(membershipId: string, noticeIds: string[]): Promise<Map<string, Date>> {

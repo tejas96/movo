@@ -130,9 +130,9 @@ export class DutiesService {
         },
         tx,
       );
+      await this.turns.activate(d, today, tx);
       return d;
     });
-    await this.turns.activate(duty, today);
     return this.get(duty.id);
   }
 
@@ -209,8 +209,16 @@ export class DutiesService {
         },
         tx,
       );
+      if (status === 'ACTIVE')
+        await this.turns.activate(
+          await tx.responsibility.findUniqueOrThrow({
+            where: { id: dutyId },
+            include: withParticipants,
+          }),
+          today,
+          tx,
+        );
     });
-    if (status === 'ACTIVE') await this.turns.activate(await this.requireDuty(dutyId), today);
     return this.get(dutyId);
   }
 
@@ -313,9 +321,9 @@ export class DutiesService {
         },
         tx,
       );
+      if (body.action === 'REASSIGN' && row.status === 'ACTIVE' && body.participantId)
+        await this.turns.tell(duty, body.participantId, 'start', dateOnly(row.periodEnd), tx);
     });
-    if (body.action === 'REASSIGN' && row.status === 'ACTIVE' && body.participantId)
-      await this.turns.tell(duty, body.participantId, 'start', dateOnly(row.periodEnd));
     return this.get(dutyId);
   }
 

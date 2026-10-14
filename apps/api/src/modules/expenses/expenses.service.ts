@@ -20,6 +20,7 @@ import { afterCursor, decodeCursor, slicePage } from '../../common/util/paginati
 import type {
   ExpenseCategory as CategoryRow,
   Expense as ExpenseRow,
+  Prisma,
 } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -120,6 +121,7 @@ export class ExpensesService {
           },
           tx,
         );
+        if (status === 'PENDING') await this.askApprovers(tx, ctx, e);
         return e;
       });
     } catch (error) {
@@ -130,7 +132,6 @@ export class ExpensesService {
       if (!winner) throw error;
       return this.get(winner.id);
     }
-    if (status === 'PENDING') await this.askApprovers(ctx, row);
     return this.toDto(ctx, row);
   }
 
@@ -180,10 +181,10 @@ export class ExpensesService {
         },
         tx,
       );
+      if (status === 'PENDING') await this.askApprovers(tx, ctx, e);
       return e;
     });
     if (receipts) await this.files.remove(receipts.dropped);
-    if (status === 'PENDING') await this.askApprovers(ctx, row);
     return this.toDto(ctx, row);
   }
 
@@ -220,19 +221,22 @@ export class ExpensesService {
         },
         tx,
       );
+      await this.notifications.notifyUsers(
+        {
+          userIds: await this.recipients.in(tx).ofMemberships([e.createdByMembershipId]),
+          societyId: ctx.societyId,
+          category: 'EXPENSE',
+          render: (t, locale) => ({
+            title: t(approve ? 'expenses:push.approvedTitle' : 'expenses:push.rejectedTitle', {
+              amount: formatMoney(e.amountPaise, locale),
+            }),
+            body: approve ? e.payeeName : `${e.payeeName} · ${reason ?? ''}`,
+          }),
+          data: { screen: 'expense', societyId: ctx.societyId, expenseId },
+        },
+        tx,
+      );
       return updated;
-    });
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofMemberships([e.createdByMembershipId]),
-      societyId: ctx.societyId,
-      category: 'EXPENSE',
-      render: (t, locale) => ({
-        title: t(approve ? 'expenses:push.approvedTitle' : 'expenses:push.rejectedTitle', {
-          amount: formatMoney(e.amountPaise, locale),
-        }),
-        body: approve ? e.payeeName : `${e.payeeName} · ${reason ?? ''}`,
-      }),
-      data: { screen: 'expense', societyId: ctx.societyId, expenseId },
     });
     return this.toDto(ctx, row);
   }
@@ -314,19 +318,26 @@ export class ExpensesService {
     );
   }
 
-  private async askApprovers(ctx: TenantContext, e: ExpenseWithCategory) {
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.withPermission(ctx.societyId, 'expense.approve', {
-        exceptMembershipId: e.createdByMembershipId,
-      }),
-      societyId: ctx.societyId,
-      category: 'EXPENSE',
-      render: (t, locale) => ({
-        title: t('expenses:push.pendingTitle', { amount: formatMoney(e.amountPaise, locale) }),
-        body: `${e.payeeName} · ${e.category.name}`,
-      }),
-      data: { screen: 'expense', societyId: ctx.societyId, expenseId: e.id },
-    });
+  private async askApprovers(
+    tx: Prisma.TransactionClient,
+    ctx: TenantContext,
+    e: ExpenseWithCategory,
+  ) {
+    await this.notifications.notifyUsers(
+      {
+        userIds: await this.recipients.in(tx).withPermission(ctx.societyId, 'expense.approve', {
+          exceptMembershipId: e.createdByMembershipId,
+        }),
+        societyId: ctx.societyId,
+        category: 'EXPENSE',
+        render: (t, locale) => ({
+          title: t('expenses:push.pendingTitle', { amount: formatMoney(e.amountPaise, locale) }),
+          body: `${e.payeeName} · ${e.category.name}`,
+        }),
+        data: { screen: 'expense', societyId: ctx.societyId, expenseId: e.id },
+      },
+      tx,
+    );
   }
 
   private async toDto(ctx: TenantContext, e: ExpenseWithCategory): Promise<Expense> {

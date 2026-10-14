@@ -80,6 +80,14 @@ export function currentTurn(d: DutyRow, rows: AssignmentRow[]): AssignmentRow | 
   return rows.find((r) => r.status === 'ACTIVE') ?? rows.find((r) => r.status !== 'UPCOMING');
 }
 
+/** Whether plan() would add turns, given the duty's highest planned periodIndex (null = none). */
+export function needsPlanning(duty: DutyWithParticipants, lastIndex: number | null, today: string) {
+  if (duty.participants.length === 0) return false;
+  const current = Math.max(0, periodIndexFor(cadenceOf(duty), today));
+  const first = Math.max(lastIndex === null ? 0 : lastIndex + 1, current);
+  return current + PLAN_AHEAD - first > 0;
+}
+
 /** Drops turns that have not started and plans them again. */
 export async function replan(tx: Tx, duty: DutyWithParticipants, today: string, carry?: string) {
   await tx.responsibilityAssignment.deleteMany({

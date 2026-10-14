@@ -8,9 +8,25 @@ import type { Prisma } from '../../generated/prisma/client';
  * `NotificationsService.notifyUsers`. Every query names the society (or ids from it) itself,
  * so it also works outside a request (jobs, join requests).
  */
+type Db = PrismaService | Prisma.TransactionClient;
+
 @Injectable()
 export class Recipients {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly prisma: Db;
+
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
+
+  /**
+   * The same lookups inside a transaction, so a push written in that transaction does not need
+   * a second connection while the first one is held.
+   */
+  in(tx: Prisma.TransactionClient): Recipients {
+    const bound = Object.create(Recipients.prototype) as { prisma: Db };
+    bound.prisma = tx;
+    return bound as unknown as Recipients;
+  }
 
   /** Users behind these memberships. `activeOnly` skips members who left or are suspended. */
   async ofMemberships(
@@ -24,6 +40,20 @@ export class Recipients {
       select: { userId: true },
     });
     return [...new Set(rows.map((r) => r.userId))];
+  }
+
+  /** The user behind each membership, keyed by membership. */
+  async byMembership(
+    membershipIds: readonly string[],
+    opts: { activeOnly?: boolean } = {},
+  ): Promise<Map<string, string>> {
+    const ids = [...new Set(membershipIds)];
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.membership.findMany({
+      where: { id: { in: ids }, ...(opts.activeOnly ? { status: 'ACTIVE' } : {}) },
+      select: { id: true, userId: true },
+    });
+    return new Map(rows.map((r) => [r.id, r.userId]));
   }
 
   /**

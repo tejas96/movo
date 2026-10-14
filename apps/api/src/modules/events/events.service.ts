@@ -133,10 +133,10 @@ export class EventsService {
         },
         tx,
       );
+      await this.items.resetReminders(tx, row, EVENT_REMINDER_WINDOWS);
+      await this.items.fanOut(tx, ctx, row, 'published');
       return row;
     });
-    await this.items.resetReminders(e, EVENT_REMINDER_WINDOWS);
-    await this.items.fanOut(ctx, e, 'published');
     return this.toDto(ctx, e);
   }
 
@@ -173,12 +173,12 @@ export class EventsService {
         },
         tx,
       );
+      if (moved) {
+        await this.items.resetReminders(tx, row, EVENT_REMINDER_WINDOWS);
+        await this.items.fanOut(tx, ctx, row, 'moved');
+      }
       return row;
     });
-    if (moved) {
-      await this.items.resetReminders(e, EVENT_REMINDER_WINDOWS);
-      await this.items.fanOut(ctx, e, 'moved');
-    }
     return this.toDto(ctx, e);
   }
 
@@ -199,9 +199,9 @@ export class EventsService {
         },
         tx,
       );
+      await this.items.fanOut(tx, ctx, row, 'cancelled', reason);
       return row;
     });
-    await this.items.fanOut(ctx, e, 'cancelled', reason);
     return this.toDto(ctx, e);
   }
 

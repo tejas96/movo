@@ -665,6 +665,8 @@ model MembershipRole {
   role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([membershipId, roleId])
+  // Members of a role: role member counts, ROLES audiences, permission recipients.
+  @@index([roleId])
 }
 
 model FlatOccupancy {
@@ -1003,6 +1005,15 @@ model ReminderSent {
   @@unique([entityType, entityId, kind])
 }
 
+/// Who runs a background job right now. A holder renews expiresAt while it works; once it
+/// lapses (the holder stopped or died) another instance may take the job.
+model JobLease {
+  name      String   @id
+  holder    String
+  expiresAt DateTime
+  updatedAt DateTime @updatedAt
+}
+
 // ---------- money: maintenance ----------
 model BillingPlan {
   id                 String           @id @default(uuid(7)) @db.Uuid
@@ -1111,6 +1122,9 @@ model Payment {
   @@unique([societyId, receiptNo])
   @@unique([societyId, idempotencyKey])
   @@index([societyId, flatId, paidOn(sort: Desc)])
+  // Payments list (newest first) and the FY report.
+  @@index([societyId, createdAt(sort: Desc), id(sort: Desc)])
+  @@index([societyId, financialYear, status])
 }
 
 model PaymentAllocation {
@@ -1366,14 +1380,18 @@ model NotificationDelivery {
   notificationId String          @db.Uuid
   channel        DeliveryChannel
   status         DeliveryStatus  @default(PENDING)
+  /// Lower goes first: 0 EMERGENCY, 1 MEMBERSHIP/SYSTEM, 2 day-to-day, 3 MAINTENANCE/EXPENSE.
+  priority       Int             @default(2) @db.SmallInt
   attempts       Int             @default(0)
   lastError      String?
   sentAt         DateTime?
+  /// Set while a sender holds the row; a crashed sender's claim runs out and the row is retried.
+  claimedUntil   DateTime?
   createdAt      DateTime        @default(now())
 
   notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
 
-  @@index([status, createdAt])
+  @@index([status, priority, createdAt])
 }
 
 model NotificationPreference {

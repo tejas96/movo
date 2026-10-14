@@ -112,10 +112,10 @@ export class MeetingsService {
         },
         tx,
       );
+      await this.items.resetReminders(tx, row, this.windows(ctx));
+      await this.items.fanOut(tx, ctx, row, 'scheduled');
       return row;
     });
-    await this.items.resetReminders(m, this.windows(ctx));
-    await this.items.fanOut(ctx, m, 'scheduled');
     return this.toDto(m);
   }
 
@@ -163,12 +163,12 @@ export class MeetingsService {
         },
         tx,
       );
+      if (moved) {
+        await this.items.resetReminders(tx, row, this.windows(ctx));
+        await this.items.fanOut(tx, ctx, row, 'moved', body.note);
+      }
       return row;
     });
-    if (moved) {
-      await this.items.resetReminders(m, this.windows(ctx));
-      await this.items.fanOut(ctx, m, 'moved', body.note);
-    }
     return this.toDto(m);
   }
 
@@ -189,16 +189,17 @@ export class MeetingsService {
         { action: 'meeting.note_added', entityType: 'Meeting', entityId: meetingId },
         tx,
       );
+      await this.items.fanOut(tx, ctx, m, 'note', note);
     });
-    await this.items.fanOut(ctx, m, 'note', note);
     return this.toDto(m);
   }
 
   async cancel(meetingId: string, note: string | undefined): Promise<Meeting> {
     const ctx = requireTenant();
     await this.requireScheduled(meetingId);
-    const m = await this.close(ctx, meetingId, 'CANCELLED', note);
-    await this.items.fanOut(ctx, m, 'cancelled', note);
+    const m = await this.close(ctx, meetingId, 'CANCELLED', note, (tx, row) =>
+      this.items.fanOut(tx, ctx, row, 'cancelled', note),
+    );
     return this.toDto(m);
   }
 
@@ -246,6 +247,8 @@ export class MeetingsService {
     meetingId: string,
     status: 'CANCELLED' | 'COMPLETED',
     note: string | undefined,
+    /** Runs last in the same transaction (the cancel push). */
+    then?: (tx: Prisma.TransactionClient, row: MeetingRow) => Promise<void>,
   ): Promise<MeetingRow> {
     return this.tenant.tx(async (tx) => {
       const moved = await tx.meeting.updateMany({
@@ -273,6 +276,7 @@ export class MeetingsService {
         },
         tx,
       );
+      if (then) await then(tx, row);
       return row;
     });
   }

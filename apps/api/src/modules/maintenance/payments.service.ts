@@ -98,6 +98,7 @@ export class PaymentsService {
     const fy = fyLabel(body.paidOn, ctx.society.fyStartMonth);
     const proofIds = await this.files.claim(ctx, body.proofIds ?? [], 'PAYMENT_PROOF');
 
+    const flatUsers = await this.recipients.ofFlat(flat.id);
     let paymentId: string;
     try {
       paymentId = await this.tenant.tx(async (tx) => {
@@ -165,6 +166,20 @@ export class PaymentsService {
           },
           tx,
         );
+        await this.notifications.notifyUsers(
+          {
+            userIds: flatUsers,
+            exceptUserId: ctx.userId,
+            societyId: ctx.societyId,
+            category: 'MAINTENANCE',
+            render: (t, locale) => ({
+              title: t('money:push.paymentTitle', { amount: formatMoney(p.amountPaise, locale) }),
+              body: t('money:push.paymentBody', { receipt: p.receiptNo, flat: flatLabel(flat) }),
+            }),
+            data: { screen: 'payment', societyId: ctx.societyId, paymentId: p.id },
+          },
+          tx,
+        );
         return p.id;
       });
     } catch (error) {
@@ -177,22 +192,7 @@ export class PaymentsService {
       return this.get(winner.id);
     }
 
-    const dto = await this.get(paymentId);
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofFlat(flat.id),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'MAINTENANCE',
-      render: (t, locale) => ({
-        title: t('money:push.paymentTitle', { amount: formatMoney(dto.amountPaise, locale) }),
-        body: t('money:push.paymentBody', {
-          receipt: dto.receiptNo,
-          flat: flatLabel(flat),
-        }),
-      }),
-      data: { screen: 'payment', societyId: ctx.societyId, paymentId },
-    });
-    return dto;
+    return this.get(paymentId);
   }
 
   async reverse(paymentId: string, reason: string): Promise<Payment> {
@@ -207,6 +207,7 @@ export class PaymentsService {
     if (!this.canReverse(ctx, p))
       throw ApiException.forbidden('Ask someone who can waive dues to reverse this payment');
     const today = todayIn(ctx.society.timezone);
+    const flatUsers = await this.recipients.ofFlat(p.flatId);
     await this.tenant.tx(async (tx) => {
       await lockFor(tx, `flat-dues:${p.flatId}`);
       const moved = await tx.payment.updateMany({
@@ -234,17 +235,20 @@ export class PaymentsService {
         },
         tx,
       );
-    });
-    await this.notifications.notifyUsers({
-      userIds: await this.recipients.ofFlat(p.flatId),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'MAINTENANCE',
-      render: (t, locale) => ({
-        title: t('money:push.reversedTitle', { amount: formatMoney(p.amountPaise, locale) }),
-        body: t('money:push.reversedBody', { receipt: p.receiptNo, reason }),
-      }),
-      data: { screen: 'payment', societyId: ctx.societyId, paymentId },
+      await this.notifications.notifyUsers(
+        {
+          userIds: flatUsers,
+          exceptUserId: ctx.userId,
+          societyId: ctx.societyId,
+          category: 'MAINTENANCE',
+          render: (t, locale) => ({
+            title: t('money:push.reversedTitle', { amount: formatMoney(p.amountPaise, locale) }),
+            body: t('money:push.reversedBody', { receipt: p.receiptNo, reason }),
+          }),
+          data: { screen: 'payment', societyId: ctx.societyId, paymentId },
+        },
+        tx,
+      );
     });
     return this.get(paymentId);
   }

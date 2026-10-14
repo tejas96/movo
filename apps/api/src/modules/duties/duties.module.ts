@@ -5,7 +5,7 @@ import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { DutiesController } from './duties.controller';
 import { DutiesJob } from './duties.job';
-import { leaveDutiesOnAccountDeleted } from './duties.lifecycle';
+import { leaveDutiesOnMemberLeft } from './duties.lifecycle';
 import { DutiesService } from './duties.service';
 import { DutyTurns } from './duty-turns.service';
 
@@ -24,7 +24,7 @@ export class DutiesModule implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    this.lifecycle.onAccountDeleted(leaveDutiesOnAccountDeleted(this.audit));
+    this.lifecycle.onMemberLeft(leaveDutiesOnMemberLeft(this.audit));
     this.home.register({
       module: 'responsibilities',
       order: HOME_ORDER.duties,

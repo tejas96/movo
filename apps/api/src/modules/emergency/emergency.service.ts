@@ -194,6 +194,8 @@ export class EmergencyService {
       const flat = await this.db.flat.findUnique({ where: { id: flatId } });
       if (!flat) throw ApiException.notFound('Flat not found');
     }
+    const raiser = (await loadMemberNames(this.prisma, [ctx.membershipId])).get(ctx.membershipId);
+    const recipientIds = await this.alertRecipients(ctx, settings);
     const row = await this.tenant.tx(async (tx) => {
       const a = await tx.alert.create({
         data: {
@@ -215,31 +217,34 @@ export class EmergencyService {
         },
         tx,
       );
+      // Queued with the alert; sent the moment the transaction commits.
+      await this.notifications.notifyUsers(
+        {
+          userIds: recipientIds,
+          exceptUserId: ctx.userId,
+          societyId: ctx.societyId,
+          category: 'EMERGENCY',
+          render: (t) => {
+            const vars = this.pushVars(t, a, raiser?.displayName ?? '');
+            return {
+              title: t('emergency:push.raisedTitle', vars),
+              body: a.message
+                ? t('emergency:push.raisedBody', { ...vars, message: a.message })
+                : t('emergency:push.raisedBodyNoMessage', vars),
+            };
+          },
+          data: {
+            screen: 'alert',
+            societyId: ctx.societyId,
+            alertId: a.id,
+            priority: 'EMERGENCY',
+          },
+        },
+        tx,
+      );
       return a;
     });
 
-    const raiser = (await loadMemberNames(this.prisma, [ctx.membershipId])).get(ctx.membershipId);
-    await this.notifications.notifyUsers({
-      userIds: await this.alertRecipients(ctx, settings),
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'EMERGENCY',
-      render: (t) => {
-        const vars = this.pushVars(t, row, raiser?.displayName ?? '');
-        return {
-          title: t('emergency:push.raisedTitle', vars),
-          body: row.message
-            ? t('emergency:push.raisedBody', { ...vars, message: row.message })
-            : t('emergency:push.raisedBodyNoMessage', vars),
-        };
-      },
-      data: {
-        screen: 'alert',
-        societyId: ctx.societyId,
-        alertId: row.id,
-        priority: 'EMERGENCY',
-      },
-    });
     return this.toDto(ctx, row);
   }
 
@@ -251,6 +256,10 @@ export class EmergencyService {
     if (before.status !== 'ACTIVE')
       throw ApiException.conflict('CONFLICT', 'This alert is already closed');
 
+    const recipientIds = [
+      ...(await this.alertRecipients(ctx, this.settings(ctx))),
+      ...(await this.recipients.ofMemberships([before.raisedByMembershipId])),
+    ];
     const row = await this.tenant.tx(async (tx) => {
       const updated = await tx.alert.updateMany({
         where: { id: alertId, societyId: ctx.societyId, status: 'ACTIVE' },
@@ -273,29 +282,33 @@ export class EmergencyService {
         },
         tx,
       );
-      return tx.alert.findUniqueOrThrow({ where: { id: alertId }, include: alertInclude });
+      const closed = await tx.alert.findUniqueOrThrow({
+        where: { id: alertId },
+        include: alertInclude,
+      });
+      await this.notifications.notifyUsers(
+        {
+          userIds: recipientIds,
+          exceptUserId: ctx.userId,
+          societyId: ctx.societyId,
+          category: 'EMERGENCY',
+          render: (t) => {
+            const vars = this.pushVars(t, closed, '');
+            return {
+              title: t('emergency:push.closedTitle', vars),
+              body: t('emergency:push.closedBody', {
+                ...vars,
+                outcome: t(`emergency:status.${body.outcome}`),
+              }),
+            };
+          },
+          data: { screen: 'alert', societyId: ctx.societyId, alertId },
+        },
+        tx,
+      );
+      return closed;
     });
 
-    await this.notifications.notifyUsers({
-      userIds: [
-        ...(await this.alertRecipients(ctx, this.settings(ctx))),
-        ...(await this.recipients.ofMemberships([before.raisedByMembershipId])),
-      ],
-      exceptUserId: ctx.userId,
-      societyId: ctx.societyId,
-      category: 'EMERGENCY',
-      render: (t) => {
-        const vars = this.pushVars(t, row, '');
-        return {
-          title: t('emergency:push.closedTitle', vars),
-          body: t('emergency:push.closedBody', {
-            ...vars,
-            outcome: t(`emergency:status.${body.outcome}`),
-          }),
-        };
-      },
-      data: { screen: 'alert', societyId: ctx.societyId, alertId },
-    });
     return this.toDto(ctx, row);
   }
 
