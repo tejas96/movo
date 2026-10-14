@@ -2,7 +2,6 @@ import { emergencyContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys } from '../home/keys';
 import { emergencyKeys } from './keys';
 
 export function useEmergencyContacts(societyId: string) {
@@ -37,7 +36,6 @@ function useInvalidateEmergency(societyId: string) {
   const qc = useQueryClient();
   return () => {
     void qc.invalidateQueries({ queryKey: emergencyKeys(societyId).all });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 

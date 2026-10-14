@@ -12,7 +12,6 @@ import { societyKey } from '../../core/api/query-keys';
 import { useCursorList } from '../../core/api/use-cursor-list';
 import { invalidateContext } from '../../core/auth/auth';
 import { directoryKeys } from '../directory/keys';
-import { homeKeys } from '../home/keys';
 import { societyKeys } from '../society/keys';
 import { manageKeys } from './keys';
 
@@ -66,7 +65,6 @@ export function useCreateInvitation(societyId: string) {
       api(societyContract.createInvitation, { params: { societyId }, body }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: manageKeys(societyId).invitations });
-      void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     },
   });
 }
@@ -106,7 +104,6 @@ export function useDecideJoinRequest(societyId: string) {
         : api(societyContract.rejectJoinRequest, { params: { societyId, requestId }, body: {} }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: manageKeys(societyId).joinRequests });
-      void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
       void qc.invalidateQueries({ queryKey: directoryKeys(societyId).lists });
     },
   });

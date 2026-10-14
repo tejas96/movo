@@ -1,15 +1,60 @@
+import { type Meeting, meetingsContract } from '@movo/contracts';
 import { BottomBar, Button, Input, Screen, Text, TitleBar, useToast } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { type DurationKey, defaultStart, durationOf, endFor, WhenFields } from '../calendar/shared';
 import { useCreateMeeting, useMeeting, useUpdateMeeting } from './api';
+
+interface MeetingForm {
+  title: string;
+  agenda: string;
+  location: string;
+  start: Date;
+  duration: DurationKey;
+  /** Sent only on update, when the start time moved. */
+  note: string;
+}
+
+function emptyForm(): MeetingForm {
+  return {
+    title: '',
+    agenda: '',
+    location: '',
+    start: defaultStart(19),
+    duration: 'h1',
+    note: '',
+  };
+}
+
+function toForm(m: Meeting): MeetingForm {
+  return {
+    title: m.title,
+    agenda: m.agenda ?? '',
+    location: m.location ?? '',
+    start: new Date(m.startsAt),
+    duration: durationOf(m.startsAt, m.endsAt),
+    note: '',
+  };
+}
+
+function toBody(v: MeetingForm) {
+  return {
+    title: v.title.trim(),
+    agenda: v.agenda.trim() || null,
+    location: v.location.trim() || null,
+    startsAt: v.start.toISOString(),
+    endsAt: endFor(v.start, v.duration),
+  };
+}
 
 export function MeetingEditorScreen() {
   const { t } = useTranslation(['meetings', 'common']);
@@ -21,52 +66,34 @@ export function MeetingEditorScreen() {
   const existing = useMeeting(societyId, meetingId ?? '');
   const create = useCreateMeeting(societyId);
   const update = useUpdateMeeting(societyId, meetingId ?? '');
-  const [title, setTitle] = useState('');
-  const [agenda, setAgenda] = useState('');
-  const [location, setLocation] = useState('');
-  const [start, setStart] = useState(() => defaultStart(19));
-  const [duration, setDuration] = useState<DurationKey>('h1');
-  const [note, setNote] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [timeError, setTimeError] = useState<string | undefined>();
+  const form = useForm<MeetingForm>({
+    resolver: bodyResolver(meetingsContract.create.body, toBody),
+    defaultValues: emptyForm(),
+    reValidateMode: 'onSubmit',
+  });
+  usePrefill(form, meetingId ? existing.data : undefined, toForm);
+  const error = formMessage(form, t('common:validation.required'));
+  const { start, duration } = form.watch();
 
-  useEffect(() => {
-    const m = existing.data;
-    if (!meetingId || !m) return;
-    setTitle(m.title);
-    setAgenda(m.agenda ?? '');
-    setLocation(m.location ?? '');
-    setStart(new Date(m.startsAt));
-    setDuration(durationOf(m.startsAt, m.endsAt));
-  }, [meetingId, existing.data]);
+  const isMoved = (at: Date) =>
+    Boolean(
+      meetingId && existing.data && new Date(existing.data.startsAt).getTime() !== at.getTime(),
+    );
+  const moved = isMoved(start);
 
-  const moved = Boolean(
-    meetingId && existing.data && new Date(existing.data.startsAt).getTime() !== start.getTime(),
-  );
-
-  const save = async () => {
-    setError(null);
-    setTimeError(undefined);
-    if (title.trim().length < 2) {
-      setError(t('common:validation.required'));
-      return;
-    }
-    if ((!meetingId || moved) && start.getTime() < Date.now()) {
+  const submit = form.handleSubmit(async (values) => {
+    const movedNow = isMoved(values.start);
+    if ((!meetingId || movedNow) && values.start.getTime() < Date.now()) {
       setTimeError(t('meetings:form.pastTime'));
       return;
     }
-    const fields = {
-      title: title.trim(),
-      agenda: agenda.trim() || null,
-      location: location.trim() || null,
-      startsAt: start.toISOString(),
-      endsAt: endFor(start, duration),
-    };
+    const fields = toBody(values);
     try {
       if (meetingId) {
         await update.mutateAsync({
           ...fields,
-          ...(moved && note.trim() ? { note: note.trim() } : {}),
+          ...(movedNow && values.note.trim() ? { note: values.note.trim() } : {}),
         });
         toast.show(t('meetings:form.saved'));
       } else {
@@ -75,8 +102,13 @@ export function MeetingEditorScreen() {
       }
       nav.goBack();
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
+  });
+
+  const save = () => {
+    setTimeError(undefined);
+    void submit();
   };
 
   if (meetingId && loadFailed(existing))
@@ -95,45 +127,69 @@ export function MeetingEditorScreen() {
           onBack={() => nav.goBack()}
         />
         <View className="mt-6 gap-3">
-          <Input
-            label={t('meetings:form.title')}
-            placeholder={t('meetings:form.titleHint')}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={120}
+          <Controller
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <Input
+                label={t('meetings:form.title')}
+                placeholder={t('meetings:form.titleHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={120}
+              />
+            )}
           />
           <WhenFields
             start={start}
-            onStart={setStart}
+            onStart={(d) => form.setValue('start', d)}
             duration={duration}
-            onDuration={setDuration}
+            onDuration={(d) => form.setValue('duration', d)}
             labels={{
               startsAt: t('meetings:form.startsAt'),
               duration: t('meetings:form.duration'),
             }}
             error={timeError}
           />
-          <Input
-            label={t('meetings:form.location')}
-            placeholder={t('meetings:form.locationHint')}
-            value={location}
-            onChangeText={setLocation}
-            maxLength={120}
+          <Controller
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <Input
+                label={t('meetings:form.location')}
+                placeholder={t('meetings:form.locationHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={120}
+              />
+            )}
           />
-          <Input
-            label={t('meetings:form.agenda')}
-            value={agenda}
-            onChangeText={setAgenda}
-            multiline
-            maxLength={5000}
-            style={{ minHeight: 120, textAlignVertical: 'top' }}
+          <Controller
+            control={form.control}
+            name="agenda"
+            render={({ field }) => (
+              <Input
+                label={t('meetings:form.agenda')}
+                value={field.value}
+                onChangeText={field.onChange}
+                multiline
+                maxLength={5000}
+                style={{ minHeight: 120, textAlignVertical: 'top' }}
+              />
+            )}
           />
           {moved ? (
-            <Input
-              label={t('meetings:form.rescheduleNote')}
-              value={note}
-              onChangeText={setNote}
-              maxLength={1000}
+            <Controller
+              control={form.control}
+              name="note"
+              render={({ field }) => (
+                <Input
+                  label={t('meetings:form.rescheduleNote')}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  maxLength={1000}
+                />
+              )}
             />
           ) : null}
           {!meetingId ? (
@@ -153,7 +209,7 @@ export function MeetingEditorScreen() {
           <Button
             label={meetingId ? t('common:actions.save') : t('meetings:form.schedule')}
             inline
-            onPress={() => void save()}
+            onPress={save}
             loading={create.isPending || update.isPending}
           />
         }

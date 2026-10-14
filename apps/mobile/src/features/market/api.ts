@@ -2,7 +2,6 @@ import { type ListingKind, marketContract, type OrderRole, type RouteBody } from
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys } from '../home/keys';
 import { marketKeys } from './keys';
 
 const c = marketContract;
@@ -68,7 +67,6 @@ function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
     void qc.invalidateQueries({ queryKey: marketKeys(societyId).all });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 

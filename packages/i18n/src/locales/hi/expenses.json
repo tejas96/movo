@@ -38,6 +38,7 @@
     "category": "श्रेणी",
     "pickCategory": "श्रेणी चुनें",
     "amount": "राशि",
+    "amountMax": "₹1,00,00,000 या उससे कम रकम डालें।",
     "date": "भुगतान की तारीख",
     "payee": "किसे दिया",
     "payeeHint": "जैसे: MSEDCL",

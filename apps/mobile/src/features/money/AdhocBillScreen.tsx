@@ -1,3 +1,4 @@
+import { maintenanceContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -10,14 +11,30 @@ import {
   useToast,
 } from '@movo/design-system';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { bodyResolver, formMessage } from '../../core/forms/contract-form';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { day, isoDay, parseRupees } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
 import { useCreateAdhoc } from './api';
+
+interface AdhocForm {
+  title: string;
+  amount: string;
+  due: Date;
+}
+
+function toBody(v: AdhocForm) {
+  return {
+    title: v.title.trim(),
+    amountPaise: parseRupees(v.amount) ?? 0,
+    dueDate: isoDay(v.due),
+  };
+}
 
 export function AdhocBillScreen() {
   const { t } = useTranslation(['money', 'common']);
@@ -26,50 +43,62 @@ export function AdhocBillScreen() {
   const toMessage = useErrorMessage();
   const societyId = useSocietyId();
   const create = useCreateAdhoc(societyId);
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
-  const [due, setDue] = useState(() => new Date(Date.now() + 14 * 86_400_000));
   const [dateOpen, setDateOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [empty] = useState(
+    (): AdhocForm => ({
+      title: '',
+      amount: '',
+      due: new Date(Date.now() + 14 * 86_400_000),
+    }),
+  );
+  const form = useForm<AdhocForm>({
+    resolver: bodyResolver(maintenanceContract.createAdhocBills.body, toBody),
+    defaultValues: empty,
+    reValidateMode: 'onSubmit',
+  });
+  const error = formMessage(form, t('common:validation.required'));
+  const { due } = form.watch();
 
-  const submit = async () => {
-    setError(null);
-    const amountPaise = parseRupees(amount);
-    if (title.trim().length < 2 || !amountPaise) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     try {
-      const r = await create.mutateAsync({
-        title: title.trim(),
-        amountPaise,
-        dueDate: isoDay(due),
-      });
+      const r = await create.mutateAsync(toBody(values));
       toast.show(t('money:adhoc.created', { count: r.created }));
       nav.goBack();
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   return (
     <>
       <Screen bottomBar>
         <TitleBar title={t('money:adhoc.title')} onBack={() => nav.goBack()} />
         <View className="mt-6 gap-3">
-          <Input
-            label={t('money:adhoc.name')}
-            placeholder={t('money:adhoc.nameHint')}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={80}
+          <Controller
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <Input
+                label={t('money:adhoc.name')}
+                placeholder={t('money:adhoc.nameHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={80}
+              />
+            )}
           />
-          <Input
-            label={t('money:adhoc.amount')}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            placeholder="5000"
+          <Controller
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <Input
+                label={t('money:adhoc.amount')}
+                value={field.value}
+                onChangeText={field.onChange}
+                keyboardType="decimal-pad"
+                placeholder="5000"
+              />
+            )}
           />
           <SelectField
             label={t('money:adhoc.dueDate')}
@@ -102,7 +131,7 @@ export function AdhocBillScreen() {
         mode="date"
         title={t('money:adhoc.dueDate')}
         value={due}
-        onChange={setDue}
+        onChange={(d) => form.setValue('due', d)}
         localeTag={localeTag()}
         labels={{
           date: t('common:picker.date'),

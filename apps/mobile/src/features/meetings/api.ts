@@ -2,7 +2,6 @@ import { type Meeting, meetingsContract, type RouteBody, type Timeframe } from '
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys } from '../home/keys';
 import { meetingsKeys } from './keys';
 
 type CreateBody = RouteBody<typeof meetingsContract.create>;
@@ -31,7 +30,6 @@ function useInvalidateMeetings(societyId: string) {
   const qc = useQueryClient();
   return (meeting: Meeting) => {
     void qc.invalidateQueries({ queryKey: meetingsKeys(societyId).lists });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     qc.setQueryData(meetingsKeys(societyId).detail(meeting.id), meeting);
   };
 }

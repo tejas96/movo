@@ -2,7 +2,6 @@ import { eventsContract, type RouteBody, type SocietyEvent, type Timeframe } fro
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys } from '../home/keys';
 import { eventsKeys } from './keys';
 
 type CreateBody = RouteBody<typeof eventsContract.create>;
@@ -41,7 +40,6 @@ function useInvalidateEvents(societyId: string) {
   return (event: SocietyEvent) => {
     void qc.invalidateQueries({ queryKey: eventsKeys(societyId).lists });
     void qc.invalidateQueries({ queryKey: eventsKeys(societyId).rsvps(event.id) });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     qc.setQueryData(eventsKeys(societyId).detail(event.id), event);
   };
 }

@@ -4,8 +4,10 @@ import {
   type Fulfilment,
   type ItemCondition,
   ItemConditionSchema,
+  type Listing,
   type ListingKind,
   MAX_LISTING_PHOTOS,
+  marketContract,
   type PriceType,
   PriceTypeSchema,
 } from '@movo/contracts';
@@ -25,10 +27,18 @@ import {
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useState } from 'react';
+import {
+  Controller,
+  type FieldError,
+  type FieldErrors,
+  type Resolver,
+  useForm,
+} from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { bodyResolver, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoPickerRow, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
@@ -39,13 +49,129 @@ import { useListing, useSaveListing } from './api';
 import { DietMark, KIND_ICON, shortWhen, useAllowedKinds, useMarketSettings } from './shared';
 
 const UNITS = ['plate', 'piece', 'kg', 'box', 'hour'] as const;
-type ErrorKey = 'name' | 'price' | 'unit' | 'diet' | 'times' | 'uploading';
+type ErrorKey = 'name' | 'price' | 'priceMax' | 'unit' | 'diet' | 'times' | 'quantity';
+
+/** Body field → the message shown for it. The first one that failed is shown, in this order. */
+const PROBLEMS: readonly (readonly [string, ErrorKey])[] = [
+  ['title', 'name'],
+  ['pricePaise', 'price'],
+  ['unit', 'unit'],
+  ['diet', 'diet'],
+  ['orderBy', 'times'],
+  ['quantityAvailable', 'quantity'],
+];
 
 const nextQuarter = (hours: number) => {
   const d = new Date(Date.now() + hours * 3_600_000);
   d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0);
   return d;
 };
+
+interface ListingForm {
+  kind: ListingKind;
+  title: string;
+  description: string;
+  priceType: PriceType;
+  amount: string;
+  unit: string;
+  diet: Diet | null;
+  quantity: string;
+  readyAt: Date | null;
+  orderBy: Date | null;
+  fulfilment: Fulfilment;
+  condition: ItemCondition | null;
+  sharePhone: boolean;
+  network: boolean;
+}
+
+const empty = (kind: ListingKind): ListingForm => ({
+  kind,
+  title: '',
+  description: '',
+  priceType: 'FIXED',
+  amount: '',
+  unit: '',
+  diet: null,
+  quantity: '',
+  readyAt: null,
+  orderBy: null,
+  fulfilment: 'PICKUP',
+  condition: null,
+  sharePhone: false,
+  network: false,
+});
+
+function toForm(l: Listing): ListingForm {
+  return {
+    kind: l.kind,
+    title: l.title,
+    description: l.description ?? '',
+    priceType: l.priceType,
+    amount: l.pricePaise ? rupeesText(l.pricePaise) : '',
+    unit: l.unit ?? '',
+    diet: l.diet,
+    quantity: l.quantityAvailable != null ? String(l.quantityAvailable) : '',
+    readyAt: l.readyAt ? new Date(l.readyAt) : null,
+    orderBy: l.orderBy ? new Date(l.orderBy) : null,
+    fulfilment: l.fulfilment,
+    condition: l.condition,
+    sharePhone: l.showPhoneAfterAccept,
+    network: l.visibility === 'NETWORK',
+  };
+}
+
+function toBody(v: ListingForm, imageIds: string[], networkOn: boolean) {
+  const food = v.kind === 'FOOD';
+  const pricePaise = v.amount.trim() ? parseRupees(v.amount) : null;
+  const qty = v.quantity.trim() ? Number.parseInt(v.quantity, 10) : null;
+  return {
+    kind: v.kind,
+    title: v.title.trim(),
+    description: v.description.trim() || null,
+    priceType: v.priceType,
+    pricePaise: v.priceType === 'FREE' ? null : pricePaise,
+    unit: v.priceType === 'PER_UNIT' ? v.unit.trim() : null,
+    diet: food ? v.diet : null,
+    quantityAvailable: qty != null && !Number.isNaN(qty) ? qty : null,
+    readyAt: food && v.readyAt ? v.readyAt.toISOString() : null,
+    orderBy: food && v.orderBy ? v.orderBy.toISOString() : null,
+    fulfilment: v.fulfilment,
+    condition: v.kind === 'RESALE' ? v.condition : null,
+    imageIds,
+    visibility: networkOn && v.network ? ('NETWORK' as const) : ('SOCIETY' as const),
+    showPhoneAfterAccept: v.sharePhone,
+  };
+}
+
+/**
+ * Rules the body schema cannot see: fixed and per-unit prices need an amount, a typed amount
+ * must read as rupees, and food needs a diet mark and an order-by time before the ready time.
+ */
+function extraProblems(v: ListingForm): string[] {
+  const food = v.kind === 'FOOD';
+  const pricePaise = v.amount.trim() ? parseRupees(v.amount) : null;
+  const needsPrice = v.priceType === 'FIXED' || v.priceType === 'PER_UNIT';
+  const out: string[] = [];
+  if ((needsPrice && !pricePaise) || (v.amount.trim() && !pricePaise && v.priceType !== 'FREE'))
+    out.push('pricePaise');
+  if (food && !v.diet) out.push('diet');
+  if (food && v.readyAt && v.orderBy && v.orderBy.getTime() >= v.readyAt.getTime())
+    out.push('orderBy');
+  return out;
+}
+
+/** The body schema plus the rules above, with errors on the body's field names. */
+function listingResolver(toBodyNow: (v: ListingForm) => unknown): Resolver<ListingForm> {
+  const schema = bodyResolver(marketContract.createListing.body, toBodyNow);
+  return async (values, context, options) => {
+    const result = await schema(values, context, options);
+    const extra = extraProblems(values);
+    if (!extra.length) return result;
+    const errors: Record<string, unknown> = { ...result.errors };
+    for (const name of extra) errors[name] ??= { type: 'custom' } satisfies FieldError;
+    return { values: {}, errors: errors as FieldErrors<ListingForm> };
+  };
+}
 
 export function ListingEditorScreen() {
   const { t } = useTranslation(['market', 'common']);
@@ -60,95 +186,54 @@ export function ListingEditorScreen() {
   const settings = useMarketSettings();
   const kinds = useAllowedKinds();
   const picker = usePhotoPicker(societyId, { kind: 'LISTING_IMAGE', max: MAX_LISTING_PHOTOS });
-
-  const [kind, setKind] = useState<ListingKind>(params?.kind ?? kinds[0] ?? 'PRODUCT');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priceType, setPriceType] = useState<PriceType>('FIXED');
-  const [amount, setAmount] = useState('');
-  const [unit, setUnit] = useState('');
-  const [diet, setDiet] = useState<Diet | null>(null);
-  const [quantity, setQuantity] = useState('');
-  const [readyAt, setReadyAt] = useState<Date | null>(null);
-  const [orderBy, setOrderBy] = useState<Date | null>(null);
-  const [fulfilment, setFulfilment] = useState<Fulfilment>('PICKUP');
-  const [condition, setCondition] = useState<ItemCondition | null>(null);
-  const [sharePhone, setSharePhone] = useState(false);
-  const [network, setNetwork] = useState(false);
   const [sheet, setSheet] = useState<'ready' | 'orderBy' | null>(null);
-  const [error, setError] = useState<ErrorKey | null>(null);
-  const [loaded, setLoaded] = useState(false);
 
+  const body = (v: ListingForm) => toBody(v, picker.ids, settings.network);
+  const form = useForm<ListingForm>({
+    resolver: listingResolver(body),
+    defaultValues: empty(params?.kind ?? kinds[0] ?? 'PRODUCT'),
+    reValidateMode: 'onSubmit',
+  });
   const { reset } = picker;
-  const l = existing.data;
-  useEffect(() => {
-    if (!l || loaded) return;
-    setLoaded(true);
-    setKind(l.kind);
-    setTitle(l.title);
-    setDescription(l.description ?? '');
-    setPriceType(l.priceType);
-    setAmount(l.pricePaise ? rupeesText(l.pricePaise) : '');
-    setUnit(l.unit ?? '');
-    setDiet(l.diet);
-    setQuantity(l.quantityAvailable != null ? String(l.quantityAvailable) : '');
-    setReadyAt(l.readyAt ? new Date(l.readyAt) : null);
-    setOrderBy(l.orderBy ? new Date(l.orderBy) : null);
-    setFulfilment(l.fulfilment);
-    setCondition(l.condition);
-    setSharePhone(l.showPhoneAfterAccept);
-    setNetwork(l.visibility === 'NETWORK');
+  usePrefill(form, listingId ? existing.data : undefined, (l) => {
     reset(l.images);
-  }, [l, loaded, reset]);
+    return toForm(l);
+  });
+  const errors = form.formState.errors as Record<string, unknown>;
+  const found = PROBLEMS.find(([field]) => errors[field]);
+  // The schema caps the price; a price over the cap gets its own message.
+  const error: ErrorKey | null =
+    found?.[1] === 'price' && (errors.pricePaise as FieldError | undefined)?.type === 'too_big'
+      ? 'priceMax'
+      : (found?.[1] ?? null);
+  const formError = form.formState.errors.root?.server?.message;
+  const {
+    kind,
+    priceType,
+    unit,
+    diet,
+    readyAt,
+    orderBy,
+    fulfilment,
+    condition,
+    sharePhone,
+    network,
+  } = form.watch();
 
   const food = kind === 'FOOD';
-  const needsPrice = priceType === 'FIXED' || priceType === 'PER_UNIT';
 
-  const submit = async () => {
-    setError(null);
-    const pricePaise = amount.trim() ? parseRupees(amount) : null;
-    const qty = quantity.trim() ? Number.parseInt(quantity, 10) : null;
-    const problem: ErrorKey | null =
-      title.trim().length < 2
-        ? 'name'
-        : (needsPrice && !pricePaise) || (amount.trim() && !pricePaise && priceType !== 'FREE')
-          ? 'price'
-          : priceType === 'PER_UNIT' && !unit.trim()
-            ? 'unit'
-            : food && !diet
-              ? 'diet'
-              : food && readyAt && orderBy && orderBy.getTime() >= readyAt.getTime()
-                ? 'times'
-                : picker.uploading
-                  ? 'uploading'
-                  : null;
-    if (problem) {
-      setError(problem);
+  const submit = form.handleSubmit(async (values) => {
+    if (picker.uploading) {
+      form.setError('root.server', { message: t('market:editor.errors.uploading') });
       return;
     }
     await withErrorToast(async () => {
-      const saved = await save.mutateAsync({
-        kind,
-        title: title.trim(),
-        description: description.trim() || null,
-        priceType,
-        pricePaise: priceType === 'FREE' ? null : pricePaise,
-        unit: priceType === 'PER_UNIT' ? unit.trim() : null,
-        diet: food ? diet : null,
-        quantityAvailable: qty != null && !Number.isNaN(qty) ? qty : null,
-        readyAt: food && readyAt ? readyAt.toISOString() : null,
-        orderBy: food && orderBy ? orderBy.toISOString() : null,
-        fulfilment,
-        condition: kind === 'RESALE' ? condition : null,
-        imageIds: picker.ids,
-        visibility: settings.network && network ? 'NETWORK' : 'SOCIETY',
-        showPhoneAfterAccept: sharePhone,
-      });
+      const saved = await save.mutateAsync(body(values));
       toast.show(t('market:editor.saved'));
       if (listingId) nav.goBack();
       else nav.replace('Listing', { listingId: saved.id });
     });
-  };
+  });
 
   const pickerLabels = {
     date: t('common:picker.date'),
@@ -181,7 +266,7 @@ export function ListingEditorScreen() {
                   icon={KIND_ICON[k]}
                   label={t(`market:kindOne.${k}`)}
                   selected={kind === k}
-                  onPress={() => setKind(k)}
+                  onPress={() => form.setValue('kind', k)}
                 />
               ))}
             </ChipRow>
@@ -191,22 +276,34 @@ export function ListingEditorScreen() {
             <PhotoPickerRow picker={picker} showCover />
           </Field>
 
-          <Input
-            label={t('market:editor.name')}
-            placeholder={t('market:editor.nameHint')}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={80}
-            error={error === 'name' ? t('market:editor.errors.name') : undefined}
+          <Controller
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <Input
+                label={t('market:editor.name')}
+                placeholder={t('market:editor.nameHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={80}
+                error={error === 'name' ? t('market:editor.errors.name') : undefined}
+              />
+            )}
           />
-          <Input
-            label={t('market:editor.description')}
-            placeholder={t('market:editor.descriptionHint')}
-            value={description}
-            onChangeText={setDescription}
-            maxLength={2000}
-            multiline
-            style={{ minHeight: 96, textAlignVertical: 'top' }}
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <Input
+                label={t('market:editor.description')}
+                placeholder={t('market:editor.descriptionHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={2000}
+                multiline
+                style={{ minHeight: 96, textAlignVertical: 'top' }}
+              />
+            )}
           />
 
           <Field label={t('market:editor.priceType')}>
@@ -216,35 +313,53 @@ export function ListingEditorScreen() {
                   key={p}
                   label={t(`market:editor.priceTypes.${p}`)}
                   selected={priceType === p}
-                  onPress={() => setPriceType(p)}
+                  onPress={() => form.setValue('priceType', p)}
                 />
               ))}
             </ChipRow>
           </Field>
           {priceType !== 'FREE' ? (
-            <Input
-              label={
-                priceType === 'NEGOTIABLE'
-                  ? t('market:editor.askingPrice')
-                  : t('market:editor.amount')
-              }
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="decimal-pad"
-              placeholder="120"
-              error={error === 'price' ? t('market:editor.errors.price') : undefined}
+            <Controller
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <Input
+                  label={
+                    priceType === 'NEGOTIABLE'
+                      ? t('market:editor.askingPrice')
+                      : t('market:editor.amount')
+                  }
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  keyboardType="decimal-pad"
+                  placeholder="120"
+                  error={
+                    error === 'price'
+                      ? t('market:editor.errors.price')
+                      : error === 'priceMax'
+                        ? t('market:editor.errors.priceMax')
+                        : undefined
+                  }
+                />
+              )}
             />
           ) : null}
           {priceType === 'PER_UNIT' ? (
             <View>
-              <Input
-                label={t('market:editor.unit')}
-                placeholder={t('market:editor.unitHint')}
-                value={unit}
-                onChangeText={setUnit}
-                maxLength={20}
-                autoCapitalize="none"
-                error={error === 'unit' ? t('market:editor.errors.unit') : undefined}
+              <Controller
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <Input
+                    label={t('market:editor.unit')}
+                    placeholder={t('market:editor.unitHint')}
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    maxLength={20}
+                    autoCapitalize="none"
+                    error={error === 'unit' ? t('market:editor.errors.unit') : undefined}
+                  />
+                )}
               />
               <ChipRow className="mt-2">
                 {UNITS.map((u) => {
@@ -254,7 +369,7 @@ export function ListingEditorScreen() {
                       key={u}
                       label={word}
                       selected={unit === word}
-                      onPress={() => setUnit(word)}
+                      onPress={() => form.setValue('unit', word)}
                     />
                   );
                 })}
@@ -273,7 +388,7 @@ export function ListingEditorScreen() {
                     key={d}
                     accessibilityRole="radio"
                     accessibilityState={{ checked: diet === d }}
-                    onPress={() => setDiet(d)}
+                    onPress={() => form.setValue('diet', d)}
                     className={
                       diet === d
                         ? 'h-chip flex-1 flex-row items-center justify-center gap-2 rounded-md border-[1.5px] border-ink bg-card-nested'
@@ -288,13 +403,20 @@ export function ListingEditorScreen() {
             </Field>
           ) : null}
 
-          <Input
-            label={t('market:editor.quantity')}
-            helper={t('market:editor.quantityHelp')}
-            value={quantity}
-            onChangeText={(v) => setQuantity(v.replace(/\D/g, ''))}
-            keyboardType="number-pad"
-            maxLength={5}
+          <Controller
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <Input
+                label={t('market:editor.quantity')}
+                helper={t('market:editor.quantityHelp')}
+                value={field.value}
+                onChangeText={(v) => field.onChange(v.replace(/\D/g, ''))}
+                keyboardType="number-pad"
+                maxLength={5}
+                error={error === 'quantity' ? t('market:editor.errors.quantity') : undefined}
+              />
+            )}
           />
 
           {food ? (
@@ -303,13 +425,13 @@ export function ListingEditorScreen() {
                 label={t('market:editor.readyAt')}
                 value={readyAt}
                 onPress={() => setSheet('ready')}
-                onClear={() => setReadyAt(null)}
+                onClear={() => form.setValue('readyAt', null)}
               />
               <DateField
                 label={t('market:editor.orderBy')}
                 value={orderBy}
                 onPress={() => setSheet('orderBy')}
-                onClear={() => setOrderBy(null)}
+                onClear={() => form.setValue('orderBy', null)}
                 error={error === 'times' ? t('market:editor.errors.times') : undefined}
               />
             </>
@@ -318,7 +440,7 @@ export function ListingEditorScreen() {
           <Field label={t('market:editor.fulfilment')}>
             <Segmented
               value={fulfilment}
-              onChange={setFulfilment}
+              onChange={(f) => form.setValue('fulfilment', f)}
               options={(['PICKUP', 'DELIVERY', 'BOTH'] as const).map((f) => ({
                 value: f,
                 label: t(`market:editor.fulfilmentOpt.${f}`),
@@ -334,7 +456,7 @@ export function ListingEditorScreen() {
                     key={c}
                     label={t(`market:condition.${c}`)}
                     selected={condition === c}
-                    onPress={() => setCondition(c)}
+                    onPress={() => form.setValue('condition', c)}
                   />
                 ))}
               </ChipRow>
@@ -345,19 +467,19 @@ export function ListingEditorScreen() {
             label={t('market:editor.sharePhone')}
             help={t('market:editor.sharePhoneHelp')}
             value={sharePhone}
-            onChange={setSharePhone}
+            onChange={(v) => form.setValue('sharePhone', v)}
           />
           {settings.network ? (
             <ToggleRow
               label={t('market:editor.network')}
               help={t('market:editor.networkHelp')}
               value={network}
-              onChange={setNetwork}
+              onChange={(v) => form.setValue('network', v)}
             />
           ) : null}
-          {error === 'uploading' ? (
+          {formError ? (
             <Text variant="caption" tone="danger">
-              {t('market:editor.errors.uploading')}
+              {formError}
             </Text>
           ) : null}
         </View>
@@ -378,7 +500,7 @@ export function ListingEditorScreen() {
         onClose={() => setSheet(null)}
         title={sheet === 'ready' ? t('market:editor.readyAt') : t('market:editor.orderBy')}
         value={(sheet === 'ready' ? readyAt : orderBy) ?? nextQuarter(sheet === 'ready' ? 3 : 1)}
-        onChange={(d) => (sheet === 'ready' ? setReadyAt(d) : setOrderBy(d))}
+        onChange={(d) => form.setValue(sheet === 'ready' ? 'readyAt' : 'orderBy', d)}
         days={30}
         localeTag={localeTag()}
         labels={pickerLabels}

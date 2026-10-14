@@ -31,6 +31,12 @@ export function isoDay(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+/** A phone-local Date for YYYY-MM-DD. A missing part falls back to this year, January, the 1st. */
+export function fromIsoDay(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y ?? new Date().getFullYear(), (m ?? 1) - 1, d ?? 1);
+}
+
 /** A key that stays the same while one form is open, so a retried save is not counted twice. */
 export function newIdempotencyKey(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;

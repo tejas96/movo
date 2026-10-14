@@ -38,6 +38,7 @@
     "category": "Category",
     "pickCategory": "Pick a category",
     "amount": "Amount",
+    "amountMax": "Enter an amount of ₹1,00,00,000 or less.",
     "date": "Paid on",
     "payee": "Paid to",
     "payeeHint": "For example: MSEDCL",

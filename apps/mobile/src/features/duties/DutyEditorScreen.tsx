@@ -1,4 +1,9 @@
-import type { DutyParticipantKind, DutyPeriodUnit, MemberCard } from '@movo/contracts';
+import {
+  type DutyParticipantKind,
+  type DutyPeriodUnit,
+  dutiesContract,
+  type MemberCard,
+} from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -13,9 +18,11 @@ import {
   useToast,
 } from '@movo/design-system';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { bodyResolver, formMessage } from '../../core/forms/contract-form';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -31,6 +38,43 @@ const firstOfMonth = () => {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 };
 
+interface DutyForm {
+  title: string;
+  description: string;
+  kind: DutyParticipantKind;
+  ids: string[];
+  unit: DutyPeriodUnit;
+  start: Date;
+  confirm: boolean;
+  carry: boolean;
+  points: string;
+}
+
+const EMPTY: Omit<DutyForm, 'start' | 'confirm'> = {
+  title: '',
+  description: '',
+  kind: 'FLAT',
+  ids: [],
+  unit: 'MONTH',
+  carry: false,
+  points: '',
+};
+
+function toBody(v: DutyForm) {
+  return {
+    title: v.title.trim(),
+    description: v.description.trim() || null,
+    participantKind: v.kind,
+    participantIds: v.ids,
+    periodUnit: v.unit,
+    periodLength: 1,
+    startDate: isoDay(v.start),
+    requiresConfirmation: v.confirm,
+    onMiss: v.carry ? ('CARRY_OVER' as const) : ('MARK_MISSED' as const),
+    points: v.points.trim() ? Number.parseInt(v.points, 10) : null,
+  };
+}
+
 export function DutyEditorScreen() {
   const { t } = useTranslation(['duties', 'common']);
   const nav = useNav();
@@ -43,19 +87,16 @@ export function DutyEditorScreen() {
   const defaultConfirm =
     (tenant.modules.find((m) => m.key === 'responsibilities')?.settings
       .defaultRequiresConfirmation as boolean | undefined) ?? true;
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [kind, setKind] = useState<DutyParticipantKind>('FLAT');
-  const [ids, setIds] = useState<string[]>([]);
+  const form = useForm<DutyForm>({
+    resolver: bodyResolver(dutiesContract.create.body, toBody),
+    defaultValues: { ...EMPTY, start: firstOfMonth(), confirm: defaultConfirm },
+    reValidateMode: 'onSubmit',
+  });
+  const error = formMessage(form, t('common:validation.required'));
+  const { kind, ids, unit, start, confirm, carry } = form.watch();
   // Members come from a server search, so remember the names of the ones picked.
   const [names, setNames] = useState<Record<string, string>>({});
-  const [unit, setUnit] = useState<DutyPeriodUnit>('MONTH');
-  const [start, setStart] = useState(firstOfMonth);
-  const [confirm, setConfirm] = useState(defaultConfirm);
-  const [carry, setCarry] = useState(false);
-  const [points, setPoints] = useState('');
   const [sheet, setSheet] = useState<'people' | 'date' | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const flatItems = (flats.data ?? []).map((f) => ({ id: f.id, label: formatFlat(f) }));
   const labels = ids
@@ -65,39 +106,24 @@ export function DutyEditorScreen() {
     .filter(Boolean);
   const toggleMember = (m: MemberCard) => {
     setNames((old) => ({ ...old, [m.membershipId]: m.displayName }));
-    setIds((old) =>
+    const old = form.getValues('ids');
+    form.setValue(
+      'ids',
       old.includes(m.membershipId)
         ? old.filter((id) => id !== m.membershipId)
         : [...old, m.membershipId],
     );
   };
 
-  const submit = async () => {
-    setError(null);
-    const p = points.trim() ? Number.parseInt(points, 10) : null;
-    if (title.trim().length < 2 || ids.length === 0 || (p !== null && !(p >= 1 && p <= 100))) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     try {
-      const d = await create.mutateAsync({
-        title: title.trim(),
-        description: description.trim() || null,
-        participantKind: kind,
-        participantIds: ids,
-        periodUnit: unit,
-        periodLength: 1,
-        startDate: isoDay(start),
-        requiresConfirmation: confirm,
-        onMiss: carry ? 'CARRY_OVER' : 'MARK_MISSED',
-        points: p,
-      });
+      const d = await create.mutateAsync(toBody(values));
       toast.show(t('duties:form.saved'));
       nav.replace('DutyDetail', { dutyId: d.id });
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   if (loadFailed(flats))
     return (
@@ -112,18 +138,30 @@ export function DutyEditorScreen() {
       <Screen bottomBar>
         <TitleBar title={t('duties:new')} onBack={() => nav.goBack()} />
         <View className="mt-6 gap-3">
-          <Input
-            label={t('duties:form.title')}
-            placeholder={t('duties:form.titleHint')}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={80}
+          <Controller
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <Input
+                label={t('duties:form.title')}
+                placeholder={t('duties:form.titleHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={80}
+              />
+            )}
           />
-          <Input
-            label={t('duties:form.description')}
-            value={description}
-            onChangeText={setDescription}
-            maxLength={1000}
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <Input
+                label={t('duties:form.description')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={1000}
+              />
+            )}
           />
           <View>
             <Text variant="label" tone="secondary" className="mb-1.5">
@@ -132,8 +170,8 @@ export function DutyEditorScreen() {
             <Segmented
               value={kind}
               onChange={(k) => {
-                setKind(k);
-                setIds([]);
+                form.setValue('kind', k);
+                form.setValue('ids', []);
               }}
               options={[
                 { value: 'FLAT', label: t('duties:form.kindOpt.FLAT') },
@@ -155,7 +193,7 @@ export function DutyEditorScreen() {
             </Text>
             <Segmented
               value={unit}
-              onChange={setUnit}
+              onChange={(u) => form.setValue('unit', u)}
               options={(['DAY', 'WEEK', 'MONTH'] as const).map((u) => ({
                 value: u,
                 label: t(`duties:form.unitOpt.${u}`),
@@ -171,7 +209,7 @@ export function DutyEditorScreen() {
             <Text variant="body" className="flex-1">
               {t('duties:form.confirm')}
             </Text>
-            <Toggle value={confirm} onValueChange={setConfirm} />
+            <Toggle value={confirm} onValueChange={(v) => form.setValue('confirm', v)} />
           </View>
           {confirm ? (
             <View>
@@ -180,7 +218,7 @@ export function DutyEditorScreen() {
               </Text>
               <Segmented
                 value={carry ? 'CARRY_OVER' : 'MARK_MISSED'}
-                onChange={(v) => setCarry(v === 'CARRY_OVER')}
+                onChange={(v) => form.setValue('carry', v === 'CARRY_OVER')}
                 options={[
                   { value: 'MARK_MISSED', label: t('duties:form.onMissOpt.MARK_MISSED') },
                   { value: 'CARRY_OVER', label: t('duties:form.onMissOpt.CARRY_OVER') },
@@ -188,12 +226,18 @@ export function DutyEditorScreen() {
               />
             </View>
           ) : null}
-          <Input
-            label={t('duties:form.points')}
-            value={points}
-            onChangeText={setPoints}
-            keyboardType="number-pad"
-            maxLength={3}
+          <Controller
+            control={form.control}
+            name="points"
+            render={({ field }) => (
+              <Input
+                label={t('duties:form.points')}
+                value={field.value}
+                onChangeText={field.onChange}
+                keyboardType="number-pad"
+                maxLength={3}
+              />
+            )}
           />
           {error ? (
             <Text variant="caption" tone="danger">
@@ -218,7 +262,7 @@ export function DutyEditorScreen() {
         title={t('duties:form.pickFlats')}
         items={flatItems}
         value={ids}
-        onChange={setIds}
+        onChange={(next) => form.setValue('ids', next)}
       />
       <MemberPickerSheet
         multiple
@@ -237,7 +281,7 @@ export function DutyEditorScreen() {
         days={120}
         title={t('duties:form.start')}
         value={start}
-        onChange={setStart}
+        onChange={(d) => form.setValue('start', d)}
         localeTag={localeTag()}
         labels={{
           date: t('common:picker.date'),

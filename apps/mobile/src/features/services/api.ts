@@ -1,7 +1,6 @@
 import { type RouteBody, type Vendor, type VendorStatus, vendorsContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { homeKeys } from '../home/keys';
 import { vendorKeys } from './keys';
 
 type Filter = { categoryId?: string; q?: string; status?: VendorStatus };
@@ -39,7 +38,6 @@ function useInvalidateVendors(societyId: string) {
   const qc = useQueryClient();
   return (vendor?: Vendor) => {
     void qc.invalidateQueries({ queryKey: vendorKeys(societyId).all });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     if (vendor) qc.setQueryData(vendorKeys(societyId).detail(vendor.id), vendor);
   };
 }

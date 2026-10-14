@@ -1,4 +1,4 @@
-import type { Locale } from '@movo/contracts';
+import { type Locale, type SocietyProfile, societyContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -13,12 +13,14 @@ import {
   Toggle,
   useToast,
 } from '@movo/design-system';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Image, View } from 'react-native';
 import { photoUri, uploadFile } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { useNav } from '../../core/navigation/types';
 import { type PhotoSource, usePickOne } from '../../core/photos/pick';
 import { SinglePhotoField } from '../../core/photos/SinglePhotoField';
@@ -30,6 +32,58 @@ import { useUpdateSociety } from './api';
 
 const LOCALES: Locale[] = ['en', 'hi', 'mr'];
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+interface ProfileForm {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  locale: Locale;
+  fyStart: number;
+  joinRequests: boolean;
+}
+
+const EMPTY: ProfileForm = {
+  name: '',
+  address: '',
+  city: '',
+  state: '',
+  pincode: '',
+  locale: 'en',
+  fyStart: 4,
+  joinRequests: true,
+};
+
+function toForm(p: SocietyProfile): ProfileForm {
+  return {
+    name: p.name,
+    address: p.addressLine ?? '',
+    city: p.city ?? '',
+    state: p.state ?? '',
+    pincode: p.pincode ?? '',
+    locale: p.defaultLocale,
+    fyStart: p.fyStartMonth,
+    joinRequests: p.settings.tenancy.joinRequests === 'APPROVAL',
+  };
+}
+
+const orNull = (v: string) => (v.trim() ? v.trim() : null);
+
+function toBody(v: ProfileForm) {
+  return {
+    name: v.name.trim(),
+    addressLine: orNull(v.address),
+    city: orNull(v.city),
+    state: orNull(v.state),
+    pincode: orNull(v.pincode),
+    defaultLocale: v.locale,
+    fyStartMonth: v.fyStart,
+    settings: {
+      tenancy: { joinRequests: v.joinRequests ? ('APPROVAL' as const) : ('OFF' as const) },
+    },
+  };
+}
 
 export function SocietyProfileScreen() {
   const { t } = useTranslation(['manage', 'common']);
@@ -64,54 +118,25 @@ export function SocietyProfileScreen() {
     setLogoBusy(false);
   };
 
-  const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [locale, setLocale] = useState<Locale>('en');
-  const [fyStart, setFyStart] = useState(4);
-  const [joinRequests, setJoinRequests] = useState(true);
   const [sheet, setSheet] = useState<'locale' | 'fy' | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const form = useForm<ProfileForm>({
+    resolver: bodyResolver(societyContract.update.body, toBody),
+    defaultValues: EMPTY,
+    reValidateMode: 'onSubmit',
+  });
+  usePrefill(form, p, toForm);
+  const error = formMessage(form, t('common:validation.required'));
+  const { locale, fyStart, joinRequests } = form.watch();
 
-  useEffect(() => {
-    if (!p) return;
-    setName(p.name);
-    setAddress(p.addressLine ?? '');
-    setCity(p.city ?? '');
-    setState(p.state ?? '');
-    setPincode(p.pincode ?? '');
-    setLocale(p.defaultLocale);
-    setFyStart(p.fyStartMonth);
-    setJoinRequests(p.settings.tenancy.joinRequests === 'APPROVAL');
-  }, [p]);
-
-  const orNull = (v: string) => (v.trim() ? v.trim() : null);
-
-  const submit = async () => {
-    setError(null);
-    if (name.trim().length < 2) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     try {
-      await save.mutateAsync({
-        name: name.trim(),
-        addressLine: orNull(address),
-        city: orNull(city),
-        state: orNull(state),
-        pincode: orNull(pincode),
-        defaultLocale: locale,
-        fyStartMonth: fyStart,
-        settings: { tenancy: { joinRequests: joinRequests ? 'APPROVAL' : 'OFF' } },
-      });
+      await save.mutateAsync(toBody(values));
       toast.show(t('manage:profile.saved'));
       nav.goBack();
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   return (
     <>
@@ -142,41 +167,71 @@ export function SocietyProfileScreen() {
               onPick={(source) => void changeLogo(source)}
               onRemove={() => void clearLogo()}
             />
-            <Input
-              label={t('manage:profile.name')}
-              value={name}
-              onChangeText={setName}
-              maxLength={80}
+            <Controller
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <Input
+                  label={t('manage:profile.name')}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  maxLength={80}
+                />
+              )}
             />
-            <Input
-              label={t('manage:profile.address')}
-              value={address}
-              onChangeText={setAddress}
-              maxLength={200}
-              multiline
+            <Controller
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <Input
+                  label={t('manage:profile.address')}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  maxLength={200}
+                  multiline
+                />
+              )}
             />
             <View className="flex-row gap-3">
-              <Input
-                containerClassName="flex-1"
-                label={t('manage:profile.city')}
-                value={city}
-                onChangeText={setCity}
-                maxLength={60}
+              <Controller
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <Input
+                    containerClassName="flex-1"
+                    label={t('manage:profile.city')}
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    maxLength={60}
+                  />
+                )}
               />
-              <Input
-                containerClassName="flex-1"
-                label={t('manage:profile.pincode')}
-                value={pincode}
-                onChangeText={setPincode}
-                keyboardType="number-pad"
-                maxLength={6}
+              <Controller
+                control={form.control}
+                name="pincode"
+                render={({ field }) => (
+                  <Input
+                    containerClassName="flex-1"
+                    label={t('manage:profile.pincode')}
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    keyboardType="number-pad"
+                    maxLength={6}
+                  />
+                )}
               />
             </View>
-            <Input
-              label={t('manage:profile.state')}
-              value={state}
-              onChangeText={setState}
-              maxLength={60}
+            <Controller
+              control={form.control}
+              name="state"
+              render={({ field }) => (
+                <Input
+                  label={t('manage:profile.state')}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  maxLength={60}
+                />
+              )}
             />
             <SelectField
               label={t('manage:profile.language')}
@@ -198,7 +253,10 @@ export function SocietyProfileScreen() {
                   {t('manage:profile.joinRequestsHelp')}
                 </Text>
               </View>
-              <Toggle value={joinRequests} onValueChange={setJoinRequests} />
+              <Toggle
+                value={joinRequests}
+                onValueChange={(on) => form.setValue('joinRequests', on)}
+              />
             </View>
             {error ? (
               <Text variant="caption" tone="danger">
@@ -225,7 +283,7 @@ export function SocietyProfileScreen() {
         title={t('manage:profile.language')}
         value={locale}
         options={LOCALES.map((l) => ({ value: l, label: t(`common:language.${l}`) }))}
-        onSelect={setLocale}
+        onSelect={(l) => form.setValue('locale', l)}
       />
       <OptionSheet
         visible={sheet === 'fy'}
@@ -233,7 +291,7 @@ export function SocietyProfileScreen() {
         title={t('manage:profile.fyStart')}
         value={String(fyStart)}
         options={MONTHS.map((m) => ({ value: String(m), label: monthName(m) }))}
-        onSelect={(v) => setFyStart(Number(v))}
+        onSelect={(v) => form.setValue('fyStart', Number(v))}
       />
     </>
   );

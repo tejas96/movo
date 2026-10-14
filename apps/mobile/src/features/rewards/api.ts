@@ -1,7 +1,6 @@
 import { rewardsContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { homeKeys } from '../home/keys';
 import { rewardsKeys } from './keys';
 
 const c = rewardsContract;
@@ -28,7 +27,6 @@ export function useAdjustPoints(societyId: string) {
       api(c.adjust, { params: { societyId }, body }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: rewardsKeys(societyId).all });
-      void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     },
   });
 }

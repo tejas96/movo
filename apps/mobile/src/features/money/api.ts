@@ -2,7 +2,6 @@ import { maintenanceContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys } from '../home/keys';
 import { moneyKeys } from './keys';
 
 const c = maintenanceContract;
@@ -69,12 +68,11 @@ export function useInstructions(societyId: string) {
   });
 }
 
-/** Any money change can move balances, Home and collection, so refresh them all. */
+/** Any money change can move balances and collection, so refresh them all (Home refreshes itself). */
 function useInvalidateMoney(societyId: string) {
   const qc = useQueryClient();
   return () => {
     void qc.invalidateQueries({ queryKey: moneyKeys(societyId).all });
-    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 

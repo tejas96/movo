@@ -43,12 +43,14 @@ export function useChangePassword() {
   return useMutation({
     mutationFn: (body: { currentPassword: string; newPassword: string }) =>
       api(authContract.changePassword, { body }),
+    meta: { refreshHome: false },
   });
 }
 
 export function useDeleteAccount() {
   return useMutation({
     mutationFn: (password: string) => api(meContract.deleteAccount, { body: { password } }),
+    meta: { refreshHome: false },
   });
 }
 

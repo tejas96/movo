@@ -1,4 +1,10 @@
-import { MAX_EXPENSE_RECEIPTS, type PaymentMethod, PaymentMethodSchema } from '@movo/contracts';
+import {
+  type Expense,
+  expensesContract,
+  MAX_EXPENSE_RECEIPTS,
+  type PaymentMethod,
+  PaymentMethodSchema,
+} from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -14,16 +20,19 @@ import {
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import {
   day,
+  fromIsoDay,
   isoDay,
   money,
   newIdempotencyKey,
@@ -33,6 +42,53 @@ import {
 import { localeTag } from '../../core/util/time';
 import { useExpense, useExpenseCategories, useSaveExpense } from './api';
 import { expenseCategoryLabel } from './shared';
+
+interface ExpenseForm {
+  categoryId: string | undefined;
+  amount: string;
+  date: Date;
+  payee: string;
+  description: string;
+  method: PaymentMethod;
+  reference: string;
+}
+
+const EMPTY: Omit<ExpenseForm, 'date'> = {
+  categoryId: undefined,
+  amount: '',
+  payee: '',
+  description: '',
+  method: 'BANK_TRANSFER',
+  reference: '',
+};
+
+function toForm(e: Expense): ExpenseForm {
+  return {
+    categoryId: e.category.id,
+    amount: rupeesText(e.amountPaise),
+    date: fromIsoDay(e.incurredOn),
+    payee: e.payeeName,
+    description: e.description ?? '',
+    method: e.method,
+    reference: e.reference ?? '',
+  };
+}
+
+/** The form part of the body. Receipts and the idempotency key are added at submit. */
+function toBody(v: ExpenseForm) {
+  return {
+    // Empty / unparsable values fail the schema (uuid, min 1), so they are never sent.
+    categoryId: v.categoryId ?? '',
+    amountPaise: parseRupees(v.amount) ?? 0,
+    incurredOn: isoDay(v.date),
+    payeeName: v.payee.trim(),
+    description: v.description.trim() || null,
+    method: v.method,
+    reference: v.reference.trim() || null,
+  };
+}
+
+const formBody = expensesContract.create.body.omit({ receiptIds: true, idempotencyKey: true });
 
 export function ExpenseEditorScreen() {
   const { t } = useTranslation(['expenses', 'money', 'common']);
@@ -44,15 +100,21 @@ export function ExpenseEditorScreen() {
   const existing = useExpense(societyId, expenseId ?? '');
   const categories = useExpenseCategories(societyId);
   const save = useSaveExpense(societyId, expenseId);
-  const [categoryId, setCategoryId] = useState<string | undefined>();
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(() => new Date());
-  const [payee, setPayee] = useState('');
-  const [description, setDescription] = useState('');
-  const [method, setMethod] = useState<PaymentMethod>('BANK_TRANSFER');
-  const [reference, setReference] = useState('');
+  const form = useForm<ExpenseForm>({
+    resolver: bodyResolver(formBody, toBody),
+    defaultValues: { ...EMPTY, date: new Date() },
+    reValidateMode: 'onSubmit',
+  });
+  // The contract caps one expense; an amount over the cap gets its own message.
+  const tooBig =
+    (form.formState.errors as Record<string, { type?: string } | undefined>).amountPaise?.type ===
+    'too_big';
+  const error = formMessage(
+    form,
+    tooBig ? t('expenses:form.amountMax') : t('common:validation.required'),
+  );
+  const { categoryId, amount, date, method } = form.watch();
   const [sheet, setSheet] = useState<'category' | 'date' | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [key] = useState(newIdempotencyKey);
   const receipts = usePhotoPicker(societyId, {
     kind: 'EXPENSE_RECEIPT',
@@ -60,42 +122,22 @@ export function ExpenseEditorScreen() {
   });
   const { reset: resetReceipts } = receipts;
 
-  useEffect(() => {
-    const e = existing.data;
-    if (!expenseId || !e) return;
-    setCategoryId(e.category.id);
-    setAmount(rupeesText(e.amountPaise));
-    const [y, m, d] = e.incurredOn.split('-').map(Number);
-    setDate(new Date(y ?? 2026, (m ?? 1) - 1, d ?? 1));
-    setPayee(e.payeeName);
-    setDescription(e.description ?? '');
-    setMethod(e.method);
-    setReference(e.reference ?? '');
+  usePrefill(form, expenseId ? existing.data : undefined, (e) => {
     resetReceipts(e.receipts);
-  }, [expenseId, existing.data, resetReceipts]);
+    return toForm(e);
+  });
 
   const category = categories.data?.find((c) => c.id === categoryId);
   const paise = parseRupees(amount);
 
-  const submit = async () => {
-    setError(null);
-    if (!categoryId || !paise || payee.trim().length < 2) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     if (receipts.uploading) {
-      setError(t('common:photo.uploading'));
+      form.setError('root.server', { message: t('common:photo.uploading') });
       return;
     }
     try {
       const e = await save.mutateAsync({
-        categoryId,
-        amountPaise: paise,
-        incurredOn: isoDay(date),
-        payeeName: payee.trim(),
-        description: description.trim() || null,
-        method,
-        reference: reference.trim() || null,
+        ...toBody(values),
         receiptIds: receipts.ids,
         idempotencyKey: key,
       });
@@ -103,9 +145,9 @@ export function ExpenseEditorScreen() {
       if (expenseId) nav.goBack();
       else nav.replace('ExpenseDetail', { expenseId: e.id });
     } catch (err) {
-      setError(toMessage(err));
+      form.setError('root.server', { message: toMessage(err) });
     }
-  };
+  });
 
   if (expenseId && loadFailed(existing))
     return (
@@ -129,30 +171,48 @@ export function ExpenseEditorScreen() {
             value={category ? expenseCategoryLabel(category) : undefined}
             onPress={() => setSheet('category')}
           />
-          <Input
-            label={t('expenses:form.amount')}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            placeholder="1200"
+          <Controller
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <Input
+                label={t('expenses:form.amount')}
+                value={field.value}
+                onChangeText={field.onChange}
+                keyboardType="decimal-pad"
+                placeholder="1200"
+              />
+            )}
           />
           <SelectField
             label={t('expenses:form.date')}
             value={day(isoDay(date))}
             onPress={() => setSheet('date')}
           />
-          <Input
-            label={t('expenses:form.payee')}
-            placeholder={t('expenses:form.payeeHint')}
-            value={payee}
-            onChangeText={setPayee}
-            maxLength={80}
+          <Controller
+            control={form.control}
+            name="payee"
+            render={({ field }) => (
+              <Input
+                label={t('expenses:form.payee')}
+                placeholder={t('expenses:form.payeeHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={80}
+              />
+            )}
           />
-          <Input
-            label={t('expenses:form.description')}
-            value={description}
-            onChangeText={setDescription}
-            maxLength={500}
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <Input
+                label={t('expenses:form.description')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={500}
+              />
+            )}
           />
           <View>
             <Text variant="label" tone="secondary" className="mb-1.5">
@@ -169,17 +229,23 @@ export function ExpenseEditorScreen() {
                   key={m}
                   label={t(`money:method.${m}`)}
                   selected={method === m}
-                  onPress={() => setMethod(m)}
+                  onPress={() => form.setValue('method', m)}
                 />
               ))}
             </ScrollView>
           </View>
-          <Input
-            label={t('expenses:form.reference')}
-            placeholder={t('expenses:form.referenceHint')}
-            value={reference}
-            onChangeText={setReference}
-            maxLength={80}
+          <Controller
+            control={form.control}
+            name="reference"
+            render={({ field }) => (
+              <Input
+                label={t('expenses:form.reference')}
+                placeholder={t('expenses:form.referenceHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={80}
+              />
+            )}
           />
           <PhotoField
             label={t('expenses:form.receipts')}
@@ -219,7 +285,7 @@ export function ExpenseEditorScreen() {
           value: c.id,
           label: expenseCategoryLabel(c),
         }))}
-        onSelect={setCategoryId}
+        onSelect={(id) => form.setValue('categoryId', id)}
       />
       <DateTimeSheet
         visible={sheet === 'date'}
@@ -229,7 +295,7 @@ export function ExpenseEditorScreen() {
         days={1}
         title={t('expenses:form.date')}
         value={date}
-        onChange={setDate}
+        onChange={(d) => form.setValue('date', d)}
         localeTag={localeTag()}
         labels={{
           date: t('common:picker.date'),

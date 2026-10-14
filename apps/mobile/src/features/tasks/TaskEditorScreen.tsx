@@ -1,3 +1,4 @@
+import { type Task, tasksContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -11,17 +12,49 @@ import {
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, isoDay } from '../../core/util/money';
+import { day, fromIsoDay, isoDay } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
 import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useSaveTask, useTask } from './api';
+
+interface TaskForm {
+  title: string;
+  description: string;
+  points: string;
+  due: Date | null;
+  assignee: { id: string; name: string } | null;
+}
+
+const EMPTY: TaskForm = { title: '', description: '', points: '0', due: null, assignee: null };
+
+function toForm(x: Task): TaskForm {
+  return {
+    title: x.title,
+    description: x.description ?? '',
+    points: String(x.points),
+    due: x.dueOn ? fromIsoDay(x.dueOn) : null,
+    assignee: null,
+  };
+}
+
+function toBody(v: TaskForm) {
+  return {
+    title: v.title.trim(),
+    description: v.description.trim() || null,
+    points: Number.parseInt(v.points || '0', 10),
+    dueOn: v.due ? isoDay(v.due) : null,
+    assigneeMembershipId: v.assignee?.id ?? null,
+  };
+}
 
 export function TaskEditorScreen() {
   const { t } = useTranslation(['tasks', 'common']);
@@ -32,48 +65,26 @@ export function TaskEditorScreen() {
   const taskId = useRoute<RouteProp<RootStackParamList, 'TaskEditor'>>().params?.taskId;
   const existing = useTask(societyId, taskId ?? '');
   const save = useSaveTask(societyId, taskId);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [points, setPoints] = useState('0');
-  const [due, setDue] = useState<Date | null>(null);
-  const [assignee, setAssignee] = useState<{ id: string; name: string } | null>(null);
   const [sheet, setSheet] = useState<'date' | 'who' | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const form = useForm<TaskForm>({
+    resolver: bodyResolver(tasksContract.create.body, toBody),
+    defaultValues: EMPTY,
+    reValidateMode: 'onSubmit',
+  });
+  usePrefill(form, taskId ? existing.data : undefined, toForm);
+  const error = formMessage(form, t('common:validation.required'));
+  const { due, assignee } = form.watch();
 
-  useEffect(() => {
-    const x = existing.data;
-    if (!taskId || !x) return;
-    setTitle(x.title);
-    setDescription(x.description ?? '');
-    setPoints(String(x.points));
-    if (x.dueOn) {
-      const [y, m, d] = x.dueOn.split('-').map(Number);
-      setDue(new Date(y ?? 2026, (m ?? 1) - 1, d ?? 1));
-    }
-  }, [taskId, existing.data]);
-
-  const submit = async () => {
-    setError(null);
-    const p = Number.parseInt(points || '0', 10);
-    if (title.trim().length < 2 || !(p >= 0 && p <= 100)) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     try {
-      const x = await save.mutateAsync({
-        title: title.trim(),
-        description: description.trim() || null,
-        points: p,
-        dueOn: due ? isoDay(due) : null,
-        assigneeMembershipId: assignee?.id ?? null,
-      });
+      const x = await save.mutateAsync(toBody(values));
       toast.show(t('tasks:form.saved'));
       if (taskId) nav.goBack();
       else nav.replace('TaskDetail', { taskId: x.id });
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   if (taskId && loadFailed(existing))
     return (
@@ -91,27 +102,45 @@ export function TaskEditorScreen() {
           onBack={() => nav.goBack()}
         />
         <View className="mt-6 gap-3">
-          <Input
-            label={t('tasks:form.title')}
-            placeholder={t('tasks:form.titleHint')}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={100}
+          <Controller
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <Input
+                label={t('tasks:form.title')}
+                placeholder={t('tasks:form.titleHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={100}
+              />
+            )}
           />
-          <Input
-            label={t('tasks:form.description')}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            maxLength={2000}
-            style={{ minHeight: 90, textAlignVertical: 'top' }}
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <Input
+                label={t('tasks:form.description')}
+                value={field.value}
+                onChangeText={field.onChange}
+                multiline
+                maxLength={2000}
+                style={{ minHeight: 90, textAlignVertical: 'top' }}
+              />
+            )}
           />
-          <Input
-            label={t('tasks:form.points')}
-            value={points}
-            onChangeText={setPoints}
-            keyboardType="number-pad"
-            maxLength={3}
+          <Controller
+            control={form.control}
+            name="points"
+            render={({ field }) => (
+              <Input
+                label={t('tasks:form.points')}
+                value={field.value}
+                onChangeText={field.onChange}
+                keyboardType="number-pad"
+                maxLength={3}
+              />
+            )}
           />
           <SelectField
             label={t('tasks:form.due')}
@@ -148,7 +177,7 @@ export function TaskEditorScreen() {
         mode="date"
         title={t('tasks:form.due')}
         value={due ?? new Date()}
-        onChange={setDue}
+        onChange={(d) => form.setValue('due', d)}
         localeTag={localeTag()}
         labels={{
           date: t('common:picker.date'),
@@ -163,8 +192,8 @@ export function TaskEditorScreen() {
         societyId={societyId}
         title={t('tasks:form.assignee')}
         value={assignee?.id}
-        none={{ label: t('tasks:form.anyone'), onSelect: () => setAssignee(null) }}
-        onSelect={(m) => setAssignee({ id: m.membershipId, name: m.displayName })}
+        none={{ label: t('tasks:form.anyone'), onSelect: () => form.setValue('assignee', null) }}
+        onSelect={(m) => form.setValue('assignee', { id: m.membershipId, name: m.displayName })}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { E164_PHONE } from '@movo/contracts';
+import { type Vendor, vendorsContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -13,10 +13,12 @@ import {
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { bodyResolver, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -25,6 +27,53 @@ import { useSaveVendor, useVendor, useVendorCategories } from './api';
 import { categoryLabel } from './shared';
 
 type EditableStatus = 'APPROVED' | 'TRIAL' | 'BLOCKED';
+
+interface VendorForm {
+  categoryId: string;
+  name: string;
+  phone: string;
+  altPhone: string;
+  availability: string;
+  description: string;
+  status: EditableStatus;
+  adminNotes: string;
+}
+
+const empty = (categoryId: string): VendorForm => ({
+  categoryId,
+  name: '',
+  phone: '',
+  altPhone: '',
+  availability: '',
+  description: '',
+  status: 'APPROVED',
+  adminNotes: '',
+});
+
+function toForm(v: Vendor): VendorForm {
+  return {
+    categoryId: v.category.id,
+    name: v.name,
+    phone: formatPhone(v.phone),
+    altPhone: v.altPhone ? formatPhone(v.altPhone) : '',
+    availability: v.availability ?? '',
+    description: v.description ?? '',
+    status: v.status === 'SUGGESTED' ? 'APPROVED' : v.status,
+    adminNotes: v.adminNotes ?? '',
+  };
+}
+
+function toBody(v: VendorForm, canManage: boolean) {
+  return {
+    categoryId: v.categoryId,
+    name: v.name.trim(),
+    phone: normalizePhone(v.phone),
+    altPhone: v.altPhone.trim() ? normalizePhone(v.altPhone) : null,
+    availability: v.availability.trim() || null,
+    description: v.description.trim() || null,
+    ...(canManage ? { status: v.status, adminNotes: v.adminNotes.trim() || null } : {}),
+  };
+}
 
 export function VendorEditorScreen() {
   const { t } = useTranslation(['services', 'common']);
@@ -38,61 +87,32 @@ export function VendorEditorScreen() {
   const categories = useVendorCategories(societyId);
   const existing = useVendor(societyId, vendorId ?? '');
   const save = useSaveVendor(societyId, vendorId);
-
-  const [categoryId, setCategoryId] = useState(params?.categoryId ?? '');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [altPhone, setAltPhone] = useState('');
-  const [availability, setAvailability] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState<EditableStatus>('APPROVED');
-  const [adminNotes, setAdminNotes] = useState('');
   const [pickCategory, setPickCategory] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const v = existing.data;
-    if (!vendorId || !v) return;
-    setCategoryId(v.category.id);
-    setName(v.name);
-    setPhone(formatPhone(v.phone));
-    setAltPhone(v.altPhone ? formatPhone(v.altPhone) : '');
-    setAvailability(v.availability ?? '');
-    setDescription(v.description ?? '');
-    setStatus(v.status === 'SUGGESTED' ? 'APPROVED' : v.status);
-    setAdminNotes(v.adminNotes ?? '');
-  }, [vendorId, existing.data]);
+  const body = (v: VendorForm) => toBody(v, canManage);
+  const form = useForm<VendorForm>({
+    resolver: bodyResolver(vendorsContract.create.body, body),
+    defaultValues: empty(params?.categoryId ?? ''),
+    reValidateMode: 'onSubmit',
+  });
+  usePrefill(form, vendorId ? existing.data : undefined, toForm);
+  const { errors } = form.formState;
+  const required = t('common:validation.required');
+  const badPhone = t('common:validation.invalidIdentifier');
+  const formError = errors.root?.server?.message;
+  const { categoryId, status } = form.watch();
 
   const category = categories.data?.find((c) => c.id === categoryId);
 
-  const submit = async () => {
-    setFormError(null);
-    const next: Record<string, string> = {};
-    const e164 = normalizePhone(phone);
-    const alt = altPhone.trim() ? normalizePhone(altPhone) : null;
-    if (!categoryId) next.category = t('common:validation.required');
-    if (name.trim().length < 2) next.name = t('common:validation.required');
-    if (!E164_PHONE.test(e164)) next.phone = t('common:validation.invalidIdentifier');
-    if (alt && !E164_PHONE.test(alt)) next.altPhone = t('common:validation.invalidIdentifier');
-    setErrors(next);
-    if (Object.keys(next).length) return;
+  const submit = form.handleSubmit(async (values) => {
     try {
-      await save.mutateAsync({
-        categoryId,
-        name: name.trim(),
-        phone: e164,
-        altPhone: alt,
-        availability: availability.trim() || null,
-        description: description.trim() || null,
-        ...(canManage ? { status, adminNotes: adminNotes.trim() || null } : {}),
-      });
+      await save.mutateAsync(body(values));
       toast.show(canManage ? t('services:saved') : t('services:suggested'));
       nav.goBack();
     } catch (e) {
-      setFormError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   const failed =
     vendorId && loadFailed(existing) ? existing : loadFailed(categories) ? categories : null;
@@ -129,45 +149,75 @@ export function VendorEditorScreen() {
           <SelectField
             label={t('services:form.category')}
             value={category ? categoryLabel(category) : undefined}
-            error={errors.category}
+            error={errors.categoryId ? required : undefined}
             onPress={() => setPickCategory(true)}
           />
-          <Input
-            label={t('services:form.name')}
-            value={name}
-            onChangeText={setName}
-            error={errors.name}
-            maxLength={60}
+          <Controller
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <Input
+                label={t('services:form.name')}
+                value={field.value}
+                onChangeText={field.onChange}
+                error={errors.name ? required : undefined}
+                maxLength={60}
+              />
+            )}
           />
-          <Input
-            label={t('services:form.phone')}
-            value={phone}
-            onChangeText={setPhone}
-            error={errors.phone}
-            keyboardType="phone-pad"
-            icon="call"
+          <Controller
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <Input
+                label={t('services:form.phone')}
+                value={field.value}
+                onChangeText={field.onChange}
+                error={errors.phone ? badPhone : undefined}
+                keyboardType="phone-pad"
+                icon="call"
+              />
+            )}
           />
-          <Input
-            label={t('services:form.altPhone')}
-            value={altPhone}
-            onChangeText={setAltPhone}
-            error={errors.altPhone}
-            keyboardType="phone-pad"
+          <Controller
+            control={form.control}
+            name="altPhone"
+            render={({ field }) => (
+              <Input
+                label={t('services:form.altPhone')}
+                value={field.value}
+                onChangeText={field.onChange}
+                error={errors.altPhone ? badPhone : undefined}
+                keyboardType="phone-pad"
+              />
+            )}
           />
-          <Input
-            label={t('services:form.availability')}
-            helper={t('services:form.availabilityHelp')}
-            value={availability}
-            onChangeText={setAvailability}
-            maxLength={100}
+          <Controller
+            control={form.control}
+            name="availability"
+            render={({ field }) => (
+              <Input
+                label={t('services:form.availability')}
+                helper={t('services:form.availabilityHelp')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={100}
+              />
+            )}
           />
-          <Input
-            label={t('services:form.description')}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            maxLength={500}
-            style={{ minHeight: 96, textAlignVertical: 'top' }}
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <Input
+                label={t('services:form.description')}
+                value={field.value}
+                onChangeText={field.onChange}
+                multiline
+                maxLength={500}
+                style={{ minHeight: 96, textAlignVertical: 'top' }}
+              />
+            )}
           />
           {canManage ? (
             <>
@@ -177,7 +227,7 @@ export function VendorEditorScreen() {
                 </Text>
                 <Segmented
                   value={status}
-                  onChange={setStatus}
+                  onChange={(v) => form.setValue('status', v)}
                   options={[
                     { value: 'APPROVED', label: t('services:status.APPROVED') },
                     { value: 'TRIAL', label: t('services:status.TRIAL') },
@@ -185,13 +235,19 @@ export function VendorEditorScreen() {
                   ]}
                 />
               </View>
-              <Input
-                label={t('services:form.adminNotes')}
-                value={adminNotes}
-                onChangeText={setAdminNotes}
-                multiline
-                maxLength={500}
-                style={{ minHeight: 80, textAlignVertical: 'top' }}
+              <Controller
+                control={form.control}
+                name="adminNotes"
+                render={({ field }) => (
+                  <Input
+                    label={t('services:form.adminNotes')}
+                    value={field.value}
+                    onChangeText={field.onChange}
+                    multiline
+                    maxLength={500}
+                    style={{ minHeight: 80, textAlignVertical: 'top' }}
+                  />
+                )}
               />
             </>
           ) : null}
@@ -218,7 +274,7 @@ export function VendorEditorScreen() {
         title={t('services:form.category')}
         options={(categories.data ?? []).map((c) => ({ value: c.id, label: categoryLabel(c) }))}
         value={categoryId || undefined}
-        onSelect={setCategoryId}
+        onSelect={(id) => form.setValue('categoryId', id)}
       />
     </>
   );
