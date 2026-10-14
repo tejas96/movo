@@ -2,7 +2,9 @@ import {
   type AmountRule,
   type BillingFrequency,
   BillingFrequencySchema,
+  type BillingPlan,
   type LateFeeRule,
+  maintenanceContract,
 } from '@movo/contracts';
 import {
   BottomBar,
@@ -24,15 +26,17 @@ import {
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, isoDay, money, parseRupees, rupeesText } from '../../core/util/money';
+import { day, fromIsoDay, isoDay, money, parseRupees, rupeesText } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
 import { useCollection, usePlans, useSavePlan, useSetOverride } from './api';
 
@@ -43,6 +47,95 @@ const firstOfMonth = () => {
   const d = new Date();
   return new Date(d.getFullYear(), d.getMonth(), 1);
 };
+
+interface PlanForm {
+  name: string;
+  frequency: BillingFrequency;
+  rule: AmountRule;
+  amount: string;
+  dueDay: string;
+  before: string;
+  lateType: LateType;
+  lateAmount: string;
+  grace: string;
+  cap: string;
+  activeFrom: Date;
+  active: boolean;
+}
+
+const emptyForm = (): PlanForm => ({
+  name: '',
+  frequency: 'MONTHLY',
+  rule: 'FLAT_RATE',
+  amount: '',
+  dueDay: '10',
+  before: '7',
+  lateType: 'NONE',
+  lateAmount: '',
+  grace: '0',
+  cap: '',
+  activeFrom: firstOfMonth(),
+  active: true,
+});
+
+function toForm(plan: BillingPlan): PlanForm {
+  const lf = plan.lateFee;
+  return {
+    name: plan.name,
+    frequency: plan.frequency,
+    rule: plan.amountRule,
+    amount: rupeesText(plan.amountPaise),
+    dueDay: String(plan.dueDay),
+    before: String(plan.generateDaysBefore),
+    lateType: lf.type,
+    lateAmount:
+      lf.type === 'FIXED' || lf.type === 'PER_DAY'
+        ? rupeesText(lf.amountPaise)
+        : lf.type === 'PERCENT'
+          ? String(lf.basisPoints / 100)
+          : '',
+    grace: lf.type !== 'NONE' ? String(lf.graceDays) : '0',
+    cap:
+      (lf.type === 'PERCENT' || lf.type === 'PER_DAY') && lf.capPaise
+        ? rupeesText(lf.capPaise)
+        : '',
+    activeFrom: fromIsoDay(plan.activeFrom),
+    active: plan.isActive,
+  };
+}
+
+/**
+ * The late fee as sent. A bad number stays in (NaN, 0) so the body schema rejects it, as the
+ * old check did; a percent outside 0 to 100 becomes 0 basis points for the same reason.
+ */
+function lateFee(v: PlanForm): LateFeeRule {
+  const graceDays = Number.parseInt(v.grace || '0', 10);
+  const capPaise = v.cap.trim() ? parseRupees(v.cap) : null;
+  if (v.lateType === 'NONE') return { type: 'NONE' };
+  if (v.lateType === 'PERCENT') {
+    const pct = Number(v.lateAmount);
+    const basisPoints = pct > 0 && pct <= 100 ? Math.round(pct * 100) : 0;
+    return { type: 'PERCENT', basisPoints, graceDays, capPaise };
+  }
+  const amountPaise = parseRupees(v.lateAmount) ?? 0;
+  return v.lateType === 'FIXED'
+    ? { type: 'FIXED', amountPaise, graceDays }
+    : { type: 'PER_DAY', amountPaise, graceDays, capPaise };
+}
+
+function toBody(v: PlanForm) {
+  return {
+    name: v.name.trim(),
+    frequency: v.frequency,
+    amountRule: v.rule,
+    amountPaise: parseRupees(v.amount) ?? 0,
+    dueDay: Number.parseInt(v.dueDay, 10),
+    generateDaysBefore: Number.parseInt(v.before, 10),
+    lateFee: lateFee(v),
+    activeFrom: isoDay(v.activeFrom),
+    isActive: v.active,
+  };
+}
 
 export function PlanEditorScreen() {
   const { t } = useTranslation(['money', 'common']);
@@ -55,92 +148,27 @@ export function PlanEditorScreen() {
   const plan = plans.data?.find((p) => p.id === planId);
   const save = useSavePlan(societyId, planId);
 
-  const [name, setName] = useState('');
-  const [frequency, setFrequency] = useState<BillingFrequency>('MONTHLY');
-  const [rule, setRule] = useState<AmountRule>('FLAT_RATE');
-  const [amount, setAmount] = useState('');
-  const [dueDay, setDueDay] = useState('10');
-  const [before, setBefore] = useState('7');
-  const [lateType, setLateType] = useState<LateType>('NONE');
-  const [lateAmount, setLateAmount] = useState('');
-  const [grace, setGrace] = useState('0');
-  const [cap, setCap] = useState('');
-  const [activeFrom, setActiveFrom] = useState(firstOfMonth);
-  const [active, setActive] = useState(true);
   const [sheet, setSheet] = useState<'freq' | 'late' | 'date' | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [empty] = useState(emptyForm);
+  // Same body for create and edit (the edit route takes it as a partial).
+  const form = useForm<PlanForm>({
+    resolver: bodyResolver(maintenanceContract.createPlan.body, toBody),
+    defaultValues: empty,
+    reValidateMode: 'onSubmit',
+  });
+  usePrefill(form, planId ? plan : undefined, toForm);
+  const error = formMessage(form, t('common:validation.required'));
+  const { frequency, rule, lateType, activeFrom, active } = form.watch();
 
-  useEffect(() => {
-    if (!plan) return;
-    setName(plan.name);
-    setFrequency(plan.frequency);
-    setRule(plan.amountRule);
-    setAmount(rupeesText(plan.amountPaise));
-    setDueDay(String(plan.dueDay));
-    setBefore(String(plan.generateDaysBefore));
-    setLateType(plan.lateFee.type);
-    const lf = plan.lateFee;
-    if (lf.type === 'FIXED' || lf.type === 'PER_DAY') setLateAmount(rupeesText(lf.amountPaise));
-    if (lf.type === 'PERCENT') setLateAmount(String(lf.basisPoints / 100));
-    if (lf.type !== 'NONE') setGrace(String(lf.graceDays));
-    if ((lf.type === 'PERCENT' || lf.type === 'PER_DAY') && lf.capPaise)
-      setCap(rupeesText(lf.capPaise));
-    const [y, m, d] = plan.activeFrom.split('-').map(Number);
-    setActiveFrom(new Date(y ?? 2026, (m ?? 1) - 1, d ?? 1));
-    setActive(plan.isActive);
-  }, [plan]);
-
-  const lateFee = (): LateFeeRule | null => {
-    const graceDays = Number.parseInt(grace || '0', 10);
-    const capPaise = cap.trim() ? parseRupees(cap) : null;
-    if (lateType === 'NONE') return { type: 'NONE' };
-    if (Number.isNaN(graceDays)) return null;
-    if (lateType === 'PERCENT') {
-      const pct = Number(lateAmount);
-      if (!(pct > 0 && pct <= 100)) return null;
-      return { type: 'PERCENT', basisPoints: Math.round(pct * 100), graceDays, capPaise };
-    }
-    const amountPaise = parseRupees(lateAmount);
-    if (!amountPaise) return null;
-    return lateType === 'FIXED'
-      ? { type: 'FIXED', amountPaise, graceDays }
-      : { type: 'PER_DAY', amountPaise, graceDays, capPaise };
-  };
-
-  const submit = async () => {
-    setError(null);
-    const amountPaise = parseRupees(amount);
-    const due = Number.parseInt(dueDay, 10);
-    const days = Number.parseInt(before, 10);
-    const fee = lateFee();
-    if (
-      name.trim().length < 2 ||
-      !amountPaise ||
-      !(due >= 1 && due <= 28) ||
-      !(days >= 0 && days <= 31) ||
-      !fee
-    ) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     try {
-      await save.mutateAsync({
-        name: name.trim(),
-        frequency,
-        amountRule: rule,
-        amountPaise,
-        dueDay: due,
-        generateDaysBefore: days,
-        lateFee: fee,
-        activeFrom: isoDay(activeFrom),
-        isActive: active,
-      });
+      await save.mutateAsync(toBody(values));
       toast.show(t('money:plan.saved'));
       nav.goBack();
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   if (planId && loadFailed(plans))
     return (
@@ -158,12 +186,18 @@ export function PlanEditorScreen() {
           onBack={() => nav.goBack()}
         />
         <View className="mt-6 gap-3">
-          <Input
-            label={t('money:plan.name')}
-            placeholder={t('money:plan.nameHint')}
-            value={name}
-            onChangeText={setName}
-            maxLength={60}
+          <Controller
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <Input
+                label={t('money:plan.name')}
+                placeholder={t('money:plan.nameHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={60}
+              />
+            )}
           />
           <SelectField
             label={t('money:plan.frequency')}
@@ -176,36 +210,54 @@ export function PlanEditorScreen() {
             </Text>
             <Segmented
               value={rule}
-              onChange={setRule}
+              onChange={(r) => form.setValue('rule', r)}
               options={[
                 { value: 'FLAT_RATE', label: t('money:plan.ruleOpt.FLAT_RATE') },
                 { value: 'PER_SQFT', label: t('money:plan.ruleOpt.PER_SQFT') },
               ]}
             />
           </View>
-          <Input
-            label={rule === 'PER_SQFT' ? t('money:plan.rate') : t('money:plan.amount')}
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="decimal-pad"
-            placeholder={rule === 'PER_SQFT' ? '3.50' : '2500'}
+          <Controller
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <Input
+                label={rule === 'PER_SQFT' ? t('money:plan.rate') : t('money:plan.amount')}
+                value={field.value}
+                onChangeText={field.onChange}
+                keyboardType="decimal-pad"
+                placeholder={rule === 'PER_SQFT' ? '3.50' : '2500'}
+              />
+            )}
           />
           <View className="flex-row gap-3">
-            <Input
-              containerClassName="flex-1"
-              label={t('money:plan.dueDay')}
-              value={dueDay}
-              onChangeText={setDueDay}
-              keyboardType="number-pad"
-              maxLength={2}
+            <Controller
+              control={form.control}
+              name="dueDay"
+              render={({ field }) => (
+                <Input
+                  containerClassName="flex-1"
+                  label={t('money:plan.dueDay')}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              )}
             />
-            <Input
-              containerClassName="flex-1"
-              label={t('money:plan.generateBefore')}
-              value={before}
-              onChangeText={setBefore}
-              keyboardType="number-pad"
-              maxLength={2}
+            <Controller
+              control={form.control}
+              name="before"
+              render={({ field }) => (
+                <Input
+                  containerClassName="flex-1"
+                  label={t('money:plan.generateBefore')}
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              )}
             />
           </View>
           <SelectField
@@ -221,34 +273,52 @@ export function PlanEditorScreen() {
           {lateType !== 'NONE' ? (
             <>
               <View className="flex-row gap-3">
-                <Input
-                  containerClassName="flex-1"
-                  label={
-                    lateType === 'PERCENT'
-                      ? t('money:plan.latePercent')
-                      : lateType === 'PER_DAY'
-                        ? t('money:plan.latePerDay')
-                        : t('money:plan.lateAmount')
-                  }
-                  value={lateAmount}
-                  onChangeText={setLateAmount}
-                  keyboardType="decimal-pad"
+                <Controller
+                  control={form.control}
+                  name="lateAmount"
+                  render={({ field }) => (
+                    <Input
+                      containerClassName="flex-1"
+                      label={
+                        lateType === 'PERCENT'
+                          ? t('money:plan.latePercent')
+                          : lateType === 'PER_DAY'
+                            ? t('money:plan.latePerDay')
+                            : t('money:plan.lateAmount')
+                      }
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      keyboardType="decimal-pad"
+                    />
+                  )}
                 />
-                <Input
-                  containerClassName="flex-1"
-                  label={t('money:plan.graceDays')}
-                  value={grace}
-                  onChangeText={setGrace}
-                  keyboardType="number-pad"
-                  maxLength={2}
+                <Controller
+                  control={form.control}
+                  name="grace"
+                  render={({ field }) => (
+                    <Input
+                      containerClassName="flex-1"
+                      label={t('money:plan.graceDays')}
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      keyboardType="number-pad"
+                      maxLength={2}
+                    />
+                  )}
                 />
               </View>
               {lateType !== 'FIXED' ? (
-                <Input
-                  label={t('money:plan.cap')}
-                  value={cap}
-                  onChangeText={setCap}
-                  keyboardType="decimal-pad"
+                <Controller
+                  control={form.control}
+                  name="cap"
+                  render={({ field }) => (
+                    <Input
+                      label={t('money:plan.cap')}
+                      value={field.value}
+                      onChangeText={field.onChange}
+                      keyboardType="decimal-pad"
+                    />
+                  )}
                 />
               ) : null}
             </>
@@ -257,7 +327,7 @@ export function PlanEditorScreen() {
             <Text variant="body" className="flex-1">
               {t('money:plan.active')}
             </Text>
-            <Toggle value={active} onValueChange={setActive} />
+            <Toggle value={active} onValueChange={(on) => form.setValue('active', on)} />
           </View>
           {error ? (
             <Text variant="caption" tone="danger">
@@ -286,7 +356,7 @@ export function PlanEditorScreen() {
           value: f,
           label: t(`money:plan.freq.${f}`),
         }))}
-        onSelect={setFrequency}
+        onSelect={(f) => form.setValue('frequency', f)}
       />
       <OptionSheet
         visible={sheet === 'late'}
@@ -294,7 +364,7 @@ export function PlanEditorScreen() {
         title={t('money:plan.lateFee')}
         value={lateType}
         options={LATE_TYPES.map((l) => ({ value: l, label: t(`money:plan.lateFeeType.${l}`) }))}
-        onSelect={setLateType}
+        onSelect={(l) => form.setValue('lateType', l)}
       />
       <DateTimeSheet
         visible={sheet === 'date'}
@@ -304,7 +374,7 @@ export function PlanEditorScreen() {
         days={365}
         title={t('money:plan.activeFrom')}
         value={activeFrom}
-        onChange={setActiveFrom}
+        onChange={(d) => form.setValue('activeFrom', d)}
         localeTag={localeTag()}
         labels={{
           date: t('common:picker.date'),

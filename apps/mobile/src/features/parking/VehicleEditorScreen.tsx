@@ -1,4 +1,9 @@
-import { normalizeRegistration, type VehicleType, VehicleTypeSchema } from '@movo/contracts';
+import {
+  normalizeRegistration,
+  parkingContract,
+  type VehicleType,
+  VehicleTypeSchema,
+} from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -13,13 +18,33 @@ import {
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { bodyResolver, formMessage } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { useDeleteVehicle, useSaveVehicle } from './api';
 import { formatRegistration } from './shared';
+
+interface VehicleForm {
+  flatId: string;
+  registration: string;
+  type: VehicleType;
+  makeModel: string;
+  color: string;
+}
+
+function toBody(v: VehicleForm) {
+  return {
+    flatId: v.flatId,
+    registrationNo: normalizeRegistration(v.registration),
+    type: v.type,
+    makeModel: v.makeModel.trim() || null,
+    color: v.color.trim() || null,
+  };
+}
 
 export function VehicleEditorScreen() {
   const { t } = useTranslation(['parking', 'common']);
@@ -33,44 +58,36 @@ export function VehicleEditorScreen() {
   const save = useSaveVehicle(societyId, vehicle?.id);
   const remove = useDeleteVehicle(societyId);
 
-  const [flatId, setFlatId] = useState(
-    vehicle?.flat.id ?? params?.flatId ?? tenant.flats[0]?.id ?? '',
-  );
-  const [registration, setRegistration] = useState(
-    vehicle ? formatRegistration(vehicle.registrationNo) : '',
-  );
-  const [type, setType] = useState<VehicleType>(vehicle?.type ?? 'FOUR_WHEELER');
-  const [makeModel, setMakeModel] = useState(vehicle?.makeModel ?? '');
-  const [color, setColor] = useState(vehicle?.color ?? '');
+  // The vehicle comes with the route, so the form starts from it (no load, no pre-fill).
+  const form = useForm<VehicleForm>({
+    resolver: bodyResolver(parkingContract.createVehicle.body, toBody),
+    defaultValues: {
+      flatId: vehicle?.flat.id ?? params?.flatId ?? tenant.flats[0]?.id ?? '',
+      registration: vehicle ? formatRegistration(vehicle.registrationNo) : '',
+      type: vehicle?.type ?? 'FOUR_WHEELER',
+      makeModel: vehicle?.makeModel ?? '',
+      color: vehicle?.color ?? '',
+    },
+    reValidateMode: 'onSubmit',
+  });
+  const error = formMessage(form, t('common:validation.required'));
+  const { flatId, type } = form.watch();
   const [sheet, setSheet] = useState<'flat' | 'type' | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const flatOptions = tenant.flats.map((f) => ({ value: f.id, label: formatFlat(f) }));
   const flatLabel = vehicle
     ? formatFlat(vehicle.flat)
     : flatOptions.find((f) => f.value === flatId)?.label;
 
-  const submit = async () => {
-    setError(null);
-    const reg = normalizeRegistration(registration);
-    if (reg.length < 4 || reg.length > 15 || !flatId) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     try {
-      await save.mutateAsync({
-        flatId,
-        registrationNo: reg,
-        type,
-        makeModel: makeModel.trim() || null,
-        color: color.trim() || null,
-      });
+      await save.mutateAsync(toBody(values));
       toast.show(t('parking:vehicleSaved'));
       nav.goBack();
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   const del = async () => {
     if (!vehicle) return;
@@ -79,7 +96,7 @@ export function VehicleEditorScreen() {
       toast.show(t('parking:vehicleRemoved'));
       nav.goBack();
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
   };
 
@@ -96,31 +113,49 @@ export function VehicleEditorScreen() {
             value={flatLabel}
             onPress={() => (!vehicle && flatOptions.length > 1 ? setSheet('flat') : undefined)}
           />
-          <Input
-            label={t('parking:form.registrationNo')}
-            helper={t('parking:form.registrationHelp')}
-            value={registration}
-            onChangeText={setRegistration}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            maxLength={20}
+          <Controller
+            control={form.control}
+            name="registration"
+            render={({ field }) => (
+              <Input
+                label={t('parking:form.registrationNo')}
+                helper={t('parking:form.registrationHelp')}
+                value={field.value}
+                onChangeText={field.onChange}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                maxLength={20}
+              />
+            )}
           />
           <SelectField
             label={t('parking:form.type')}
             value={t(`parking:vehicleType.${type}`)}
             onPress={() => setSheet('type')}
           />
-          <Input
-            label={t('parking:form.makeModel')}
-            value={makeModel}
-            onChangeText={setMakeModel}
-            maxLength={40}
+          <Controller
+            control={form.control}
+            name="makeModel"
+            render={({ field }) => (
+              <Input
+                label={t('parking:form.makeModel')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={40}
+              />
+            )}
           />
-          <Input
-            label={t('parking:form.color')}
-            value={color}
-            onChangeText={setColor}
-            maxLength={20}
+          <Controller
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <Input
+                label={t('parking:form.color')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={20}
+              />
+            )}
           />
           {error ? (
             <Text variant="caption" tone="danger">
@@ -155,7 +190,7 @@ export function VehicleEditorScreen() {
         title={t('parking:form.flat')}
         options={flatOptions}
         value={flatId}
-        onSelect={setFlatId}
+        onSelect={(id) => form.setValue('flatId', id)}
       />
       <OptionSheet
         visible={sheet === 'type'}
@@ -166,7 +201,7 @@ export function VehicleEditorScreen() {
           label: t(`parking:vehicleType.${v}`),
         }))}
         value={type}
-        onSelect={setType}
+        onSelect={(v) => form.setValue('type', v)}
       />
     </>
   );

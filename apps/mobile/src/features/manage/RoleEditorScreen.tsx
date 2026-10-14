@@ -1,4 +1,4 @@
-import { PERMISSION_KEYS, type PermissionKey } from '@movo/contracts';
+import { PERMISSION_KEYS, type PermissionKey, type Role, societyContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -13,17 +13,38 @@ import {
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useRoles } from '../directory/api';
 import { useDeleteRole, useSaveRole } from './api';
 import { i18nKey, PERMISSION_GROUPS } from './module-settings';
+
+interface RoleForm {
+  name: string;
+  /** No duplicates, in the order they were switched on (same as the Set it replaces). */
+  permissions: PermissionKey[];
+}
+
+const EMPTY: RoleForm = { name: '', permissions: [] };
+
+function toForm(role: Role): RoleForm {
+  return { name: role.name, permissions: [...new Set(role.permissions)] };
+}
+
+/** The admin role always keeps every permission. */
+function toBody(v: RoleForm, isAdminRole: boolean) {
+  return {
+    name: v.name.trim(),
+    permissions: isAdminRole ? [...PERMISSION_KEYS] : v.permissions,
+  };
+}
 
 export function RoleEditorScreen() {
   const { t } = useTranslation(['manage', 'common']);
@@ -41,42 +62,32 @@ export function RoleEditorScreen() {
   const mine = new Set(tenant.permissions);
   const isAdminRole = role?.key === 'admin';
 
-  const [name, setName] = useState('');
-  const [perms, setPerms] = useState<Set<PermissionKey>>(new Set());
-  const [error, setError] = useState<string | null>(null);
+  const form = useForm<RoleForm>({
+    resolver: bodyResolver(
+      roleId ? societyContract.updateRole.body : societyContract.createRole.body,
+      (v: RoleForm) => toBody(v, isAdminRole),
+    ),
+    defaultValues: EMPTY,
+    reValidateMode: 'onSubmit',
+  });
+  usePrefill(form, role, toForm);
+  const error = formMessage(form, t('common:validation.required'));
+  const perms = form.watch('permissions');
 
-  useEffect(() => {
-    if (!role) return;
-    setName(role.name);
-    setPerms(new Set(role.permissions));
-  }, [role]);
+  const flip = (p: PermissionKey, on: boolean) => {
+    const old = form.getValues('permissions').filter((x) => x !== p);
+    form.setValue('permissions', on ? [...old, p] : old);
+  };
 
-  const flip = (p: PermissionKey, on: boolean) =>
-    setPerms((old) => {
-      const next = new Set(old);
-      if (on) next.add(p);
-      else next.delete(p);
-      return next;
-    });
-
-  const submit = async () => {
-    setError(null);
-    if (name.trim().length < 2) {
-      setError(t('common:validation.required'));
-      return;
-    }
+  const submit = form.handleSubmit(async (values) => {
     try {
-      await save.mutateAsync({
-        roleId,
-        name: name.trim(),
-        permissions: isAdminRole ? [...PERMISSION_KEYS] : [...perms],
-      });
+      await save.mutateAsync({ roleId, ...toBody(values, isAdminRole) });
       toast.show(t('manage:rolesScreen.saved'));
       nav.goBack();
     } catch (e) {
-      setError(toMessage(e));
+      form.setError('root.server', { message: toMessage(e) });
     }
-  };
+  });
 
   const drop = () => {
     if (!role) return;
@@ -112,12 +123,18 @@ export function RoleEditorScreen() {
           onBack={() => nav.goBack()}
         />
         <View className="mt-6">
-          <Input
-            label={t('manage:rolesScreen.name')}
-            placeholder={t('manage:rolesScreen.nameHint')}
-            value={name}
-            onChangeText={setName}
-            maxLength={40}
+          <Controller
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <Input
+                label={t('manage:rolesScreen.name')}
+                placeholder={t('manage:rolesScreen.nameHint')}
+                value={field.value}
+                onChangeText={field.onChange}
+                maxLength={40}
+              />
+            )}
           />
         </View>
         {isAdminRole ? (
@@ -146,7 +163,7 @@ export function RoleEditorScreen() {
                           </Text>
                         </View>
                         <Toggle
-                          value={perms.has(p)}
+                          value={perms.includes(p)}
                           disabled={locked}
                           onValueChange={(on) => flip(p, on)}
                         />
@@ -175,7 +192,7 @@ export function RoleEditorScreen() {
       </Screen>
       <BottomBar
         label={isAdminRole ? undefined : t('manage:rolesScreen.selected')}
-        value={isAdminRole ? undefined : String(perms.size)}
+        value={isAdminRole ? undefined : String(perms.length)}
         action={
           <Button
             label={t('common:actions.save')}
