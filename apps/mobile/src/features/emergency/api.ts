@@ -1,11 +1,12 @@
 import { emergencyContract, type RouteBody } from '@movo/contracts';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { emergencyKeys } from './keys';
 
 export function useEmergencyContacts(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).emergencyContacts,
+    queryKey: emergencyKeys(societyId).contacts,
     queryFn: () => api(emergencyContract.listContacts, { params: { societyId } }),
     staleTime: 5 * 60_000,
   });
@@ -13,7 +14,7 @@ export function useEmergencyContacts(societyId: string) {
 
 export function useAlerts(societyId: string, status: 'ACTIVE' | 'CLOSED') {
   return useInfiniteQuery({
-    queryKey: keys.society(societyId).alerts(status),
+    queryKey: emergencyKeys(societyId).list(status),
     queryFn: ({ pageParam }) =>
       api(emergencyContract.listAlerts, {
         params: { societyId },
@@ -28,7 +29,7 @@ export function useAlerts(societyId: string, status: 'ACTIVE' | 'CLOSED') {
 
 export function useAlert(societyId: string, alertId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).alert(alertId),
+    queryKey: emergencyKeys(societyId).detail(alertId),
     queryFn: () => api(emergencyContract.getAlert, { params: { societyId, alertId } }),
   });
 }
@@ -36,8 +37,8 @@ export function useAlert(societyId: string, alertId: string) {
 function useInvalidateEmergency(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'emergency'] });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
+    void qc.invalidateQueries({ queryKey: emergencyKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 

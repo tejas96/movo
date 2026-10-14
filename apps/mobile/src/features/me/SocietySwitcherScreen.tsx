@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Image, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { queryClient } from '../../core/api/query-client';
+import { societyKey } from '../../core/api/query-keys';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useMeContext } from '../../core/tenant/hooks';
 import { useTenantStore } from '../../core/tenant/tenant.store';
@@ -17,7 +18,7 @@ export function SocietySwitcherScreen() {
 
   const pick = (id: string) => {
     setActive(id);
-    void queryClient.invalidateQueries({ queryKey: ['society', id] });
+    void queryClient.invalidateQueries({ queryKey: societyKey(id) });
     nav.goBack();
   };
 

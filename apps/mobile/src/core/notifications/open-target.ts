@@ -1,4 +1,5 @@
 import { queryClient } from '../api/query-client';
+import { societyKey } from '../api/query-keys';
 import type { AnyNotificationEntry } from '../navigation/routes';
 import type { RootNav } from '../navigation/types';
 import { useTenantStore } from '../tenant/tenant.store';
@@ -51,5 +52,5 @@ export function switchSocietyFor(raw: unknown, activeSocietyIds: readonly string
   const tenant = useTenantStore.getState();
   if (tenant.activeSocietyId === societyId) return;
   tenant.setActiveSocietyId(societyId);
-  void queryClient.invalidateQueries({ queryKey: ['society', societyId] });
+  void queryClient.invalidateQueries({ queryKey: societyKey(societyId) });
 }

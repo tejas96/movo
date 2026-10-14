@@ -7,7 +7,8 @@ import {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { z } from 'zod';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { noticesKeys } from './keys';
 
 type Status = z.infer<typeof NoticeStatusSchema>;
 type CreateBody = RouteBody<typeof noticesContract.create>;
@@ -15,7 +16,7 @@ type UpdateBody = RouteBody<typeof noticesContract.update>;
 
 export function useNotices(societyId: string, status: Status) {
   return useInfiniteQuery({
-    queryKey: keys.society(societyId).notices(status),
+    queryKey: noticesKeys(societyId).list(status),
     queryFn: ({ pageParam }) =>
       api(noticesContract.list, {
         params: { societyId },
@@ -28,7 +29,7 @@ export function useNotices(societyId: string, status: Status) {
 
 export function useNotice(societyId: string, noticeId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).notice(noticeId),
+    queryKey: noticesKeys(societyId).detail(noticeId),
     queryFn: () => api(noticesContract.get, { params: { societyId, noticeId } }),
   });
 }
@@ -36,9 +37,9 @@ export function useNotice(societyId: string, noticeId: string) {
 function useInvalidateNotices(societyId: string) {
   const qc = useQueryClient();
   return (notice?: Notice) => {
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'notices'] });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-    if (notice) qc.setQueryData(keys.society(societyId).notice(notice.id), notice);
+    void qc.invalidateQueries({ queryKey: noticesKeys(societyId).lists });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    if (notice) qc.setQueryData(noticesKeys(societyId).detail(notice.id), notice);
   };
 }
 

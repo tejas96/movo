@@ -8,19 +8,23 @@ import {
 } from '@movo/contracts';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { societyKey } from '../../core/api/query-keys';
 import { invalidateContext } from '../../core/auth/auth';
+import { directoryKeys } from '../directory/keys';
+import { homeKeys } from '../home/keys';
+import { societyKeys } from '../society/keys';
+import { manageKeys } from './keys';
 
 export function useBuildings(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).buildings,
+    queryKey: manageKeys(societyId).buildings,
     queryFn: () => api(societyContract.listBuildings, { params: { societyId } }),
   });
 }
 
 export function useFlats(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).flats,
+    queryKey: manageKeys(societyId).flats,
     queryFn: () => api(societyContract.listFlats, { params: { societyId } }),
   });
 }
@@ -30,7 +34,7 @@ export function useCreateBuilding(societyId: string) {
   return useMutation({
     mutationFn: (body: RouteBody<typeof societyContract.createBuilding>) =>
       api(societyContract.createBuilding, { params: { societyId }, body }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: keys.society(societyId).all }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: societyKey(societyId) }),
   });
 }
 
@@ -39,13 +43,13 @@ export function useCreateFlats(societyId: string) {
   return useMutation({
     mutationFn: (body: RouteBody<typeof societyContract.createFlats>) =>
       api(societyContract.createFlats, { params: { societyId }, body }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: keys.society(societyId).all }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: societyKey(societyId) }),
   });
 }
 
 export function useInvitations(societyId: string) {
   return useInfiniteQuery({
-    queryKey: keys.society(societyId).invitations,
+    queryKey: manageKeys(societyId).invitations,
     queryFn: ({ pageParam }) =>
       api(societyContract.listInvitations, {
         params: { societyId },
@@ -62,8 +66,8 @@ export function useCreateInvitation(societyId: string) {
     mutationFn: (body: RouteBody<typeof societyContract.createInvitation>) =>
       api(societyContract.createInvitation, { params: { societyId }, body }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).invitations });
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
+      void qc.invalidateQueries({ queryKey: manageKeys(societyId).invitations });
+      void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     },
   });
 }
@@ -73,13 +77,13 @@ export function useRevokeInvitation(societyId: string) {
   return useMutation({
     mutationFn: (invitationId: string) =>
       api(societyContract.revokeInvitation, { params: { societyId, invitationId } }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: keys.society(societyId).invitations }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: manageKeys(societyId).invitations }),
   });
 }
 
 export function useJoinRequests(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).joinRequests,
+    queryKey: manageKeys(societyId).joinRequests,
     queryFn: () =>
       api(societyContract.listJoinRequests, {
         params: { societyId },
@@ -102,9 +106,9 @@ export function useDecideJoinRequest(societyId: string) {
         ? api(societyContract.approveJoinRequest, { params: { societyId, requestId }, body: {} })
         : api(societyContract.rejectJoinRequest, { params: { societyId, requestId }, body: {} }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).joinRequests });
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-      void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'members'] });
+      void qc.invalidateQueries({ queryKey: manageKeys(societyId).joinRequests });
+      void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+      void qc.invalidateQueries({ queryKey: directoryKeys(societyId).lists });
     },
   });
 }
@@ -114,7 +118,7 @@ export function useRotateJoinCode(societyId: string) {
   return useMutation({
     mutationFn: () =>
       api(societyContract.update, { params: { societyId }, body: { rotateJoinCode: true } }),
-    onSuccess: (profile) => qc.setQueryData(keys.society(societyId).profile, profile),
+    onSuccess: (profile) => qc.setQueryData(societyKeys(societyId).profile, profile),
   });
 }
 
@@ -124,7 +128,7 @@ export function useUpdateSociety(societyId: string) {
     mutationFn: (body: RouteBody<typeof societyContract.update>) =>
       api(societyContract.update, { params: { societyId }, body }),
     onSuccess: (profile) => {
-      qc.setQueryData(keys.society(societyId).profile, profile);
+      qc.setQueryData(societyKeys(societyId).profile, profile);
       void invalidateContext();
     },
   });
@@ -145,7 +149,7 @@ export function useSaveRole(societyId: string) {
         ? api(societyContract.updateRole, { params: { societyId, roleId }, body })
         : api(societyContract.createRole, { params: { societyId }, body }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).roles });
+      void qc.invalidateQueries({ queryKey: manageKeys(societyId).roles });
       void invalidateContext();
     },
   });
@@ -156,13 +160,13 @@ export function useDeleteRole(societyId: string) {
   return useMutation({
     mutationFn: (roleId: string) =>
       api(societyContract.deleteRole, { params: { societyId, roleId } }),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: keys.society(societyId).roles }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: manageKeys(societyId).roles }),
   });
 }
 
 export function useModules(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).modules,
+    queryKey: manageKeys(societyId).modules,
     queryFn: () => api(societyContract.listModules, { params: { societyId } }),
   });
 }
@@ -179,19 +183,19 @@ export function useUpdateModule(societyId: string) {
       settings?: Record<string, unknown>;
     }) => api(societyContract.updateModule, { params: { societyId, moduleKey }, body }),
     onSuccess: (state) => {
-      qc.setQueryData<ModuleState[]>(keys.society(societyId).modules, (old) =>
+      qc.setQueryData<ModuleState[]>(manageKeys(societyId).modules, (old) =>
         old?.map((m) => (m.key === state.key ? state : m)),
       );
       // Every screen reads module switches and settings from the context.
       void invalidateContext();
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).all });
+      void qc.invalidateQueries({ queryKey: societyKey(societyId) });
     },
   });
 }
 
 export function useAuditLog(societyId: string, area: AuditArea | undefined) {
   return useInfiniteQuery({
-    queryKey: keys.society(societyId).audit(area ?? 'all'),
+    queryKey: manageKeys(societyId).audit(area ?? 'all'),
     queryFn: ({ pageParam }) =>
       api(societyContract.listAudit, {
         params: { societyId },

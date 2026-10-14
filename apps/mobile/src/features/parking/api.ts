@@ -1,20 +1,21 @@
 import { parkingContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { directoryKeys } from '../directory/keys';
+import { parkingKeys } from './keys';
 
 export type SlotFilter = 'all' | 'free' | 'taken';
 
 export function useMyParking(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).parkingMine,
+    queryKey: parkingKeys(societyId).mine,
     queryFn: () => api(parkingContract.mine, { params: { societyId } }),
   });
 }
 
 export function useParkingSlots(societyId: string, filter: SlotFilter, enabled = true) {
   return useQuery({
-    queryKey: keys.society(societyId).parkingSlots(filter),
+    queryKey: parkingKeys(societyId).slots(filter),
     queryFn: () =>
       api(parkingContract.listSlots, {
         params: { societyId },
@@ -26,7 +27,7 @@ export function useParkingSlots(societyId: string, filter: SlotFilter, enabled =
 
 export function useVehicles(societyId: string, q: string, enabled = true) {
   return useQuery({
-    queryKey: keys.society(societyId).vehicles(q),
+    queryKey: parkingKeys(societyId).vehicles(q),
     queryFn: () =>
       api(parkingContract.listVehicles, { params: { societyId }, query: { q: q || undefined } }),
     enabled,
@@ -36,8 +37,8 @@ export function useVehicles(societyId: string, q: string, enabled = true) {
 function useInvalidateParking(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).parking });
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'member'] });
+    void qc.invalidateQueries({ queryKey: parkingKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: directoryKeys(societyId).details });
   };
 }
 

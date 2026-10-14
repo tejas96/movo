@@ -1,7 +1,8 @@
 import { eventsContract, type RouteBody, type SocietyEvent, type Timeframe } from '@movo/contracts';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { eventsKeys } from './keys';
 
 type CreateBody = RouteBody<typeof eventsContract.create>;
 type UpdateBody = RouteBody<typeof eventsContract.update>;
@@ -9,7 +10,7 @@ type RsvpBody = RouteBody<typeof eventsContract.rsvp>;
 
 export function useEvents(societyId: string, when: Timeframe) {
   return useInfiniteQuery({
-    queryKey: keys.society(societyId).events(when),
+    queryKey: eventsKeys(societyId).list(when),
     queryFn: ({ pageParam }) =>
       api(eventsContract.list, {
         params: { societyId },
@@ -22,7 +23,7 @@ export function useEvents(societyId: string, when: Timeframe) {
 
 export function useEvent(societyId: string, eventId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).event(eventId),
+    queryKey: eventsKeys(societyId).detail(eventId),
     queryFn: () => api(eventsContract.get, { params: { societyId, eventId } }),
     enabled: Boolean(eventId),
   });
@@ -30,7 +31,7 @@ export function useEvent(societyId: string, eventId: string) {
 
 export function useEventRsvps(societyId: string, eventId: string, enabled: boolean) {
   return useQuery({
-    queryKey: keys.society(societyId).eventRsvps(eventId),
+    queryKey: eventsKeys(societyId).rsvps(eventId),
     queryFn: () => api(eventsContract.listRsvps, { params: { societyId, eventId } }),
     enabled,
   });
@@ -39,10 +40,10 @@ export function useEventRsvps(societyId: string, eventId: string, enabled: boole
 function useInvalidateEvents(societyId: string) {
   const qc = useQueryClient();
   return (event: SocietyEvent) => {
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'events', 'list'] });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).eventRsvps(event.id) });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-    qc.setQueryData(keys.society(societyId).event(event.id), event);
+    void qc.invalidateQueries({ queryKey: eventsKeys(societyId).lists });
+    void qc.invalidateQueries({ queryKey: eventsKeys(societyId).rsvps(event.id) });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    qc.setQueryData(eventsKeys(societyId).detail(event.id), event);
   };
 }
 

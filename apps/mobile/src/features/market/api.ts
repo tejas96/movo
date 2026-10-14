@@ -1,7 +1,8 @@
 import { type ListingKind, marketContract, type OrderRole, type RouteBody } from '@movo/contracts';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { marketKeys } from './keys';
 
 const c = marketContract;
 
@@ -13,7 +14,7 @@ export function useListings(
 ) {
   return useInfiniteQuery({
     enabled,
-    queryKey: keys.society(societyId).listings(`${kind ?? 'ALL'}|${q}`),
+    queryKey: marketKeys(societyId).listings(`${kind ?? 'ALL'}|${q}`),
     queryFn: ({ pageParam }) =>
       api(c.listListings, {
         params: { societyId },
@@ -26,14 +27,14 @@ export function useListings(
 
 export function useMyListings(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).myListings,
+    queryKey: marketKeys(societyId).mine,
     queryFn: () => api(c.myListings, { params: { societyId } }),
   });
 }
 
 export function useListing(societyId: string, listingId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).listing(listingId),
+    queryKey: marketKeys(societyId).listing(listingId),
     queryFn: () => api(c.getListing, { params: { societyId, listingId } }),
     enabled: Boolean(listingId),
   });
@@ -41,7 +42,7 @@ export function useListing(societyId: string, listingId: string) {
 
 export function useOrders(societyId: string, role: OrderRole) {
   return useQuery({
-    queryKey: keys.society(societyId).orders(role),
+    queryKey: marketKeys(societyId).orders(role),
     queryFn: () => api(c.listOrders, { params: { societyId }, query: { role } }),
   });
 }
@@ -49,7 +50,7 @@ export function useOrders(societyId: string, role: OrderRole) {
 /** No realtime yet, so an open order polls every 15 seconds. */
 export function useOrder(societyId: string, orderId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).order(orderId),
+    queryKey: marketKeys(societyId).order(orderId),
     queryFn: () => api(c.getOrder, { params: { societyId, orderId } }),
     refetchInterval: 15_000,
   });
@@ -57,7 +58,7 @@ export function useOrder(societyId: string, orderId: string) {
 
 export function useMarketReports(societyId: string, enabled: boolean) {
   return useQuery({
-    queryKey: keys.society(societyId).marketReports,
+    queryKey: marketKeys(societyId).reports,
     queryFn: () => api(c.listReports, { params: { societyId } }),
     enabled,
   });
@@ -67,8 +68,8 @@ export function useMarketReports(societyId: string, enabled: boolean) {
 function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).market });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
+    void qc.invalidateQueries({ queryKey: marketKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 
@@ -165,7 +166,7 @@ export function useOrderAction(societyId: string, orderId: string) {
       }
     },
     onSuccess: (order) => {
-      qc.setQueryData(keys.society(societyId).order(orderId), order);
+      qc.setQueryData(marketKeys(societyId).order(orderId), order);
       invalidate();
     },
   });

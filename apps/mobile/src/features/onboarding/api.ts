@@ -1,12 +1,12 @@
 import { joinContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
 import { invalidateContext } from '../../core/auth/auth';
+import { joinKeys } from './keys';
 
 export function useJoinPreview(joinCode: string, enabled: boolean) {
   return useQuery({
-    queryKey: keys.join.preview(joinCode),
+    queryKey: joinKeys.preview(joinCode),
     queryFn: () => api(joinContract.preview, { params: { joinCode } }),
     enabled,
   });

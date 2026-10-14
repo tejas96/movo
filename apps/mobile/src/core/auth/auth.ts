@@ -2,6 +2,7 @@ import { type AuthSession, authContract, type Locale, meContract } from '@movo/c
 import { Platform } from 'react-native';
 import { api, refreshTokens, signOutLocally } from '../api/client';
 import { queryClient } from '../api/query-client';
+import { meKey } from '../api/query-keys';
 import { setAppLocale } from '../i18n';
 import { unregisterPush } from '../push/push';
 import { useSessionStore } from './session.store';
@@ -83,5 +84,5 @@ async function refreshProfile(): Promise<void> {
 }
 
 export function invalidateContext(): Promise<void> {
-  return queryClient.invalidateQueries({ queryKey: ['me'] });
+  return queryClient.invalidateQueries({ queryKey: meKey });
 }

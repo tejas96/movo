@@ -1,13 +1,14 @@
 import { maintenanceContract, type RouteBody } from '@movo/contracts';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { moneyKeys } from './keys';
 
 const c = maintenanceContract;
 
 export function useMyDues(societyId: string, enabled = true) {
   return useQuery({
-    queryKey: keys.society(societyId).myDues,
+    queryKey: moneyKeys(societyId).myDues,
     queryFn: () => api(c.myDues, { params: { societyId } }),
     enabled,
   });
@@ -15,21 +16,21 @@ export function useMyDues(societyId: string, enabled = true) {
 
 export function useFlatAccount(societyId: string, flatId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).flatAccount(flatId),
+    queryKey: moneyKeys(societyId).flatAccount(flatId),
     queryFn: () => api(c.flatAccount, { params: { societyId, flatId } }),
   });
 }
 
 export function useBill(societyId: string, billId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).bill(billId),
+    queryKey: moneyKeys(societyId).bill(billId),
     queryFn: () => api(c.getBill, { params: { societyId, billId } }),
   });
 }
 
 export function usePayments(societyId: string, flatId: string | undefined) {
   return useInfiniteQuery({
-    queryKey: keys.society(societyId).payments(flatId ?? 'all'),
+    queryKey: moneyKeys(societyId).payments(flatId ?? 'all'),
     queryFn: ({ pageParam }) =>
       api(c.listPayments, {
         params: { societyId },
@@ -42,14 +43,14 @@ export function usePayments(societyId: string, flatId: string | undefined) {
 
 export function usePayment(societyId: string, paymentId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).payment(paymentId),
+    queryKey: moneyKeys(societyId).payment(paymentId),
     queryFn: () => api(c.getPayment, { params: { societyId, paymentId } }),
   });
 }
 
 export function useCollection(societyId: string, enabled: boolean) {
   return useQuery({
-    queryKey: keys.society(societyId).collection,
+    queryKey: moneyKeys(societyId).collection,
     queryFn: () => api(c.collection, { params: { societyId } }),
     enabled,
   });
@@ -57,14 +58,14 @@ export function useCollection(societyId: string, enabled: boolean) {
 
 export function usePlans(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).plans,
+    queryKey: moneyKeys(societyId).plans,
     queryFn: () => api(c.listPlans, { params: { societyId } }),
   });
 }
 
 export function useInstructions(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).instructions,
+    queryKey: moneyKeys(societyId).instructions,
     queryFn: () => api(c.listInstructions, { params: { societyId } }),
   });
 }
@@ -73,8 +74,8 @@ export function useInstructions(societyId: string) {
 function useInvalidateMoney(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).money });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
+    void qc.invalidateQueries({ queryKey: moneyKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 

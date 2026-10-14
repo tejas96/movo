@@ -1,11 +1,12 @@
 import { homeContract, meContract } from '@movo/contracts';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { anySocietyKey } from '../../core/api/query-keys';
+import { homeKeys, notificationKeys } from './keys';
 
 export function useHomeSummary(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).home,
+    queryKey: homeKeys(societyId).all,
     queryFn: () => api(homeContract.summary, { params: { societyId } }),
     staleTime: 15_000,
   });
@@ -13,7 +14,7 @@ export function useHomeSummary(societyId: string) {
 
 export function useNotifications() {
   return useInfiniteQuery({
-    queryKey: keys.me.notifications,
+    queryKey: notificationKeys.all,
     queryFn: ({ pageParam }) =>
       api(meContract.notifications, { query: { cursor: pageParam, limit: 20 } }),
     initialPageParam: undefined as string | undefined,
@@ -26,8 +27,8 @@ export function useMarkAllRead() {
   return useMutation({
     mutationFn: () => api(meContract.markAllNotificationsRead),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: keys.me.notifications });
-      void qc.invalidateQueries({ queryKey: ['society'] });
+      void qc.invalidateQueries({ queryKey: notificationKeys.all });
+      void qc.invalidateQueries({ queryKey: anySocietyKey });
     },
   });
 }

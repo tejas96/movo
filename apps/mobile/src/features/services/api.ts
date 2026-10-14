@@ -1,13 +1,14 @@
 import { type RouteBody, type Vendor, type VendorStatus, vendorsContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { vendorKeys } from './keys';
 
 type Filter = { categoryId?: string; q?: string; status?: VendorStatus };
 
 export function useVendorCategories(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).vendorCategories,
+    queryKey: vendorKeys(societyId).categories,
     queryFn: () => api(vendorsContract.listCategories, { params: { societyId } }),
     staleTime: 60_000,
   });
@@ -15,7 +16,7 @@ export function useVendorCategories(societyId: string) {
 
 export function useVendors(societyId: string, filter: Filter, enabled = true) {
   return useQuery({
-    queryKey: keys.society(societyId).vendors(JSON.stringify(filter)),
+    queryKey: vendorKeys(societyId).list(JSON.stringify(filter)),
     queryFn: () =>
       api(vendorsContract.list, {
         params: { societyId },
@@ -28,7 +29,7 @@ export function useVendors(societyId: string, filter: Filter, enabled = true) {
 
 export function useVendor(societyId: string, vendorId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).vendor(vendorId),
+    queryKey: vendorKeys(societyId).detail(vendorId),
     queryFn: () => api(vendorsContract.get, { params: { societyId, vendorId } }),
     enabled: Boolean(vendorId),
   });
@@ -37,9 +38,9 @@ export function useVendor(societyId: string, vendorId: string) {
 function useInvalidateVendors(societyId: string) {
   const qc = useQueryClient();
   return (vendor?: Vendor) => {
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'vendors'] });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-    if (vendor) qc.setQueryData(keys.society(societyId).vendor(vendor.id), vendor);
+    void qc.invalidateQueries({ queryKey: vendorKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    if (vendor) qc.setQueryData(vendorKeys(societyId).detail(vendor.id), vendor);
   };
 }
 
