@@ -130,6 +130,35 @@ export async function creditOf(tx: Tx, societyId: string, flatId: string): Promi
   return (await unallocatedPayments(tx, societyId, flatId)).reduce((s, p) => s + p.leftPaise, 0);
 }
 
+/** Takes the per-flat dues lock (see lockFor) for many flats in one statement, in a fixed order. */
+export async function lockFlats(tx: Tx, flatIds: readonly string[]): Promise<void> {
+  const keys = [...new Set(flatIds)].sort().map((id) => `flat-dues:${id}`);
+  if (keys.length === 0) return;
+  // unnest keeps the array's (sorted) order, so two runs never wait on each other in a cycle.
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(k)) FROM unnest(${keys}::text[]) AS k`;
+}
+
+/** Of these flats, the ones with recorded payments not yet used on a bill. */
+export async function flatsWithAdvance(
+  tx: Tx,
+  societyId: string,
+  flatIds: readonly string[],
+): Promise<string[]> {
+  if (flatIds.length === 0) return [];
+  const rows = await tx.$queryRaw<{ flatId: string }[]>`
+    SELECT p."flatId"::text AS "flatId"
+    FROM "Payment" p
+    LEFT JOIN (
+      SELECT "paymentId", SUM("amountPaise") AS used FROM "PaymentAllocation"
+      WHERE "societyId" = ${societyId}::uuid GROUP BY 1
+    ) a ON a."paymentId" = p."id"
+    WHERE p."societyId" = ${societyId}::uuid AND p."status" = 'RECORDED'
+      AND p."flatId" = ANY(${[...flatIds]}::uuid[])
+      AND p."amountPaise" > COALESCE(a.used, 0)
+    GROUP BY 1`;
+  return rows.map((r) => r.flatId);
+}
+
 /** Uses a flat's advance on its open bills, oldest bill first. Returns the bills touched. */
 export async function applyCredit(
   tx: Tx,

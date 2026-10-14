@@ -17,6 +17,7 @@ import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { dateOnly, dbDate, fyLabel, todayIn } from '../../common/util/dates';
+import { newId } from '../../common/util/ids';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -26,6 +27,8 @@ import { amountFor, lateFeeFor, openedDuesReminders, periodsToGenerate } from '.
 import {
   applyCredit,
   flatInclude,
+  flatsWithAdvance,
+  lockFlats,
   OPEN_STATUSES,
   outstanding,
   refreshBills,
@@ -124,73 +127,70 @@ export class BillsService {
       include: { building: true },
     });
 
+    // Work out every bill first, then write them in two inserts (bills, then their lines).
+    const due = plans.flatMap((plan) =>
+      periodsToGenerate(
+        {
+          frequency: plan.frequency,
+          dueDay: plan.dueDay,
+          generateDaysBefore: plan.generateDaysBefore,
+          activeFrom: dateOnly(plan.activeFrom),
+          activeTo: plan.activeTo ? dateOnly(plan.activeTo) : null,
+        },
+        today,
+        society.fyStartMonth,
+      ).map((period) => ({ plan, period })),
+    );
     const skipped = new Map<string, FlatRef>();
-    const created: NewBill[] = [];
+    let created: NewBill[] = [];
+    if (due.length === 0) return { created: 0, skippedFlats: [] };
     await this.prisma.$transaction(
       async (tx) => {
-        for (const plan of plans) {
-          const periods = periodsToGenerate(
-            {
-              frequency: plan.frequency,
-              dueDay: plan.dueDay,
-              generateDaysBefore: plan.generateDaysBefore,
-              activeFrom: dateOnly(plan.activeFrom),
-              activeTo: plan.activeTo ? dateOnly(plan.activeTo) : null,
-            },
-            today,
-            society.fyStartMonth,
-          );
-          if (periods.length === 0) continue;
+        const existing = new Set(
+          (
+            await tx.bill.findMany({
+              where: {
+                societyId,
+                planId: { in: [...new Set(due.map((d) => d.plan.id))] },
+                periodKey: { in: [...new Set(due.map((d) => d.period.key))] },
+              },
+              select: { planId: true, periodKey: true, flatId: true },
+            })
+          ).map((b) => `${b.planId}|${b.periodKey}|${b.flatId}`),
+        );
+        const planned: (NewBill & { planId: string })[] = [];
+        for (const { plan, period } of due) {
           const overrides = new Map(plan.overrides.map((o) => [o.flatId, o.amountPaise]));
-          for (const period of periods) {
-            const existing = new Set(
-              (
-                await tx.bill.findMany({
-                  where: { planId: plan.id, periodKey: period.key },
-                  select: { flatId: true },
-                })
-              ).map((b) => b.flatId),
+          for (const flat of flats) {
+            if (existing.has(`${plan.id}|${period.key}|${flat.id}`)) continue;
+            const amount = amountFor(
+              plan.amountRule,
+              plan.amountPaise,
+              flat,
+              overrides.get(flat.id),
             );
-            for (const flat of flats) {
-              if (existing.has(flat.id)) continue;
-              const amount = amountFor(
-                plan.amountRule,
-                plan.amountPaise,
-                flat,
-                overrides.get(flat.id),
-              );
-              if (amount === null) {
-                skipped.set(flat.id, toFlatRef(flat));
-                continue;
-              }
-              if (amount === 0) continue;
-              const bill = await tx.bill.create({
-                data: {
-                  societyId,
-                  flatId: flat.id,
-                  planId: plan.id,
-                  kind: 'MAINTENANCE',
-                  title: plan.name,
-                  periodKey: period.key,
-                  dueDate: dbDate(period.dueDate),
-                  financialYear: fyLabel(period.dueDate, society.fyStartMonth),
-                  totalPaise: amount,
-                  lines: {
-                    create: { societyId, type: 'BASE', label: plan.name, amountPaise: amount },
-                  },
-                },
-              });
-              created.push({
-                id: bill.id,
-                flatId: flat.id,
-                title: plan.name,
-                periodKey: period.key,
-                dueDate: period.dueDate,
-                totalPaise: amount,
-              });
+            if (amount === null) {
+              skipped.set(flat.id, toFlatRef(flat));
+              continue;
             }
+            if (amount === 0) continue;
+            planned.push({
+              id: newId(),
+              planId: plan.id,
+              flatId: flat.id,
+              title: plan.name,
+              periodKey: period.key,
+              dueDate: period.dueDate,
+              totalPaise: amount,
+            });
           }
         }
+        created = await this.insertBills(
+          tx,
+          societyId,
+          society.fyStartMonth,
+          planned.map((b) => ({ ...b, kind: 'MAINTENANCE' as const })),
+        );
         await this.afterCreate(tx, societyId, created, today);
         await this.notifyNewBills(tx, societyId, created);
       },
@@ -207,37 +207,23 @@ export class BillsService {
     });
     if (body.flatIds && flats.length !== new Set(body.flatIds).size)
       throw ApiException.notFound('Flat not found');
-    const created: NewBill[] = [];
+    let created: NewBill[] = [];
     await this.tenant.tx(async (tx) => {
-      for (const flat of flats) {
-        const bill = await tx.bill.create({
-          data: {
-            societyId: ctx.societyId,
-            flatId: flat.id,
-            kind: 'ADHOC',
-            title: body.title,
-            dueDate: dbDate(body.dueDate),
-            financialYear: fyLabel(body.dueDate, ctx.society.fyStartMonth),
-            totalPaise: body.amountPaise,
-            lines: {
-              create: {
-                societyId: ctx.societyId,
-                type: 'BASE',
-                label: body.title,
-                amountPaise: body.amountPaise,
-              },
-            },
-          },
-        });
-        created.push({
-          id: bill.id,
+      created = await this.insertBills(
+        tx,
+        ctx.societyId,
+        ctx.society.fyStartMonth,
+        flats.map((flat) => ({
+          id: newId(),
+          planId: null,
+          kind: 'ADHOC' as const,
           flatId: flat.id,
           title: body.title,
           periodKey: null,
           dueDate: body.dueDate,
           totalPaise: body.amountPaise,
-        });
-      }
+        })),
+      );
       await this.afterCreate(tx, ctx.societyId, created, today);
       await this.audit.record(
         {
@@ -466,6 +452,47 @@ export class BillsService {
     return sent;
   }
 
+  /**
+   * Inserts bills and their BASE line in two statements. A bill a parallel run already made
+   * (same plan, flat and period) is skipped, and only the bills really inserted are returned.
+   */
+  private async insertBills(
+    tx: Prisma.TransactionClient,
+    societyId: string,
+    fyStartMonth: number,
+    bills: (NewBill & { planId: string | null; kind: 'MAINTENANCE' | 'ADHOC' })[],
+  ): Promise<NewBill[]> {
+    if (bills.length === 0) return [];
+    const inserted = await tx.bill.createManyAndReturn({
+      data: bills.map((b) => ({
+        id: b.id,
+        societyId,
+        flatId: b.flatId,
+        planId: b.planId,
+        kind: b.kind,
+        title: b.title,
+        periodKey: b.periodKey,
+        dueDate: dbDate(b.dueDate),
+        financialYear: fyLabel(b.dueDate, fyStartMonth),
+        totalPaise: b.totalPaise,
+      })),
+      skipDuplicates: true,
+      select: { id: true },
+    });
+    const ids = new Set(inserted.map((b) => b.id));
+    const made = bills.filter((b) => ids.has(b.id));
+    await tx.billLine.createMany({
+      data: made.map((b) => ({
+        societyId,
+        billId: b.id,
+        type: 'BASE' as const,
+        label: b.title,
+        amountPaise: b.totalPaise,
+      })),
+    });
+    return made.map(({ planId: _p, kind: _k, ...b }) => b);
+  }
+
   /** Uses advance on the new bills and marks reminders the "new bill" push already covers. */
   private async afterCreate(
     tx: Prisma.TransactionClient,
@@ -473,7 +500,10 @@ export class BillsService {
     created: NewBill[],
     today: string,
   ) {
-    for (const flatId of new Set(created.map((b) => b.flatId)))
+    const flatIds = [...new Set(created.map((b) => b.flatId))];
+    // Lock every flat in one statement, then only flats holding advance need applyCredit.
+    await lockFlats(tx, flatIds);
+    for (const flatId of await flatsWithAdvance(tx, societyId, flatIds))
       await applyCredit(tx, societyId, flatId, today);
     await refreshBills(
       tx,
@@ -503,15 +533,15 @@ export class BillsService {
       include: flatInclude,
     });
     const users = await this.recipients.in(tx).ofFlats(bills.map((b) => b.flatId));
-    for (const b of bills) {
+    await this.notifications.notifyMany(
       // Fully covered by advance: nothing to ask for.
-      if (b.status === 'PAID') continue;
-      await this.notifications.notifyUsers(
-        {
+      bills
+        .filter((b) => b.status !== 'PAID')
+        .map((b) => ({
           userIds: users.get(b.flatId) ?? [],
           societyId,
-          category: 'MAINTENANCE',
-          render: (t, locale) => ({
+          category: 'MAINTENANCE' as const,
+          render: (t: TFunction, locale: Locale) => ({
             title: t('money:push.billTitle', { amount: formatMoney(outstanding(b), locale) }),
             body: t('money:push.billBody', {
               name: billName(b.title, b.periodKey, locale),
@@ -520,10 +550,9 @@ export class BillsService {
             }),
           }),
           data: { screen: 'bill', societyId, billId: b.id },
-        },
-        tx,
-      );
-    }
+        })),
+      tx,
+    );
   }
 
   private async requireOpen(billId: string): Promise<BillRow> {

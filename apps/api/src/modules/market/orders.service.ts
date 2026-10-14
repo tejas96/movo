@@ -9,7 +9,7 @@ import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
 import { loadMemberNames } from '../tenancy/member-names';
-import { MarketViews, type OrderRow, orderInclude } from './market-views.service';
+import { MarketViews, type OrderRow, orderInclude, orderListInclude } from './market-views.service';
 import {
   allowedFrom,
   canMessageOrder,
@@ -89,16 +89,22 @@ export class OrdersService {
         role === 'BUYING'
           ? { buyerMembershipId: ctx.membershipId }
           : { sellerMembershipId: ctx.membershipId },
-      include: orderInclude,
+      include: orderListInclude,
       orderBy: [{ updatedAt: 'desc' }],
       take: 100,
     });
     rows.sort((a, b) => Number(isOpenOrder(b.status)) - Number(isOpenOrder(a.status)));
-    const names = await loadMemberNames(
-      this.prisma,
-      rows.flatMap((o) => [o.buyerMembershipId, o.sellerMembershipId]),
-    );
-    return rows.map((o) => this.views.orderSummary(ctx, o, names));
+    const [names, unread] = await Promise.all([
+      loadMemberNames(
+        this.prisma,
+        rows.flatMap((o) => [o.buyerMembershipId, o.sellerMembershipId]),
+      ),
+      this.views.unreadCounts(
+        ctx,
+        rows.map((o) => o.id),
+      ),
+    ]);
+    return rows.map((o) => this.views.orderSummary(ctx, o, names, unread.get(o.id) ?? 0));
   }
 
   async getOrder(orderId: string): Promise<Order> {

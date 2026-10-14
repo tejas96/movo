@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { addDays, todayIn } from '../src/common/util/dates';
+import { addDays, fyLabel, todayIn } from '../src/common/util/dates';
 import { newId } from '../src/common/util/ids';
 import { auth, type SocietyFixture, societyWithResident } from './fixtures';
 import { createHarness, type Harness } from './harness';
@@ -310,6 +310,115 @@ describe('expenses', () => {
       .set(auth(s.admin));
     const after = await h.http().get(url(s, '/finance/report')).set(auth(s.admin));
     expect(after.body.income.totalPaise).toBe(250_000);
+  });
+
+  it('pins the year report numbers across months, kinds, categories and years', async () => {
+    const s = await societyWithResident(h, 'x-pin');
+    const other = await societyWithResident(h, 'x-pin-other');
+    const [f101, f102] = [s.flats[0]?.id, s.flats[1]?.id];
+    // Last financial year: every date in it is in the past whatever today is.
+    const start = Number(fyLabel(TODAY, 4).slice(0, 4)) - 1;
+    const fy = `${start}-${String((start + 1) % 100).padStart(2, '0')}`;
+    const d = (month: number, day: number) =>
+      `${month >= 4 ? start : start + 1}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const pay = (
+      soc: SocietyFixture,
+      flatId: string | undefined,
+      amountPaise: number,
+      paidOn: string,
+    ) =>
+      h
+        .http()
+        .post(url(soc, '/maintenance/payments'))
+        .set(auth(soc.admin))
+        .send({ flatId, amountPaise, paidOn, method: 'UPI', idempotencyKey: newId() });
+    const earn = (kind: string, amountPaise: number, receivedOn: string) =>
+      h.http().post(url(s, '/income')).set(auth(s.admin)).send({ kind, amountPaise, receivedOn });
+
+    const mistake = await pay(s, f101, 50_000, d(6, 1));
+    await h
+      .http()
+      .post(url(s, `/maintenance/payments/${mistake.body.id}/reverse`))
+      .set(auth(s.admin))
+      .send({ reason: 'Typed twice' });
+    await pay(s, f101, 250_000, d(4, 10));
+    await pay(s, f101, 250_000, d(5, 10));
+    await pay(s, f101, 100_000, d(2, 1));
+    await pay(s, f102, 75_000, d(4, 20));
+    await pay(s, f102, 99_999, TODAY); // this year
+    await pay(other, other.flats[0]?.id, 777_000, d(4, 10)); // another society
+    await earn('HALL_BOOKING', 100_000, d(4, 15));
+    await earn('HALL_BOOKING', 20_000, d(7, 1));
+    await earn('INTEREST', 5_000, d(3, 31));
+    const electricity = await categoryId(s, 'electricity');
+    await spend(s, s.admin, { categoryId: electricity, amountPaise: 120_000, incurredOn: d(4, 5) });
+    await spend(s, s.admin, { categoryId: electricity, amountPaise: 80_000, incurredOn: d(5, 5) });
+    await spend(s, s.admin, {
+      categoryId: await categoryId(s, 'water'),
+      amountPaise: 30_000,
+      incurredOn: d(5, 6),
+    });
+    await spend(s, s.admin, {
+      categoryId: await categoryId(s, 'lift'),
+      amountPaise: 1_800_000,
+      incurredOn: d(8, 1),
+    }); // waits for approval
+    await spend(s, s.admin, { categoryId: electricity, amountPaise: 11_111 }); // this year
+    // Bills last: advance pays them. Flat 101 is covered, flat 102 owes 300,000 - 174,999.
+    await h
+      .http()
+      .post(url(s, '/maintenance/bills/adhoc'))
+      .set(auth(s.admin))
+      .send({ title: 'Repair fund', amountPaise: 300_000, dueDate: d(3, 31) });
+
+    const report = await h
+      .http()
+      .get(url(s, `/finance/report?fy=${fy}`))
+      .set(auth(s.admin));
+    expect(report.status).toBe(200);
+    const body = report.body;
+    expect(body.financialYear).toBe(fy);
+    expect(body.years).toEqual([fyLabel(TODAY, 4), fy]);
+    expect(body.income).toEqual({
+      maintenancePaise: 675_000,
+      byKind: [
+        { kind: 'HALL_BOOKING', amountPaise: 120_000 },
+        { kind: 'INTEREST', amountPaise: 5_000 },
+      ],
+      totalPaise: 800_000,
+    });
+    expect(body.expenses.totalPaise).toBe(230_000);
+    expect(
+      body.expenses.byCategory.map(
+        (c: { category: { key: string }; amountPaise: number; count: number }) => [
+          c.category.key,
+          c.amountPaise,
+          c.count,
+        ],
+      ),
+    ).toEqual([
+      ['electricity', 200_000, 2],
+      ['water', 30_000, 1],
+    ]);
+    expect(body.netPaise).toBe(570_000);
+    expect(body.pending).toEqual({ count: 1, amountPaise: 1_800_000 });
+    expect(body.outstandingDuesPaise).toBe(125_001);
+    const m = (month: number) => d(month, 1).slice(0, 7);
+    const zero = { incomePaise: 0, expensePaise: 0 };
+    expect(body.months).toEqual([
+      { month: m(4), incomePaise: 425_000, expensePaise: 120_000 },
+      { month: m(5), incomePaise: 250_000, expensePaise: 110_000 },
+      { month: m(6), ...zero },
+      { month: m(7), incomePaise: 20_000, expensePaise: 0 },
+      { month: m(8), ...zero },
+      { month: m(9), ...zero },
+      { month: m(10), ...zero },
+      { month: m(11), ...zero },
+      { month: m(12), ...zero },
+      { month: m(1), ...zero },
+      { month: m(2), incomePaise: 100_000, expensePaise: 0 },
+      { month: m(3), incomePaise: 5_000, expensePaise: 0 },
+    ]);
   });
 
   it('keeps categories: seeded ones, new ones, and no removal while in use', async () => {
