@@ -17,7 +17,7 @@ import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -29,7 +29,7 @@ export function VendorDetailScreen() {
   const { t } = useTranslation(['services', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const { vendorId } = useRoute<RouteProp<RootStackParamList, 'VendorDetail'>>().params;
   const vendor = useVendor(societyId, vendorId);
@@ -41,21 +41,17 @@ export function VendorDetailScreen() {
   const icon = categories.data?.find((c) => c.id === v?.category.id)?.icon ?? 'services';
 
   const setStatus = async (status: Exclude<VendorStatus, 'SUGGESTED'>) => {
-    try {
+    await withErrorToast(async () => {
       await update.mutateAsync({ status });
       toast.show(t('services:saved'));
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
   const del = async () => {
-    try {
+    await withErrorToast(async () => {
       await remove.mutateAsync();
       toast.show(t('services:deleted'));
       nav.goBack();
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
   const call = (phone: string) => void Linking.openURL(`tel:${phone}`);
 

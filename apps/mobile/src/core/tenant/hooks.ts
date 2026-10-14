@@ -9,14 +9,17 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { api } from '../api/client';
-import { keys } from '../api/keys';
+import { meKey } from '../api/query-keys';
 import { useSessionStore } from '../auth/session.store';
 import { useTenantStore } from './tenant.store';
+
+/** The signed-in user's memberships and permissions. */
+export const meContextKey = [...meKey, 'context'] as const;
 
 export function useMeContext(enabled = true) {
   const status = useSessionStore((s) => s.status);
   return useQuery<MeContext>({
-    queryKey: keys.me.context,
+    queryKey: meContextKey,
     queryFn: () => api(meContract.context),
     enabled: enabled && status === 'signedIn',
     staleTime: 60_000,

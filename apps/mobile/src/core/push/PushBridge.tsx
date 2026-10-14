@@ -3,8 +3,8 @@ import { useToast } from '@movo/design-system';
 import type { RemoteMessage } from '@react-native-firebase/messaging';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isHomeKey, notificationKeys } from '../../features/home/keys';
 import { api } from '../api/client';
-import { keys } from '../api/keys';
 import { queryClient } from '../api/query-client';
 import { useSessionStore } from '../auth/session.store';
 import { navigationRef } from '../navigation/navigation-ref';
@@ -22,10 +22,10 @@ import {
 const REGISTER_DELAY_MS = 1500;
 
 function refreshNotificationViews(): void {
-  void queryClient.invalidateQueries({ queryKey: keys.me.notifications });
+  void queryClient.invalidateQueries({ queryKey: notificationKeys.all });
   // Home summaries (['society', id, 'home']) carry the unread badge and attention items.
   void queryClient.invalidateQueries({
-    predicate: (q) => q.queryKey[0] === 'society' && q.queryKey[2] === 'home',
+    predicate: (q) => isHomeKey(q.queryKey),
   });
 }
 

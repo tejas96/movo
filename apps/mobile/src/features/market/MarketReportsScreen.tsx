@@ -15,7 +15,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -27,7 +27,7 @@ export function MarketReportsScreen() {
   const { t } = useTranslation(['market', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const canModerate = useCan('marketplace.moderate');
   const list = useMarketReports(societyId, canModerate);
@@ -39,24 +39,20 @@ export function MarketReportsScreen() {
 
   const doHide = async () => {
     if (!hiding) return;
-    try {
+    await withErrorToast(async () => {
       await hide.mutateAsync({
         listingId: hiding.listing.id,
         action: { kind: 'hide', reason: reason.trim() },
       });
       toast.show(t('market:listing.hidden'));
       setHiding(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
   const doDismiss = async (id: string) => {
-    try {
+    await withErrorToast(async () => {
       await dismiss.mutateAsync(id);
       toast.show(t('market:reports.dismissed'));
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

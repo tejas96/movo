@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { Image, View } from 'react-native';
 import { photoUri, uploadFile } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { type PhotoSource, usePickOne } from '../../core/photos/pick';
 import { SinglePhotoField } from '../../core/photos/SinglePhotoField';
@@ -35,6 +36,7 @@ export function SocietyProfileScreen() {
   const nav = useNav();
   const toast = useToast();
   const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const profile = useSocietyProfile(societyId);
   const save = useUpdateSociety(societyId);
@@ -47,30 +49,19 @@ export function SocietyProfileScreen() {
   const changeLogo = async (source: PhotoSource) => {
     const asset = await pickOne(source, 1600);
     if (!asset?.uri) return;
+    const { uri, fileName, type } = asset;
     setLogoBusy(true);
-    try {
-      const ref = await uploadFile(
-        societyId,
-        { uri: asset.uri, fileName: asset.fileName, type: asset.type },
-        'SOCIETY_LOGO',
-      );
+    await withErrorToast(async () => {
+      const ref = await uploadFile(societyId, { uri, fileName, type }, 'SOCIETY_LOGO');
       await saveLogo.mutateAsync({ logoFileId: ref.id });
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    } finally {
-      setLogoBusy(false);
-    }
+    });
+    setLogoBusy(false);
   };
 
   const clearLogo = async () => {
     setLogoBusy(true);
-    try {
-      await saveLogo.mutateAsync({ logoFileId: null });
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    } finally {
-      setLogoBusy(false);
-    }
+    await withErrorToast(() => saveLogo.mutateAsync({ logoFileId: null }));
+    setLogoBusy(false);
   };
 
   const [name, setName] = useState('');

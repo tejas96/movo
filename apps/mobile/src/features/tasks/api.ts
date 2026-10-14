@@ -1,20 +1,22 @@
 import { type RouteBody, type TaskView, tasksContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { rewardsKeys } from '../rewards/keys';
+import { tasksKeys } from './keys';
 
 const c = tasksContract;
 
 export function useTasks(societyId: string, view: TaskView) {
   return useQuery({
-    queryKey: keys.society(societyId).taskList(view),
+    queryKey: tasksKeys(societyId).list(view),
     queryFn: () => api(c.list, { params: { societyId }, query: { view } }),
   });
 }
 
 export function useTask(societyId: string, taskId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).task(taskId),
+    queryKey: tasksKeys(societyId).detail(taskId),
     queryFn: () => api(c.get, { params: { societyId, taskId } }),
     enabled: Boolean(taskId),
   });
@@ -23,9 +25,9 @@ export function useTask(societyId: string, taskId: string) {
 function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).tasks });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).rewards });
+    void qc.invalidateQueries({ queryKey: tasksKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: rewardsKeys(societyId).all });
   };
 }
 

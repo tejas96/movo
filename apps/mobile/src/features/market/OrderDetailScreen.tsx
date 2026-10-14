@@ -20,7 +20,7 @@ import { useRoute } from '@react-navigation/native';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Linking, ScrollView, type ScrollViewInstance, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -33,7 +33,7 @@ export function OrderDetailScreen() {
   const { t } = useTranslation(['market', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const { orderId } = useRoute<RouteProp<RootStackParamList, 'OrderDetail'>>().params;
   const order = useOrder(societyId, orderId);
@@ -44,17 +44,12 @@ export function OrderDetailScreen() {
   const [draft, setDraft] = useState('');
   const o = order.data;
 
-  const run = async (a: OrderAction, ok?: string) => {
-    try {
+  const run = (a: OrderAction, ok?: string) =>
+    withErrorToast(async () => {
       await action.mutateAsync(a);
       if (ok) toast.show(ok);
       setReasonSheet(null);
-      return true;
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-      return false;
-    }
-  };
+    });
 
   const complete = () =>
     Alert.alert(t('market:order.completeTitle'), t('market:order.completeBody'), [

@@ -28,6 +28,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -327,8 +328,7 @@ function Overrides({
   }[];
 }) {
   const { t } = useTranslation(['money', 'common']);
-  const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const collection = useCollection(societyId, true);
   const set = useSetOverride(societyId, planId);
@@ -336,14 +336,11 @@ function Overrides({
   const [flatId, setFlatId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
 
-  const run = async (id: string, amountPaise: number | null) => {
-    try {
+  const run = (id: string, amountPaise: number | null) =>
+    withErrorToast(async () => {
       await set.mutateAsync({ flatId: id, amountPaise });
       setFlatId(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
-  };
+    });
   const flat = collection.data?.rows.find((r) => r.flat.id === flatId)?.flat;
 
   return (

@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -29,6 +30,7 @@ export function RoleEditorScreen() {
   const nav = useNav();
   const toast = useToast();
   const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const roleId = useRoute<RouteProp<RootStackParamList, 'RoleEditor'>>().params?.roleId;
@@ -84,13 +86,11 @@ export function RoleEditorScreen() {
         text: t('common:actions.delete'),
         style: 'destructive',
         onPress: async () => {
-          try {
+          await withErrorToast(async () => {
             await remove.mutateAsync(role.id);
             toast.show(t('manage:rolesScreen.deleted'));
             nav.goBack();
-          } catch (e) {
-            toast.show(toMessage(e), 'error');
-          }
+          });
         },
       },
     ]);

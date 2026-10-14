@@ -17,7 +17,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -31,7 +31,7 @@ export function AlertDetailScreen() {
   const { t } = useTranslation(['emergency', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const { alertId } = useRoute<RouteProp<RootStackParamList, 'AlertDetail'>>().params;
@@ -50,13 +50,11 @@ export function AlertDetailScreen() {
   ];
 
   const close = async (outcome: 'RESOLVED' | 'FALSE_ALARM') => {
-    try {
+    await withErrorToast(async () => {
       await resolve.mutateAsync({ outcome, note: note.trim() || null });
       toast.show(t('emergency:alert.closed'));
       void alert.refetch();
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

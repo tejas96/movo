@@ -1,20 +1,22 @@
 import { dutiesContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { rewardsKeys } from '../rewards/keys';
+import { dutiesKeys } from './keys';
 
 const c = dutiesContract;
 
 export function useDuties(societyId: string, mine: boolean) {
   return useQuery({
-    queryKey: keys.society(societyId).dutyList(mine),
+    queryKey: dutiesKeys(societyId).list(mine),
     queryFn: () => api(c.list, { params: { societyId }, query: { mine: mine ? 'true' : 'false' } }),
   });
 }
 
 export function useDuty(societyId: string, dutyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).duty(dutyId),
+    queryKey: dutiesKeys(societyId).detail(dutyId),
     queryFn: () => api(c.get, { params: { societyId, dutyId } }),
   });
 }
@@ -23,9 +25,9 @@ export function useDuty(societyId: string, dutyId: string) {
 function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).duties });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).rewards });
+    void qc.invalidateQueries({ queryKey: dutiesKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: rewardsKeys(societyId).all });
   };
 }
 

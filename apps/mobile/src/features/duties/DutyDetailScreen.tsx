@@ -20,7 +20,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -37,7 +37,7 @@ export function DutyDetailScreen() {
   const { t } = useTranslation(['duties', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const { dutyId } = useRoute<RouteProp<RootStackParamList, 'DutyDetail'>>().params;
   const duty = useDuty(societyId, dutyId);
@@ -68,16 +68,11 @@ export function DutyDetailScreen() {
           hint: m.flats[0] ? formatFlat(m.flats[0]) : undefined,
         }));
 
-  const run = async (a: Parameters<typeof action.mutateAsync>[0], ok: string) => {
-    try {
+  const run = (a: Parameters<typeof action.mutateAsync>[0], ok: string) =>
+    withErrorToast(async () => {
       await action.mutateAsync(a);
       toast.show(ok);
-      return true;
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-      return false;
-    }
-  };
+    });
 
   const openTurn = (a: DutyAssignment) => {
     if (!canOverride) return;

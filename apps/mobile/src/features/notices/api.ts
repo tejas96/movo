@@ -4,31 +4,31 @@ import {
   noticesContract,
   type RouteBody,
 } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { z } from 'zod';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { useCursorList } from '../../core/api/use-cursor-list';
+import { homeKeys } from '../home/keys';
+import { noticesKeys } from './keys';
 
 type Status = z.infer<typeof NoticeStatusSchema>;
 type CreateBody = RouteBody<typeof noticesContract.create>;
 type UpdateBody = RouteBody<typeof noticesContract.update>;
 
 export function useNotices(societyId: string, status: Status) {
-  return useInfiniteQuery({
-    queryKey: keys.society(societyId).notices(status),
-    queryFn: ({ pageParam }) =>
+  return useCursorList({
+    queryKey: noticesKeys(societyId).list(status),
+    fetchPage: (cursor) =>
       api(noticesContract.list, {
         params: { societyId },
-        query: { status, cursor: pageParam, limit: 20 },
+        query: { status, cursor, limit: 20 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
 
 export function useNotice(societyId: string, noticeId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).notice(noticeId),
+    queryKey: noticesKeys(societyId).detail(noticeId),
     queryFn: () => api(noticesContract.get, { params: { societyId, noticeId } }),
   });
 }
@@ -36,9 +36,9 @@ export function useNotice(societyId: string, noticeId: string) {
 function useInvalidateNotices(societyId: string) {
   const qc = useQueryClient();
   return (notice?: Notice) => {
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'notices'] });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-    if (notice) qc.setQueryData(keys.society(societyId).notice(notice.id), notice);
+    void qc.invalidateQueries({ queryKey: noticesKeys(societyId).lists });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    if (notice) qc.setQueryData(noticesKeys(societyId).detail(notice.id), notice);
   };
 }
 

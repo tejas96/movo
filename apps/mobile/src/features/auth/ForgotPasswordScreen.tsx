@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { api } from '../../core/api/client';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { AuthShell } from './AuthShell';
 
@@ -12,22 +12,19 @@ export function ForgotPasswordScreen() {
   const { t } = useTranslation(['auth', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const [identifier, setIdentifier] = useState('');
   const [busy, setBusy] = useState(false);
 
   const send = async () => {
     if (identifier.trim().length < 3) return;
     setBusy(true);
-    try {
+    await withErrorToast(async () => {
       await api(authContract.forgotPassword, { body: { identifier } });
       toast.show(t('auth:linkSent'), 'info');
       nav.navigate('ResetPassword', { identifier });
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    } finally {
-      setBusy(false);
-    }
+    });
+    setBusy(false);
   };
 
   return (

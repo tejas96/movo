@@ -15,11 +15,11 @@ import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, Linking, ScrollView, View } from 'react-native';
+import { Linking, ScrollView, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
-import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { PagedList } from '../../core/ui/PagedList';
 import { useBuildings } from '../manage/api';
 import { useMembers } from './api';
 
@@ -38,7 +38,6 @@ export function DirectoryScreen() {
   const buildings = useBuildings(societyId);
   const wings = buildings.data ?? [];
   const list = useMembers(societyId, q, buildingId);
-  const items = list.data?.pages.flatMap((p) => p.items) ?? [];
 
   const role = (m: MemberCard) =>
     [
@@ -89,53 +88,49 @@ export function DirectoryScreen() {
           </ScrollView>
         </View>
       ) : null}
-      {list.isLoading ? (
-        <View className="mt-4 gap-3">
-          <Skeleton className="h-[68px] rounded-lg" />
-          <Skeleton className="h-[68px] rounded-lg" />
-          <Skeleton className="h-[68px] rounded-lg" />
-        </View>
-      ) : loadFailed(list) ? (
-        <QueryError query={list} className="mt-10" />
-      ) : items.length === 0 ? (
-        <EmptyState
-          photo={photos.empty}
-          icon="people"
-          title={t('society:directory.empty')}
-          body={t('society:directory.emptyBody')}
-          className="mt-10"
-        />
-      ) : (
-        <FlatList
-          className="mt-4"
-          data={items}
-          keyExtractor={(m) => m.membershipId}
-          onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
-          refreshing={list.isRefetching}
-          onRefresh={() => void list.refetch()}
-          contentContainerStyle={{ paddingBottom: 40, gap: 12 }}
-          keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => (
-            <PersonCard
-              name={item.displayName}
-              avatarUri={photoUri(item.avatarUrl)}
-              verified={item.roles.some((r) => r.key === 'admin')}
-              role={role(item)}
-              onPress={() => nav.navigate('MemberDetail', { membershipId: item.membershipId })}
-              actions={
-                manage && item.status !== 'ACTIVE' ? (
-                  <StatusPill label={t(`common:status.${item.status}`)} tone="neutral" />
-                ) : item.phone ? (
-                  <CircleButton
-                    icon="call"
-                    onPress={() => void Linking.openURL(`tel:${item.phone}`)}
-                  />
-                ) : undefined
-              }
-            />
-          )}
-        />
-      )}
+      <PagedList
+        list={list}
+        loading={
+          <View className="mt-4 gap-3">
+            <Skeleton className="h-[68px] rounded-lg" />
+            <Skeleton className="h-[68px] rounded-lg" />
+            <Skeleton className="h-[68px] rounded-lg" />
+          </View>
+        }
+        errorClassName="mt-10"
+        empty={
+          <EmptyState
+            photo={photos.empty}
+            icon="people"
+            title={t('society:directory.empty')}
+            body={t('society:directory.emptyBody')}
+            className="mt-10"
+          />
+        }
+        className="mt-4"
+        keyExtractor={(m) => m.membershipId}
+        contentContainerStyle={{ paddingBottom: 40, gap: 12 }}
+        keyboardShouldPersistTaps="handled"
+        renderItem={({ item }) => (
+          <PersonCard
+            name={item.displayName}
+            avatarUri={photoUri(item.avatarUrl)}
+            verified={item.roles.some((r) => r.key === 'admin')}
+            role={role(item)}
+            onPress={() => nav.navigate('MemberDetail', { membershipId: item.membershipId })}
+            actions={
+              manage && item.status !== 'ACTIVE' ? (
+                <StatusPill label={t(`common:status.${item.status}`)} tone="neutral" />
+              ) : item.phone ? (
+                <CircleButton
+                  icon="call"
+                  onPress={() => void Linking.openURL(`tel:${item.phone}`)}
+                />
+              ) : undefined
+            }
+          />
+        )}
+      />
     </Screen>
   );
 }

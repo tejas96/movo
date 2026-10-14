@@ -1,27 +1,27 @@
 import { type Meeting, meetingsContract, type RouteBody, type Timeframe } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { useCursorList } from '../../core/api/use-cursor-list';
+import { homeKeys } from '../home/keys';
+import { meetingsKeys } from './keys';
 
 type CreateBody = RouteBody<typeof meetingsContract.create>;
 type UpdateBody = RouteBody<typeof meetingsContract.update>;
 
 export function useMeetings(societyId: string, when: Timeframe) {
-  return useInfiniteQuery({
-    queryKey: keys.society(societyId).meetings(when),
-    queryFn: ({ pageParam }) =>
+  return useCursorList({
+    queryKey: meetingsKeys(societyId).list(when),
+    fetchPage: (cursor) =>
       api(meetingsContract.list, {
         params: { societyId },
-        query: { when, cursor: pageParam, limit: 20 },
+        query: { when, cursor, limit: 20 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
 
 export function useMeeting(societyId: string, meetingId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).meeting(meetingId),
+    queryKey: meetingsKeys(societyId).detail(meetingId),
     queryFn: () => api(meetingsContract.get, { params: { societyId, meetingId } }),
     enabled: Boolean(meetingId),
   });
@@ -30,9 +30,9 @@ export function useMeeting(societyId: string, meetingId: string) {
 function useInvalidateMeetings(societyId: string) {
   const qc = useQueryClient();
   return (meeting: Meeting) => {
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'meetings', 'list'] });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
-    qc.setQueryData(keys.society(societyId).meeting(meeting.id), meeting);
+    void qc.invalidateQueries({ queryKey: meetingsKeys(societyId).lists });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    qc.setQueryData(meetingsKeys(societyId).detail(meeting.id), meeting);
   };
 }
 

@@ -13,14 +13,13 @@ import {
   SelectField,
   Skeleton,
   Text,
-  useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useJoinPreview, useJoinRequest } from './api';
@@ -29,8 +28,7 @@ import { useJoinPreview, useJoinRequest } from './api';
 export function PickFlatScreen() {
   const { t } = useTranslation(['onboarding', 'common']);
   const nav = useNav();
-  const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const { joinCode } = useRoute<RouteProp<RootStackParamList, 'PickFlat'>>().params;
   const preview = useJoinPreview(joinCode, true);
   const request = useJoinRequest();
@@ -51,7 +49,7 @@ export function PickFlatScreen() {
 
   const submit = async () => {
     if (!flatId) return;
-    try {
+    await withErrorToast(async () => {
       await request.mutateAsync({
         joinCode,
         flatId,
@@ -59,9 +57,7 @@ export function PickFlatScreen() {
         message: message.trim() || undefined,
       });
       nav.navigate('Pending');
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

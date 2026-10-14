@@ -1,20 +1,21 @@
 import { rewardsContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { homeKeys } from '../home/keys';
+import { rewardsKeys } from './keys';
 
 const c = rewardsContract;
 
 export function useMyPoints(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).rewardsMine,
+    queryKey: rewardsKeys(societyId).mine,
     queryFn: () => api(c.mine, { params: { societyId } }),
   });
 }
 
 export function useLeaderboard(societyId: string, enabled: boolean) {
   return useQuery({
-    queryKey: keys.society(societyId).leaderboard,
+    queryKey: rewardsKeys(societyId).leaderboard,
     queryFn: () => api(c.leaderboard, { params: { societyId } }),
     enabled,
   });
@@ -26,8 +27,8 @@ export function useAdjustPoints(societyId: string) {
     mutationFn: (body: { membershipId: string; delta: number; note: string }) =>
       api(c.adjust, { params: { societyId }, body }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).rewards });
-      void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
+      void qc.invalidateQueries({ queryKey: rewardsKeys(societyId).all });
+      void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
     },
   });
 }

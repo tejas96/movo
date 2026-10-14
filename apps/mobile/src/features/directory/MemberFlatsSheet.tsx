@@ -3,7 +3,7 @@ import { Button, Chip, Sheet, Text, useToast } from '@movo/design-system';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useFlats } from '../manage/api';
@@ -23,7 +23,7 @@ export function MemberFlatsSheet({
 }) {
   const { t } = useTranslation(['manage', 'common']);
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const flats = useFlats(societyId);
   const save = useSetOccupancies(societyId, membershipId);
@@ -44,7 +44,7 @@ export function MemberFlatsSheet({
     setPicked((old) => new Map(old).set(id, relation));
 
   const submit = async () => {
-    try {
+    await withErrorToast(async () => {
       await save.mutateAsync({
         flats: [...picked].map(([flatId, relation], i) => ({
           flatId,
@@ -54,9 +54,7 @@ export function MemberFlatsSheet({
       });
       toast.show(t('manage:member.updated'));
       onClose();
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const all = flats.data ?? [];

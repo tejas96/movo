@@ -21,6 +21,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -44,6 +45,7 @@ export function ParkingSlotsScreen() {
   const nav = useNav();
   const toast = useToast();
   const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const canManage = useCan('parking.manage');
   const [filter, setFilter] = useState<SlotFilter>('all');
@@ -85,14 +87,12 @@ export function ParkingSlotsScreen() {
     input: Parameters<typeof action.mutateAsync>[0],
     success: string,
   ): Promise<void> => {
-    try {
+    await withErrorToast(async () => {
       await action.mutateAsync(input);
       toast.show(success);
       setSelected(null);
       setPickFlat(false);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const addSlots = async () => {

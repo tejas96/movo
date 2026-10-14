@@ -2,6 +2,7 @@ import { type AuthSession, authContract, type Locale, meContract } from '@movo/c
 import { Platform } from 'react-native';
 import { api, refreshTokens, signOutLocally } from '../api/client';
 import { queryClient } from '../api/query-client';
+import { meKey } from '../api/query-keys';
 import { setAppLocale } from '../i18n';
 import { unregisterPush } from '../push/push';
 import { useSessionStore } from './session.store';
@@ -65,7 +66,7 @@ export async function bootstrapSession(): Promise<void> {
     }
   } catch {
     // Offline or the server is down: keep the saved session and open the app. The next
-    // request refreshes the token again; only a 401/403 from refresh ever signs out.
+    // request refreshes the token again; only a 4xx from refresh (token rejected) signs out.
     store.setBooted(true);
     return;
   }
@@ -83,5 +84,5 @@ async function refreshProfile(): Promise<void> {
 }
 
 export function invalidateContext(): Promise<void> {
-  return queryClient.invalidateQueries({ queryKey: ['me'] });
+  return queryClient.invalidateQueries({ queryKey: meKey });
 }

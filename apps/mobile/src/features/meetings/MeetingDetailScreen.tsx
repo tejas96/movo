@@ -21,7 +21,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -35,7 +35,7 @@ export function MeetingDetailScreen() {
   const { t } = useTranslation(['meetings', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const { meetingId } = useRoute<RouteProp<RootStackParamList, 'MeetingDetail'>>().params;
   const meeting = useMeeting(societyId, meetingId);
@@ -70,7 +70,7 @@ export function MeetingDetailScreen() {
   const submit = async () => {
     if (!sheet) return;
     if (sheet === 'note' && note.trim().length === 0) return;
-    try {
+    await withErrorToast(async () => {
       await action.mutateAsync({ action: sheet, note: note.trim() || undefined });
       toast.show(
         sheet === 'note'
@@ -80,9 +80,7 @@ export function MeetingDetailScreen() {
             : t('meetings:actions.completed'),
       );
       setSheet(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const sheetCopy = {

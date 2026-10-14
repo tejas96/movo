@@ -16,7 +16,7 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -42,7 +42,7 @@ export function NoticeDetailScreen() {
   const { t } = useTranslation(['notices', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const { noticeId } = useRoute<RouteProp<RootStackParamList, 'NoticeDetail'>>().params;
@@ -60,15 +60,13 @@ export function NoticeDetailScreen() {
       nav.navigate('NoticeEditor', { noticeId });
       return;
     }
-    try {
+    await withErrorToast(async () => {
       await action.mutateAsync(a);
       if (a === 'archive') {
         toast.show(t('notices:archived'));
         nav.goBack();
       } else if (a === 'publish') toast.show(t('notices:form.published'));
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const options = n

@@ -3,90 +3,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { ARScreen } from '../../features/ar/ARScreen';
-import { FloorMapScreen } from '../../features/ar/FloorMapScreen';
-import { ForgotPasswordScreen } from '../../features/auth/ForgotPasswordScreen';
-import { LoginScreen } from '../../features/auth/LoginScreen';
-import { RegisterScreen } from '../../features/auth/RegisterScreen';
-import { ResetPasswordScreen } from '../../features/auth/ResetPasswordScreen';
-import { WelcomeScreen } from '../../features/auth/WelcomeScreen';
 import { isWelcomeSeen } from '../../features/auth/welcome-seen';
-import { DirectoryScreen } from '../../features/directory/DirectoryScreen';
-import { MemberDetailScreen } from '../../features/directory/MemberDetailScreen';
-import { DutiesScreen } from '../../features/duties/DutiesScreen';
-import { DutyDetailScreen } from '../../features/duties/DutyDetailScreen';
-import { DutyEditorScreen } from '../../features/duties/DutyEditorScreen';
-import { AlertDetailScreen } from '../../features/emergency/AlertDetailScreen';
-import { EmergencyScreen } from '../../features/emergency/EmergencyScreen';
-import { EventDetailScreen } from '../../features/events/EventDetailScreen';
-import { EventEditorScreen } from '../../features/events/EventEditorScreen';
-import { EventsScreen } from '../../features/events/EventsScreen';
-import { ExpenseCategoriesScreen } from '../../features/expenses/ExpenseCategoriesScreen';
-import { ExpenseDetailScreen } from '../../features/expenses/ExpenseDetailScreen';
-import { ExpenseEditorScreen } from '../../features/expenses/ExpenseEditorScreen';
-import { ExpensesScreen } from '../../features/expenses/ExpensesScreen';
-import { NotificationsScreen } from '../../features/home/NotificationsScreen';
-import { AuditLogScreen } from '../../features/manage/AuditLogScreen';
-import { InvitationsScreen } from '../../features/manage/InvitationsScreen';
-import { InviteMemberScreen } from '../../features/manage/InviteMemberScreen';
-import { JoinRequestsScreen } from '../../features/manage/JoinRequestsScreen';
-import { ManageHomeScreen } from '../../features/manage/ManageHomeScreen';
-import { ModuleSettingsScreen } from '../../features/manage/ModuleSettingsScreen';
-import { ModulesScreen } from '../../features/manage/ModulesScreen';
-import { RoleEditorScreen } from '../../features/manage/RoleEditorScreen';
-import { RolesScreen } from '../../features/manage/RolesScreen';
-import { SocietyProfileScreen } from '../../features/manage/SocietyProfileScreen';
-import { StructureScreen } from '../../features/manage/StructureScreen';
-import { ComingSoonScreen } from '../../features/market/ComingSoonScreen';
-import { ListingDetailScreen } from '../../features/market/ListingDetailScreen';
-import { ListingEditorScreen } from '../../features/market/ListingEditorScreen';
-import { MarketReportsScreen } from '../../features/market/MarketReportsScreen';
-import { MyListingsScreen } from '../../features/market/MyListingsScreen';
-import { OrderDetailScreen } from '../../features/market/OrderDetailScreen';
-import { OrdersScreen } from '../../features/market/OrdersScreen';
-import { ChangePasswordScreen } from '../../features/me/ChangePasswordScreen';
-import { DeleteAccountScreen } from '../../features/me/DeleteAccountScreen';
-import { EditProfileScreen } from '../../features/me/EditProfileScreen';
-import { LanguageScreen } from '../../features/me/LanguageScreen';
-import { PrivacyScreen } from '../../features/me/PrivacyScreen';
-import { SocietySwitcherScreen } from '../../features/me/SocietySwitcherScreen';
-import { MeetingDetailScreen } from '../../features/meetings/MeetingDetailScreen';
-import { MeetingEditorScreen } from '../../features/meetings/MeetingEditorScreen';
-import { MeetingsScreen } from '../../features/meetings/MeetingsScreen';
-import { AdhocBillScreen } from '../../features/money/AdhocBillScreen';
-import { BillingPlansScreen } from '../../features/money/BillingPlansScreen';
-import { BillScreen } from '../../features/money/BillScreen';
-import { FlatAccountScreen } from '../../features/money/FlatAccountScreen';
-import { HowToPayScreen } from '../../features/money/HowToPayScreen';
-import { PaymentInstructionsScreen } from '../../features/money/PaymentInstructionsScreen';
-import { PaymentsScreen } from '../../features/money/PaymentsScreen';
-import { PlanEditorScreen } from '../../features/money/PlanEditorScreen';
-import { ReceiptScreen } from '../../features/money/ReceiptScreen';
-import { RecordPaymentScreen } from '../../features/money/RecordPaymentScreen';
-import { NoticeDetailScreen } from '../../features/notices/NoticeDetailScreen';
-import { NoticeEditorScreen } from '../../features/notices/NoticeEditorScreen';
-import { NoticesScreen } from '../../features/notices/NoticesScreen';
-import { JoinScreen } from '../../features/onboarding/JoinScreen';
-import { PendingScreen } from '../../features/onboarding/PendingScreen';
-import { PickFlatScreen } from '../../features/onboarding/PickFlatScreen';
-import { ParkingScreen } from '../../features/parking/ParkingScreen';
-import { ParkingSlotsScreen } from '../../features/parking/ParkingSlotsScreen';
-import { VehicleEditorScreen } from '../../features/parking/VehicleEditorScreen';
-import { RewardsScreen } from '../../features/rewards/RewardsScreen';
-import { ServicesScreen } from '../../features/services/ServicesScreen';
-import { VendorCategoriesScreen } from '../../features/services/VendorCategoriesScreen';
-import { VendorDetailScreen } from '../../features/services/VendorDetailScreen';
-import { VendorEditorScreen } from '../../features/services/VendorEditorScreen';
-import { VendorListScreen } from '../../features/services/VendorListScreen';
-import { TaskDetailScreen } from '../../features/tasks/TaskDetailScreen';
-import { TaskEditorScreen } from '../../features/tasks/TaskEditorScreen';
-import { TasksScreen } from '../../features/tasks/TasksScreen';
 import { signOut } from '../auth/auth';
 import { type SessionStatus, useSessionStore } from '../auth/session.store';
 import { useBootstrap } from '../auth/use-bootstrap';
 import { useMeContext } from '../tenant/hooks';
 import { QueryError } from '../ui/QueryError';
-import { MainTabs } from './MainTabs';
+import { screens } from './registry';
+import type { ScreenFlags, ScreenGroup } from './routes';
 import { Splash, type SplashStage } from './Splash';
 import type { RootStackParamList } from './types';
 
@@ -149,6 +73,8 @@ function Navigator({
   hasSociety: boolean;
   showWelcome: boolean;
 }) {
+  const group: ScreenGroup = status === 'signedOut' ? 'auth' : !hasSociety ? 'join' : 'app';
+  const flags: ScreenFlags = { showWelcome };
   return (
     <Stack.Navigator
       screenOptions={{
@@ -157,149 +83,22 @@ function Navigator({
         contentStyle: { backgroundColor: '#FFFFFF' },
       }}
     >
-      {status === 'signedOut' ? (
-        <Stack.Group>
-          {showWelcome ? <Stack.Screen name="Welcome" component={WelcomeScreen} /> : null}
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-        </Stack.Group>
-      ) : !hasSociety ? (
-        <Stack.Group>
-          <Stack.Screen name="Join" component={JoinScreen} />
-          <Stack.Screen name="PickFlat" component={PickFlatScreen} />
-          <Stack.Screen name="Pending" component={PendingScreen} />
-        </Stack.Group>
-      ) : (
-        <Stack.Group>
-          <Stack.Screen name="Tabs" component={MainTabs} />
-          <Stack.Screen name="Notifications" component={NotificationsScreen} />
-          <Stack.Screen name="Notices" component={NoticesScreen} />
-          <Stack.Screen name="NoticeDetail" component={NoticeDetailScreen} />
-          <Stack.Screen
-            name="NoticeEditor"
-            component={NoticeEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="Directory" component={DirectoryScreen} />
-          <Stack.Screen name="MemberDetail" component={MemberDetailScreen} />
-          <Stack.Screen name="ComingSoon" component={ComingSoonScreen} />
-          <Stack.Screen
-            name="SocietySwitcher"
-            component={SocietySwitcherScreen}
-            options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="Language" component={LanguageScreen} />
-          <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-          <Stack.Screen name="Privacy" component={PrivacyScreen} />
-          <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
-          <Stack.Screen name="Manage" component={ManageHomeScreen} />
-          <Stack.Screen name="Invitations" component={InvitationsScreen} />
-          <Stack.Screen name="InviteMember" component={InviteMemberScreen} />
-          <Stack.Screen name="JoinRequests" component={JoinRequestsScreen} />
-          <Stack.Screen name="Structure" component={StructureScreen} />
-          <Stack.Screen name="Services" component={ServicesScreen} />
-          <Stack.Screen name="VendorList" component={VendorListScreen} />
-          <Stack.Screen name="VendorDetail" component={VendorDetailScreen} />
-          <Stack.Screen
-            name="VendorEditor"
-            component={VendorEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="VendorCategories" component={VendorCategoriesScreen} />
-          <Stack.Screen name="Parking" component={ParkingScreen} />
-          <Stack.Screen name="AR" component={ARScreen} options={{ animation: 'fade' }} />
-          <Stack.Screen name="FloorMap" component={FloorMapScreen} />
-          <Stack.Screen
-            name="VehicleEditor"
-            component={VehicleEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="ParkingSlots" component={ParkingSlotsScreen} />
-          <Stack.Screen name="Emergency" component={EmergencyScreen} />
-          <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
-          <Stack.Screen name="Meetings" component={MeetingsScreen} />
-          <Stack.Screen name="MeetingDetail" component={MeetingDetailScreen} />
-          <Stack.Screen
-            name="MeetingEditor"
-            component={MeetingEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="Events" component={EventsScreen} />
-          <Stack.Screen name="EventDetail" component={EventDetailScreen} />
-          <Stack.Screen
-            name="EventEditor"
-            component={EventEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="Bill" component={BillScreen} />
-          <Stack.Screen name="Receipt" component={ReceiptScreen} />
-          <Stack.Screen name="Payments" component={PaymentsScreen} />
-          <Stack.Screen name="HowToPay" component={HowToPayScreen} />
-          <Stack.Screen
-            name="RecordPayment"
-            component={RecordPaymentScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="FlatAccount" component={FlatAccountScreen} />
-          <Stack.Screen name="BillingPlans" component={BillingPlansScreen} />
-          <Stack.Screen
-            name="PlanEditor"
-            component={PlanEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen
-            name="AdhocBill"
-            component={AdhocBillScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="PaymentInstructions" component={PaymentInstructionsScreen} />
-          <Stack.Screen name="Expenses" component={ExpensesScreen} />
-          <Stack.Screen name="ExpenseDetail" component={ExpenseDetailScreen} />
-          <Stack.Screen
-            name="ExpenseEditor"
-            component={ExpenseEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="ExpenseCategories" component={ExpenseCategoriesScreen} />
-          <Stack.Screen name="Duties" component={DutiesScreen} />
-          <Stack.Screen name="DutyDetail" component={DutyDetailScreen} />
-          <Stack.Screen
-            name="DutyEditor"
-            component={DutyEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="Tasks" component={TasksScreen} />
-          <Stack.Screen name="TaskDetail" component={TaskDetailScreen} />
-          <Stack.Screen
-            name="TaskEditor"
-            component={TaskEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="Rewards" component={RewardsScreen} />
-          <Stack.Screen name="SocietyProfile" component={SocietyProfileScreen} />
-          <Stack.Screen name="Roles" component={RolesScreen} />
-          <Stack.Screen name="RoleEditor" component={RoleEditorScreen} />
-          <Stack.Screen name="Modules" component={ModulesScreen} />
-          <Stack.Screen name="ModuleSettings" component={ModuleSettingsScreen} />
-          <Stack.Screen name="AuditLog" component={AuditLogScreen} />
-          <Stack.Screen name="Listing" component={ListingDetailScreen} />
-          <Stack.Screen
-            name="ListingEditor"
-            component={ListingEditorScreen}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen name="MyListings" component={MyListingsScreen} />
-          <Stack.Screen name="Orders" component={OrdersScreen} />
-          <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-          <Stack.Screen name="MarketReports" component={MarketReportsScreen} />
-          <Stack.Screen name="Join" component={JoinScreen} />
-          <Stack.Screen name="PickFlat" component={PickFlatScreen} />
-          <Stack.Screen name="Pending" component={PendingScreen} />
-        </Stack.Group>
-      )}
+      <Stack.Group>
+        {screens
+          .filter((r) => inGroup(r.group, group) && (r.when?.(flags) ?? true))
+          .map((r) => (
+            <Stack.Screen
+              key={r.name}
+              name={r.name as keyof RootStackParamList}
+              component={r.component}
+              options={r.options}
+            />
+          ))}
+      </Stack.Group>
     </Stack.Navigator>
   );
+}
+
+function inGroup(entry: ScreenGroup | readonly ScreenGroup[], group: ScreenGroup): boolean {
+  return typeof entry === 'string' ? entry === group : entry.includes(group);
 }

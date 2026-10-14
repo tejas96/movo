@@ -1,7 +1,9 @@
 import { type ExpenseStatus, expensesContract, type RouteBody } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { useCursorList } from '../../core/api/use-cursor-list';
+import { homeKeys } from '../home/keys';
+import { financeKeys } from './keys';
 
 const c = expensesContract;
 
@@ -10,19 +12,17 @@ export function useExpenses(
   status: ExpenseStatus | undefined,
   enabled: boolean,
 ) {
-  return useInfiniteQuery({
-    queryKey: keys.society(societyId).expenses(status ?? 'all'),
-    queryFn: ({ pageParam }) =>
-      api(c.list, { params: { societyId }, query: { status, cursor: pageParam, limit: 20 } }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  return useCursorList({
+    queryKey: financeKeys(societyId).list(status ?? 'all'),
+    fetchPage: (cursor) =>
+      api(c.list, { params: { societyId }, query: { status, cursor, limit: 20 } }),
     enabled,
   });
 }
 
 export function useExpense(societyId: string, expenseId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).expense(expenseId),
+    queryKey: financeKeys(societyId).detail(expenseId),
     queryFn: () => api(c.get, { params: { societyId, expenseId } }),
     enabled: Boolean(expenseId),
   });
@@ -30,14 +30,14 @@ export function useExpense(societyId: string, expenseId: string) {
 
 export function useExpenseCategories(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).expenseCategories,
+    queryKey: financeKeys(societyId).categories,
     queryFn: () => api(c.listCategories, { params: { societyId } }),
   });
 }
 
 export function useReport(societyId: string, fy: string | undefined, enabled: boolean) {
   return useQuery({
-    queryKey: keys.society(societyId).report(fy ?? 'current'),
+    queryKey: financeKeys(societyId).report(fy ?? 'current'),
     queryFn: () => api(c.report, { params: { societyId }, query: { fy } }),
     enabled,
   });
@@ -45,7 +45,7 @@ export function useReport(societyId: string, fy: string | undefined, enabled: bo
 
 export function useIncome(societyId: string, fy: string | undefined, enabled: boolean) {
   return useQuery({
-    queryKey: keys.society(societyId).income(fy ?? 'current'),
+    queryKey: financeKeys(societyId).income(fy ?? 'current'),
     queryFn: () => api(c.listIncome, { params: { societyId }, query: { fy } }),
     enabled,
   });
@@ -55,8 +55,8 @@ export function useIncome(societyId: string, fy: string | undefined, enabled: bo
 function useInvalidate(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).finance });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
+    void qc.invalidateQueries({ queryKey: financeKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 

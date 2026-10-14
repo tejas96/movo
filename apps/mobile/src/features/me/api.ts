@@ -1,10 +1,10 @@
 import { authContract, type Locale, meContract, societyContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, type UploadAsset, uploadAvatar } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
 import { invalidateContext } from '../../core/auth/auth';
 import { useSessionStore } from '../../core/auth/session.store';
 import { setAppLocale } from '../../core/i18n';
+import { meKeys } from './keys';
 
 export function useUpdateProfile() {
   return useMutation({
@@ -54,7 +54,7 @@ export function useDeleteAccount() {
 
 export function useMyPrivacy(societyId: string) {
   return useQuery({
-    queryKey: [...keys.society(societyId).all, 'my-privacy'],
+    queryKey: meKeys(societyId).privacy,
     queryFn: () => api(societyContract.getMyPrivacy, { params: { societyId } }),
   });
 }
@@ -66,7 +66,7 @@ export function useUpdatePrivacy(societyId: string) {
       api(societyContract.updateMyPrivacy, { params: { societyId }, body }),
     onSuccess: (res) =>
       qc.setQueryData(
-        [...keys.society(societyId).all, 'my-privacy'],
+        meKeys(societyId).privacy,
         (old: { phoneOptInAllowed: boolean } | undefined) => ({
           ...res,
           phoneOptInAllowed: old?.phoneOptInAllowed ?? true,

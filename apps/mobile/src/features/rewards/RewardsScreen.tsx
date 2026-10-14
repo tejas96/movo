@@ -18,7 +18,7 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -32,7 +32,7 @@ export function RewardsScreen() {
   const { t } = useTranslation(['rewards', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const tenant = useTenant();
   const canAdjust = useCan('reward.adjust');
@@ -53,13 +53,11 @@ export function RewardsScreen() {
 
   const save = async () => {
     if (!who || !n || note.trim().length < 2) return;
-    try {
+    await withErrorToast(async () => {
       await adjust.mutateAsync({ membershipId: who.id, delta: n, note: note.trim() });
       toast.show(t('rewards:adjust.saved'));
       setOpen(false);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

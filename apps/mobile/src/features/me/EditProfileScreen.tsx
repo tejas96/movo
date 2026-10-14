@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { photoUri } from '../../core/api/client';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useSessionStore } from '../../core/auth/session.store';
 import { useNav } from '../../core/navigation/types';
 import { type PhotoSource, usePickOne } from '../../core/photos/pick';
@@ -14,7 +14,7 @@ export function EditProfileScreen() {
   const { t } = useTranslation(['me', 'common', 'auth', 'home']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const user = useSessionStore((s) => s.user);
   const update = useUpdateProfile();
   const [name, setName] = useState(user?.displayName ?? '');
@@ -25,30 +25,25 @@ export function EditProfileScreen() {
   const changePhoto = async (source: PhotoSource) => {
     const asset = await pickOne(source, 512);
     if (!asset?.uri) return;
-    try {
-      await setAvatar.mutateAsync({ uri: asset.uri, fileName: asset.fileName, type: asset.type });
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    const { uri, fileName, type } = asset;
+    await withErrorToast(async () => {
+      await setAvatar.mutateAsync({ uri, fileName, type });
+    });
   };
 
   const clearPhoto = async () => {
-    try {
+    await withErrorToast(async () => {
       await removeAvatar.mutateAsync();
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const save = async () => {
     if (name.trim().length < 2) return;
-    try {
+    await withErrorToast(async () => {
       await update.mutateAsync({ displayName: name.trim() });
       toast.show(t('common:actions.done'));
       nav.goBack();
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

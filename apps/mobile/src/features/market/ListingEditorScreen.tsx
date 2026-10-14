@@ -28,7 +28,7 @@ import { useRoute } from '@react-navigation/native';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoPickerRow, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
@@ -51,7 +51,7 @@ export function ListingEditorScreen() {
   const { t } = useTranslation(['market', 'common']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const params = useRoute<RouteProp<RootStackParamList, 'ListingEditor'>>().params;
   const listingId = params?.listingId;
@@ -126,7 +126,7 @@ export function ListingEditorScreen() {
       setError(problem);
       return;
     }
-    try {
+    await withErrorToast(async () => {
       const saved = await save.mutateAsync({
         kind,
         title: title.trim(),
@@ -147,9 +147,7 @@ export function ListingEditorScreen() {
       toast.show(t('market:editor.saved'));
       if (listingId) nav.goBack();
       else nav.replace('Listing', { listingId: saved.id });
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   const pickerLabels = {

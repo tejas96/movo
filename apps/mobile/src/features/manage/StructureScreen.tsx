@@ -19,7 +19,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
-import { useErrorMessage } from '../../core/api/use-error-message';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
@@ -31,7 +31,7 @@ export function StructureScreen() {
   const { t } = useTranslation(['manage', 'common', 'onboarding']);
   const nav = useNav();
   const toast = useToast();
-  const toMessage = useErrorMessage();
+  const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
   const buildings = useBuildings(societyId);
   const flats = useFlats(societyId);
@@ -55,13 +55,11 @@ export function StructureScreen() {
 
   const addBuilding = async () => {
     if (!buildingName.trim()) return;
-    try {
+    await withErrorToast(async () => {
       await createBuilding.mutateAsync({ name: buildingName.trim() });
       setBuildingName('');
       setSheet(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
   const addFlats = async () => {
     const numbers = [
@@ -73,7 +71,7 @@ export function StructureScreen() {
       ),
     ];
     if (numbers.length === 0) return;
-    try {
+    await withErrorToast(async () => {
       const created = await createFlats.mutateAsync({
         flats: numbers.map((number) => ({
           number,
@@ -84,9 +82,7 @@ export function StructureScreen() {
       toast.show(t('manage:structureForm.added', { count: created.length }));
       setFlatNumbers('');
       setSheet(null);
-    } catch (e) {
-      toast.show(toMessage(e), 'error');
-    }
+    });
   };
 
   return (

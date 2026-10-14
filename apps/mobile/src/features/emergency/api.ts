@@ -1,26 +1,26 @@
 import { emergencyContract, type RouteBody } from '@movo/contracts';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { keys } from '../../core/api/keys';
+import { useCursorList } from '../../core/api/use-cursor-list';
+import { homeKeys } from '../home/keys';
+import { emergencyKeys } from './keys';
 
 export function useEmergencyContacts(societyId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).emergencyContacts,
+    queryKey: emergencyKeys(societyId).contacts,
     queryFn: () => api(emergencyContract.listContacts, { params: { societyId } }),
     staleTime: 5 * 60_000,
   });
 }
 
 export function useAlerts(societyId: string, status: 'ACTIVE' | 'CLOSED') {
-  return useInfiniteQuery({
-    queryKey: keys.society(societyId).alerts(status),
-    queryFn: ({ pageParam }) =>
+  return useCursorList({
+    queryKey: emergencyKeys(societyId).list(status),
+    fetchPage: (cursor) =>
       api(emergencyContract.listAlerts, {
         params: { societyId },
-        query: { status, cursor: pageParam, limit: 20 },
+        query: { status, cursor, limit: 20 },
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
     // Active alerts change fast; keep them fresh while the screen is open.
     refetchInterval: status === 'ACTIVE' ? 20_000 : false,
   });
@@ -28,7 +28,7 @@ export function useAlerts(societyId: string, status: 'ACTIVE' | 'CLOSED') {
 
 export function useAlert(societyId: string, alertId: string) {
   return useQuery({
-    queryKey: keys.society(societyId).alert(alertId),
+    queryKey: emergencyKeys(societyId).detail(alertId),
     queryFn: () => api(emergencyContract.getAlert, { params: { societyId, alertId } }),
   });
 }
@@ -36,8 +36,8 @@ export function useAlert(societyId: string, alertId: string) {
 function useInvalidateEmergency(societyId: string) {
   const qc = useQueryClient();
   return () => {
-    void qc.invalidateQueries({ queryKey: [...keys.society(societyId).all, 'emergency'] });
-    void qc.invalidateQueries({ queryKey: keys.society(societyId).home });
+    void qc.invalidateQueries({ queryKey: emergencyKeys(societyId).all });
+    void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
   };
 }
 
