@@ -8,119 +8,44 @@ import {
   parseModuleSettings,
   type RouteBody,
 } from '@movo/contracts';
-import { formatDate } from '@movo/i18n';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
-import { addDays, dateOnly, dbDate, todayIn } from '../../common/util/dates';
-import type {
-  ResponsibilityAssignment as AssignmentRow,
-  Responsibility as DutyRow,
-  ResponsibilityParticipant as ParticipantRow,
-  Prisma,
-} from '../../generated/prisma/client';
-import { NotificationsService } from '../notifications/notifications.service';
-import { Recipients } from '../notifications/recipients.service';
+import { dateOnly, dbDate, todayIn } from '../../common/util/dates';
+import type { Prisma } from '../../generated/prisma/client';
 import { awardContext, awardPoints } from '../rewards/rewards.service';
 import { flatLabel } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 import {
-  type Cadence,
-  PLAN_AHEAD,
-  periodEnd,
-  periodIndexFor,
-  periodStart,
-  rotate,
-} from './rotation';
+  type AssignmentRow,
+  currentTurn,
+  type DutyRow,
+  type DutyWithParticipants,
+  liveWhere,
+  participantData,
+  participantIdOf,
+  plan,
+  replaceParticipants,
+  replan,
+  withParticipants,
+} from './duty-plan';
+import { DutyTurns } from './duty-turns.service';
 
 type CreateBody = RouteBody<typeof dutiesContract.create>;
 type UpdateBody = RouteBody<typeof dutiesContract.update>;
 type OverrideBody = RouteBody<typeof dutiesContract.override>;
-type Tx = Prisma.TransactionClient;
-type DutyWithParticipants = DutyRow & { participants: ParticipantRow[] };
-
-const withParticipants = { participants: { orderBy: { position: 'asc' } } } as const;
-
-const cadenceOf = (d: DutyRow): Cadence => ({
-  startDate: dateOnly(d.startDate),
-  unit: d.periodUnit,
-  length: d.periodLength,
-});
-const participantIdOf = (r: { flatId: string | null; membershipId: string | null }) =>
-  (r.flatId ?? r.membershipId) as string;
-const participantData = (kind: DutyRow['participantKind'], id: string) =>
-  kind === 'FLAT' ? { flatId: id, membershipId: null } : { flatId: null, membershipId: id };
-
-/**
- * Makes sure turns exist up to PLAN_AHEAD periods from today, continuing the order after the
- * last planned turn. `carry` puts that participant first (a missed turn carried over).
- */
-async function plan(tx: Tx, duty: DutyWithParticipants, today: string, carry?: string) {
-  const cadence = cadenceOf(duty);
-  const ids = duty.participants.map(participantIdOf);
-  if (ids.length === 0) return;
-  const last = await tx.responsibilityAssignment.findFirst({
-    where: { responsibilityId: duty.id },
-    orderBy: { periodIndex: 'desc' },
-  });
-  const current = Math.max(0, periodIndexFor(cadence, today));
-  const first = Math.max(last ? last.periodIndex + 1 : 0, current);
-  const count = current + PLAN_AHEAD - first;
-  if (count <= 0) return;
-  const order = carry
-    ? [carry, ...rotate(ids, carry, count - 1)]
-    : rotate(ids, last ? participantIdOf(last) : null, count);
-  await tx.responsibilityAssignment.createMany({
-    data: order.map((pid, i) => ({
-      societyId: duty.societyId,
-      responsibilityId: duty.id,
-      periodIndex: first + i,
-      periodStart: dbDate(periodStart(cadence, first + i)),
-      periodEnd: dbDate(periodEnd(cadence, first + i)),
-      ...participantData(duty.participantKind, pid),
-      status: 'UPCOMING' as const,
-    })),
-  });
-}
-
-/** Turns not over yet, plus the one whose period holds today whatever its status. */
-function liveWhere(today: Date): Prisma.ResponsibilityAssignmentWhereInput {
-  return {
-    OR: [
-      { status: { in: ['ACTIVE', 'UPCOMING'] } },
-      { periodStart: { lte: today }, periodEnd: { gte: today } },
-    ],
-  };
-}
-
-/** The ACTIVE turn, else this period's turn once it is done or skipped. None for an ended duty. */
-function currentTurn(d: DutyRow, rows: AssignmentRow[]): AssignmentRow | undefined {
-  if (d.status === 'ENDED') return undefined;
-  return rows.find((r) => r.status === 'ACTIVE') ?? rows.find((r) => r.status !== 'UPCOMING');
-}
-
-/** Drops turns that have not started and plans them again. */
-async function replan(tx: Tx, duty: DutyWithParticipants, today: string, carry?: string) {
-  await tx.responsibilityAssignment.deleteMany({
-    where: { responsibilityId: duty.id, status: 'UPCOMING' },
-  });
-  await plan(tx, duty, today, carry);
-}
 
 @Injectable()
 export class DutiesService {
-  private readonly logger = new Logger(DutiesService.name);
-
   constructor(
     private readonly tenant: TenantPrismaService,
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly notifications: NotificationsService,
-    private readonly recipients: Recipients,
+    private readonly turns: DutyTurns,
   ) {}
 
   private get db() {
@@ -207,7 +132,7 @@ export class DutiesService {
       );
       return d;
     });
-    await this.activate(duty, today);
+    await this.turns.activate(duty, today);
     return this.get(duty.id);
   }
 
@@ -241,20 +166,7 @@ export class DutiesService {
     await this.checkParticipants(duty.participantKind, ids);
     const today = todayIn(ctx.society.timezone);
     await this.tenant.tx(async (tx) => {
-      await tx.responsibilityParticipant.deleteMany({ where: { responsibilityId: dutyId } });
-      await tx.responsibilityParticipant.createMany({
-        data: ids.map((id, position) => ({
-          societyId: ctx.societyId,
-          responsibilityId: dutyId,
-          position,
-          ...participantData(duty.participantKind, id),
-        })),
-      });
-      const fresh = await tx.responsibility.findUniqueOrThrow({
-        where: { id: dutyId },
-        include: withParticipants,
-      });
-      if (fresh.status === 'ACTIVE') await replan(tx, fresh, today);
+      await replaceParticipants(tx, duty, ids, today);
       await this.audit.record(
         {
           action: 'duty.participants.updated',
@@ -298,7 +210,7 @@ export class DutiesService {
         tx,
       );
     });
-    if (status === 'ACTIVE') await this.activate(await this.requireDuty(dutyId), today);
+    if (status === 'ACTIVE') await this.turns.activate(await this.requireDuty(dutyId), today);
     return this.get(dutyId);
   }
 
@@ -403,7 +315,7 @@ export class DutiesService {
       );
     });
     if (body.action === 'REASSIGN' && row.status === 'ACTIVE' && body.participantId)
-      await this.tellParticipant(duty, body.participantId, 'start', dateOnly(row.periodEnd));
+      await this.turns.tell(duty, body.participantId, 'start', dateOnly(row.periodEnd));
     return this.get(dutyId);
   }
 
@@ -427,131 +339,6 @@ export class DutiesService {
       periodEnd: dateOnly(r.periodEnd),
       canConfirm: r.confirmedAt === null,
     }));
-  }
-
-  /**
-   * Hourly job, all societies: closes finished turns (missed when confirmation was needed and
-   * not given), carries a missed turn over when the duty says so, keeps 12 turns planned,
-   * starts turns whose day has come, and reminds 2 days before a turn ends.
-   */
-  async advance(now: Date): Promise<number> {
-    const duties = await this.prisma.responsibility.findMany({
-      where: { status: 'ACTIVE', society: { status: 'ACTIVE' } },
-      include: { ...withParticipants, society: { include: { modules: true } } },
-    });
-    let changes = 0;
-    for (const duty of duties) {
-      const mod = duty.society.modules.find((m) => m.moduleKey === 'responsibilities');
-      if (mod && !mod.enabled) continue;
-      const today = todayIn(duty.society.timezone, now);
-      const missed: AssignmentRow[] = [];
-      await this.prisma.$transaction(async (tx) => {
-        const due = await tx.responsibilityAssignment.findMany({
-          where: {
-            responsibilityId: duty.id,
-            status: { in: ['UPCOMING', 'ACTIVE'] },
-            periodEnd: { lt: dbDate(today) },
-          },
-          orderBy: { periodIndex: 'asc' },
-        });
-        let carry: string | undefined;
-        for (const r of due) {
-          const isMissed = duty.requiresConfirmation && r.confirmedAt === null;
-          await tx.responsibilityAssignment.update({
-            where: { id: r.id },
-            data: { status: isMissed ? 'MISSED' : 'COMPLETED' },
-          });
-          if (isMissed) {
-            missed.push(r);
-            if (duty.onMiss === 'CARRY_OVER') carry = participantIdOf(r);
-          }
-          changes += 1;
-        }
-        if (carry) await replan(tx, duty, today, carry);
-        else await plan(tx, duty, today);
-      });
-      for (const r of missed)
-        await this.tellParticipant(duty, participantIdOf(r), 'missed', dateOnly(r.periodEnd));
-      changes += await this.activate(duty, today);
-      await this.remind(duty, today);
-    }
-    if (changes > 0) this.logger.log(`duty turns changed: ${changes}`);
-    return changes;
-  }
-
-  /** Starts turns whose first day has come and tells the participant. */
-  private async activate(duty: DutyWithParticipants, today: string): Promise<number> {
-    const rows = await this.prisma.responsibilityAssignment.findMany({
-      where: {
-        responsibilityId: duty.id,
-        status: 'UPCOMING',
-        periodStart: { lte: dbDate(today) },
-      },
-    });
-    for (const r of rows) {
-      await this.prisma.responsibilityAssignment.update({
-        where: { id: r.id },
-        data: { status: 'ACTIVE' },
-      });
-      await this.tellParticipant(duty, participantIdOf(r), 'start', dateOnly(r.periodEnd));
-    }
-    return rows.length;
-  }
-
-  private async remind(duty: DutyWithParticipants, today: string) {
-    if (!duty.requiresConfirmation) return;
-    const rows = await this.prisma.responsibilityAssignment.findMany({
-      where: {
-        responsibilityId: duty.id,
-        status: 'ACTIVE',
-        confirmedAt: null,
-        periodEnd: { lte: dbDate(addDays(today, 2)) },
-      },
-    });
-    for (const r of rows) {
-      const { count } = await this.prisma.reminderSent.createMany({
-        data: [
-          { societyId: duty.societyId, entityType: 'DutyTurn', entityId: r.id, kind: 'confirm-2d' },
-        ],
-        skipDuplicates: true,
-      });
-      if (count > 0)
-        await this.tellParticipant(duty, participantIdOf(r), 'remind', dateOnly(r.periodEnd));
-    }
-  }
-
-  private async tellParticipant(
-    duty: DutyRow,
-    participantId: string,
-    kind: 'start' | 'remind' | 'missed',
-    endDate: string,
-  ) {
-    await this.notifications.notifyUsers({
-      userIds:
-        duty.participantKind === 'FLAT'
-          ? await this.recipients.ofFlat(participantId)
-          : await this.recipients.ofMemberships([participantId], { activeOnly: true }),
-      societyId: duty.societyId,
-      category: 'DUTY',
-      render: (t, locale) => {
-        const date = formatDate(dbDate(endDate), locale, 'short', 'UTC');
-        return kind === 'start'
-          ? {
-              title: t('duties:push.startTitle', { title: duty.title }),
-              body: t('duties:push.startBody', { date }),
-            }
-          : kind === 'remind'
-            ? {
-                title: t('duties:push.remindTitle', { title: duty.title }),
-                body: t('duties:push.remindBody', { date }),
-              }
-            : {
-                title: t('duties:push.missedTitle', { title: duty.title }),
-                body: t('duties:push.missedBody', { date }),
-              };
-      },
-      data: { screen: 'duty', societyId: duty.societyId, dutyId: duty.id },
-    });
   }
 
   private isMine(ctx: TenantContext, participantId: string): boolean {

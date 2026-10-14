@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { addDays, todayIn } from '../src/common/util/dates';
-import { DutiesService } from '../src/modules/duties/duties.service';
+import { DutiesJob } from '../src/modules/duties/duties.job';
 import { auth, type SocietyFixture, societyWithResident } from './fixtures';
 import { createHarness, type Harness } from './harness';
 
@@ -104,7 +104,7 @@ describe('duties', () => {
       .http()
       .get(url(s, `/${duty.id}`))
       .set(auth(s.admin));
-    const service = h.app.get(DutiesService);
+    const service = h.app.get(DutiesJob);
     await service.advance(at(nextMonthStart(TODAY)));
     const moved = await h
       .http()
@@ -123,7 +123,7 @@ describe('duties', () => {
 
   it('marks unconfirmed turns missed, carries them over when asked, and reminds before the end', async () => {
     const s = await societyWithResident(h, 'd2');
-    const service = h.app.get(DutiesService);
+    const service = h.app.get(DutiesJob);
     const plain = await createDuty(s, { title: 'Tank cleaning' });
     const carry = await createDuty(s, { title: 'Terrace check', onMiss: 'CARRY_OVER' });
     const monthEnd = addDays(nextMonthStart(TODAY), -1);
@@ -323,5 +323,93 @@ describe('duties', () => {
       .post(url(b, `/${duty.id}/assignments/${duty.current.id}/confirm`))
       .set(auth(b.admin));
     expect(confirm.status).toBe(404);
+  });
+  it('takes a deleted member out of member rotations and skips their running turn', async () => {
+    const s = await societyWithResident(h, 'd-del');
+    const r = s.resident;
+    const theirsNow = await createDuty(s, {
+      title: 'Garden watering',
+      participantKind: 'MEMBER',
+      participantIds: [r.membershipId, s.adminMembershipId],
+      periodUnit: 'WEEK',
+      startDate: TODAY,
+    });
+    expect(theirsNow.current.participant.id).toBe(r.membershipId);
+    const theirsLater = await createDuty(s, {
+      title: 'Terrace check',
+      participantKind: 'MEMBER',
+      participantIds: [s.adminMembershipId, r.membershipId],
+      periodUnit: 'WEEK',
+      startDate: TODAY,
+    });
+    const flats = await createDuty(s);
+    const notesBefore = await titles(s.admin);
+
+    const del = await h
+      .http()
+      .delete('/v1/me')
+      .set(auth(r.token))
+      .send({ password: 'correct horse battery' });
+    expect(del.status).toBe(200);
+
+    const get = async (id: string) =>
+      (
+        await h
+          .http()
+          .get(url(s, `/${id}`))
+          .set(auth(s.admin))
+      ).body;
+    const onlyAdmin = [{ id: s.adminMembershipId, label: 'Society Admin' }];
+
+    // Their running turn is skipped like a committee Skip; later turns all go to the admin.
+    const now = await get(theirsNow.id);
+    expect(now.participants).toEqual(onlyAdmin);
+    expect(now.current).toMatchObject({
+      id: theirsNow.current.id,
+      status: 'SKIPPED',
+      overrideNote: 'Account deleted',
+      participant: { id: r.membershipId },
+    });
+    expect(now.upcoming.length).toBeGreaterThan(0);
+    expect(
+      now.upcoming.every(
+        (u: { participant: { id: string } }) => u.participant.id === s.adminMembershipId,
+      ),
+    ).toBe(true);
+    expect(now.upcoming[0].periodStart).toBe(addDays(TODAY, 7));
+
+    // Not their turn now: the admin's turn runs on, their future turns go to the admin.
+    const later = await get(theirsLater.id);
+    expect(later.participants).toEqual(onlyAdmin);
+    expect(later.current).toMatchObject({
+      id: theirsLater.current.id,
+      status: 'ACTIVE',
+      participant: { id: s.adminMembershipId },
+    });
+    expect(
+      later.upcoming.every(
+        (u: { participant: { id: string } }) => u.participant.id === s.adminMembershipId,
+      ),
+    ).toBe(true);
+    const left = await h.prisma.responsibilityAssignment.count({
+      where: { membershipId: r.membershipId, status: { in: ['UPCOMING', 'ACTIVE'] } },
+    });
+    expect(left).toBe(0);
+
+    // A flat rotation stays as it was: the flat is still there.
+    expect((await get(flats.id)).participants).toHaveLength(2);
+
+    const audit = await h.prisma.auditLog.findMany({
+      where: { societyId: s.societyId, actorUserId: r.userId, action: { startsWith: 'duty.' } },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(audit.map((a) => [a.action, a.entityId]).sort()).toEqual(
+      [
+        ['duty.overridden', theirsNow.current.id],
+        ['duty.participants.updated', theirsNow.id],
+        ['duty.participants.updated', theirsLater.id],
+      ].sort(),
+    );
+    expect(await titles(s.admin)).toEqual(notesBefore);
   });
 });

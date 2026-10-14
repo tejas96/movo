@@ -228,4 +228,66 @@ describe('tasks and rewards', () => {
       .send({ membershipId: a.resident.membershipId, delta: 5, note: 'Cross' });
     expect(adjustAcross.status).toBe(404);
   });
+  it("puts a deleted member's unfinished tasks back on the open list", async () => {
+    const s = await societyWithResident(h, 't-del');
+    const r = s.resident;
+    const working = await task(s, { title: 'Working', assigneeMembershipId: r.membershipId });
+    const submitted = await task(s, { title: 'Submitted', assigneeMembershipId: r.membershipId });
+    await act(s, r.token, submitted.id, 'submit', { note: 'Done, see receipt' });
+    const done = await task(s, { title: 'Done', assigneeMembershipId: r.membershipId });
+    await act(s, r.token, done.id, 'submit');
+    await act(s, s.admin, done.id, 'verify');
+    const cancelled = await task(s, { title: 'Cancelled', assigneeMembershipId: r.membershipId });
+    await act(s, s.admin, cancelled.id, 'cancel');
+    const admins = await task(s, { title: 'Admin', assigneeMembershipId: s.adminMembershipId });
+    const notesBefore = (await notes(s.admin)).length;
+
+    const del = await h
+      .http()
+      .delete('/v1/me')
+      .set(auth(r.token))
+      .send({ password: 'correct horse battery' });
+    expect(del.status).toBe(200);
+
+    const rows = await h.prisma.task.findMany({ where: { societyId: s.societyId } });
+    const byTitle = Object.fromEntries(
+      rows.map((t) => [t.title, [t.status, t.assigneeMembershipId, t.submissionNote]]),
+    );
+    expect(byTitle).toEqual({
+      Working: ['OPEN', null, null],
+      Submitted: ['OPEN', null, null],
+      Done: ['COMPLETED', r.membershipId, null],
+      Cancelled: ['CANCELLED', r.membershipId, null],
+      Admin: ['IN_PROGRESS', s.adminMembershipId, null],
+    });
+
+    // Written like a committee unassign: a WITHDRAWN event and a task.assigned audit row.
+    const detail = await h
+      .http()
+      .get(url(s, `/tasks/${working.id}`))
+      .set(auth(s.admin));
+    expect(detail.body.events.map((e: { kind: string }) => e.kind)).toEqual([
+      'WITHDRAWN',
+      'ASSIGNED',
+      'CREATED',
+    ]);
+    const audit = await h.prisma.auditLog.findMany({
+      where: { action: 'task.assigned', entityId: { in: [working.id, submitted.id] } },
+    });
+    expect(audit).toHaveLength(2);
+    for (const a of audit)
+      expect(a).toMatchObject({
+        societyId: s.societyId,
+        actorUserId: r.userId,
+        before: { assignee: r.membershipId },
+        after: { assignee: null },
+      });
+
+    const open = await h.http().get(url(s, '/tasks?view=OPEN')).set(auth(s.admin));
+    expect(open.body.map((t: { id: string }) => t.id).sort()).toEqual(
+      [working.id, submitted.id].sort(),
+    );
+    expect((await act(s, s.admin, admins.id, 'verify')).status).toBe(409);
+    expect((await notes(s.admin)).length).toBe(notesBefore);
+  });
 });

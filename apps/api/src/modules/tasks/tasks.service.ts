@@ -11,6 +11,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
+import type { AccountDeleted } from '../../common/lifecycle/lifecycle';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
@@ -28,6 +29,17 @@ type UpdateBody = RouteBody<typeof tasksContract.update>;
 type Tx = Prisma.TransactionClient;
 
 const LIVE: TaskStatus[] = ['OPEN', 'IN_PROGRESS', 'SUBMITTED'];
+
+/** Who acted on a task: the request's member, or the member whose account was deleted. */
+type Actor = Pick<TenantContext, 'societyId' | 'membershipId'>;
+
+/** Task row change for a new assignee, or for none (back to the open list). */
+const assignData = (membershipId: string | null) => ({
+  assigneeMembershipId: membershipId,
+  status: membershipId ? ('IN_PROGRESS' as const) : ('OPEN' as const),
+  submissionNote: null,
+  submittedAt: null,
+});
 
 @Injectable()
 export class TasksService {
@@ -139,24 +151,9 @@ export class TasksService {
     const task = await this.tenant.tx(async (tx) => {
       const t = await tx.task.update({
         where: { id: taskId, societyId: ctx.societyId },
-        data: {
-          assigneeMembershipId: membershipId,
-          status: membershipId ? 'IN_PROGRESS' : 'OPEN',
-          submissionNote: null,
-          submittedAt: null,
-        },
+        data: assignData(membershipId),
       });
-      await this.event(tx, ctx, taskId, membershipId ? 'ASSIGNED' : 'WITHDRAWN');
-      await this.audit.record(
-        {
-          action: 'task.assigned',
-          entityType: 'Task',
-          entityId: taskId,
-          before: { assignee: before.assigneeMembershipId },
-          after: { assignee: membershipId },
-        },
-        tx,
-      );
+      await this.assignmentChanged(tx, ctx, taskId, before.assigneeMembershipId, membershipId);
       return t;
     });
     if (membershipId && membershipId !== before.assigneeMembershipId)
@@ -363,20 +360,55 @@ export class TasksService {
     });
   }
 
-  private async event(
+  /**
+   * Account deleted: tasks the user still had in any society go back to the open list with
+   * no assignee, written like a committee unassign (WITHDRAWN event, task.assigned audit).
+   * Nobody is notified, as with an unassign.
+   */
+  async releaseForDeletedAccount(tx: Tx, e: AccountDeleted): Promise<void> {
+    const tasks = await tx.task.findMany({
+      where: {
+        assigneeMembershipId: { in: e.membershipIds },
+        status: { notIn: ['COMPLETED', 'CANCELLED'] },
+      },
+    });
+    for (const t of tasks) {
+      const actor = { societyId: t.societyId, membershipId: t.assigneeMembershipId as string };
+      await tx.task.update({ where: { id: t.id }, data: assignData(null) });
+      await this.assignmentChanged(tx, actor, t.id, t.assigneeMembershipId, null);
+    }
+  }
+
+  /** Event and audit row for an assign or unassign. */
+  private async assignmentChanged(
     tx: Tx,
-    ctx: TenantContext,
+    actor: Actor,
     taskId: string,
-    kind: TaskEventKind,
-    note?: string,
+    before: string | null,
+    after: string | null,
   ) {
+    await this.event(tx, actor, taskId, after ? 'ASSIGNED' : 'WITHDRAWN');
+    await this.audit.record(
+      {
+        action: 'task.assigned',
+        entityType: 'Task',
+        entityId: taskId,
+        societyId: actor.societyId,
+        before: { assignee: before },
+        after: { assignee: after },
+      },
+      tx,
+    );
+  }
+
+  private async event(tx: Tx, actor: Actor, taskId: string, kind: TaskEventKind, note?: string) {
     await tx.taskEvent.create({
       data: {
-        societyId: ctx.societyId,
+        societyId: actor.societyId,
         taskId,
         kind,
         note: note ?? null,
-        byMembershipId: ctx.membershipId,
+        byMembershipId: actor.membershipId,
       },
     });
   }

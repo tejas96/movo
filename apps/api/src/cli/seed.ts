@@ -12,9 +12,9 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { runWithStore } from '../common/request-store';
 import { newId } from '../common/util/ids';
 import { loadEnv } from '../config/env';
-import { DutiesService } from '../modules/duties/duties.service';
+import { DutiesJob } from '../modules/duties/duties.job';
 import { defaultEmergencyContactRows } from '../modules/emergency/emergency.service';
-import { defaultExpenseCategoryRows } from '../modules/expenses/expenses.service';
+import { defaultExpenseCategoryRows } from '../modules/expenses/expense-rules';
 import { createFileStore } from '../modules/files/file-store';
 import { PasswordService } from '../modules/identity/password.service';
 import { UsersService } from '../modules/identity/users.service';
@@ -369,7 +369,7 @@ async function ensureM8Demo(
       },
     },
   });
-  await app.get(DutiesService).advance(new Date());
+  await app.get(DutiesJob).advance(new Date());
   await prisma.task.create({
     data: {
       societyId,

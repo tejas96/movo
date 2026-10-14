@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './common/audit/audit.module';
 import { ApiExceptionFilter } from './common/errors/api-exception.filter';
+import { HomeRegistryModule } from './common/home/home-registry';
 import { LifecycleModule } from './common/lifecycle/lifecycle';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { getStore } from './common/request-store';
@@ -60,6 +61,7 @@ const env = loadEnv();
     PrismaModule,
     AuditModule,
     LifecycleModule,
+    HomeRegistryModule,
     IdentityModule,
     NotificationsModule,
     TenancyModule,
