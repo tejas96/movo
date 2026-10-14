@@ -1,4 +1,5 @@
 import { queryClient } from '../api/query-client';
+import type { AnyNotificationEntry } from '../navigation/routes';
 import type { RootNav } from '../navigation/types';
 import { useTenantStore } from '../tenant/tenant.store';
 
@@ -7,20 +8,18 @@ export interface NotificationTarget {
   screen?: string;
   societyId?: string;
   notificationId?: string;
-  noticeId?: string;
-  alertId?: string;
-  meetingId?: string;
-  eventId?: string;
-  billId?: string;
-  paymentId?: string;
-  expenseId?: string;
-  dutyId?: string;
-  taskId?: string;
-  listingId?: string;
-  orderId?: string;
+  /** The entity id a target names, e.g. `noticeId` (see each feature's `routes.tsx`). */
+  [field: string]: string | undefined;
 }
 
 type Navigate = Pick<RootNav, 'navigate'>;
+
+let targets: readonly AnyNotificationEntry[] = [];
+
+/** Called once by the route registry with every feature's notification entries. */
+export function setNotificationTargets(entries: readonly AnyNotificationEntry[]): void {
+  targets = entries;
+}
 
 /**
  * Opens the screen a notification points at. Shared by the notification center and push taps.
@@ -28,29 +27,17 @@ type Navigate = Pick<RootNav, 'navigate'>;
  */
 export function openNotificationTarget(nav: Navigate, raw: unknown): boolean {
   const data = (raw ?? {}) as NotificationTarget;
-  if (data.screen === 'notice' && data.noticeId)
-    nav.navigate('NoticeDetail', { noticeId: data.noticeId });
-  else if (data.screen === 'alert' && data.alertId)
-    nav.navigate('AlertDetail', { alertId: data.alertId });
-  else if (data.screen === 'meeting' && data.meetingId)
-    nav.navigate('MeetingDetail', { meetingId: data.meetingId });
-  else if (data.screen === 'event' && data.eventId)
-    nav.navigate('EventDetail', { eventId: data.eventId });
-  else if (data.screen === 'bill' && data.billId) nav.navigate('Bill', { billId: data.billId });
-  else if (data.screen === 'payment' && data.paymentId)
-    nav.navigate('Receipt', { paymentId: data.paymentId });
-  else if (data.screen === 'expense' && data.expenseId)
-    nav.navigate('ExpenseDetail', { expenseId: data.expenseId });
-  else if (data.screen === 'duty' && data.dutyId)
-    nav.navigate('DutyDetail', { dutyId: data.dutyId });
-  else if (data.screen === 'task' && data.taskId)
-    nav.navigate('TaskDetail', { taskId: data.taskId });
-  else if (data.screen === 'listing' && data.listingId)
-    nav.navigate('Listing', { listingId: data.listingId });
-  else if (data.screen === 'order' && data.orderId)
-    nav.navigate('OrderDetail', { orderId: data.orderId });
-  else if (data.screen === 'manage/join-requests') nav.navigate('JoinRequests');
-  else return false;
+  const entry = targets.find((e) => e.kind === data.screen);
+  if (!entry) return false;
+  // The registry types each entry against its feature's params; here the names are plain strings.
+  const go = nav.navigate as (route: string, params?: object) => void;
+  if (!entry.param) {
+    go(entry.route);
+    return true;
+  }
+  const id = data[entry.param];
+  if (!id) return false;
+  go(entry.route, { [entry.param]: id });
   return true;
 }
 
