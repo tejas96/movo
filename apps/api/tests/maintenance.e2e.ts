@@ -233,6 +233,25 @@ describe('maintenance', () => {
     ]);
   });
 
+  it('two payments for one flat at once never pay the same bill twice', async () => {
+    const s = await societyWithResident(h, 'b9');
+    await withPlan(s);
+    await h.app.get(BillsService).generateForSociety(s.societyId, at('2030-01-05'));
+    const flatId = s.flats[0]?.id;
+    const both = await Promise.all([
+      pay(s, { flatId, amountPaise: 250_000 }),
+      pay(s, { flatId, amountPaise: 250_000 }),
+    ]);
+    expect(both.map((r) => r.status)).toEqual([201, 201]);
+    expect(both.map((r) => r.body.unallocatedPaise).sort()).toEqual([0, 250_000]);
+    const bill = await h.prisma.bill.findFirstOrThrow({ where: { flatId } });
+    const paid = await h.prisma.paymentAllocation.aggregate({
+      where: { billId: bill.id },
+      _sum: { amountPaise: true },
+    });
+    expect(paid._sum.amountPaise).toBe(250_000);
+  });
+
   it('lets the treasurer choose bills, and refuses bad allocations', async () => {
     const s = await societyWithResident(h, 'b3');
     await withPlan(s);

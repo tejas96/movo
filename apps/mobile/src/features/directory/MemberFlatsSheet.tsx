@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useFlats } from '../manage/api';
 import { useSetOccupancies } from './api';
 
@@ -77,18 +78,22 @@ export function MemberFlatsSheet({
       <Text variant="label" tone="secondary" className="mb-3">
         {t('manage:member.flatsHelp')}
       </Text>
-      <ScrollView style={{ maxHeight: 180 }}>
-        <View className="flex-row flex-wrap gap-2">
-          {all.map((f) => (
-            <Chip
-              key={f.id}
-              label={formatFlat({ number: f.number, buildingName: f.buildingName })}
-              selected={picked.has(f.id)}
-              onPress={() => flip(f.id)}
-            />
-          ))}
-        </View>
-      </ScrollView>
+      {loadFailed(flats) ? (
+        <QueryError query={flats} />
+      ) : (
+        <ScrollView style={{ maxHeight: 180 }}>
+          <View className="flex-row flex-wrap gap-2">
+            {all.map((f) => (
+              <Chip
+                key={f.id}
+                label={formatFlat({ number: f.number, buildingName: f.buildingName })}
+                selected={picked.has(f.id)}
+                onPress={() => flip(f.id)}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      )}
       {chosen.map((f) => (
         <View key={f.id} className="mt-4">
           <Text variant="label" tone="secondary" className="mb-1.5">

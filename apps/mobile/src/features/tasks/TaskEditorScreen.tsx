@@ -3,7 +3,6 @@ import {
   Button,
   DateTimeSheet,
   Input,
-  OptionSheet,
   Screen,
   SelectField,
   Text,
@@ -17,13 +16,12 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, isoDay } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
-import { useMembers } from '../directory/api';
+import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useSaveTask, useTask } from './api';
-
-const ANYONE = 'anyone';
 
 export function TaskEditorScreen() {
   const { t } = useTranslation(['tasks', 'common']);
@@ -34,15 +32,13 @@ export function TaskEditorScreen() {
   const taskId = useRoute<RouteProp<RootStackParamList, 'TaskEditor'>>().params?.taskId;
   const existing = useTask(societyId, taskId ?? '');
   const save = useSaveTask(societyId, taskId);
-  const members = useMembers(societyId, '');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [points, setPoints] = useState('0');
   const [due, setDue] = useState<Date | null>(null);
-  const [assignee, setAssignee] = useState<string>(ANYONE);
+  const [assignee, setAssignee] = useState<{ id: string; name: string } | null>(null);
   const [sheet, setSheet] = useState<'date' | 'who' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const people = members.data?.pages.flatMap((p) => p.items) ?? [];
 
   useEffect(() => {
     const x = existing.data;
@@ -69,7 +65,7 @@ export function TaskEditorScreen() {
         description: description.trim() || null,
         points: p,
         dueOn: due ? isoDay(due) : null,
-        assigneeMembershipId: assignee === ANYONE ? null : assignee,
+        assigneeMembershipId: assignee?.id ?? null,
       });
       toast.show(t('tasks:form.saved'));
       if (taskId) nav.goBack();
@@ -78,6 +74,14 @@ export function TaskEditorScreen() {
       setError(toMessage(e));
     }
   };
+
+  if (taskId && loadFailed(existing))
+    return (
+      <Screen>
+        <TitleBar title={t('common:actions.edit')} onBack={() => nav.goBack()} />
+        <QueryError query={existing} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>
@@ -117,11 +121,7 @@ export function TaskEditorScreen() {
           {!taskId ? (
             <SelectField
               label={t('tasks:form.assignee')}
-              value={
-                assignee === ANYONE
-                  ? t('tasks:form.anyone')
-                  : people.find((m) => m.membershipId === assignee)?.displayName
-              }
+              value={assignee?.name ?? t('tasks:form.anyone')}
               onPress={() => setSheet('who')}
             />
           ) : null}
@@ -157,20 +157,14 @@ export function TaskEditorScreen() {
           done: t('common:actions.done'),
         }}
       />
-      <OptionSheet
+      <MemberPickerSheet
         visible={sheet === 'who'}
         onClose={() => setSheet(null)}
+        societyId={societyId}
         title={t('tasks:form.assignee')}
-        value={assignee}
-        options={[
-          { value: ANYONE, label: t('tasks:form.anyone') },
-          ...people.map((m) => ({
-            value: m.membershipId,
-            label: m.displayName,
-            hint: m.flats[0] ? formatFlat(m.flats[0]) : undefined,
-          })),
-        ]}
-        onSelect={setAssignee}
+        value={assignee?.id}
+        none={{ label: t('tasks:form.anyone'), onSelect: () => setAssignee(null) }}
+        onSelect={(m) => setAssignee({ id: m.membershipId, name: m.displayName })}
       />
     </>
   );

@@ -23,6 +23,7 @@ import { Alert, Linking, ScrollView, type ScrollViewInstance, View } from 'react
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { money } from '../../core/util/money';
 import { relative } from '../../core/util/time';
 import { type OrderAction, useOrder, useOrderAction } from './api';
@@ -76,7 +77,9 @@ export function OrderDetailScreen() {
   return (
     <Screen scroll={false}>
       <TitleBar title={t('market:order.title')} onBack={() => nav.goBack()} />
-      {order.isLoading || !o ? (
+      {loadFailed(order) ? (
+        <QueryError query={order} className="mt-6" />
+      ) : order.isLoading || !o ? (
         <Skeleton className="mt-6 h-64 rounded-xl" />
       ) : (
         <View className="flex-1">

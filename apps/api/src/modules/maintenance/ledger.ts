@@ -1,5 +1,6 @@
 import type { BillSummary, FlatRef, PaymentInstruction, PaymentSummary } from '@movo/contracts';
 import type { PrismaService } from '../../common/prisma/prisma.service';
+import { lockFor } from '../../common/prisma/tx-lock';
 import type { Prisma } from '../../generated/prisma/client';
 import { toFlatRef } from '../tenancy/mappers';
 import { allocate, billStatus } from './billing';
@@ -123,6 +124,7 @@ export async function applyCredit(
   flatId: string,
   today: string,
 ): Promise<string[]> {
+  await lockFor(tx, `flat-dues:${flatId}`);
   const payments = await unallocatedPayments(tx, societyId, flatId);
   if (payments.length === 0) return [];
   const bills = await tx.bill.findMany({

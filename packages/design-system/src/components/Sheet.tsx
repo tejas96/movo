@@ -113,6 +113,7 @@ export function OptionSheet<T extends string>({
                   </Text>
                 ) : null}
               </View>
+              {/* biome-ignore lint/style/noJsxLiterals: a tick mark, not words */}
               {on ? <Text tone="inverse">✓</Text> : null}
             </Pressable>
           );

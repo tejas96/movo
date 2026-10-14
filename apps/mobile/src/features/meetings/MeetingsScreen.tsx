@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { TimedCard } from '../calendar/shared';
 import { useMeetings } from './api';
 
@@ -92,7 +93,9 @@ export function MeetingsScreen() {
           </View>
         }
         ListEmptyComponent={
-          list.isLoading ? undefined : (
+          list.isLoading ? undefined : loadFailed(list) ? (
+            <QueryError query={list} className="mt-6" />
+          ) : (
             <EmptyState
               icon="meetings"
               photo={photos.empty}

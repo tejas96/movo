@@ -21,6 +21,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, money } from '../../core/util/money';
 import { relative } from '../../core/util/time';
 import { Line } from '../money/BillScreen';
@@ -80,7 +81,9 @@ export function ExpenseDetailScreen() {
             ) : undefined
           }
         />
-        {expense.isLoading || !e ? (
+        {loadFailed(expense) ? (
+          <QueryError query={expense} className="mt-6" />
+        ) : expense.isLoading || !e ? (
           <Skeleton className="mt-6 h-64 rounded-xl" />
         ) : (
           <>

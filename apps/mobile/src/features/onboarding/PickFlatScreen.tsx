@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useJoinPreview, useJoinRequest } from './api';
 
 /** Pick wing and flat, say who you are, send the request. */
@@ -83,6 +84,8 @@ export function PickFlatScreen() {
             <Skeleton className="h-12 w-2/3 rounded-full" />
             <Skeleton className="h-40" />
           </View>
+        ) : loadFailed(preview) ? (
+          <QueryError query={preview} className="mt-6" />
         ) : preview.data && preview.data.flats.length === 0 ? (
           <EmptyState icon="building" title={t('onboarding:noFlatsYet')} className="mt-6" />
         ) : preview.data ? (

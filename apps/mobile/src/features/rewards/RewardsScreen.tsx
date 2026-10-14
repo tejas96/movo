@@ -5,7 +5,6 @@ import {
   IconSquare,
   Input,
   ModuleHeader,
-  OptionSheet,
   photos,
   Row,
   Screen,
@@ -21,9 +20,10 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
-import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { relative } from '../../core/util/time';
-import { useMembers } from '../directory/api';
+import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useAdjustPoints, useLeaderboard, useMyPoints } from './api';
 
 const REASON_ICON = { TASK: 'tasks', DUTY: 'duties', ADJUSTMENT: 'edit' } as const;
@@ -43,20 +43,18 @@ export function RewardsScreen() {
   const mine = useMyPoints(societyId);
   const leaders = useLeaderboard(societyId, showBoard);
   const adjust = useAdjustPoints(societyId);
-  const members = useMembers(societyId, '');
   const [open, setOpen] = useState(false);
   const [pick, setPick] = useState(false);
-  const [who, setWho] = useState<string | undefined>();
+  const [who, setWho] = useState<{ id: string; name: string } | undefined>();
   const [delta, setDelta] = useState('');
   const [note, setNote] = useState('');
   const m = mine.data;
-  const people = members.data?.pages.flatMap((p) => p.items) ?? [];
   const n = Number.parseInt(delta.replace('−', '-'), 10);
 
   const save = async () => {
     if (!who || !n || note.trim().length < 2) return;
     try {
-      await adjust.mutateAsync({ membershipId: who, delta: n, note: note.trim() });
+      await adjust.mutateAsync({ membershipId: who.id, delta: n, note: note.trim() });
       toast.show(t('rewards:adjust.saved'));
       setOpen(false);
     } catch (e) {
@@ -85,7 +83,9 @@ export function RewardsScreen() {
           ) : undefined
         }
       />
-      {mine.isLoading || !m ? (
+      {loadFailed(mine) ? (
+        <QueryError query={mine} className="mt-6" />
+      ) : mine.isLoading || !m ? (
         <Skeleton className="mt-6 h-40 rounded-xl" />
       ) : (
         <>
@@ -176,7 +176,7 @@ export function RewardsScreen() {
             white
             label={t('rewards:adjust.member')}
             placeholder={t('rewards:adjust.pickMember')}
-            value={people.find((p) => p.membershipId === who)?.displayName}
+            value={who?.name}
             onPress={() => setPick(true)}
           />
           <Input
@@ -196,17 +196,13 @@ export function RewardsScreen() {
           />
         </View>
       </Sheet>
-      <OptionSheet
+      <MemberPickerSheet
         visible={pick}
         onClose={() => setPick(false)}
+        societyId={societyId}
         title={t('rewards:adjust.member')}
-        value={who}
-        options={people.map((p) => ({
-          value: p.membershipId,
-          label: p.displayName,
-          hint: p.flats[0] ? formatFlat(p.flats[0]) : undefined,
-        }))}
-        onSelect={setWho}
+        value={who?.id}
+        onSelect={(p) => setWho({ id: p.membershipId, name: p.displayName })}
       />
     </Screen>
   );

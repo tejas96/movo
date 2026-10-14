@@ -309,14 +309,19 @@ export class ExpensesService {
     if (e.createdByMembershipId === ctx.membershipId)
       throw ApiException.forbidden('Someone else must approve an expense you added');
     const row = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.expense.update({
-        where: { id: expenseId, societyId: ctx.societyId },
+      const moved = await tx.expense.updateMany({
+        where: { id: expenseId, societyId: ctx.societyId, status: 'PENDING' },
         data: {
           status: approve ? 'APPROVED' : 'REJECTED',
           decidedByMembershipId: ctx.membershipId,
           decidedAt: new Date(),
           rejectionReason: approve ? null : (reason ?? null),
         },
+      });
+      if (moved.count === 0)
+        throw ApiException.conflict('CONFLICT', 'This expense is not waiting for approval');
+      const updated = await tx.expense.findUniqueOrThrow({
+        where: { id: expenseId },
         include: { category: true },
       });
       await this.audit.record(

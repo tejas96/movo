@@ -19,6 +19,7 @@ import { Alert, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useRoles } from '../directory/api';
 import { useDeleteRole, useSaveRole } from './api';
 import { i18nKey, PERMISSION_GROUPS } from './module-settings';
@@ -94,6 +95,14 @@ export function RoleEditorScreen() {
       },
     ]);
   };
+
+  if (roleId && loadFailed(roles))
+    return (
+      <Screen>
+        <TitleBar title={t('manage:rolesScreen.edit')} onBack={() => nav.goBack()} />
+        <QueryError query={roles} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>

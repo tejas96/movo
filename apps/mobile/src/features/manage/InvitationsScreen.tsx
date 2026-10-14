@@ -18,6 +18,7 @@ import { FlatList, Share, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { shortDate } from '../../core/util/time';
 import { useInvitations, useRevokeInvitation } from './api';
 
@@ -73,6 +74,8 @@ export function InvitationsScreen() {
           <Skeleton className="h-[68px]" />
           <Skeleton className="h-[68px]" />
         </View>
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

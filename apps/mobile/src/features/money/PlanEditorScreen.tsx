@@ -30,6 +30,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, isoDay, money, parseRupees, rupeesText } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
 import { useCollection, usePlans, useSavePlan, useSetOverride } from './api';
@@ -139,6 +140,14 @@ export function PlanEditorScreen() {
       setError(toMessage(e));
     }
   };
+
+  if (planId && loadFailed(plans))
+    return (
+      <Screen>
+        <TitleBar title={t('money:plan.edit')} onBack={() => nav.goBack()} />
+        <QueryError query={plans} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>

@@ -32,6 +32,7 @@ import { Linking, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { formatPhone } from '../../core/util/phone';
 import { relative } from '../../core/util/time';
 import {
@@ -101,7 +102,9 @@ export function EmergencyScreen() {
         onBack={() => nav.goBack()}
       />
 
-      {activeAlerts.length > 0 ? (
+      {loadFailed(active) ? (
+        <QueryError query={active} className="mt-4" />
+      ) : activeAlerts.length > 0 ? (
         <>
           <SectionHeader title={t('emergency:activeAlerts')} />
           <Card tight className="gap-2 bg-danger-soft">
@@ -162,6 +165,8 @@ export function EmergencyScreen() {
       />
       {contacts.isLoading ? (
         <Skeleton className="h-40 rounded-xl" />
+      ) : loadFailed(contacts) ? (
+        <QueryError query={contacts} />
       ) : society.length === 0 ? (
         <EmptyState
           icon="call"

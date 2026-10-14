@@ -19,6 +19,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { mediumDate } from '../../core/util/time';
 import { useNotice, useNoticeAction } from './api';
 
@@ -102,7 +103,9 @@ export function NoticeDetailScreen() {
         }
         pills={n ? [{ icon: 'notices', label: t(`notices:category.${n.category}`) }] : undefined}
       />
-      {notice.isLoading || !n ? (
+      {loadFailed(notice) ? (
+        <QueryError query={notice} className="mt-6" />
+      ) : notice.isLoading || !n ? (
         <View className="mt-6 gap-3">
           <Skeleton className="h-8 w-3/4" />
           <Skeleton className="h-48 rounded-xl" />

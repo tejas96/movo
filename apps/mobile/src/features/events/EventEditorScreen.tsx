@@ -16,6 +16,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { type DurationKey, defaultStart, durationOf, endFor, WhenFields } from '../calendar/shared';
 import { useCreateEvent, useEvent, useUpdateEvent } from './api';
 
@@ -82,6 +83,14 @@ export function EventEditorScreen() {
       setError(toMessage(e));
     }
   };
+
+  if (eventId && loadFailed(existing))
+    return (
+      <Screen>
+        <TitleBar title={t('common:actions.edit')} onBack={() => nav.goBack()} />
+        <QueryError query={existing} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>

@@ -1,4 +1,4 @@
-import type { DutyParticipantKind, DutyPeriodUnit } from '@movo/contracts';
+import type { DutyParticipantKind, DutyPeriodUnit, MemberCard } from '@movo/contracts';
 import {
   BottomBar,
   Button,
@@ -18,9 +18,10 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, isoDay } from '../../core/util/money';
 import { localeTag } from '../../core/util/time';
-import { useMembers } from '../directory/api';
+import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useFlats } from '../manage/api';
 import { useCreateDuty } from './api';
 import { OrderedPickSheet } from './shared';
@@ -39,7 +40,6 @@ export function DutyEditorScreen() {
   const tenant = useTenant();
   const create = useCreateDuty(societyId);
   const flats = useFlats(societyId);
-  const members = useMembers(societyId, '');
   const defaultConfirm =
     (tenant.modules.find((m) => m.key === 'responsibilities')?.settings
       .defaultRequiresConfirmation as boolean | undefined) ?? true;
@@ -47,6 +47,8 @@ export function DutyEditorScreen() {
   const [description, setDescription] = useState('');
   const [kind, setKind] = useState<DutyParticipantKind>('FLAT');
   const [ids, setIds] = useState<string[]>([]);
+  // Members come from a server search, so remember the names of the ones picked.
+  const [names, setNames] = useState<Record<string, string>>({});
   const [unit, setUnit] = useState<DutyPeriodUnit>('MONTH');
   const [start, setStart] = useState(firstOfMonth);
   const [confirm, setConfirm] = useState(defaultConfirm);
@@ -55,15 +57,20 @@ export function DutyEditorScreen() {
   const [sheet, setSheet] = useState<'people' | 'date' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const candidates =
-    kind === 'FLAT'
-      ? (flats.data ?? []).map((f) => ({ id: f.id, label: formatFlat(f) }))
-      : (members.data?.pages.flatMap((p) => p.items) ?? []).map((m) => ({
-          id: m.membershipId,
-          label: m.displayName,
-          hint: m.flats[0] ? formatFlat(m.flats[0]) : undefined,
-        }));
-  const labels = ids.map((id) => candidates.find((c) => c.id === id)?.label ?? '').filter(Boolean);
+  const flatItems = (flats.data ?? []).map((f) => ({ id: f.id, label: formatFlat(f) }));
+  const labels = ids
+    .map((id) =>
+      kind === 'FLAT' ? (flatItems.find((f) => f.id === id)?.label ?? '') : (names[id] ?? ''),
+    )
+    .filter(Boolean);
+  const toggleMember = (m: MemberCard) => {
+    setNames((old) => ({ ...old, [m.membershipId]: m.displayName }));
+    setIds((old) =>
+      old.includes(m.membershipId)
+        ? old.filter((id) => id !== m.membershipId)
+        : [...old, m.membershipId],
+    );
+  };
 
   const submit = async () => {
     setError(null);
@@ -91,6 +98,14 @@ export function DutyEditorScreen() {
       setError(toMessage(e));
     }
   };
+
+  if (loadFailed(flats))
+    return (
+      <Screen>
+        <TitleBar title={t('duties:new')} onBack={() => nav.goBack()} />
+        <QueryError query={flats} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>
@@ -198,12 +213,21 @@ export function DutyEditorScreen() {
         }
       />
       <OrderedPickSheet
-        visible={sheet === 'people'}
+        visible={sheet === 'people' && kind === 'FLAT'}
         onClose={() => setSheet(null)}
-        title={kind === 'FLAT' ? t('duties:form.pickFlats') : t('duties:form.pickMembers')}
-        items={candidates}
+        title={t('duties:form.pickFlats')}
+        items={flatItems}
         value={ids}
         onChange={setIds}
+      />
+      <MemberPickerSheet
+        multiple
+        visible={sheet === 'people' && kind === 'MEMBER'}
+        onClose={() => setSheet(null)}
+        societyId={societyId}
+        title={t('duties:form.pickMembers')}
+        value={ids}
+        onToggle={toggleMember}
       />
       <DateTimeSheet
         visible={sheet === 'date'}

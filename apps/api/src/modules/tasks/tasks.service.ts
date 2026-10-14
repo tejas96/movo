@@ -253,14 +253,18 @@ export class TasksService {
       throw ApiException.forbidden('Someone else must check your own task');
     let awarded = 0;
     const task = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.task.update({
-        where: { id: taskId, societyId: ctx.societyId },
+      // Status in the where: a second verify at the same time finds nothing and awards nothing.
+      const moved = await tx.task.updateMany({
+        where: { id: taskId, societyId: ctx.societyId, status: 'SUBMITTED' },
         data: {
           status: 'COMPLETED',
           completedAt: new Date(),
           verifiedByMembershipId: ctx.membershipId,
         },
       });
+      if (moved.count === 0)
+        throw ApiException.conflict('CONFLICT', 'This task is not waiting for a check');
+      const updated = await tx.task.findUniqueOrThrow({ where: { id: taskId } });
       await this.event(tx, ctx, taskId, 'VERIFIED');
       if (ctx.enabledModules.has('rewards') && t.assigneeMembershipId)
         awarded = await awardPoints(tx, {

@@ -13,6 +13,8 @@ export interface EmptyStateProps {
   body?: string | undefined;
   actionLabel?: string;
   onAction?: () => void;
+  /** Spinner on the button while the action runs (a retry, for example). */
+  actionLoading?: boolean;
   className?: string;
 }
 
@@ -24,6 +26,7 @@ export function EmptyState({
   body,
   actionLabel,
   onAction,
+  actionLoading,
   className,
 }: EmptyStateProps) {
   return (
@@ -51,6 +54,7 @@ export function EmptyState({
           variant={photo ? 'ink' : 'white'}
           size="sm"
           inline
+          loading={actionLoading}
           onPress={onAction}
           className="mt-3"
         />

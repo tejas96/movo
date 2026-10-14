@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useTasks } from './api';
 import { TaskRow } from './shared';
 
@@ -71,6 +72,8 @@ export function TasksScreen() {
       </ScrollView>
       {list.isLoading ? (
         <Skeleton className="mt-4 h-40 rounded-xl" />
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

@@ -15,6 +15,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { relative } from '../../core/util/time';
 import { useDecideJoinRequest, useJoinRequests } from './api';
 
@@ -43,6 +44,8 @@ export function JoinRequestsScreen() {
         <View className="mt-4 gap-3">
           <Skeleton className="h-32 rounded-lg" />
         </View>
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : !list.data || list.data.length === 0 ? (
         <EmptyState
           photo={photos.empty}

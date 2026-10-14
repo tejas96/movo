@@ -22,6 +22,7 @@ import { ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useBuildings, useCreateBuilding, useCreateFlats, useFlats } from './api';
 
 const NO_BUILDING = '__none__';
@@ -136,6 +137,8 @@ export function StructureScreen() {
       ) : null}
       {flats.isLoading ? (
         <Skeleton className="mt-4 h-40 rounded-xl" />
+      ) : loadFailed(flats) ? (
+        <QueryError query={flats} className="mt-10" />
       ) : visible.length === 0 ? (
         <EmptyState
           photo={photos.empty}

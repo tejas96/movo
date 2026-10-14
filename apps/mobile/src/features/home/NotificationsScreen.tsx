@@ -14,6 +14,7 @@ import { FlatList, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { openNotificationTarget, switchSocietyFor } from '../../core/notifications/open-target';
 import { useMeContext } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { relative } from '../../core/util/time';
 import { useMarkAllRead, useNotifications } from './api';
 
@@ -61,6 +62,8 @@ export function NotificationsScreen() {
           <Skeleton className="h-[68px]" />
           <Skeleton className="h-[68px]" />
         </View>
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

@@ -26,10 +26,11 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
-import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/money';
 import { relative } from '../../core/util/time';
-import { useMembers } from '../directory/api';
+import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { type TaskAction, useTask, useTaskAction } from './api';
 import { TaskStatusPill } from './shared';
 
@@ -44,7 +45,6 @@ export function TaskDetailScreen() {
   const { taskId } = useRoute<RouteProp<RootStackParamList, 'TaskDetail'>>().params;
   const task = useTask(societyId, taskId);
   const action = useTaskAction(societyId, taskId);
-  const members = useMembers(societyId, '');
   const [menu, setMenu] = useState(false);
   const [pick, setPick] = useState(false);
   const [sheet, setSheet] = useState<'submit' | 'sendBack' | 'cancel' | null>(null);
@@ -110,7 +110,9 @@ export function TaskDetailScreen() {
             ) : undefined
           }
         />
-        {task.isLoading || !x ? (
+        {loadFailed(task) ? (
+          <QueryError query={task} className="mt-6" />
+        ) : task.isLoading || !x ? (
           <Skeleton className="mt-6 h-48 rounded-xl" />
         ) : (
           <>
@@ -207,18 +209,14 @@ export function TaskDetailScreen() {
           else setSheet('cancel');
         }}
       />
-      <OptionSheet
+      <MemberPickerSheet
         visible={pick}
         onClose={() => setPick(false)}
+        societyId={societyId}
         title={t('tasks:form.assignee')}
         value={x?.assignee?.membershipId}
-        options={(members.data?.pages.flatMap((p) => p.items) ?? []).map((m) => ({
-          value: m.membershipId,
-          label: m.displayName,
-          hint: m.flats[0] ? formatFlat(m.flats[0]) : undefined,
-        }))}
-        onSelect={(id) =>
-          void run({ kind: 'assign', membershipId: id }, t('tasks:actions.assigned'))
+        onSelect={(m) =>
+          void run({ kind: 'assign', membershipId: m.membershipId }, t('tasks:actions.assigned'))
         }
       />
       <Sheet

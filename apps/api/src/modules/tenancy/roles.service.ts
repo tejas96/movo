@@ -6,7 +6,7 @@ import {
   type Role,
   type RoleTemplateKey,
 } from '@movo/contracts';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
@@ -71,13 +71,33 @@ export function assertCanGrant(permissions: Iterable<PermissionKey>): void {
 }
 
 @Injectable()
-export class RolesService {
+export class RolesService implements OnApplicationBootstrap {
+  private readonly logger = new Logger(RolesService.name);
+
   constructor(
     private readonly tenant: TenantPrismaService,
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly context: ContextService,
   ) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    const added = await this.syncAdminPermissions();
+    if (added > 0) this.logger.log(`gave admin roles ${added} new permission(s)`);
+  }
+
+  /**
+   * The admin role holds every permission. Roles get their permissions when a society is made,
+   * so a key added later is missing from older societies until this adds it. Safe to run on
+   * every start and on many instances at once.
+   */
+  async syncAdminPermissions(): Promise<number> {
+    return this.prisma.$executeRaw`
+      INSERT INTO "RolePermission" ("roleId", "permissionKey")
+      SELECT r.id, k FROM "Role" r CROSS JOIN unnest(${[...PERMISSION_KEYS]}::text[]) AS k
+      WHERE r.key = 'admin' AND r."isSystem"
+      ON CONFLICT DO NOTHING`;
+  }
 
   async list(): Promise<Role[]> {
     const roles = await this.tenant.client.role.findMany({

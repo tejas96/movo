@@ -106,6 +106,18 @@ describe('tasks and rewards', () => {
     expect((await act(s, s.admin, t.id, 'cancel')).status).toBe(409);
   });
 
+  it('two checks of the same task at once give points once', async () => {
+    const s = await societyWithResident(h, 't9');
+    const t = await task(s, { assigneeMembershipId: s.resident.membershipId });
+    await act(s, s.resident.token, t.id, 'submit');
+    const both = await Promise.all([
+      act(s, s.admin, t.id, 'verify'),
+      act(s, s.admin, t.id, 'verify'),
+    ]);
+    expect(both.map((r) => r.status).sort()).toEqual([201, 409]);
+    expect(await h.prisma.pointsLedger.count({ where: { refId: t.id } })).toBe(1);
+  });
+
   it('assigns, sends work back, gives it back and cancels', async () => {
     const s = await societyWithResident(h, 't2');
     const t = await task(s, { assigneeMembershipId: s.resident.membershipId });

@@ -22,18 +22,13 @@ import { useNav } from '../../core/navigation/types';
 import { type PhotoSource, usePickOne } from '../../core/photos/pick';
 import { SinglePhotoField } from '../../core/photos/SinglePhotoField';
 import { useSocietyId } from '../../core/tenant/hooks';
-import { localeTag } from '../../core/util/time';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { monthName } from '../../core/util/time';
 import { useSocietyProfile } from '../society/api';
 import { useUpdateSociety } from './api';
 
 const LOCALES: Locale[] = ['en', 'hi', 'mr'];
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
-
-function monthName(month: number): string {
-  return new Intl.DateTimeFormat(localeTag(), { month: 'long', timeZone: 'UTC' }).format(
-    new Date(Date.UTC(2026, month - 1, 1)),
-  );
-}
 
 export function SocietyProfileScreen() {
   const { t } = useTranslation(['manage', 'common']);
@@ -131,7 +126,9 @@ export function SocietyProfileScreen() {
     <>
       <Screen bottomBar>
         <TitleBar title={t('manage:profile.title')} onBack={() => nav.goBack()} />
-        {!p ? (
+        {loadFailed(profile) ? (
+          <QueryError query={profile} className="mt-6" />
+        ) : !p ? (
           <Skeleton className="mt-6 h-96 rounded-xl" />
         ) : (
           <View className="mt-6 gap-3">

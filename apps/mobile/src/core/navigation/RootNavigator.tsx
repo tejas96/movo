@@ -1,4 +1,4 @@
-import { Button, EmptyState, Screen } from '@movo/design-system';
+import { Button, Screen } from '@movo/design-system';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -85,24 +85,19 @@ import { signOut } from '../auth/auth';
 import { type SessionStatus, useSessionStore } from '../auth/session.store';
 import { useBootstrap } from '../auth/use-bootstrap';
 import { useMeContext } from '../tenant/hooks';
+import { QueryError } from '../ui/QueryError';
 import { MainTabs } from './MainTabs';
 import { Splash, type SplashStage } from './Splash';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function ContextError({ retry }: { retry: () => void }) {
+function ContextError({ query }: { query: ReturnType<typeof useMeContext> }) {
   const { t } = useTranslation('common');
   return (
     <Screen>
       <View className="flex-1 justify-center">
-        <EmptyState
-          icon="warning"
-          title={t('states.errorTitle')}
-          body={t('states.errorBody')}
-          actionLabel={t('actions.retry')}
-          onAction={retry}
-        />
+        <QueryError query={query} />
         <Button
           label={t('actions.signOut')}
           variant="ghost"
@@ -136,7 +131,7 @@ export function RootNavigator() {
   return (
     <View className="flex-1 bg-canvas">
       {!settled ? null : status === 'signedIn' && !ctx.data ? (
-        <ContextError retry={() => void ctx.refetch()} />
+        <ContextError query={ctx} />
       ) : (
         <Navigator status={status} hasSociety={hasSociety} showWelcome={showWelcome} />
       )}

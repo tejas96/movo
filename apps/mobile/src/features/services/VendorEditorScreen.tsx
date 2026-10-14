@@ -19,6 +19,7 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { formatPhone, normalizePhone } from '../../core/util/phone';
 import { useSaveVendor, useVendor, useVendorCategories } from './api';
 import { categoryLabel } from './shared';
@@ -92,6 +93,19 @@ export function VendorEditorScreen() {
       setFormError(toMessage(e));
     }
   };
+
+  const failed =
+    vendorId && loadFailed(existing) ? existing : loadFailed(categories) ? categories : null;
+  if (failed)
+    return (
+      <Screen>
+        <TitleBar
+          title={vendorId ? t('common:actions.edit') : t('services:add')}
+          onBack={() => nav.goBack()}
+        />
+        <QueryError query={failed} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>

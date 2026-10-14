@@ -61,7 +61,11 @@ function baseHeaders(): Record<string, string> {
   };
 }
 
-/** One refresh at a time. Everyone waiting gets the same result. */
+/**
+ * One refresh at a time. Everyone waiting gets the same result.
+ * Null means the session is over (no saved token, or the server said 401/403): sign out.
+ * Anything else (offline, 5xx, a bad body) throws a retryable ApiError and keeps the saved token.
+ */
 export function refreshTokens(): Promise<AuthTokens | null> {
   if (!refreshing) {
     refreshing = (async () => {
@@ -73,8 +77,19 @@ export function refreshTokens(): Promise<AuthTokens | null> {
         { refreshToken },
         baseHeaders(),
       );
-      if (status !== 201 && status !== 200) return null;
-      const tokens = json as unknown as AuthTokens;
+      if (status === 401 || status === 403) return null;
+      if (status !== 201 && status !== 200) {
+        throw new ApiError(
+          (json.code as ApiError['code']) ?? 'INTERNAL',
+          (json.message as string) ?? 'Refresh failed',
+          status >= 400 ? status : 500,
+          json.details,
+          json.requestId as string | undefined,
+        );
+      }
+      const parsed = authContract.refresh.response.safeParse(json);
+      if (!parsed.success) throw new ApiError('INTERNAL', 'Bad refresh response', 500);
+      const tokens = parsed.data;
       await saveRefreshToken(tokens.refreshToken);
       useSessionStore.getState().setTokens(tokens);
       return tokens;

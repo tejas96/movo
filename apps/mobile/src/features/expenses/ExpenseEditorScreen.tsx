@@ -21,6 +21,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import {
   day,
   isoDay,
@@ -105,6 +106,14 @@ export function ExpenseEditorScreen() {
       setError(toMessage(err));
     }
   };
+
+  if (expenseId && loadFailed(existing))
+    return (
+      <Screen>
+        <TitleBar title={t('expenses:edit')} onBack={() => nav.goBack()} />
+        <QueryError query={existing} className="mt-10" />
+      </Screen>
+    );
 
   return (
     <>

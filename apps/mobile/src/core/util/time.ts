@@ -62,6 +62,13 @@ export function dayAndMonth(iso: string): { day: string; month: string } {
   };
 }
 
+/** Full month name for month 1–12, e.g. "April". */
+export function monthName(month: number): string {
+  return new Intl.DateTimeFormat(localeTag(), { month: 'long', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(2026, month - 1, 1)),
+  );
+}
+
 export function localeTag(): string {
   return intlTag(currentLocale());
 }

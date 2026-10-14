@@ -12,6 +12,7 @@ import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
+import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import { decodeCursor, encodeCursor } from '../../common/util/pagination';
@@ -271,10 +272,13 @@ export class BillsService {
     const ctx = requireTenant();
     const b = await this.requireOpen(billId);
     await this.prisma.$transaction(async (tx) => {
-      await tx.bill.update({
-        where: { id: billId, societyId: ctx.societyId },
+      await lockFor(tx, `flat-dues:${b.flatId}`);
+      const moved = await tx.bill.updateMany({
+        where: { id: billId, societyId: ctx.societyId, status: { in: [...OPEN_STATUSES] } },
         data: { status: 'WAIVED', waivedReason: reason, waivedAt: new Date() },
       });
+      if (moved.count === 0)
+        throw ApiException.conflict('CONFLICT', 'This bill is already settled');
       await this.audit.record(
         {
           action: 'bill.waived',

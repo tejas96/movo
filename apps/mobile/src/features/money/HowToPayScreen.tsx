@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, Share, View } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { money, rupeesText } from '../../core/util/money';
 import { useInstructions } from './api';
 
@@ -60,6 +61,8 @@ export function HowToPayScreen() {
       </Text>
       {list.isLoading ? (
         <Skeleton className="mt-5 h-40 rounded-xl" />
+      ) : loadFailed(list) ? (
+        <QueryError query={list} className="mt-10" />
       ) : items.length === 0 ? (
         <EmptyState
           photo={photos.empty}

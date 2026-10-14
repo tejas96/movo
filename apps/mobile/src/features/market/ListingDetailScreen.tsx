@@ -30,6 +30,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoViewer } from '../../core/photos/PhotoViewer';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { money } from '../../core/util/money';
 import { relative } from '../../core/util/time';
 import { type ListingAction, useCreateOrder, useListing, useListingAction } from './api';
@@ -67,8 +68,10 @@ export function ListingDetailScreen() {
       await action.mutateAsync({ listingId, action: a });
       toast.show(ok);
       setReasonSheet(null);
+      return true;
     } catch (e) {
       toast.show(toMessage(e), 'error');
+      return false;
     }
   };
 
@@ -110,7 +113,7 @@ export function ListingDetailScreen() {
           style: 'destructive',
           onPress: () =>
             void run({ kind: 'status', status: 'ARCHIVED' }, t('market:listing.archived')).then(
-              () => nav.goBack(),
+              (done) => done && nav.goBack(),
             ),
         },
       ]);
@@ -145,7 +148,9 @@ export function ListingDetailScreen() {
         refreshing={listing.isRefetching}
         onRefresh={() => void listing.refetch()}
       >
-        {listing.isLoading || !l ? (
+        {loadFailed(listing) ? (
+          <QueryError query={listing} />
+        ) : listing.isLoading || !l ? (
           <View className="gap-3">
             <Skeleton className="h-[260px] rounded-xl" />
             <Skeleton className="h-8 w-3/4" />
