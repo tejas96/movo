@@ -3,7 +3,6 @@
   "myDues": "My dues",
   "society": "Society",
   "noDues": "No dues yet",
-  "noDuesBody": "When your society starts billing, your dues and receipts will show here.",
   "noFlat": "You are not linked to a flat, so you have no dues.",
   "totalDue": "Total due · Flat {{flat}}",
   "allPaid": "All paid",
@@ -70,22 +69,17 @@
     "proofs": "Proof of payment"
   },
   "collection": {
-    "title": "Collection",
     "fy": "Financial year {{fy}}",
     "paidOf": "paid of {{total}}",
     "pending": "pending",
     "collected": "collected",
     "billed": "Billed",
     "outstanding": "Outstanding",
-    "all": "All",
-    "lastPaid": "Last paid {{date}}",
-    "hidden": "Your committee has not shared the collection status.",
-    "details": "Details"
+    "lastPaid": "Last paid {{date}}"
   },
   "treasurer": {
     "title": "Treasurer",
     "record": "Record payment",
-    "collection": "Collection",
     "generate": "Make due bills now",
     "generated": "{{count}} bill made",
     "generated_other": "{{count}} bills made",
@@ -200,7 +194,6 @@
     "payUpi": "Pay {{amount}} with a UPI app",
     "payUpiNoAmount": "Pay with a UPI app",
     "noUpiApp": "No UPI app found on this phone",
-    "copied": "Copied",
     "none": "Your committee has not added payment details yet."
   },
   "push": {

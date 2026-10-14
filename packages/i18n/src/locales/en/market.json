@@ -86,7 +86,6 @@
     "by": "by {{name}}"
   },
   "listing": {
-    "title": "Listing",
     "about": "About",
     "seller": "Seller",
     "you": "You",
@@ -97,9 +96,7 @@
       "handover": "Handover",
       "ready": "Ready",
       "orderBy": "Order by",
-      "condition": "Condition",
-      "available": "Available",
-      "noLimit": "No limit"
+      "condition": "Condition"
     },
     "order": "Order",
     "viewOrder": "View my order",
@@ -128,7 +125,6 @@
     "photo": "Photo {{n}} of {{total}}"
   },
   "orderSheet": {
-    "title": "Order",
     "quantity": "Quantity",
     "handover": "Handover",
     "note": "Note for the seller (optional)",

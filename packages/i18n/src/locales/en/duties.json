@@ -67,7 +67,6 @@
       "MEMBER": "Members"
     },
     "participants": "In this order",
-    "add": "Add",
     "pickFlats": "Pick flats",
     "pickMembers": "Pick members",
     "unit": "Each turn is",
@@ -85,9 +84,7 @@
     },
     "points": "Points for each turn (optional)",
     "create": "Create duty",
-    "saved": "Duty saved",
-    "up": "Up",
-    "remove": "Remove"
+    "saved": "Duty saved"
   },
   "push": {
     "startTitle": "Your turn: {{title}}",

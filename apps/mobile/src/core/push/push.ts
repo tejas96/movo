@@ -32,8 +32,6 @@ export function pushMessaging(): Messaging | null {
   }
 }
 
-export const pushAvailable = (): boolean => pushMessaging() !== null;
-
 /**
  * Android 13+ needs POST_NOTIFICATIONS at runtime. Asked once, after sign-in with a society,
  * never on the login screen. A "no" is respected; the member can turn it on in system settings.
