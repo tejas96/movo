@@ -14,6 +14,7 @@ import { requireTenant } from '../../common/request-store';
 import { can, type TenantContext } from '../../common/tenant/tenant.types';
 import type { Prisma } from '../../generated/prisma/client';
 import { fyLabel, todayIn } from '../maintenance/billing';
+import { flatLabel } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 
 export interface AwardInput {
@@ -171,11 +172,7 @@ export class RewardsService {
           rank: r.rank,
           membershipId: r.membershipId,
           displayName: m?.user.displayName ?? '',
-          flat: flat
-            ? flat.building
-              ? `${flat.building.name}-${flat.number}`
-              : flat.number
-            : null,
+          flat: flat ? flatLabel(flat) : null,
           points: r.points,
         };
       }),

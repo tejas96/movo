@@ -5,6 +5,7 @@ import { FcmPushTransport, parseServiceAccount } from './fcm.transport';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { NoopPushTransport, PushTransport } from './push.transport';
+import { Recipients } from './recipients.service';
 
 /** FCM when FIREBASE_SERVICE_ACCOUNT_JSON holds a service account, else log-only. Decided at boot. */
 function pushTransportFactory(): PushTransport {
@@ -25,9 +26,10 @@ function pushTransportFactory(): PushTransport {
   controllers: [NotificationsController],
   providers: [
     NotificationsService,
+    Recipients,
     DeliveryJob,
     { provide: PushTransport, useFactory: pushTransportFactory },
   ],
-  exports: [NotificationsService, DeliveryJob],
+  exports: [NotificationsService, Recipients, DeliveryJob],
 })
 export class NotificationsModule {}

@@ -363,6 +363,7 @@ describe('market', () => {
     expect(await notes(s.resident.token)).toContain(
       'Your listing was taken down: Suspicious pills',
     );
+    expect(await notes(s.admin)).toContain('Order cancelled: Suspicious pills');
     const sellerEdit = await h
       .http()
       .post(url(s, `/market/listings/${l.id}/status`))

@@ -17,7 +17,8 @@ import { iso } from '../../common/util/dates';
 import { decodeCursor, encodeCursor } from '../../common/util/pagination';
 import type { Notice as NoticeRow, Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
-import { audienceUserIds, matchesAudience } from './audience';
+import { Recipients } from '../notifications/recipients.service';
+import { matchesAudience } from './audience';
 
 type CreateBody = RouteBody<typeof noticesContract.create>;
 type UpdateBody = RouteBody<typeof noticesContract.update>;
@@ -32,6 +33,7 @@ export class NoticesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private get db() {
@@ -351,10 +353,9 @@ export class NoticesService {
   }
 
   private async fanOut(ctx: TenantContext, n: NoticeRow): Promise<void> {
-    const audience = AudienceSchema.parse(n.audience);
-    const recipients = await audienceUserIds(this.prisma, ctx.societyId, audience);
     await this.notifications.notifyUsers({
-      userIds: recipients.filter((id) => id !== ctx.userId),
+      userIds: await this.recipients.ofAudience(ctx.societyId, AudienceSchema.parse(n.audience)),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'NOTICE',
       render: () => ({

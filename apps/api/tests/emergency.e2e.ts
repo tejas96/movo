@@ -200,6 +200,19 @@ describe('emergency', () => {
     });
     expect(adminN).toBe(1);
     expect(neighbourN).toBe(0);
+
+    // Closing it reaches the resolvers plus the raiser, who is not one of them.
+    await h.prisma.notification.deleteMany({});
+    await h
+      .http()
+      .post(`${base}/${r.body.id}/resolve`)
+      .set(auth(s.admin))
+      .send({ outcome: 'RESOLVED' });
+    const closedFor = await h.prisma.notification.findMany({
+      where: { category: 'EMERGENCY' },
+      select: { userId: true },
+    });
+    expect(closedFor.map((n) => n.userId)).toEqual([s.resident.userId]);
   });
 
   it('cross-tenant: B cannot see or resolve A alerts', async () => {

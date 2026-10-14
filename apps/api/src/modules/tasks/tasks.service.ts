@@ -19,6 +19,7 @@ import type { Prisma, Task as TaskRow, TaskStatus } from '../../generated/prisma
 import { FilesService } from '../files/files.service';
 import { dateOnly, dbDate } from '../maintenance/ledger';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Recipients } from '../notifications/recipients.service';
 import { awardContext, awardPoints } from '../rewards/rewards.service';
 import { loadMemberNames } from '../tenancy/member-names';
 
@@ -35,6 +36,7 @@ export class TasksService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
     private readonly files: FilesService,
   ) {}
 
@@ -222,17 +224,10 @@ export class TasksService {
       return updated;
     });
     if (proofs) await this.files.remove(proofs.dropped);
-    const verifiers = await this.prisma.membership.findMany({
-      where: {
-        societyId: ctx.societyId,
-        status: 'ACTIVE',
-        id: { not: ctx.membershipId },
-        roles: { some: { role: { permissions: { some: { permissionKey: 'task.verify' } } } } },
-      },
-      select: { userId: true },
-    });
     await this.notifications.notifyUsers({
-      userIds: verifiers.map((v) => v.userId),
+      userIds: await this.recipients.withPermission(ctx.societyId, 'task.verify', {
+        exceptMembershipId: ctx.membershipId,
+      }),
       societyId: ctx.societyId,
       category: 'TASK',
       render: (tr) => ({
@@ -394,13 +389,8 @@ export class TasksService {
     points = 0,
   ) {
     if (!t.assigneeMembershipId || t.assigneeMembershipId === ctx.membershipId) return;
-    const m = await this.prisma.membership.findUnique({
-      where: { id: t.assigneeMembershipId },
-      select: { userId: true },
-    });
-    if (!m) return;
     await this.notifications.notifyUsers({
-      userIds: [m.userId],
+      userIds: await this.recipients.ofMemberships([t.assigneeMembershipId]),
       societyId: ctx.societyId,
       category: 'TASK',
       render: (tr) =>

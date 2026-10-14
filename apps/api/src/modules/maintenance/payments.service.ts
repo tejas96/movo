@@ -14,15 +14,14 @@ import { decodeCursor, encodeCursor } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { toFlatRef } from '../tenancy/mappers';
+import { Recipients } from '../notifications/recipients.service';
+import { flatLabel } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 import { allocate, fyLabel, receiptNo, todayIn } from './billing';
 import { BillsService } from './bills.service';
 import {
   dbDate,
   flatInclude,
-  flatLabel,
-  flatUserIds,
   OPEN_STATUSES,
   outstanding,
   refreshBills,
@@ -49,6 +48,7 @@ export class PaymentsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
     private readonly bills: BillsService,
     private readonly files: FilesService,
   ) {}
@@ -199,16 +199,16 @@ export class PaymentsService {
     }
 
     const dto = await this.get(paymentId);
-    const users = (await flatUserIds(this.prisma, [flat.id])).get(flat.id) ?? [];
     await this.notifications.notifyUsers({
-      userIds: users.filter((u) => u !== ctx.userId),
+      userIds: await this.recipients.ofFlat(flat.id),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'MAINTENANCE',
       render: (t, locale) => ({
         title: t('money:push.paymentTitle', { amount: formatMoney(dto.amountPaise, locale) }),
         body: t('money:push.paymentBody', {
           receipt: dto.receiptNo,
-          flat: flatLabel(toFlatRef(flat)),
+          flat: flatLabel(flat),
         }),
       }),
       data: { screen: 'payment', societyId: ctx.societyId, paymentId },
@@ -256,9 +256,9 @@ export class PaymentsService {
         tx,
       );
     });
-    const users = (await flatUserIds(this.prisma, [p.flatId])).get(p.flatId) ?? [];
     await this.notifications.notifyUsers({
-      userIds: users.filter((u) => u !== ctx.userId),
+      userIds: await this.recipients.ofFlat(p.flatId),
+      exceptUserId: ctx.userId,
       societyId: ctx.societyId,
       category: 'MAINTENANCE',
       render: (t, locale) => ({

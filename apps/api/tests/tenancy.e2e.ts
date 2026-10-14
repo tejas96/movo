@@ -168,6 +168,41 @@ describe('tenancy', () => {
     expect(notif.body.items[0].title).toContain('Sunrise Residency');
   });
 
+  it('join request rejected: the asker hears back with the reason', async () => {
+    const platform = await h.makePlatformAdmin();
+    const { societyId, joinCode } = await h.createSociety(
+      platform.token,
+      'Moonlight Towers',
+      'admin@moonlight.test',
+    );
+    const admin = await login(h, 'admin@moonlight.test');
+    const flats = await h
+      .http()
+      .post(`/v1/societies/${societyId}/flats`)
+      .set(auth(admin))
+      .send({ flats: [{ number: '301' }] });
+    const asker = await h.register('+919876500002', 'Kiran');
+    const req = await h
+      .http()
+      .post('/v1/join/request')
+      .set(auth(asker.token))
+      .send({ joinCode, flatId: flats.body[0].id, relation: 'OWNER' });
+    expect(req.status).toBe(201);
+    const reject = await h
+      .http()
+      .post(`/v1/societies/${societyId}/join-requests/${req.body.id}/reject`)
+      .set(auth(admin))
+      .send({ reason: 'Flat 301 is already taken' });
+    expect(reject.status).toBeLessThan(300);
+    const notif = await h.http().get('/v1/me/notifications').set(auth(asker.token));
+    expect(notif.body.items[0]).toMatchObject({
+      category: 'MEMBERSHIP',
+      title: 'Request not approved by Moonlight Towers',
+      body: 'Flat 301 is already taken',
+      data: { screen: 'join', societyId },
+    });
+  });
+
   it("gives an older society's admin role a permission added after it was made", async () => {
     const s = await societyWithResident(h, 'perm');
     const admin = await h.prisma.role.findFirstOrThrow({

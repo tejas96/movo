@@ -16,8 +16,9 @@ import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
 import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Recipients } from '../notifications/recipients.service';
 import { ContextService } from './context.service';
-import { memberInclude, toMemberCard, toSocietySummary } from './mappers';
+import { flatLabel, memberInclude, toMemberCard, toSocietySummary } from './mappers';
 import { RolesService } from './roles.service';
 
 const requestInclude = {
@@ -52,6 +53,7 @@ export class JoinRequestsService {
     private readonly audit: AuditService,
     private readonly context: ContextService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private async societyByJoinCode(rawCode: string) {
@@ -121,23 +123,15 @@ export class JoinRequestsService {
       },
       include: { user: true },
     });
-    const approvers = await this.prisma.membership.findMany({
-      where: {
-        societyId: society.id,
-        status: 'ACTIVE',
-        roles: { some: { role: { permissions: { some: { permissionKey: 'member.manage' } } } } },
-      },
-      select: { userId: true },
-    });
     await this.notifications.notifyUsers({
-      userIds: approvers.map((a) => a.userId),
+      userIds: await this.recipients.withPermission(society.id, 'member.manage'),
       societyId: society.id,
       category: 'MEMBERSHIP',
       render: (t) => ({
         title: t('common:push.joinRequestReceived.title'),
         body: t('common:push.joinRequestReceived.body', {
           name: row.user.displayName,
-          flat: flat.building ? `${flat.building.name}-${flat.number}` : flat.number,
+          flat: flatLabel(flat),
         }),
       }),
       data: { screen: 'manage/join-requests', societyId: society.id },

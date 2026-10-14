@@ -21,6 +21,8 @@ import { decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { Recipients } from '../notifications/recipients.service';
+import { flatLabel } from '../tenancy/mappers';
 import { loadMemberNames } from '../tenancy/member-names';
 
 type C = typeof marketContract;
@@ -51,6 +53,7 @@ export class MarketService {
     private readonly files: FilesService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly recipients: Recipients,
   ) {}
 
   private get db() {
@@ -312,30 +315,26 @@ export class MarketService {
       );
       return { row: l, cancelled: open };
     });
-    const sellerUser = (await this.userIds([before.sellerMembershipId]))[0];
-    if (sellerUser)
-      await this.notifications.notifyUsers({
-        userIds: [sellerUser],
-        societyId: ctx.societyId,
-        category: 'MARKETPLACE',
-        render: (t) => ({
-          title: t('market:push.hiddenTitle', { title: before.title }),
-          body: reason,
-        }),
-        data: { screen: 'listing', societyId: ctx.societyId, listingId },
-      });
-    const buyers = await this.userIds(cancelled.map((o) => o.buyerMembershipId));
-    if (buyers.length)
-      await this.notifications.notifyUsers({
-        userIds: buyers,
-        societyId: ctx.societyId,
-        category: 'MARKETPLACE',
-        render: (t) => ({
-          title: t('market:push.cancelledTitle', { title: before.title }),
-          body: '',
-        }),
-        data: { screen: 'listing', societyId: ctx.societyId, listingId },
-      });
+    await this.notifications.notifyUsers({
+      userIds: await this.recipients.ofMemberships([before.sellerMembershipId]),
+      societyId: ctx.societyId,
+      category: 'MARKETPLACE',
+      render: (t) => ({
+        title: t('market:push.hiddenTitle', { title: before.title }),
+        body: reason,
+      }),
+      data: { screen: 'listing', societyId: ctx.societyId, listingId },
+    });
+    await this.notifications.notifyUsers({
+      userIds: await this.recipients.ofMemberships(cancelled.map((o) => o.buyerMembershipId)),
+      societyId: ctx.societyId,
+      category: 'MARKETPLACE',
+      render: (t) => ({
+        title: t('market:push.cancelledTitle', { title: before.title }),
+        body: '',
+      }),
+      data: { screen: 'listing', societyId: ctx.societyId, listingId },
+    });
     return this.detail(ctx, row);
   }
 
@@ -716,24 +715,15 @@ export class MarketService {
       body: string;
     },
   ): Promise<void> {
-    const userIds = await this.userIds([
-      who === 'buyer' ? o.buyerMembershipId : o.sellerMembershipId,
-    ]);
     await this.notifications.notifyUsers({
-      userIds,
+      userIds: await this.recipients.ofMemberships([
+        who === 'buyer' ? o.buyerMembershipId : o.sellerMembershipId,
+      ]),
       societyId: ctx.societyId,
       category: 'MARKETPLACE',
       render: (t) => render(t as (key: string, opts?: Record<string, unknown>) => string),
       data: { screen: 'order', societyId: ctx.societyId, orderId: o.id },
     });
-  }
-
-  private async userIds(membershipIds: string[]): Promise<string[]> {
-    const rows = await this.prisma.membership.findMany({
-      where: { id: { in: membershipIds } },
-      select: { userId: true },
-    });
-    return [...new Set(rows.map((r) => r.userId))];
   }
 
   /** "A-101" for each membership's first current flat. */
@@ -744,12 +734,7 @@ export class MarketService {
       orderBy: [{ isPrimaryContact: 'desc' }, { fromDate: 'asc' }],
     });
     const out = new Map<string, string>();
-    for (const r of rows)
-      if (!out.has(r.membershipId))
-        out.set(
-          r.membershipId,
-          r.flat.building ? `${r.flat.building.name}-${r.flat.number}` : r.flat.number,
-        );
+    for (const r of rows) if (!out.has(r.membershipId)) out.set(r.membershipId, flatLabel(r.flat));
     return out;
   }
 

@@ -1,5 +1,4 @@
-import type { BillSummary, FlatRef, PaymentInstruction, PaymentSummary } from '@movo/contracts';
-import type { PrismaService } from '../../common/prisma/prisma.service';
+import type { BillSummary, PaymentInstruction, PaymentSummary } from '@movo/contracts';
 import { lockFor } from '../../common/prisma/tx-lock';
 import type { Prisma } from '../../generated/prisma/client';
 import { toFlatRef } from '../tenancy/mappers';
@@ -146,26 +145,4 @@ export async function applyCredit(
   }
   await refreshBills(tx, touched, today);
   return touched;
-}
-
-/** Active members living in each flat, for notifications. */
-export async function flatUserIds(
-  prisma: PrismaService | Tx,
-  flatIds: readonly string[],
-): Promise<Map<string, string[]>> {
-  const rows = await prisma.flatOccupancy.findMany({
-    where: {
-      flatId: { in: [...new Set(flatIds)] },
-      toDate: null,
-      membership: { status: 'ACTIVE' },
-    },
-    select: { flatId: true, membership: { select: { userId: true } } },
-  });
-  const out = new Map<string, string[]>();
-  for (const r of rows) out.set(r.flatId, [...(out.get(r.flatId) ?? []), r.membership.userId]);
-  return out;
-}
-
-export function flatLabel(f: FlatRef): string {
-  return f.buildingName ? `${f.buildingName}-${f.number}` : f.number;
 }
