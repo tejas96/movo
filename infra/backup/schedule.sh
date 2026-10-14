@@ -12,4 +12,8 @@ while true; do
   echo "backup scheduler: next run $(date -d "@${target}" '+%Y-%m-%d %H:%M %Z')"
   sleep $((target - now))
   backup.sh || echo "backup scheduler: backup failed, will try again tomorrow" >&2
+  # Sundays: prove the newest backup loads, in a scratch database that is dropped after.
+  if [ "$(date +%u)" = 7 ]; then
+    restore.sh --check || echo "backup scheduler: restore check FAILED" >&2
+  fi
 done

@@ -217,7 +217,7 @@ Layout on the VM: `/opt/movo/{docker-compose.prod.yml, Caddyfile, .env.prod, bac
    | `GHCR_PULL_TOKEN` | optional: by default the VM logs in to GHCR with the run's own token for the pull and logs out after, so the package may be private or public |
 
    Optional variables: `DEPLOY_ARCHES` (image platforms: default `amd64`; set `arm64` for the Ampere VM, `amd64 arm64` during a move between the two), `DEPLOY_PATH` (default `/opt/movo`), `DEPLOY_PORT` secret (default 22), `ARM_RUNNER` (default `ubuntu-24.04-arm`, free for public repos; on a private repo set `ubuntu-latest` and arm64 is built under QEMU, slower).
-2. Actions → **Deploy** → Run workflow. It builds the image for the platforms in `DEPLOY_ARCHES` on native runners, pushes `ghcr.io/tejas96/movo-api:<sha>` and `:latest`, copies the compose files and backup scripts to the VM, runs `docker compose pull`, `docker compose up -d`, and waits for the API to report healthy. Without the secrets every job is skipped. After this, every push to `main` that passes CI deploys by itself.
+2. Actions → **Deploy** → Run workflow. It builds the image for the platforms in `DEPLOY_ARCHES` on native runners, pushes `ghcr.io/tejas96/movo-api:<sha>` and `:latest`, copies the compose files and backup scripts to the VM, and pulls. Then, in order: a backup into `backups/predeploy` (newest 5 kept), migrations with the new image while the old API still serves (if they fail, the old API keeps running and the deploy stops), the API swap, and a wait for `/health`. `/health` is healthy only when the database answers, and its `version` is the deployed commit. If the new API is not healthy, the deploy puts the previous image back and fails. Without the secrets every job is skipped. After this, every push to `main` that passes CI deploys by itself.
 3. The `movo-api` package on GHCR is public today (the image holds no secrets); anyone can pull it, which also makes a manual `dc pull` on the VM work without a login.
 4. Caddy fetches the certificate on the first request; watch `dc logs caddy` for `certificate obtained successfully`.
 5. Create the platform admin (reads `PLATFORM_ADMIN_EMAIL` / `PLATFORM_ADMIN_PASSWORD` from `.env.prod`). The seed is built to `/app/dist/cli/seed.js` in the image and the container's working directory is `/app`:
@@ -291,9 +291,11 @@ RCLONE_S3_REGION=auto
 
 R2 stores data outside India; if you use it, the privacy policy already names it.
 
-### Monthly restore drill
+### Restore check and drill
 
-On the first Sunday of the month:
+Every Sunday after the nightly backup, the backup service runs `restore.sh --check`: it loads the newest daily dump into a scratch database, checks it has migrations, and drops it. A failure shows in `dc logs backup` and pings the backup heartbeat `/fail`.
+
+By hand, on the first Sunday of the month:
 
 ```bash
 dc exec backup restore.sh                    # newest daily -> scratch db movo_restore_drill

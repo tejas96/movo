@@ -2,6 +2,11 @@
 # One backup run: pg_dump (custom format) | gzip into BACKUP_DIR, keep 14 daily + 6 monthly,
 # optional rclone copy off-site, optional heartbeat ping.
 #
+#   backup.sh             the nightly run
+#   backup.sh predeploy   a quick dump right before a deploy migrates the database: kept in
+#                         BACKUP_DIR/predeploy (newest KEEP_PREDEPLOY, default 5), no monthly
+#                         copy, no photo mirror, no off-site copy, no heartbeat
+#
 # Env (libpq): PGHOST PGPORT PGUSER PGPASSWORD PGDATABASE
 # Env (ours):
 #   BACKUP_DIR            default /backups
@@ -13,12 +18,16 @@ set -eu
 # A failing pg_dump must fail the run, not hide behind a successful gzip.
 set -o pipefail
 
+MODE="${1:-daily}"
+case "$MODE" in daily | predeploy) ;; *) echo "backup: unknown mode $MODE" >&2; exit 2 ;; esac
 BACKUP_DIR="${BACKUP_DIR:-/backups}"
+KEEP_PREDEPLOY="${KEEP_PREDEPLOY:-5}"
 KEEP_DAILY="${KEEP_DAILY:-14}"
 KEEP_MONTHLY="${KEEP_MONTHLY:-6}"
 DB="${PGDATABASE:?PGDATABASE is required}"
 RCLONE_REMOTE="${RCLONE_REMOTE:-}"
 HEARTBEAT="${BACKUP_HEARTBEAT_URL:-}"
+[ "$MODE" = predeploy ] && HEARTBEAT=""
 
 log() { echo "backup $(date '+%Y-%m-%d %H:%M:%S %Z'): $*"; }
 ping_hc() {
@@ -38,10 +47,11 @@ finish() {
 }
 trap finish EXIT
 
-mkdir -p "$BACKUP_DIR/daily" "$BACKUP_DIR/monthly"
-stamp=$(date +%Y-%m-%d_%H%M)
+mkdir -p "$BACKUP_DIR/daily" "$BACKUP_DIR/monthly" "$BACKUP_DIR/predeploy"
+stamp=$(date +%Y-%m-%d_%H%M%S)
 month=$(date +%Y-%m)
 daily="$BACKUP_DIR/daily/${DB}-${stamp}.dump.gz"
+[ "$MODE" = predeploy ] && daily="$BACKUP_DIR/predeploy/${DB}-${stamp}.dump.gz"
 monthly="$BACKUP_DIR/monthly/${DB}-${month}.dump.gz"
 
 ping_hc "${HEARTBEAT%/}/start"
@@ -57,12 +67,6 @@ mv "$tmp" "$daily"
 tmp=""
 log "wrote $daily ($(du -h "$daily" | cut -f1))"
 
-# First backup of the month becomes the monthly copy.
-if [ ! -f "$monthly" ]; then
-  cp "$daily" "$monthly"
-  log "wrote $monthly"
-fi
-
 prune() { # dir keep
   # Names sort by date, so newest last; delete everything before the newest $2.
   total=$(find "$1" -maxdepth 1 -name '*.dump.gz' | wc -l)
@@ -73,6 +77,19 @@ prune() { # dir keep
     log "pruned $f"
   done
 }
+
+if [ "$MODE" = predeploy ]; then
+  prune "$BACKUP_DIR/predeploy" "$KEEP_PREDEPLOY"
+  log "done"
+  exit 0
+fi
+
+# First backup of the month becomes the monthly copy.
+if [ ! -f "$monthly" ]; then
+  cp "$daily" "$monthly"
+  log "wrote $monthly"
+fi
+
 prune "$BACKUP_DIR/daily" "$KEEP_DAILY"
 prune "$BACKUP_DIR/monthly" "$KEEP_MONTHLY"
 

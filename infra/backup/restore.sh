@@ -4,12 +4,22 @@
 #
 #   restore.sh                          # newest daily backup -> movo_restore_drill
 #   restore.sh /backups/monthly/x.dump.gz my_scratch_db
+#   restore.sh --check                  # newest daily -> movo_restore_check, check, drop it.
+#                                       # Exit 1 (and a heartbeat /fail ping) if it does not load.
 #
 # Env (libpq): PGHOST PGPORT PGUSER PGPASSWORD. PGDATABASE is the live DB name and is refused
 # as a target. BACKUP_DIR default /backups.
 set -eu
 
 BACKUP_DIR="${BACKUP_DIR:-/backups}"
+CHECK=0
+if [ "${1:-}" = "--check" ]; then
+  CHECK=1
+  shift
+  set -- "" movo_restore_check
+  HEARTBEAT="${BACKUP_HEARTBEAT_URL:-}"
+  trap 'code=$?; [ "$code" -ne 0 ] && [ -n "$HEARTBEAT" ] && curl -fsS -m 10 -o /dev/null "${HEARTBEAT%/}/fail"; exit "$code"' EXIT
+fi
 FILE="${1:-}"
 TARGET="${2:-movo_restore_drill}"
 LIVE="${PGDATABASE:-movo}"
@@ -38,4 +48,11 @@ psql -d "$TARGET" -At -F ' ' -c "
   UNION ALL SELECT 'users', count(*) FROM \"User\"
   UNION ALL SELECT 'societies', count(*) FROM \"Society\"
   UNION ALL SELECT 'memberships', count(*) FROM \"Membership\""
+if [ "$CHECK" = 1 ]; then
+  migrations=$(psql -d "$TARGET" -At -c 'SELECT count(*) FROM _prisma_migrations')
+  psql -v ON_ERROR_STOP=1 -d postgres -qc "DROP DATABASE \"$TARGET\" WITH (FORCE)"
+  [ "$migrations" -gt 0 ] || { echo "restore check: FAILED, no migrations in $FILE" >&2; exit 1; }
+  echo "restore check: ok ($FILE loads, $migrations migrations)"
+  exit 0
+fi
 echo "restore: drop it when done: psql -d postgres -c 'DROP DATABASE \"$TARGET\"'"
