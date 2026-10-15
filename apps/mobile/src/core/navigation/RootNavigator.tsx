@@ -7,6 +7,7 @@ import { isWelcomeSeen } from '../../features/auth/welcome-seen';
 import { signOut } from '../auth/auth';
 import { type SessionStatus, useSessionStore } from '../auth/session.store';
 import { useBootstrap } from '../auth/use-bootstrap';
+import { OfflineFrame } from '../network/OfflineBanner';
 import { useMeContext } from '../tenant/hooks';
 import { QueryError } from '../ui/QueryError';
 import { screens } from './registry';
@@ -54,11 +55,13 @@ export function RootNavigator() {
 
   return (
     <View className="flex-1 bg-canvas">
-      {!settled ? null : status === 'signedIn' && !ctx.data ? (
-        <ContextError query={ctx} />
-      ) : (
-        <Navigator status={status} hasSociety={hasSociety} showWelcome={showWelcome} />
-      )}
+      <OfflineFrame>
+        {!settled ? null : status === 'signedIn' && !ctx.data ? (
+          <ContextError query={ctx} />
+        ) : (
+          <Navigator status={status} hasSociety={hasSociety} showWelcome={showWelcome} />
+        )}
+      </OfflineFrame>
       {splashDone ? null : <Splash stage={stage} onDone={hideSplash} />}
     </View>
   );

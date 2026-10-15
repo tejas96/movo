@@ -1,6 +1,8 @@
-import { focusManager, MutationCache, QueryClient } from '@tanstack/react-query';
+import NetInfo from '@react-native-community/netinfo';
+import { focusManager, MutationCache, onlineManager, QueryClient } from '@tanstack/react-query';
 import { AppState } from 'react-native';
 import { isHomeKey } from '../../features/home/keys';
+import { hasInternet } from '../network/online';
 import { isApiError } from './errors';
 
 declare module '@tanstack/react-query' {
@@ -42,3 +44,10 @@ focusManager.setEventListener((setFocused) => {
   const sub = AppState.addEventListener('change', (state) => setFocused(state === 'active'));
   return () => sub.remove();
 });
+
+// React Native has no navigator.onLine either. Tell react-query when the phone loses or gets back
+// its internet: while offline, queries and mutations pause instead of failing and retrying; when
+// the network returns, paused work resumes and stale data on screen refetches.
+onlineManager.setEventListener((setOnline) =>
+  NetInfo.addEventListener((state) => setOnline(hasInternet(state))),
+);
