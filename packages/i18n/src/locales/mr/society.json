@@ -1,5 +1,4 @@
 {
-  "title": "सोसायटी",
   "flatsAndWings": "{{flats}} फ्लॅट · {{wings}} विंग",
   "modules": {
     "notices": "नोटीस",
@@ -21,7 +20,6 @@
   "comingSoon": "लवकरच येत आहे",
   "comingSoonBody": "{{module}} लवकरच येईल. तयार झाल्यावर कमिटी ते सुरू करेल.",
   "committee": "कमिटी",
-  "switchSociety": "सोसायटी बदला",
   "mySocieties": "माझ्या सोसायट्या",
   "directory": {
     "title": "सदस्य",

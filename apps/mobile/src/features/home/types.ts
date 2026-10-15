@@ -1,5 +1,5 @@
 import type { AttentionItem, ModuleKey } from '@movo/contracts';
-import type { IconName, RowProps } from '@movo/design-system';
+import type { BoldIconName, RowProps } from '@movo/design-system';
 import type { Namespace } from '@movo/i18n';
 import type { TFunction } from 'i18next';
 import type { ImageSourcePropType } from 'react-native';
@@ -55,7 +55,7 @@ export interface QuickCtx {
 /** One round button in the quick grid under the tiles. */
 export interface QuickTile {
   key: string;
-  icon: IconName;
+  icon: BoldIconName;
   label: (t: HomeT) => string;
   /** Shown only when this returns true. */
   visible?: (q: QuickCtx) => boolean;

@@ -1,11 +1,12 @@
 import type { TaskStatus, TaskSummary } from '@movo/contracts';
-import { Pill, Row, StatusPill, type StatusTone } from '@movo/design-system';
+import { Pill, Row } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
-import { day } from '../../core/util/money';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
+import { day } from '../../core/util/date';
 
-const TONE: Record<TaskStatus, StatusTone> = {
+const TONE: StatusTones<TaskStatus> = {
   OPEN: 'info',
   IN_PROGRESS: 'warning',
   SUBMITTED: 'ink',
@@ -14,8 +15,7 @@ const TONE: Record<TaskStatus, StatusTone> = {
 };
 
 export function TaskStatusPill({ status }: { status: TaskStatus }) {
-  const { t } = useTranslation('tasks');
-  return <StatusPill label={t(`status.${status}`)} tone={TONE[status]} />;
+  return <StatusPill value={status} tones={TONE} labels="tasks:status" />;
 }
 
 export function TaskRow({ task }: { task: TaskSummary }) {

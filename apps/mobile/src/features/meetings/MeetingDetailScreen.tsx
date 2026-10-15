@@ -5,13 +5,13 @@ import {
   Divider,
   Icon,
   IconSquare,
-  Input,
   OptionSheet,
   Screen,
   SectionHeader,
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   TitleBar,
   theme,
   useToast,
@@ -25,7 +25,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { dateTime, relative, whenRange } from '../../core/util/time';
+import { dateTime, relative, whenRange } from '../../core/util/date';
 import { type MeetingAction, useMeeting, useMeetingAction } from './api';
 import { MeetingStatusPill } from './MeetingsScreen';
 
@@ -180,15 +180,13 @@ export function MeetingDetailScreen() {
         }
       >
         {sheet ? (
-          <Input
+          <TextArea
             label={sheetCopy[sheet].label}
             placeholder={sheetCopy[sheet].hint || undefined}
             value={note}
             onChangeText={setNote}
-            multiline
             maxLength={1000}
             white
-            style={{ minHeight: 96, textAlignVertical: 'top' }}
           />
         ) : null}
       </Sheet>

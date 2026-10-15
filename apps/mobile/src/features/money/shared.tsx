@@ -1,14 +1,14 @@
 import type { BillStatus, BillSummary, CollectionStatus, PaymentSummary } from '@movo/contracts';
-import { Row, StatusPill, type StatusTone, Text } from '@movo/design-system';
-import { formatPeriod } from '@movo/i18n';
+import { Row, StatusPill as SoftPill, Text } from '@movo/design-system';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { currentLocale } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
-import { day, money } from '../../core/util/money';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
+import { day, periodLabel } from '../../core/util/date';
+import { money } from '../../core/util/money';
 
-const BILL_TONE: Record<BillStatus, StatusTone> = {
+const BILL_TONE: StatusTones<BillStatus> = {
   DUE: 'warning',
   PARTIALLY_PAID: 'warning',
   OVERDUE: 'danger',
@@ -16,7 +16,7 @@ const BILL_TONE: Record<BillStatus, StatusTone> = {
   WAIVED: 'neutral',
 };
 
-const COLLECTION_TONE: Record<CollectionStatus, StatusTone> = {
+const COLLECTION_TONE: StatusTones<CollectionStatus> = {
   PAID: 'success',
   DUE: 'warning',
   OVERDUE: 'danger',
@@ -24,18 +24,16 @@ const COLLECTION_TONE: Record<CollectionStatus, StatusTone> = {
 };
 
 export function BillStatusPill({ status }: { status: BillStatus }) {
-  const { t } = useTranslation('money');
-  return <StatusPill label={t(`status.${status}`)} tone={BILL_TONE[status]} />;
+  return <StatusPill value={status} tones={BILL_TONE} labels="money:status" />;
 }
 
 export function CollectionPill({ status }: { status: CollectionStatus }) {
-  const { t } = useTranslation('money');
-  return <StatusPill label={t(`collectionStatus.${status}`)} tone={COLLECTION_TONE[status]} dot />;
+  return <StatusPill value={status} tones={COLLECTION_TONE} labels="money:collectionStatus" dot />;
 }
 
 /** "Maintenance · Oct 2026", or just the title for a one-off bill. */
 export function billName(b: { title: string; periodKey: string | null }): string {
-  return b.periodKey ? `${b.title} · ${formatPeriod(b.periodKey, currentLocale())}` : b.title;
+  return b.periodKey ? `${b.title} · ${periodLabel(b.periodKey)}` : b.title;
 }
 
 function Amount({ paise, children }: { paise: number; children?: ReactNode }) {
@@ -83,7 +81,7 @@ export function PaymentRow({ payment, showFlat }: { payment: PaymentSummary; sho
       trailing={
         <Amount paise={payment.amountPaise}>
           {payment.status === 'REVERSED' ? (
-            <StatusPill label={t('receipt.reversed')} tone="neutral" />
+            <SoftPill label={t('receipt.reversed')} tone="neutral" />
           ) : null}
         </Amount>
       }

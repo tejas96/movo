@@ -4,8 +4,6 @@
     "afternoon": "नमस्कार",
     "evening": "शुभ संध्याकाळ"
   },
-  "flatLabel": "फ्लॅट {{flat}}",
-  "searchPlaceholder": "नोटीस, सदस्य, सेवा शोधा…",
   "quick": {
     "services": "सेवा",
     "directory": "सदस्य",
@@ -15,7 +13,6 @@
     "ar": "AR मार्गदर्शक"
   },
   "needsYou": "आज तुमच्यासाठी",
-  "allClear": "आज सर्व काही ठीक आहे",
   "allClearBody": "देणी नाहीत, जबाबदारी नाही, अलर्ट नाही.",
   "upcoming": "आगामी",
   "notices": "नोटीस",

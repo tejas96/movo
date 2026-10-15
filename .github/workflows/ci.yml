@@ -36,6 +36,9 @@ jobs:
           key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
       - run: pnpm lint
+      # Every en key is used by the app or the API, and every key the code asks for exists.
+      - name: i18n keys
+        run: pnpm --filter @movo/i18n check-keys
       - name: Generate Prisma client
         run: pnpm --filter @movo/api db:generate
         env:

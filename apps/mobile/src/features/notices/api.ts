@@ -29,6 +29,7 @@ export function useNotice(societyId: string, noticeId: string) {
   return useQuery({
     queryKey: noticesKeys(societyId).detail(noticeId),
     queryFn: () => api(noticesContract.get, { params: { societyId, noticeId } }),
+    enabled: Boolean(noticeId),
   });
 }
 

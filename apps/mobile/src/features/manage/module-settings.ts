@@ -1,5 +1,5 @@
 import type { ModuleKey, PermissionKey } from '@movo/contracts';
-import type { IconName } from '@movo/design-system';
+import type { BoldIconName } from '@movo/design-system';
 
 /**
  * What the Modules screen can edit for each module. The API validates every value against the
@@ -143,7 +143,7 @@ type Underscored<S extends string> = S extends `${infer A}.${infer B}`
 export const i18nKey = <S extends string>(dotted: S) =>
   dotted.replace(/\./g, '_') as Underscored<S>;
 
-export const MODULE_ICON: Record<ModuleKey, IconName> = {
+export const MODULE_ICON: Record<ModuleKey, BoldIconName> = {
   notices: 'notices',
   meetings: 'meetings',
   events: 'events',

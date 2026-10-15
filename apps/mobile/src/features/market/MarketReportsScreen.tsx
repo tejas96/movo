@@ -2,13 +2,13 @@ import type { ListingReport } from '@movo/contracts';
 import {
   Button,
   EmptyState,
-  Input,
   photos,
   Row,
   Screen,
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -19,7 +19,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { relative } from '../../core/util/time';
+import { relative } from '../../core/util/date';
 import { useDismissReport, useListingAction, useMarketReports } from './api';
 import { priceLabel, Thumb } from './shared';
 
@@ -129,15 +129,14 @@ export function MarketReportsScreen() {
           />
         }
       >
-        <Input
+        <TextArea
           white
-          multiline
           label={t('market:listing.hideReason')}
           helper={t('market:listing.hideHelp')}
           value={reason}
           onChangeText={setReason}
           maxLength={300}
-          style={{ minHeight: 90, textAlignVertical: 'top' }}
+          minHeight={90}
         />
       </Sheet>
     </Screen>

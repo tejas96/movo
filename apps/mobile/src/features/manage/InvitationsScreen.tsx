@@ -8,7 +8,6 @@ import {
   Row,
   Screen,
   Skeleton,
-  StatusPill,
   TitleBar,
 } from '@movo/design-system';
 import { useState } from 'react';
@@ -18,15 +17,16 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
-import { shortDate } from '../../core/util/time';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
+import { shortDate } from '../../core/util/date';
 import { useInvitations, useRevokeInvitation } from './api';
 
-const TONE = {
+const TONE: StatusTones<Invitation['status']> = {
   PENDING: 'warning',
   ACCEPTED: 'success',
   EXPIRED: 'neutral',
   REVOKED: 'neutral',
-} as const;
+};
 
 export function InvitationsScreen() {
   const { t } = useTranslation(['manage', 'common']);
@@ -101,9 +101,7 @@ export function InvitationsScreen() {
                 item.role.name,
                 t('manage:invite.expires', { date: shortDate(item.expiresAt) }),
               ].join(' · ')}
-              trailing={
-                <StatusPill label={t(`common:status.${item.status}`)} tone={TONE[item.status]} />
-              }
+              trailing={<StatusPill value={item.status} tones={TONE} labels="common:status" />}
               onPress={item.status === 'PENDING' ? () => setSelected(item) : undefined}
             />
           </Card>

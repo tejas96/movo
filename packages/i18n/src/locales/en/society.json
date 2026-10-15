@@ -1,5 +1,4 @@
 {
-  "title": "Society",
   "flatsAndWings": "{{flats}} flats · {{wings}} wings",
   "modules": {
     "notices": "Notices",
@@ -21,7 +20,6 @@
   "comingSoon": "Coming soon",
   "comingSoonBody": "{{module}} is on the way. Your committee will switch it on when it is ready.",
   "committee": "Committee",
-  "switchSociety": "Switch society",
   "mySocieties": "My societies",
   "directory": {
     "title": "Directory",

@@ -7,7 +7,7 @@ import {
   photos,
   Screen,
   Skeleton,
-  StatusPill,
+  StatusPill as SoftPill,
   Text,
   useToast,
 } from '@movo/design-system';
@@ -20,8 +20,10 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { mediumDate } from '../../core/util/time';
+import { StatusPill } from '../../core/ui/StatusPill';
+import { mediumDate } from '../../core/util/date';
 import { useNotice, useNoticeAction } from './api';
+import { PRIORITY_TONE } from './NoticesScreen';
 
 type Action = 'edit' | 'pin' | 'unpin' | 'publish' | 'archive';
 
@@ -114,15 +116,14 @@ export function NoticeDetailScreen() {
             <View className="mb-3 flex-row flex-wrap gap-2">
               {n.priority !== 'NORMAL' ? (
                 <StatusPill
-                  label={t(`notices:priority.${n.priority}`)}
-                  tone={n.priority === 'EMERGENCY' ? 'danger' : 'warning'}
+                  value={n.priority}
+                  tones={PRIORITY_TONE}
+                  labels="notices:priority"
                   dot
                 />
               ) : null}
-              {n.isPinned ? <StatusPill label={t('notices:pinned')} tone="ink" /> : null}
-              {n.status === 'DRAFT' ? (
-                <StatusPill label={t('notices:draft')} tone="neutral" />
-              ) : null}
+              {n.isPinned ? <SoftPill label={t('notices:pinned')} tone="ink" /> : null}
+              {n.status === 'DRAFT' ? <SoftPill label={t('notices:draft')} tone="neutral" /> : null}
             </View>
           ) : null}
           <Text variant="h1">{n.title}</Text>

@@ -7,6 +7,7 @@ import {
   Screen,
   SelectField,
   Text,
+  TextArea,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -21,8 +22,7 @@ import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, fromIsoDay, isoDay } from '../../core/util/money';
-import { localeTag } from '../../core/util/time';
+import { day, fromIsoDay, isoDay, localeTag } from '../../core/util/date';
 import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useSaveTask, useTask } from './api';
 
@@ -119,13 +119,12 @@ export function TaskEditorScreen() {
             control={form.control}
             name="description"
             render={({ field }) => (
-              <Input
+              <TextArea
                 label={t('tasks:form.description')}
                 value={field.value}
                 onChangeText={field.onChange}
-                multiline
                 maxLength={2000}
-                style={{ minHeight: 90, textAlignVertical: 'top' }}
+                minHeight={90}
               />
             )}
           />

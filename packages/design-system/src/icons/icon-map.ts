@@ -1,6 +1,7 @@
 /**
  * MOVO icon names -> Iconsax icon names (free set, https://iconsax.io).
- * Screens use the MOVO name on the left. Change the mapping here, then run `pnpm icons`.
+ * Screens use the MOVO name on the left. Change the mapping here, then run
+ * `pnpm --filter @movo/design-system icons`. Only names the app uses are shipped (IconName).
  */
 export const iconMap = {
   // navigation
@@ -143,4 +144,100 @@ export const iconMap = {
   orders: 'receipt-item',
 } as const;
 
-export type IconName = keyof typeof iconMap;
+/** Every name in the map. Screens use IconName (the shipped subset) instead. */
+export type IconMapName = keyof typeof iconMap;
+
+/**
+ * Icons that are drawn filled somewhere (variant "bold", or a bold-by-default slot such as
+ * IconSquare, Tile, Pill, a tab or a photo pill). Only these ship the bold style. TypeScript
+ * fails when a bold slot gets a name missing here: add it, then run the icons script.
+ */
+export const boldIcons: readonly IconMapName[] = [
+  'home',
+  'society',
+  'money',
+  'market',
+  'me',
+  'close',
+  'bell',
+  'search',
+  'settings',
+  'addCircle',
+  'edit',
+  'trash',
+  'eye',
+  'star',
+  'verified',
+  'check',
+  'info',
+  'warning',
+  'building',
+  'flat',
+  'location',
+  'map',
+  'people',
+  'user',
+  'userAdd',
+  'call',
+  'chat',
+  'mail',
+  'send',
+  'language',
+  'notices',
+  'meetings',
+  'events',
+  'directory',
+  'services',
+  'parking',
+  'tasks',
+  'taskDone',
+  'duties',
+  'rewards',
+  'audit',
+  'emergency',
+  'shield',
+  'help',
+  'wallet',
+  'receipt',
+  'bank',
+  'upi',
+  'moneyIn',
+  'moneyOut',
+  'tag',
+  'calendar',
+  'calendarTick',
+  'clock',
+  'water',
+  'electricity',
+  'lift',
+  'cctv',
+  'cleaning',
+  'internet',
+  'key',
+  'lamp',
+  'camera',
+  'gallery',
+  'box',
+  'truck',
+  'bag',
+  'cup',
+  'security',
+  'ac',
+  'paint',
+  'carpentry',
+  'tools',
+  'pest',
+  'laundry',
+  'gas',
+  'mobile',
+  'monitor',
+  'health',
+  'hospital',
+  'fire',
+  'callCalling',
+  'evCharge',
+  'food',
+  'flag',
+  'pause',
+  'eyeSlash',
+];

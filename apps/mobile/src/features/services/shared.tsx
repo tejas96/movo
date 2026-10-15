@@ -1,12 +1,13 @@
 import type { Vendor, VendorCategory, VendorCategoryIcon, VendorStatus } from '@movo/contracts';
-import { CircleButton, type IconName, Row, StatusPill, type StatusTone } from '@movo/design-system';
+import { type BoldIconName, CircleButton, Row } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Linking } from 'react-native';
 import { i18n } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 
 /** Contract icon names map one to one onto design-system icons. The type check keeps them in sync. */
-export const CATEGORY_ICON: Record<VendorCategoryIcon, IconName> = {
+export const CATEGORY_ICON: Record<VendorCategoryIcon, BoldIconName> = {
   services: 'services',
   water: 'water',
   electricity: 'electricity',
@@ -35,7 +36,7 @@ export const CATEGORY_ICON: Record<VendorCategoryIcon, IconName> = {
   people: 'people',
 };
 
-export const STATUS_TONE: Record<VendorStatus, StatusTone> = {
+export const STATUS_TONE: StatusTones<VendorStatus> = {
   SUGGESTED: 'info',
   APPROVED: 'success',
   TRIAL: 'warning',
@@ -76,7 +77,7 @@ export function VendorRow({ vendor, showCategory }: { vendor: Vendor; showCatego
             onPress={() => void Linking.openURL(`tel:${vendor.phone}`)}
           />
         ) : (
-          <StatusPill label={t(`status.${vendor.status}`)} tone={STATUS_TONE[vendor.status]} />
+          <StatusPill value={vendor.status} tones={STATUS_TONE} labels="services:status" />
         )
       }
     />

@@ -1,6 +1,7 @@
 import { photos, StatusPill } from '@movo/design-system';
 import { formatFlat } from '../../core/tenant/hooks';
-import { day, money } from '../../core/util/money';
+import { day } from '../../core/util/date';
+import { money } from '../../core/util/money';
 import type { FeatureHome } from '../home/types';
 
 export const moneyHome: FeatureHome = {

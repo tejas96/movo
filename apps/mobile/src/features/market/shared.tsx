@@ -7,27 +7,19 @@ import {
   MarketplaceSettingsSchema,
   type OrderStatus,
 } from '@movo/contracts';
-import {
-  Icon,
-  type IconName,
-  photos,
-  StatusPill,
-  type StatusTone,
-  Text,
-  theme,
-} from '@movo/design-system';
-import { formatDate, formatTime } from '@movo/i18n';
+import { type BoldIconName, Icon, photos, Text, theme } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 import { fileUri } from '../../core/api/client';
-import { currentLocale, i18n } from '../../core/i18n';
+import { i18n } from '../../core/i18n';
 import { useActiveMembership } from '../../core/tenant/hooks';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
+import { shortWhen } from '../../core/util/date';
 import { money } from '../../core/util/money';
-import { dateTime } from '../../core/util/time';
 
 export const KINDS: readonly ListingKind[] = ['FOOD', 'PRODUCT', 'SERVICE', 'RESALE'];
 
-export const KIND_ICON: Record<ListingKind, IconName> = {
+export const KIND_ICON: Record<ListingKind, BoldIconName> = {
   FOOD: 'food',
   PRODUCT: 'bag',
   SERVICE: 'services',
@@ -75,24 +67,6 @@ export function priceLabel(l: PriceFields): string {
   if (l.priceType === 'PER_UNIT' && l.unit)
     return t('price.perUnit', { price: money(l.pricePaise), unit: l.unit });
   return money(l.pricePaise);
-}
-
-const TZ = 'Asia/Kolkata';
-
-/** "12:30 pm" today, otherwise "Sat, 3 Oct, 12:30 pm". */
-export function shortWhen(iso: string | null | undefined): string {
-  if (!iso) return '';
-  const locale = currentLocale();
-  const same =
-    formatDate(iso, locale, 'medium', TZ) ===
-    formatDate(new Date().toISOString(), locale, 'medium', TZ);
-  return same ? formatTime(iso, locale, TZ) : dateTime(iso);
-}
-
-/** Time and day apart, for small tiles: { time: "8:30 am", day: "Mon, 28 Sept" }. */
-export function timeAndDay(iso: string): { time: string; day: string } {
-  const locale = currentLocale();
-  return { time: formatTime(iso, locale, TZ), day: formatDate(iso, locale, 'short', TZ) };
 }
 
 /** "Ready 12:30 pm · order by 11 am" for food. Empty when neither is set. */
@@ -172,7 +146,7 @@ export function Thumb({
   );
 }
 
-const ORDER_TONE: Record<OrderStatus, StatusTone> = {
+const ORDER_TONE: StatusTones<OrderStatus> = {
   REQUESTED: 'warning',
   ACCEPTED: 'info',
   READY: 'ink',
@@ -182,11 +156,10 @@ const ORDER_TONE: Record<OrderStatus, StatusTone> = {
 };
 
 export function OrderStatusPill({ status }: { status: OrderStatus }) {
-  const { t } = useTranslation('market');
-  return <StatusPill label={t(`orderStatus.${status}`)} tone={ORDER_TONE[status]} />;
+  return <StatusPill value={status} tones={ORDER_TONE} labels="market:orderStatus" />;
 }
 
-const LISTING_TONE: Record<ListingStatus, StatusTone> = {
+const LISTING_TONE: StatusTones<ListingStatus> = {
   ACTIVE: 'success',
   PAUSED: 'neutral',
   ARCHIVED: 'neutral',
@@ -194,8 +167,7 @@ const LISTING_TONE: Record<ListingStatus, StatusTone> = {
 };
 
 export function ListingStatusPill({ status }: { status: ListingStatus }) {
-  const { t } = useTranslation('market');
-  return <StatusPill label={t(`status.${status}`)} tone={LISTING_TONE[status]} />;
+  return <StatusPill value={status} tones={LISTING_TONE} labels="market:status" />;
 }
 
 /** "4.5 (12)" */

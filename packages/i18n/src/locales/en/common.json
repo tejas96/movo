@@ -11,12 +11,9 @@
     "retry": "Retry",
     "seeAll": "See all",
     "back": "Back",
-    "next": "Next",
     "close": "Close",
     "search": "Search",
     "share": "Share",
-    "copy": "Copy",
-    "copied": "Copied",
     "call": "Call",
     "edit": "Edit",
     "delete": "Delete",
@@ -34,19 +31,13 @@
     "me": "Me"
   },
   "states": {
-    "loading": "Loading…",
     "empty": "Nothing here yet",
-    "offline": "You are offline. Showing what we saved.",
     "errorTitle": "Something went wrong",
-    "errorBody": "Please try again.",
-    "updateRequiredTitle": "Update MOVO",
-    "updateRequiredBody": "This version is too old. Please update the app to continue."
+    "errorBody": "Please try again."
   },
   "time": {
     "today": "Today",
-    "yesterday": "Yesterday",
-    "ago": "{{time}} ago",
-    "in": "in {{time}}"
+    "yesterday": "Yesterday"
   },
   "relation": {
     "OWNER": "Owner",
@@ -78,8 +69,7 @@
     "invalidIdentifier": "Enter a valid mobile number or email",
     "passwordMin": "Use at least 8 characters",
     "passwordMismatch": "Passwords do not match",
-    "nameMin": "Enter your full name",
-    "codeInvalid": "That code does not look right"
+    "nameMin": "Enter your full name"
   },
   "push": {
     "joinRequestReceived": {
@@ -93,10 +83,6 @@
     "membershipRejected": {
       "title": "Request not approved by {{society}}",
       "body": "Please contact your society office."
-    },
-    "noticePublished": {
-      "title": "{{title}}",
-      "body": "{{body}}"
     }
   },
   "picker": {

@@ -1,9 +1,9 @@
 import type { Listing, OrderFulfilment } from '@movo/contracts';
 import {
+  type BoldIconName,
   BottomBar,
   Button,
   CircleButton,
-  type IconName,
   IconSquare,
   Input,
   OptionSheet,
@@ -17,6 +17,7 @@ import {
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   Tile,
   useToast,
 } from '@movo/design-system';
@@ -31,8 +32,8 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoViewer } from '../../core/photos/PhotoViewer';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { relative, timeAndDay } from '../../core/util/date';
 import { money } from '../../core/util/money';
-import { relative } from '../../core/util/time';
 import { type ListingAction, useCreateOrder, useListing, useListingAction } from './api';
 import {
   coverSource,
@@ -42,7 +43,6 @@ import {
   priceLabel,
   ratingLabel,
   Stars,
-  timeAndDay,
 } from './shared';
 
 type MenuKey = 'edit' | 'pause' | 'resume' | 'archive' | 'hide' | 'unhide' | 'report';
@@ -328,9 +328,8 @@ export function ListingDetailScreen() {
           />
         }
       >
-        <Input
+        <TextArea
           white
-          multiline
           label={
             reasonSheet === 'hide'
               ? t('market:listing.hideReason')
@@ -342,7 +341,7 @@ export function ListingDetailScreen() {
           value={reason}
           onChangeText={setReason}
           maxLength={300}
-          style={{ minHeight: 90, textAlignVertical: 'top' }}
+          minHeight={90}
         />
       </Sheet>
       {l ? <OrderSheet listing={l} visible={ordering} onClose={() => setOrdering(false)} /> : null}
@@ -357,7 +356,7 @@ export function ListingDetailScreen() {
 
 function Facts({ listing: l }: { listing: Listing }) {
   const { t } = useTranslation('market');
-  const facts: { key: string; icon: IconName; label: string; hint: string }[] = [
+  const facts: { key: string; icon: BoldIconName; label: string; hint: string }[] = [
     {
       key: 'handover',
       icon: l.fulfilment === 'PICKUP' ? 'bag' : 'truck',

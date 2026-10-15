@@ -25,15 +25,6 @@ export function useParkingSlots(societyId: string, filter: SlotFilter, enabled =
   });
 }
 
-export function useVehicles(societyId: string, q: string, enabled = true) {
-  return useQuery({
-    queryKey: parkingKeys(societyId).vehicles(q),
-    queryFn: () =>
-      api(parkingContract.listVehicles, { params: { societyId }, query: { q: q || undefined } }),
-    enabled,
-  });
-}
-
 function useInvalidateParking(societyId: string) {
   const qc = useQueryClient();
   return () => {

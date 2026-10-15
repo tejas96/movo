@@ -15,7 +15,7 @@ import { useNav } from '../../core/navigation/types';
 import { openNotificationTarget, switchSocietyFor } from '../../core/notifications/open-target';
 import { useMeContext } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
-import { relative } from '../../core/util/time';
+import { relative } from '../../core/util/date';
 import { useMarkAllRead, useNotifications } from './api';
 
 const ICONS = {

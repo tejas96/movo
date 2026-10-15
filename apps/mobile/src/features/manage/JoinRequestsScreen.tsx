@@ -16,7 +16,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { relative } from '../../core/util/time';
+import { relative } from '../../core/util/date';
 import { useDecideJoinRequest, useJoinRequests } from './api';
 
 export function JoinRequestsScreen() {

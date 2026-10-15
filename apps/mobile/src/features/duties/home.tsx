@@ -1,5 +1,5 @@
 import { photos, StatusPill } from '@movo/design-system';
-import { day } from '../../core/util/money';
+import { day } from '../../core/util/date';
 import type { FeatureHome } from '../home/types';
 
 export const dutiesHome: FeatureHome = {

@@ -91,6 +91,21 @@ export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(func
   );
 });
 
+export interface TextAreaProps extends Omit<InputProps, 'multiline'> {
+  /** Height before the field grows with its text. 96 by default. */
+  minHeight?: number;
+}
+
+/** Multi-line Input: text starts at the top, the field grows from `minHeight`. */
+export const TextArea = forwardRef<ComponentRef<typeof TextInput>, TextAreaProps>(function TextArea(
+  { minHeight = 96, style, ...rest },
+  ref,
+) {
+  return (
+    <Input ref={ref} {...rest} multiline style={[{ minHeight, textAlignVertical: 'top' }, style]} />
+  );
+});
+
 export interface PasswordInputProps extends Omit<InputProps, 'secureTextEntry' | 'trailing'> {}
 
 export function PasswordInput(props: PasswordInputProps) {

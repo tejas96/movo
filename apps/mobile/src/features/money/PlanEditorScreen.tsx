@@ -36,8 +36,8 @@ import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, fromIsoDay, isoDay, money, parseRupees, rupeesText } from '../../core/util/money';
-import { localeTag } from '../../core/util/time';
+import { day, fromIsoDay, isoDay, localeTag } from '../../core/util/date';
+import { money, parseRupees, rupeesText } from '../../core/util/money';
 import { useCollection, usePlans, useSavePlan, useSetOverride } from './api';
 
 type LateType = LateFeeRule['type'];

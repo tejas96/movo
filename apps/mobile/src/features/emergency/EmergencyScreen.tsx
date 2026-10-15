@@ -21,7 +21,6 @@ import {
   SectionHeader,
   Sheet,
   Skeleton,
-  StatusPill,
   Text,
   Toggle,
   useToast,
@@ -33,8 +32,9 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { StatusPill } from '../../core/ui/StatusPill';
+import { relative } from '../../core/util/date';
 import { formatPhone } from '../../core/util/phone';
-import { relative } from '../../core/util/time';
 import {
   useAlerts,
   useDeleteContact,
@@ -42,7 +42,7 @@ import {
   useRaiseAlert,
   useSaveContact,
 } from './api';
-import { ALERT_ICON, CONTACT_ICON } from './shared';
+import { ALERT_ICON, ALERT_STATUS_TONE, CONTACT_ICON } from './shared';
 
 type ContactDraft = {
   id?: string;
@@ -229,8 +229,9 @@ function AlertRow({ alert }: { alert: Alert }) {
         .join(' · ')}
       trailing={
         <StatusPill
-          label={t(`status.${alert.status}`)}
-          tone={alert.status === 'ACTIVE' ? 'danger' : 'neutral'}
+          value={alert.status}
+          tones={ALERT_STATUS_TONE}
+          labels="emergency:status"
           dot={alert.status === 'ACTIVE'}
         />
       }

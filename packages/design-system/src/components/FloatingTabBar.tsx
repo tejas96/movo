@@ -2,14 +2,14 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useEffect } from 'react';
 import { LayoutAnimation, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { IconName } from '../icons';
+import type { BoldIconName } from '../icons';
 import { Icon } from './Icon';
 import { Text } from './Text';
 import { theme } from './theme';
 
 export interface TabSpec {
   name: string;
-  icon: IconName;
+  icon: BoldIconName;
   label: string;
 }
 

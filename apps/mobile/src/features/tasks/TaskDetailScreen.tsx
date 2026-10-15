@@ -5,7 +5,6 @@ import {
   Card,
   Divider,
   IconSquare,
-  Input,
   OptionSheet,
   Pill,
   Row,
@@ -14,6 +13,7 @@ import {
   Sheet,
   Skeleton,
   Text,
+  TextArea,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -28,8 +28,7 @@ import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day } from '../../core/util/money';
-import { relative } from '../../core/util/time';
+import { day, relative } from '../../core/util/date';
 import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { type TaskAction, useTask, useTaskAction } from './api';
 import { TaskStatusPill } from './shared';
@@ -261,14 +260,13 @@ export function TaskDetailScreen() {
           </Text>
         ) : (
           <View className="gap-4">
-            <Input
+            <TextArea
               white
-              multiline
               label={sheet === 'submit' ? t('tasks:actions.note') : t('tasks:actions.reason')}
               value={text}
               onChangeText={setText}
               maxLength={1000}
-              style={{ minHeight: 90, textAlignVertical: 'top' }}
+              minHeight={90}
             />
             {sheet === 'submit' ? (
               <PhotoField

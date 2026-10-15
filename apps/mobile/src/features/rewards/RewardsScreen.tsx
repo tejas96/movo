@@ -22,7 +22,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { relative } from '../../core/util/time';
+import { relative } from '../../core/util/date';
 import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useAdjustPoints, useLeaderboard, useMyPoints } from './api';
 

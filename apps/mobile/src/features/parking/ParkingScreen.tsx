@@ -17,7 +17,7 @@ import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { mediumDate } from '../../core/util/time';
+import { mediumDate } from '../../core/util/date';
 import { useMyParking } from './api';
 import { formatRegistration, slotIcon } from './shared';
 

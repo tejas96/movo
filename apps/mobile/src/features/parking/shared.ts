@@ -1,5 +1,5 @@
 import type { ParkingSlotType, VehicleType } from '@movo/contracts';
-import type { IconName } from '@movo/design-system';
+import type { BoldIconName } from '@movo/design-system';
 
 /** "MH12AB1234" -> "MH 12 AB 1234", "22BH1234AA" -> "22 BH 1234 AA". Anything else as is. */
 export function formatRegistration(reg: string): string {
@@ -10,6 +10,6 @@ export function formatRegistration(reg: string): string {
   return reg;
 }
 
-export function slotIcon(type: ParkingSlotType | VehicleType): IconName {
+export function slotIcon(type: ParkingSlotType | VehicleType): BoldIconName {
   return type === 'EV' ? 'evCharge' : 'parking';
 }

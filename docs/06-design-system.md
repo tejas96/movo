@@ -31,6 +31,11 @@ A copy of the reference real-estate app's language, applied to society life:
 | bg.inkPressed | `#000000` | pressed state |
 | bg.overlay | `rgba(255,255,255,0.92)` | pills over photos |
 | bg.tabBar | `rgba(255,255,255,0.88)` | floating tab bar, with 20px blur |
+| overlay.base | `#111111` | behind a full-screen photo before it paints (Welcome) |
+| overlay.shade | `#000000` | gradient shade on photos; each stop sets its opacity |
+| overlay.textStrong / textSoft / textDim | white at 0.82 / 0.78 / 0.72 | white text on photos |
+| overlay.glass | `rgba(255,255,255,0.18)` | small control on a photo (Skip) |
+| overlay.darken | `rgba(0,0,0,0.28)` | fill of a held HoldButton |
 | text.primary | `#151515` | titles, values |
 | text.secondary | `#767676` | labels, meta, "See all", placeholders |
 | text.tertiary | `#AFAFAF` | hints |
@@ -102,10 +107,11 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 ## 4. Icons
 
 - Source: the `iconsax` npm package (free set, 1,211 icons, six styles). MOVO uses `linear` and `bold`.
-- `src/icons/icon-map.ts` maps MOVO names to Iconsax names (`home → home-2`, `notices → volume-high`, `duties → repeat`, ...). About 100 icons.
-- `pnpm --filter @movo/design-system icons` writes `src/icons/generated/icon-data.ts`: SVG nodes with colors normalised to `currentColor`.
-- React Native: an `Icon` component renders the nodes with `react-native-svg` (`<Icon name="bell" style="bold" size={24} />`). Web and the preview use `iconSvgMarkup()`.
-- Adding an icon: add one line to the map, run the script. Never import an icon from another package.
+- `src/icons/icon-map.ts` maps MOVO names to Iconsax names (`home → home-2`, `notices → volume-high`, `duties → repeat`, ...). About 130 names.
+- `pnpm --filter @movo/design-system icons` writes `src/icons/generated/icon-data.ts` with only the icons the app uses: a name ships when it appears as a string literal in `apps/mobile/src` or `packages/design-system/src` (or in the script's `KEEP` list). Colors are normalised to `currentColor`; attributes every node of a style shares (stroke width, caps, fill) are stored once in `src/icons/expand.ts`, so the file holds geometry only.
+- `bold` ships only for the names in `boldIcons` (icon-map.ts). The types enforce it: `IconName` is the shipped set and `BoldIconName` the bold set; `variant="bold"` and the bold-by-default slots (IconSquare, CircleButton, Tile, Pill, Row, EmptyState, tabs, photo pills) take a `BoldIconName`.
+- React Native: an `Icon` component renders the nodes with `react-native-svg` (`<Icon name="bell" variant="bold" size={24} />`). Web and the preview use `iconSvgMarkup()`.
+- Adding an icon: add one line to the map, use it, run the script. When TypeScript says a name is not a `BoldIconName`, add it to `boldIcons` and run the script again. Never import an icon from another package.
 
 ## 5. Primitives (built with the mobile scaffold)
 
@@ -129,6 +135,7 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 | DateBlock | 56 x 60 white block with day and month |
 | DateTimeSheet | bottom sheet with a day strip, an hour strip and quarter-hour minutes. `mode="date"` hides the time; `pastDays` allows past dates. Pure JS, phone time zone |
 | Input, Select | 56, radius 20; label above in gray 13; helper and error below |
+| TextArea | multi-line Input, text at the top, grows from `minHeight` (96 default) |
 | Segmented | gray pill track 48, ink active pill |
 | Toggle | ink when on |
 | FloatingTabBar | 60 pill, blur, shadow; active item is an ink pill with bold icon and label |

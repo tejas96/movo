@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, type PressableProps, View, type ViewProps } from 'react-native';
-import type { IconName } from '../icons';
+import type { BoldIconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { IconSquare } from './IconButtons';
@@ -34,7 +34,7 @@ export interface RowProps extends Omit<PressableProps, 'children' | 'style'> {
   title: string;
   subtitle?: string | undefined;
   /** Leading icon in a small gray square. */
-  icon?: IconName;
+  icon?: BoldIconName;
   /** Any leading node instead of the icon square (avatar, date block). */
   leading?: ReactNode;
   /** Trailing node (amount, status pill). A chevron is shown when pressable and nothing else is given. */

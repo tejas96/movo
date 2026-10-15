@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
-import type { IconName } from '../icons';
+import type { BoldIconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { IconSquare } from './IconButtons';
@@ -8,7 +8,7 @@ import { Text } from './Text';
 import { theme } from './theme';
 
 export interface HomeTopBarProps {
-  icon: IconName;
+  icon: BoldIconName;
   label: string;
   value: string;
   onPressValue?: () => void;

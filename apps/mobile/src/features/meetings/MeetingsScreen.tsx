@@ -7,7 +7,6 @@ import {
   Screen,
   Segmented,
   Skeleton,
-  StatusPill,
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,18 +14,20 @@ import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 import { TimedCard } from '../calendar/shared';
 import { useMeetings } from './api';
 
+/** SCHEDULED shows no pill. */
+const MEETING_TONE: StatusTones<MeetingStatus> = {
+  SCHEDULED: 'neutral',
+  CANCELLED: 'danger',
+  COMPLETED: 'neutral',
+};
+
 export function MeetingStatusPill({ status }: { status: MeetingStatus }) {
-  const { t } = useTranslation('meetings');
   if (status === 'SCHEDULED') return null;
-  return (
-    <StatusPill
-      label={t(`status.${status}`)}
-      tone={status === 'CANCELLED' ? 'danger' : 'neutral'}
-    />
-  );
+  return <StatusPill value={status} tones={MEETING_TONE} labels="meetings:status" />;
 }
 
 export function MeetingsScreen() {

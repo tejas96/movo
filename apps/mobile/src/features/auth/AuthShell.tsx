@@ -35,7 +35,6 @@ export interface AuthShellProps {
 const HERO_SHARE = 0.4;
 /** The sheet's top corners overlap the photo by this much. */
 const OVERLAP = 30;
-const WHITE = '#FFFFFF';
 
 /**
  * The front door: a photo fills the top, a white sheet with big round corners slides over it
@@ -93,8 +92,8 @@ export function AuthShell({ title, subtitle, onBack, children, footer }: AuthShe
         <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
           <Defs>
             <LinearGradient id="authScrim" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#000" stopOpacity="0.32" />
-              <Stop offset="0.6" stopColor="#000" stopOpacity="0" />
+              <Stop offset="0" stopColor={theme.color.overlay.shade} stopOpacity="0.32" />
+              <Stop offset="0.6" stopColor={theme.color.overlay.shade} stopOpacity="0" />
             </LinearGradient>
           </Defs>
           <Rect x="0" y="0" width="100%" height="100%" fill="url(#authScrim)" />
@@ -103,7 +102,7 @@ export function AuthShell({ title, subtitle, onBack, children, footer }: AuthShe
           {onBack ? (
             <IconSquare icon="back" variant="linear" tone="white" onPress={onBack} />
           ) : null}
-          <Wordmark width={92} color={WHITE} />
+          <Wordmark width={92} color={theme.color.text.inverse} />
         </View>
       </Animated.View>
 

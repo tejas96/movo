@@ -13,7 +13,6 @@
   "since": "Since {{date}}",
   "level": "Level {{level}}",
   "free": "Free",
-  "allSlots": "All slots",
   "noFlat": "You are not linked to a flat, so there is no parking to show.",
   "slotType": {
     "TWO_WHEELER": "Two-wheeler",
@@ -28,7 +27,6 @@
     "OTHER": "Other"
   },
   "slotStatus": {
-    "ACTIVE": "Regular",
     "BLOCKED": "Blocked",
     "VISITOR": "Visitor"
   },
@@ -63,16 +61,10 @@
     "allocated": "Slot given to {{flat}}",
     "release": "Free this slot",
     "released": "Slot is free now",
-    "notes": "Notes (optional)",
     "block": "Block slot",
     "unblock": "Make regular slot",
     "markVisitor": "Make visitor slot",
     "updated": "Slot updated",
     "summary": "{{taken}} of {{total}} taken"
-  },
-  "vehicles": {
-    "title": "Vehicles",
-    "search": "Search by number…",
-    "empty": "No vehicles found"
   }
 }

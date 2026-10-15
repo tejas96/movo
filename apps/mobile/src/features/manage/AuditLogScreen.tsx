@@ -17,7 +17,7 @@ import { ScrollView, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
-import { dateTime, relative } from '../../core/util/time';
+import { dateTime, relative } from '../../core/util/date';
 import { useAuditLog } from './api';
 import { i18nKey } from './module-settings';
 

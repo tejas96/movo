@@ -18,6 +18,7 @@ export function useFlatAccount(societyId: string, flatId: string) {
   return useQuery({
     queryKey: moneyKeys(societyId).flatAccount(flatId),
     queryFn: () => api(c.flatAccount, { params: { societyId, flatId } }),
+    enabled: Boolean(flatId),
   });
 }
 

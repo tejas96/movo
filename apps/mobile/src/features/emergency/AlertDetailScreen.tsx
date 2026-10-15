@@ -7,7 +7,6 @@ import {
   Screen,
   SectionHeader,
   Skeleton,
-  StatusPill,
   Text,
   TitleBar,
   useToast,
@@ -21,11 +20,12 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { StatusPill } from '../../core/ui/StatusPill';
+import { relative } from '../../core/util/date';
 import { formatPhone } from '../../core/util/phone';
-import { relative } from '../../core/util/time';
 import { useAlert, useEmergencyContacts, useResolveAlert } from './api';
 import { ContactRow } from './EmergencyScreen';
-import { ALERT_ICON } from './shared';
+import { ALERT_ICON, ALERT_STATUS_TONE } from './shared';
 
 export function AlertDetailScreen() {
   const { t } = useTranslation(['emergency', 'common']);
@@ -75,8 +75,9 @@ export function AlertDetailScreen() {
               {t('emergency:alert.title', { type: t(`emergency:type.${a.type}`) })}
             </Text>
             <StatusPill
-              label={t(`emergency:status.${a.status}`)}
-              tone={isActive ? 'danger' : 'neutral'}
+              value={a.status}
+              tones={ALERT_STATUS_TONE}
+              labels="emergency:status"
               dot={isActive}
               className="mt-2 self-center"
             />

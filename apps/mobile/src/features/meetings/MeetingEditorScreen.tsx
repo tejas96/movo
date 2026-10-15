@@ -1,5 +1,14 @@
 import { type Meeting, meetingsContract } from '@movo/contracts';
-import { BottomBar, Button, Input, Screen, Text, TitleBar, useToast } from '@movo/design-system';
+import {
+  BottomBar,
+  Button,
+  Input,
+  Screen,
+  Text,
+  TextArea,
+  TitleBar,
+  useToast,
+} from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
@@ -168,13 +177,12 @@ export function MeetingEditorScreen() {
             control={form.control}
             name="agenda"
             render={({ field }) => (
-              <Input
+              <TextArea
                 label={t('meetings:form.agenda')}
                 value={field.value}
                 onChangeText={field.onChange}
-                multiline
                 maxLength={5000}
-                style={{ minHeight: 120, textAlignVertical: 'top' }}
+                minHeight={120}
               />
             )}
           />

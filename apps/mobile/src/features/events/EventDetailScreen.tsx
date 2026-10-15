@@ -14,7 +14,7 @@ import {
   Segmented,
   Sheet,
   Skeleton,
-  StatusPill,
+  StatusPill as SoftPill,
   Text,
   TitleBar,
   theme,
@@ -29,10 +29,17 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { whenRange } from '../../core/util/time';
+import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
+import { whenRange } from '../../core/util/date';
 import { useCancelEvent, useEvent, useEventRsvps, useRsvp } from './api';
 
 type MenuKey = 'edit' | 'cancel';
+
+const RSVP_TONE: StatusTones<RsvpResponse> = {
+  GOING: 'success',
+  MAYBE: 'warning',
+  NOT_GOING: 'neutral',
+};
 
 export function EventDetailScreen() {
   const { t } = useTranslation(['events', 'common']);
@@ -95,7 +102,7 @@ export function EventDetailScreen() {
           <Card className="mt-6">
             {e.status === 'CANCELLED' ? (
               <View className="mb-3 flex-row">
-                <StatusPill label={t('events:status.CANCELLED')} tone="danger" />
+                <SoftPill label={t('events:status.CANCELLED')} tone="danger" />
               </View>
             ) : null}
             <Text variant="h1">{e.title}</Text>
@@ -201,16 +208,7 @@ export function EventDetailScreen() {
                         .filter(Boolean)
                         .join(' · ')}
                       trailing={
-                        <StatusPill
-                          label={t(`events:rsvp.${r.response}`)}
-                          tone={
-                            r.response === 'GOING'
-                              ? 'success'
-                              : r.response === 'MAYBE'
-                                ? 'warning'
-                                : 'neutral'
-                          }
-                        />
+                        <StatusPill value={r.response} tones={RSVP_TONE} labels="events:rsvp" />
                       }
                     />
                   ))}

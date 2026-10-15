@@ -37,7 +37,7 @@ Commit only the files of your change. Commit messages: short imperative subject,
     English words people say every day (OTP, app, parking).
   - **Length:** buttons, tabs, pills and titles: short words. The UI must still hold text about
     2x longer than English (wrap or `numberOfLines` + ellipsis, never a fixed width).
-  - **Dates and numbers:** only the helpers in `@movo/i18n` and `apps/mobile/src/core/util/time.ts`
+  - **Dates and numbers:** only the helpers in `@movo/i18n` and `apps/mobile/src/core/util/date.ts`
     (Hermes on Android has no `Intl.RelativeTimeFormat`). Lint blocks raw `Intl` in the app.
   - **No English in code:** every visible word comes from `t()`. Lint blocks plain JSX text.
   The PR review checks the same four points.

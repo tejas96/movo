@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
-import type { IconName } from '../icons';
+import type { BoldIconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { IconSquare } from './IconButtons';
@@ -10,7 +10,7 @@ import { Text } from './Text';
 import { theme } from './theme';
 
 export interface PhotoPill {
-  icon?: IconName;
+  icon?: BoldIconName;
   label: string;
 }
 
@@ -125,7 +125,7 @@ export function PhotoCard({
 export interface PhotoTileProps {
   source: ImageSourcePropType;
   label: string;
-  icon?: IconName;
+  icon?: BoldIconName;
   hint?: string | undefined;
   count?: number | undefined;
   height?: number;
@@ -183,7 +183,7 @@ export function PhotoTile({
   );
 }
 
-function IconGlyph({ name }: { name: IconName }) {
+function IconGlyph({ name }: { name: BoldIconName }) {
   return <Icon name={name} variant="bold" size={16} color={theme.color.icon.primary} />;
 }
 

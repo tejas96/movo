@@ -4,8 +4,6 @@
     "afternoon": "Good afternoon",
     "evening": "Good evening"
   },
-  "flatLabel": "Flat {{flat}}",
-  "searchPlaceholder": "Search notices, members, vendors…",
   "quick": {
     "services": "Services",
     "directory": "Directory",
@@ -15,7 +13,6 @@
     "ar": "AR guide"
   },
   "needsYou": "Needs you today",
-  "allClear": "All clear today",
   "allClearBody": "No dues, no duties, no alerts.",
   "upcoming": "Upcoming",
   "notices": "Notices",

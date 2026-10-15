@@ -17,7 +17,7 @@ import { Pressable, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day } from '../../core/util/money';
+import { day } from '../../core/util/date';
 import { useDuties } from './api';
 import { cadenceLabel, turnLine } from './shared';
 

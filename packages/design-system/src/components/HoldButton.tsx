@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Pressable, View } from 'react-native';
-import type { IconName } from '../icons';
+import type { BoldIconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { Text } from './Text';
@@ -10,7 +10,7 @@ export interface HoldButtonProps {
   label: string;
   /** Shown while the finger is down. */
   holdingLabel?: string;
-  icon?: IconName;
+  icon?: BoldIconName;
   /** Fires once, when the hold completes. */
   onConfirm: () => void;
   durationMs?: number;
@@ -90,7 +90,7 @@ export function HoldButton({
     >
       <Animated.View
         pointerEvents="none"
-        style={{ width: fill, backgroundColor: 'rgba(0, 0, 0, 0.28)' }}
+        style={{ width: fill, backgroundColor: theme.color.overlay.darken }}
         className="absolute bottom-0 left-0 top-0"
       />
       <View className="flex-1 flex-row items-center justify-center gap-2">

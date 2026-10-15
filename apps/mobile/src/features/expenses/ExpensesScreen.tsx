@@ -22,19 +22,17 @@ import {
   TitleBar,
   useToast,
 } from '@movo/design-system';
-import { formatPeriod } from '@movo/i18n';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
-import { currentLocale } from '../../core/i18n';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { day, isoDay, money, parseRupees } from '../../core/util/money';
-import { localeTag } from '../../core/util/time';
+import { day, isoDay, localeTag, periodLabel } from '../../core/util/date';
+import { money, parseRupees } from '../../core/util/money';
 import { CATEGORY_ICON } from '../services/shared';
 import { useCreateIncome, useDeleteIncome, useExpenses, useIncome, useReport } from './api';
 import { ExpenseRow, expenseCategoryLabel } from './shared';
@@ -323,7 +321,7 @@ function Months({ months }: { months: FinanceReport['months'] }) {
         {shown.map((m) => (
           <View key={m.month} className="gap-1">
             <View className="flex-row justify-between">
-              <Text variant="bodyMedium">{formatPeriod(m.month, currentLocale())}</Text>
+              <Text variant="bodyMedium">{periodLabel(m.month)}</Text>
               <Text variant="label" tone="secondary">
                 {`+${money(m.incomePaise)} · −${money(m.expensePaise)}`}
               </Text>

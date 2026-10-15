@@ -26,7 +26,7 @@ import { type PhotoSource, usePickOne } from '../../core/photos/pick';
 import { SinglePhotoField } from '../../core/photos/SinglePhotoField';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { monthName } from '../../core/util/time';
+import { monthName } from '../../core/util/date';
 import { useSocietyProfile } from '../society/api';
 import { useUpdateSociety } from './api';
 
