@@ -39,7 +39,7 @@ export function DestinationPicker({ open, onClose, onPick }: Props) {
         <View className="flex-row items-center px-5 pb-3">
           <Text className="flex-1 text-lg font-semibold">{t('ar:pickDestination')}</Text>
           <Pressable accessibilityRole="button" onPress={onClose} className="px-3 py-2">
-            <Text>{t('common:close', { defaultValue: 'Close' })}</Text>
+            <Text>{t('common:actions.close')}</Text>
           </Pressable>
         </View>
         <TextInput

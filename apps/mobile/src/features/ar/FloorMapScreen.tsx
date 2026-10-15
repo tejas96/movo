@@ -80,7 +80,7 @@ export function FloorMapScreen(_props: Props) {
     <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top + 8 }}>
       <View className="flex-row items-center px-4 pb-2">
         <Pressable accessibilityRole="button" onPress={() => nav.goBack()} className="pr-3 py-2">
-          <Text>{t('common:back', { defaultValue: 'Back' })}</Text>
+          <Text>{t('common:actions.back')}</Text>
         </Pressable>
         <Text className="flex-1 text-lg font-semibold">{t('ar:map')}</Text>
         <Pressable
