@@ -33,7 +33,8 @@
   "states": {
     "empty": "Nothing here yet",
     "errorTitle": "Something went wrong",
-    "errorBody": "Please try again."
+    "errorBody": "Please try again.",
+    "offline": "No internet. The app will refresh when you are back online."
   },
   "time": {
     "today": "Today",
