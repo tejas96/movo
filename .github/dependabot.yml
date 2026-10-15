@@ -21,6 +21,11 @@ updates:
       interval: weekly
       day: monday
       timezone: Asia/Kolkata
+    # A major Postgres upgrade (17 -> 18) changes the on-disk format and needs a planned
+    # dump/restore; do it by hand. Minor, patch and digest updates still come.
+    ignore:
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "Docker"
 
@@ -32,6 +37,11 @@ updates:
       interval: weekly
       day: monday
       timezone: Asia/Kolkata
+    # A major Postgres upgrade (17 -> 18) changes the on-disk format and needs a planned
+    # dump/restore; do it by hand. Minor, patch and digest updates still come.
+    ignore:
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "Docker"
 
