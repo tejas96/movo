@@ -60,7 +60,8 @@ export function RoleEditorScreen() {
   const save = useSaveRole(societyId);
   const remove = useDeleteRole(societyId);
   const mine = new Set(tenant.permissions);
-  const isAdminRole = role?.key === 'admin';
+  // The admin role keeps every permission; the server says so with canEditPermissions.
+  const isAdminRole = role ? !role.canEditPermissions : false;
 
   const form = useForm<RoleForm>({
     resolver: bodyResolver(
@@ -180,7 +181,7 @@ export function RoleEditorScreen() {
             {error}
           </Text>
         ) : null}
-        {role && !role.isSystem ? (
+        {role?.canDelete ? (
           <Button
             label={t('manage:rolesScreen.delete')}
             variant="ghost"

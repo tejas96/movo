@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
 import { relative } from '../../core/util/date';
@@ -33,7 +33,6 @@ export function AlertDetailScreen() {
   const toast = useToast();
   const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
-  const tenant = useTenant();
   const { alertId } = useRoute<RouteProp<RootStackParamList, 'AlertDetail'>>().params;
   const alert = useAlert(societyId, alertId);
   const contacts = useEmergencyContacts(societyId);
@@ -42,7 +41,6 @@ export function AlertDetailScreen() {
   const a = alert.data;
   const isActive = a?.status === 'ACTIVE';
   const raiserPhone = a?.raisedBy?.phone;
-  const isMine = a?.raisedBy?.membershipId === tenant.id;
   // During an alert, the society's own contacts first, then the national emergency number.
   const quickContacts = [
     ...(contacts.data ?? []).filter((c) => !c.isPublicNumber).slice(0, 3),
@@ -106,7 +104,7 @@ export function AlertDetailScreen() {
             ) : null}
           </Card>
 
-          {isActive && raiserPhone && !isMine ? (
+          {a.canCallRaiser && raiserPhone ? (
             <Button
               className="mt-4"
               icon="call"

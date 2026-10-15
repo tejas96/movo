@@ -5,7 +5,7 @@ import {
   parseModuleSettings,
   type RouteBody,
   type RouteQuery,
-  type societyContract,
+  societyContract,
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
@@ -13,7 +13,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can } from '../../common/tenant/tenant.types';
+import { can, mayCall } from '../../common/tenant/tenant.types';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
 import { AuthService } from '../identity/auth.service';
@@ -96,6 +96,8 @@ export class MembersService {
     return {
       ...toMemberCard(m, this.viewerSeesContact() || m.id === ctx.membershipId),
       vehicles: vehicles ? vehicles.map(toVehicleDto) : null,
+      // The member admin routes; members do not manage themselves here (see update).
+      canManage: m.id !== ctx.membershipId && mayCall(ctx, societyContract.updateMember),
     };
   }
 

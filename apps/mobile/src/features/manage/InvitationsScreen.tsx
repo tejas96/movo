@@ -102,7 +102,7 @@ export function InvitationsScreen() {
                 t('manage:invite.expires', { date: shortDate(item.expiresAt) }),
               ].join(' · ')}
               trailing={<StatusPill value={item.status} tones={TONE} labels="common:status" />}
-              onPress={item.status === 'PENDING' ? () => setSelected(item) : undefined}
+              onPress={item.canRevoke ? () => setSelected(item) : undefined}
             />
           </Card>
         )}

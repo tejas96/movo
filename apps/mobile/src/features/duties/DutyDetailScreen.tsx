@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
 import { useMembers } from '../directory/api';
@@ -42,8 +42,6 @@ export function DutyDetailScreen() {
   const { dutyId } = useRoute<RouteProp<RootStackParamList, 'DutyDetail'>>().params;
   const duty = useDuty(societyId, dutyId);
   const action = useDutyAction(societyId, dutyId);
-  const canManage = useCan('duty.manage');
-  const canOverride = useCan('duty.override');
   const [menu, setMenu] = useState(false);
   const [orderOpen, setOrderOpen] = useState(false);
   const [order, setOrder] = useState<string[]>([]);
@@ -75,7 +73,7 @@ export function DutyDetailScreen() {
     });
 
   const openTurn = (a: DutyAssignment) => {
-    if (!canOverride) return;
+    if (!a.canOverride) return;
     setTurn(a);
     setOverrideAction(a.status === 'MISSED' ? 'COMPLETE' : 'SKIP');
     setWho(undefined);
@@ -110,7 +108,7 @@ export function DutyDetailScreen() {
         title={t('duties:title')}
         onBack={() => nav.goBack()}
         trailing={
-          canManage && d && d.status !== 'ENDED' ? (
+          d?.canManage ? (
             <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
           ) : undefined
         }
@@ -142,7 +140,7 @@ export function DutyDetailScreen() {
             <Text variant="bodyMedium" tone={myTurnNow ? 'inverse' : 'primary'} className="mt-4">
               {d.current ? turnLine(t as never, d.current) : t('duties:noCurrent')}
             </Text>
-            {d.current?.status === 'ACTIVE' && (d.current.mine || canOverride) ? (
+            {d.current?.canConfirm ? (
               <>
                 {d.current.mine && d.requiresConfirmation ? (
                   <Text variant="label" tone="inverse" className="mt-1">
@@ -183,7 +181,7 @@ export function DutyDetailScreen() {
                   <TurnRow
                     key={a.id}
                     turn={a}
-                    onPress={canOverride ? () => openTurn(a) : undefined}
+                    onPress={a.canOverride ? () => openTurn(a) : undefined}
                   />
                 ))}
               </Card>
@@ -198,7 +196,7 @@ export function DutyDetailScreen() {
                   <TurnRow
                     key={a.id}
                     turn={a}
-                    onPress={canOverride && a.status === 'MISSED' ? () => openTurn(a) : undefined}
+                    onPress={a.canOverride ? () => openTurn(a) : undefined}
                   />
                 ))}
               </Card>

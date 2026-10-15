@@ -1,10 +1,11 @@
-import type { expensesContract, IncomeEntry, RouteBody } from '@movo/contracts';
+import { expensesContract, type IncomeEntry, type RouteBody } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
+import { mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { dateOnly, dbDate, fyLabel, todayIn } from '../../common/util/dates';
 import { loadMemberNames } from '../tenancy/member-names';
 import { checkNotFuture } from './expense-rules';
@@ -46,6 +47,7 @@ export class IncomeService {
         displayName: names.get(r.createdByMembershipId)?.displayName ?? 'Committee',
       },
       createdAt: r.createdAt.toISOString(),
+      canRemove: mayRemoveIncome(ctx),
     }));
   }
 
@@ -81,6 +83,7 @@ export class IncomeService {
         displayName: names.get(ctx.membershipId)?.displayName ?? 'Committee',
       },
       createdAt: row.createdAt.toISOString(),
+      canRemove: mayRemoveIncome(ctx),
     };
   }
 
@@ -95,4 +98,9 @@ export class IncomeService {
       before: { kind: row.kind, amountPaise: row.amountPaise },
     });
   }
+}
+
+/** The delete route's own permission. */
+function mayRemoveIncome(ctx: TenantContext): boolean {
+  return mayCall(ctx, expensesContract.deleteIncome);
 }

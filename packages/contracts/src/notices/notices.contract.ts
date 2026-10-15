@@ -47,6 +47,8 @@ export const NoticeSchema = NoticeSummarySchema.extend({
   updatedAt: IsoDateTimeSchema,
   /** Only filled for members who can manage notices. */
   readCount: z.number().int().nullable(),
+  /** Edit, publish, pin and archive: notice.publish and (the author or notice.manage_all). */
+  canEdit: z.boolean(),
 });
 export type Notice = z.infer<typeof NoticeSchema>;
 

@@ -1,10 +1,10 @@
-import type {
-  MyParking,
-  ParkingSlot,
+import {
+  type MyParking,
+  type ParkingSlot,
   parkingContract,
-  RouteBody,
-  RouteQuery,
-  Vehicle,
+  type RouteBody,
+  type RouteQuery,
+  type Vehicle,
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
@@ -12,7 +12,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { isUniqueViolation } from '../../common/errors/prisma-errors';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import type { Prisma } from '../../generated/prisma/client';
 import { toFlatRef } from '../tenancy/mappers';
 import { seesAllSlots, seesAllVehicles } from './visibility';
@@ -30,7 +30,7 @@ type VehicleRow = Prisma.VehicleGetPayload<{ include: typeof vehicleInclude }>;
 const byCode = (a: { code: string }, b: { code: string }) =>
   a.code.localeCompare(b.code, 'en', { numeric: true });
 
-export function toSlotDto(s: SlotRow): ParkingSlot {
+export function toSlotDto(ctx: TenantContext, s: SlotRow): ParkingSlot {
   const a = s.allocations[0];
   return {
     id: s.id,
@@ -46,6 +46,7 @@ export function toSlotDto(s: SlotRow): ParkingSlot {
           notes: a.notes,
         }
       : null,
+    canManage: mayCall(ctx, parkingContract.updateSlot),
   };
 }
 
@@ -95,7 +96,7 @@ export class ParkingService {
           slots: slots
             .filter((s) => s.allocations[0]?.flatId === f.id)
             .sort(byCode)
-            .map(toSlotDto),
+            .map((s) => toSlotDto(requireTenant(), s)),
           vehicles: vehicles.filter((v) => v.flatId === f.id).map(toVehicleDto),
         })),
       canSeeAll: seesAllSlots(ctx),
@@ -113,7 +114,7 @@ export class ParkingService {
       },
       include: slotInclude,
     });
-    return rows.sort(byCode).map(toSlotDto);
+    return rows.sort(byCode).map((s) => toSlotDto(requireTenant(), s));
   }
 
   async createSlots(body: RouteBody<typeof parkingContract.createSlots>): Promise<ParkingSlot[]> {
@@ -143,7 +144,7 @@ export class ParkingService {
     return created
       .map((s) => ({ ...s, allocations: [] }))
       .sort(byCode)
-      .map(toSlotDto);
+      .map((s) => toSlotDto(requireTenant(), s));
   }
 
   async updateSlot(
@@ -168,7 +169,7 @@ export class ParkingService {
       before: { code: before.code, type: before.type, status: before.status },
       after: { code: row.code, type: row.type, status: row.status },
     });
-    return toSlotDto(row);
+    return toSlotDto(requireTenant(), row);
   }
 
   async allocate(
@@ -209,7 +210,7 @@ export class ParkingService {
         throw ApiException.conflict('SLOT_TAKEN', 'This slot already belongs to a flat');
       throw e;
     }
-    return toSlotDto(await this.requireSlot(slotId));
+    return toSlotDto(requireTenant(), await this.requireSlot(slotId));
   }
 
   /** Idempotent: freeing a free slot returns it unchanged. */
@@ -217,7 +218,7 @@ export class ParkingService {
     const ctx = requireTenant();
     const slot = await this.requireSlot(slotId);
     const active = slot.allocations[0];
-    if (!active) return toSlotDto(slot);
+    if (!active) return toSlotDto(requireTenant(), slot);
     await this.tenant.tx(async (tx) => {
       await tx.parkingAllocation.updateMany({
         where: { id: active.id, societyId: ctx.societyId, toDate: null },
@@ -233,7 +234,7 @@ export class ParkingService {
         tx,
       );
     });
-    return toSlotDto(await this.requireSlot(slotId));
+    return toSlotDto(requireTenant(), await this.requireSlot(slotId));
   }
 
   async listVehicles(query: RouteQuery<typeof parkingContract.listVehicles>): Promise<Vehicle[]> {

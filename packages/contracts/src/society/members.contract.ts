@@ -32,6 +32,8 @@ export type MemberCard = z.infer<typeof MemberCardSchema>;
 export const MemberDetailSchema = MemberCardSchema.extend({
   /** null when the society's directory.showVehicles setting hides them from this viewer. */
   vehicles: z.array(VehicleSchema).nullable(),
+  /** Roles, flats, suspend, remove, reset code: member.manage and not the viewer. */
+  canManage: z.boolean(),
 });
 export type MemberDetail = z.infer<typeof MemberDetailSchema>;
 

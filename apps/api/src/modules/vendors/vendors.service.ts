@@ -8,7 +8,7 @@ import {
   type VendorCategoryIcon,
   VendorCategoryIconSchema,
   type VendorStatus,
-  type vendorsContract,
+  vendorsContract,
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
@@ -16,7 +16,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import type { Prisma } from '../../generated/prisma/client';
 import { loadMemberNames } from '../tenancy/member-names';
 
@@ -63,8 +63,9 @@ export class VendorsService {
     return this.tenant.client;
   }
 
+  /** Edit, approve, block and delete: the vendor.manage the update and delete routes ask for. */
   private canManage(ctx: TenantContext): boolean {
-    return can(ctx, 'vendor.manage');
+    return mayCall(ctx, vendorsContract.update) && mayCall(ctx, vendorsContract.remove);
   }
 
   /** Members see approved and trial vendors plus what they suggested themselves. */
@@ -321,6 +322,7 @@ export class VendorsService {
       },
       createdAt: v.createdAt.toISOString(),
       updatedAt: v.updatedAt.toISOString(),
+      canManage: manager,
     }));
   }
 }

@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
 import { money } from '../../core/util/money';
@@ -36,27 +36,23 @@ export function BillScreen() {
   const toast = useToast();
   const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
-  const tenant = useTenant();
   const { billId } = useRoute<RouteProp<RootStackParamList, 'Bill'>>().params;
   const bill = useBill(societyId, billId);
   const action = useBillAction(societyId, billId);
-  const canWaive = useCan('maintenance.waive');
   const [menu, setMenu] = useState(false);
   const [sheet, setSheet] = useState<Action | null>(null);
   const [reason, setReason] = useState('');
   const b = bill.data;
   const open = b ? b.status !== 'PAID' && b.status !== 'WAIVED' : false;
-  const mine = b ? tenant.flats.some((f) => f.id === b.flat.id) : false;
 
-  const options: { value: Action; label: string }[] =
-    b && open && canWaive
-      ? [
-          ...(b.lateFeePaise > 0
-            ? [{ value: 'waiveLateFee' as const, label: t('money:bill.waiveLateFee') }]
-            : []),
-          { value: 'waive', label: t('money:bill.waive') },
-        ]
-      : [];
+  const options: { value: Action; label: string }[] = b?.canWaive
+    ? [
+        ...(b.canWaiveLateFee
+          ? [{ value: 'waiveLateFee' as const, label: t('money:bill.waiveLateFee') }]
+          : []),
+        { value: 'waive', label: t('money:bill.waive') },
+      ]
+    : [];
 
   const submit = async () => {
     if (!sheet || reason.trim().length < 2) return;
@@ -117,7 +113,7 @@ export function BillScreen() {
                 {t('money:bill.waivedNote', { reason: b.waivedReason })}
               </Text>
             ) : null}
-            {open && mine ? (
+            {b.canPay ? (
               <Button
                 className="mt-5"
                 icon="upi"

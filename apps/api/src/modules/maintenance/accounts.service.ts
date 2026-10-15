@@ -3,13 +3,14 @@ import {
   type Collection,
   type CollectionStatus,
   type FlatAccount,
+  maintenanceContract,
   parseModuleSettings,
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { ApiException } from '../../common/errors/api.exception';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { dateOnly, fyLabel, todayIn } from '../../common/util/dates';
 import { toFlatRef } from '../tenancy/mappers';
 import { BillsService } from './bills.service';
@@ -28,18 +29,18 @@ export class AccountsService {
 
   async myDues(): Promise<{ flats: FlatAccount[] }> {
     const ctx = requireTenant();
-    return { flats: await this.accounts(ctx.flatIds) };
+    return { flats: await this.accounts(ctx, ctx.flatIds) };
   }
 
   async flatAccount(flatId: string): Promise<FlatAccount> {
     const ctx = requireTenant();
     if (!this.bills.canSeeFlat(ctx, flatId)) throw ApiException.notFound('Flat not found');
-    const [account] = await this.accounts([flatId]);
+    const [account] = await this.accounts(ctx, [flatId]);
     if (!account) throw ApiException.notFound('Flat not found');
     return account;
   }
 
-  private async accounts(flatIds: string[]): Promise<FlatAccount[]> {
+  private async accounts(ctx: TenantContext, flatIds: string[]): Promise<FlatAccount[]> {
     if (flatIds.length === 0) return [];
     const [flats, open, payments] = await Promise.all([
       this.db.flat.findMany({ where: { id: { in: flatIds } }, include: { building: true } }),
@@ -74,6 +75,7 @@ export class AccountsService {
           nextDueDate: bills[0] ? dateOnly(bills[0].dueDate) : null,
           openBills: bills.map(toBillSummary),
           recentPayments: mine.slice(0, 6).map(toPaymentSummary),
+          canRecordPayment: mayCall(ctx, maintenanceContract.recordPayment),
         };
       });
   }
@@ -170,7 +172,7 @@ export class AccountsService {
   /** One DUES item per flat of mine that owes money. */
   async attentionForHome(ctx: TenantContext): Promise<AttentionItem[]> {
     if (ctx.flatIds.length === 0) return [];
-    const accounts = await this.accounts(ctx.flatIds);
+    const accounts = await this.accounts(ctx, ctx.flatIds);
     return accounts
       .filter((a) => a.outstandingPaise > 0 && a.nextDueDate)
       .map((a) => ({

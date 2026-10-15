@@ -24,7 +24,7 @@ import { Alert, Image, Linking, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { formatRegistration, slotIcon } from '../parking/shared';
 import { useIssueResetCode, useMember, useRoles, useUpdateMember } from './api';
@@ -36,19 +36,16 @@ export function MemberDetailScreen() {
   const toast = useToast();
   const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
-  const tenant = useTenant();
   const { membershipId } = useRoute<RouteProp<RootStackParamList, 'MemberDetail'>>().params;
   const member = useMember(societyId, membershipId);
   const roles = useRoles(societyId);
   const update = useUpdateMember(societyId, membershipId);
   const reset = useIssueResetCode(societyId, membershipId);
-  const canManage = useCan('member.manage');
   const [roleOpen, setRoleOpen] = useState(false);
   const [roleIds, setRoleIds] = useState<Set<string>>(new Set());
   const [flatsOpen, setFlatsOpen] = useState(false);
   const [code, setCode] = useState<{ code: string; expiresAt: string } | null>(null);
   const m = member.data;
-  const isMe = m?.membershipId === tenant.id;
 
   const openRoles = () => {
     setRoleIds(new Set(m?.roles.map((r) => r.id)));
@@ -194,7 +191,7 @@ export function MemberDetailScreen() {
               </Card>
             </>
           ) : null}
-          {canManage && !isMe ? (
+          {m.canManage ? (
             <>
               <Divider className="my-6" />
               <View className="gap-3">

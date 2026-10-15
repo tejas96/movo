@@ -2,7 +2,7 @@ import {
   AudienceSchema,
   type EventRsvp,
   type EventSummary,
-  type eventsContract,
+  eventsContract,
   type MyRsvp,
   parseModuleSettings,
   type RouteBody,
@@ -17,7 +17,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import type { TenantContext } from '../../common/tenant/tenant.types';
+import { mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { days, iso } from '../../common/util/dates';
 import type { SocietyEvent as EventRow, Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -208,7 +208,7 @@ export class EventsService {
   async rsvp(eventId: string, body: RsvpBody): Promise<SocietyEvent> {
     const ctx = requireTenant();
     const e = await this.requireVisible(ctx, eventId);
-    if (e.status !== 'PUBLISHED' || !e.rsvpEnabled || isOver(e, new Date()))
+    if (!answersOpen(e, new Date()))
       throw ApiException.conflict('CONFLICT', 'Answers are closed for this event');
     const guestsCount = body.response === 'GOING' ? body.guestsCount : 0;
     await this.db.eventRsvp.upsert({
@@ -316,8 +316,7 @@ export class EventsService {
   private async requirePublished(eventId: string): Promise<EventRow> {
     const e = await this.db.societyEvent.findUnique({ where: { id: eventId } });
     if (!e) throw ApiException.notFound('Event not found');
-    if (e.status !== 'PUBLISHED')
-      throw ApiException.conflict('CONFLICT', 'A cancelled event cannot change');
+    if (!eventOpen(e)) throw ApiException.conflict('CONFLICT', 'A cancelled event cannot change');
     return e;
   }
 
@@ -370,8 +369,35 @@ export class EventsService {
       },
       createdAt: e.createdAt.toISOString(),
       updatedAt: e.updatedAt.toISOString(),
+      ...eventAccess(ctx, e, new Date()),
     };
   }
+}
+
+/** Edit and cancel change only an event that is not cancelled. */
+function eventOpen(e: Pick<EventRow, 'status'>): boolean {
+  return e.status === 'PUBLISHED';
+}
+
+/** Members can answer while the event is on, has RSVP, and is not over. */
+function answersOpen(
+  e: Pick<EventRow, 'status' | 'rsvpEnabled' | 'startsAt' | 'endsAt'>,
+  now: Date,
+): boolean {
+  return eventOpen(e) && e.rsvpEnabled && !isOver(e, now);
+}
+
+/** The event's can* flags, from the same checks the routes (event.manage) and guards use. */
+export function eventAccess(
+  ctx: TenantContext,
+  e: Pick<EventRow, 'status' | 'rsvpEnabled' | 'startsAt' | 'endsAt'>,
+  now: Date,
+): { canManage: boolean; canRsvp: boolean; canSeeRsvps: boolean } {
+  return {
+    canManage: mayCall(ctx, eventsContract.update) && eventOpen(e),
+    canRsvp: answersOpen(e, now),
+    canSeeRsvps: mayCall(ctx, eventsContract.listRsvps) && e.rsvpEnabled,
+  };
 }
 
 function toSummary(e: EventRow, c: Counts, myRsvp: MyRsvp | null): EventSummary {

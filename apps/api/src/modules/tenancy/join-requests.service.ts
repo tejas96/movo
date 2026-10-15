@@ -5,7 +5,7 @@ import {
   type MemberCard,
   type RouteBody,
   SocietySettingsSchema,
-  type societyContract,
+  societyContract,
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import type { z } from 'zod';
@@ -14,6 +14,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
+import { mayCall } from '../../common/tenant/tenant.types';
 import type { Prisma } from '../../generated/prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Recipients } from '../notifications/recipients.service';
@@ -41,7 +42,16 @@ function toDto(r: RequestRow, showContact: boolean): JoinRequest {
     message: r.message,
     status: r.status,
     createdAt: r.createdAt.toISOString(),
+    canDecide:
+      isPending(r) &&
+      mayCall(requireTenant(), societyContract.approveJoinRequest) &&
+      mayCall(requireTenant(), societyContract.rejectJoinRequest),
   };
+}
+
+/** Approve and reject act only on a pending request. */
+function isPending(r: Pick<RequestRow, 'status'> | null): r is Pick<RequestRow, 'status'> {
+  return r?.status === 'PENDING';
 }
 
 @Injectable()
@@ -182,7 +192,7 @@ export class JoinRequestsService {
       where: { id: requestId },
       include: requestInclude,
     });
-    if (row?.status !== 'PENDING') throw ApiException.notFound('Request not found');
+    if (!isPending(row)) throw ApiException.notFound('Request not found');
     const role = body.roleId
       ? (await this.roles.requireRoles([body.roleId]))[0]
       : await this.roles.residentRole();
@@ -257,7 +267,7 @@ export class JoinRequestsService {
   async reject(requestId: string, reason?: string): Promise<void> {
     const ctx = requireTenant();
     const row = await this.tenant.client.joinRequest.findUnique({ where: { id: requestId } });
-    if (row?.status !== 'PENDING') throw ApiException.notFound('Request not found');
+    if (!isPending(row)) throw ApiException.notFound('Request not found');
     await this.tenant.tx(async (tx) => {
       await tx.joinRequest.update({
         where: { id: requestId },

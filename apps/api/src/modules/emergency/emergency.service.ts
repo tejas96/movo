@@ -4,7 +4,7 @@ import {
   type AttentionItem,
   DEFAULT_PUBLIC_EMERGENCY_CONTACTS,
   type EmergencyContact,
-  type emergencyContract,
+  emergencyContract,
   type RouteBody,
   type RouteQuery,
 } from '@movo/contracts';
@@ -15,7 +15,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { iso, minutes } from '../../common/util/dates';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Prisma } from '../../generated/prisma/client';
@@ -82,7 +82,8 @@ export class EmergencyService {
     const rows = await this.db.emergencyContact.findMany({
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     });
-    return rows.map(toContactDto);
+    const ctx = requireTenant();
+    return rows.map((c) => toContactDto(ctx, c));
   }
 
   async createContact(body: ContactBody): Promise<EmergencyContact> {
@@ -104,7 +105,7 @@ export class EmergencyService {
       entityId: row.id,
       after: { label: row.label, phone: row.phone },
     });
-    return toContactDto(row);
+    return toContactDto(ctx, row);
   }
 
   async updateContact(contactId: string, body: ContactPatch): Promise<EmergencyContact> {
@@ -127,7 +128,7 @@ export class EmergencyService {
       before: { label: before.label, phone: before.phone },
       after: { label: row.label, phone: row.phone },
     });
-    return toContactDto(row);
+    return toContactDto(requireTenant(), row);
   }
 
   async deleteContact(contactId: string): Promise<void> {
@@ -251,7 +252,7 @@ export class EmergencyService {
   async resolveAlert(alertId: string, body: ResolveBody): Promise<Alert> {
     const ctx = requireTenant();
     const before = await this.requireAlert(alertId);
-    if (before.raisedByMembershipId !== ctx.membershipId && !can(ctx, 'emergency.alert.resolve'))
+    if (!mayResolve(ctx, before))
       throw ApiException.forbidden('Only the person who raised it or a resolver can close it');
     if (before.status !== 'ACTIVE')
       throw ApiException.conflict('CONFLICT', 'This alert is already closed');
@@ -367,7 +368,6 @@ export class EmergencyService {
       this.prisma,
       rows.flatMap((r) => [r.raisedByMembershipId, r.resolvedByMembershipId]),
     );
-    const resolver = can(ctx, 'emergency.alert.resolve');
     return rows.map((a) => {
       const raiser = a.raisedByMembershipId ? names.get(a.raisedByMembershipId) : undefined;
       const closer = a.resolvedByMembershipId ? names.get(a.resolvedByMembershipId) : undefined;
@@ -393,21 +393,32 @@ export class EmergencyService {
             ? { membershipId: a.resolvedByMembershipId, displayName: closer.displayName }
             : null,
         resolutionNote: a.resolutionNote,
-        canResolve:
-          a.status === 'ACTIVE' && (resolver || a.raisedByMembershipId === ctx.membershipId),
+        canResolve: a.status === 'ACTIVE' && mayResolve(ctx, a),
+        canCallRaiser:
+          a.status === 'ACTIVE' &&
+          Boolean(raiser?.phone) &&
+          a.raisedByMembershipId !== ctx.membershipId,
       };
     });
   }
 }
 
-function toContactDto(c: {
-  id: string;
-  label: string;
-  phone: string;
-  type: EmergencyContact['type'];
-  sortOrder: number;
-  isPublicNumber: boolean;
-}): EmergencyContact {
+/** Close an alert: the person who raised it, or emergency.alert.resolve. */
+function mayResolve(ctx: TenantContext, a: { raisedByMembershipId: string | null }): boolean {
+  return a.raisedByMembershipId === ctx.membershipId || can(ctx, 'emergency.alert.resolve');
+}
+
+function toContactDto(
+  ctx: TenantContext,
+  c: {
+    id: string;
+    label: string;
+    phone: string;
+    type: EmergencyContact['type'];
+    sortOrder: number;
+    isPublicNumber: boolean;
+  },
+): EmergencyContact {
   return {
     id: c.id,
     label: c.label,
@@ -415,5 +426,6 @@ function toContactDto(c: {
     type: c.type,
     sortOrder: c.sortOrder,
     isPublicNumber: c.isPublicNumber,
+    canEdit: mayCall(ctx, emergencyContract.updateContact),
   };
 }

@@ -81,6 +81,10 @@ export const ExpenseSchema = ExpenseSummarySchema.extend({
   canDecide: z.boolean(),
   /** Pending or rejected, and the viewer created it or can approve. */
   canEdit: z.boolean(),
+  /** Same rule as canEdit. */
+  canRemove: z.boolean(),
+  /** The viewer added it. */
+  isMine: z.boolean(),
 });
 export type Expense = z.infer<typeof ExpenseSchema>;
 
@@ -92,6 +96,8 @@ export const IncomeEntrySchema = z.object({
   description: z.string().nullable(),
   createdBy: ActorSchema,
   createdAt: IsoDateTimeSchema,
+  /** expense.create. */
+  canRemove: z.boolean(),
 });
 export type IncomeEntry = z.infer<typeof IncomeEntrySchema>;
 

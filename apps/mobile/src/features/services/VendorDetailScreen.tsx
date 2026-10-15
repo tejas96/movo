@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
 import { formatPhone } from '../../core/util/phone';
@@ -36,7 +36,6 @@ export function VendorDetailScreen() {
   const categories = useVendorCategories(societyId);
   const update = useUpdateVendor(societyId, vendorId);
   const remove = useDeleteVendor(societyId, vendorId);
-  const canManage = useCan('vendor.manage');
   const v = vendor.data;
   const icon = categories.data?.find((c) => c.id === v?.category.id)?.icon ?? 'services';
 
@@ -62,7 +61,7 @@ export function VendorDetailScreen() {
           title={v ? categoryLabel(v.category) : t('services:title')}
           onBack={() => nav.goBack()}
           trailing={
-            canManage && v ? (
+            v?.canManage ? (
               <IconSquare
                 icon="edit"
                 variant="linear"
@@ -140,7 +139,7 @@ export function VendorDetailScreen() {
               {t('services:detail.addedBy', { name: v.addedBy.displayName })}
             </Text>
 
-            {canManage ? (
+            {v.canManage ? (
               <View className="mt-6 gap-3">
                 {v.status === 'SUGGESTED' ? (
                   <Button

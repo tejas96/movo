@@ -2,7 +2,7 @@ import {
   AudienceSchema,
   type Notice,
   type NoticeSummary,
-  type noticesContract,
+  noticesContract,
   parseModuleSettings,
   type RouteBody,
   type RouteQuery,
@@ -13,7 +13,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { iso } from '../../common/util/dates';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
 import type { Notice as NoticeRow, Prisma } from '../../generated/prisma/client';
@@ -118,6 +118,7 @@ export class NoticesService {
       readAt = read.readAt;
     }
     return this.toDto(
+      ctx,
       n,
       readAt,
       await this.authorName(n.createdByMembershipId),
@@ -157,7 +158,7 @@ export class NoticesService {
       if (row.status === 'PUBLISHED') await this.fanOut(ctx, row, tx);
       return row;
     });
-    return this.toDto(n, null, await this.authorName(n.createdByMembershipId), 0);
+    return this.toDto(ctx, n, null, await this.authorName(n.createdByMembershipId), 0);
   }
 
   async update(noticeId: string, body: UpdateBody): Promise<Notice> {
@@ -194,6 +195,7 @@ export class NoticesService {
       return row;
     });
     return this.toDto(
+      ctx,
       n,
       null,
       await this.authorName(n.createdByMembershipId),
@@ -223,7 +225,7 @@ export class NoticesService {
       await this.fanOut(ctx, row, tx);
       return row;
     });
-    return this.toDto(n, null, await this.authorName(n.createdByMembershipId), 0);
+    return this.toDto(ctx, n, null, await this.authorName(n.createdByMembershipId), 0);
   }
 
   async archive(noticeId: string): Promise<Notice> {
@@ -235,6 +237,7 @@ export class NoticesService {
     });
     await this.audit.record({ action: 'notice.archived', entityType: 'Notice', entityId: n.id });
     return this.toDto(
+      ctx,
       n,
       null,
       await this.authorName(n.createdByMembershipId),
@@ -258,6 +261,7 @@ export class NoticesService {
       return row;
     });
     return this.toDto(
+      ctx,
       n,
       null,
       await this.authorName(n.createdByMembershipId),
@@ -314,7 +318,7 @@ export class NoticesService {
   private async requireEditable(ctx: TenantContext, noticeId: string): Promise<NoticeRow> {
     const n = await this.db.notice.findUnique({ where: { id: noticeId } });
     if (!n) throw ApiException.notFound('Notice not found');
-    if (n.createdByMembershipId !== ctx.membershipId && !can(ctx, 'notice.manage_all'))
+    if (!mayEditNotice(ctx, n))
       throw ApiException.forbidden('Only the author or a notice manager can change this');
     return n;
   }
@@ -395,6 +399,7 @@ export class NoticesService {
   }
 
   private toDto(
+    ctx: TenantContext,
     n: NoticeRow,
     readAt: Date | null,
     authorName: string,
@@ -408,6 +413,21 @@ export class NoticesService {
       createdAt: n.createdAt.toISOString(),
       updatedAt: n.updatedAt.toISOString(),
       readCount,
+      canEdit: mayEditNotice(ctx, n),
     };
   }
+}
+
+/**
+ * Edit, publish, pin and archive: the guard for those routes and the notice's canEdit flag.
+ * The routes ask for notice.publish; authors change their own, notice.manage_all any.
+ */
+export function mayEditNotice(
+  ctx: TenantContext,
+  n: Pick<NoticeRow, 'createdByMembershipId'>,
+): boolean {
+  return (
+    mayCall(ctx, noticesContract.update) &&
+    (n.createdByMembershipId === ctx.membershipId || can(ctx, 'notice.manage_all'))
+  );
 }

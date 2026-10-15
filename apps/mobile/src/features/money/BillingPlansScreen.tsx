@@ -80,7 +80,7 @@ export function BillingPlansScreen() {
                   </View>
                 )
               }
-              onPress={canEdit ? () => nav.navigate('PlanEditor', { planId: p.id }) : undefined}
+              onPress={p.canEdit ? () => nav.navigate('PlanEditor', { planId: p.id }) : undefined}
             />
           ))}
         </Card>

@@ -8,6 +8,10 @@ export const RoleSchema = RoleSummarySchema.extend({
   isSystem: z.boolean(),
   permissions: z.array(PermissionKeySchema),
   memberCount: z.number().int(),
+  /** society.roles.manage; the admin role always keeps every permission. */
+  canEditPermissions: z.boolean(),
+  /** society.roles.manage and a role the society added (not built in). */
+  canDelete: z.boolean(),
 });
 export type Role = z.infer<typeof RoleSchema>;
 

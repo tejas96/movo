@@ -37,3 +37,11 @@ export type TenantLookup =
 export function can(ctx: TenantContext, permission: PermissionKey): boolean {
   return ctx.permissions.has(permission);
 }
+
+/**
+ * The caller passes the route's own permission check. Entity can* flags use this with the
+ * contract route, so a flag reads the same permission the route guard enforces.
+ */
+export function mayCall(ctx: TenantContext, route: { permission: PermissionKey | null }): boolean {
+  return route.permission === null || can(ctx, route.permission);
+}

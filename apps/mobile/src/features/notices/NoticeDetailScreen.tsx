@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
 import { mediumDate } from '../../core/util/date';
@@ -46,16 +46,12 @@ export function NoticeDetailScreen() {
   const toast = useToast();
   const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
-  const tenant = useTenant();
   const { noticeId } = useRoute<RouteProp<RootStackParamList, 'NoticeDetail'>>().params;
   const notice = useNotice(societyId, noticeId);
   const action = useNoticeAction(societyId, noticeId);
-  const canPublish = useCan('notice.publish');
-  const canManageAll = useCan('notice.manage_all');
   const [menu, setMenu] = useState(false);
   const n = notice.data;
-  const mine = n?.createdBy.membershipId === tenant.id;
-  const canEdit = Boolean(n) && (canManageAll || (canPublish && mine));
+  const canEdit = n?.canEdit === true;
 
   const run = async (a: Action) => {
     if (a === 'edit') {

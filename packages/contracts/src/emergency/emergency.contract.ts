@@ -37,6 +37,8 @@ export const EmergencyContactSchema = z.object({
   sortOrder: z.number().int(),
   /** 112, 101, 108 and the like. Shown in a separate group. */
   isPublicNumber: z.boolean(),
+  /** emergency.contacts.manage. */
+  canEdit: z.boolean(),
 });
 export type EmergencyContact = z.infer<typeof EmergencyContactSchema>;
 
@@ -73,6 +75,8 @@ export const AlertSchema = z.object({
   resolutionNote: z.string().nullable(),
   /** true when this viewer raised it or holds emergency.alert.resolve. */
   canResolve: z.boolean(),
+  /** Active, the raiser's phone is shared, and the viewer is not the raiser. */
+  canCallRaiser: z.boolean(),
 });
 export type Alert = z.infer<typeof AlertSchema>;
 

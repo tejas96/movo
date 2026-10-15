@@ -311,6 +311,7 @@ export class ExpensesService {
     return e;
   }
 
+  /** Edit and remove: the guard for both routes and the expense's canEdit/canRemove flags. */
   private mayEdit(ctx: TenantContext, e: ExpenseRow): boolean {
     return (
       e.status !== 'APPROVED' &&
@@ -365,6 +366,8 @@ export class ExpensesService {
         can(ctx, 'expense.approve') &&
         e.createdByMembershipId !== ctx.membershipId,
       canEdit: this.mayEdit(ctx, e),
+      canRemove: this.mayEdit(ctx, e),
+      isMine: e.createdByMembershipId === ctx.membershipId,
     };
   }
 }

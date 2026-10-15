@@ -54,6 +54,12 @@ export const EventSchema = EventSummarySchema.extend({
   createdBy: ActorSchema,
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
+  /** Edit and cancel: event.manage and the event is not cancelled. */
+  canManage: z.boolean(),
+  /** Answers are open: published, RSVP on, and not over. */
+  canRsvp: z.boolean(),
+  /** See who answered: event.manage and RSVP on. */
+  canSeeRsvps: z.boolean(),
 });
 export type SocietyEvent = z.infer<typeof EventSchema>;
 

@@ -3,7 +3,7 @@ import {
   type FlatRef,
   LateFeeRuleSchema,
   type Locale,
-  type maintenanceContract,
+  maintenanceContract,
   type RouteBody,
   type RouteQuery,
 } from '@movo/contracts';
@@ -15,7 +15,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { dateOnly, dbDate, fyLabel, todayIn } from '../../common/util/dates';
 import { newId } from '../../common/util/ids';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
@@ -88,7 +88,7 @@ export class BillsService {
     const ctx = requireTenant();
     const b = await this.db.bill.findUnique({ where: { id: billId }, include: billInclude });
     if (!b || !this.canSeeFlat(ctx, b.flatId)) throw ApiException.notFound('Bill not found');
-    return this.toDto(b);
+    return this.toDto(ctx, b);
   }
 
   /** Request entry point: runs generation for the caller's society now. */
@@ -558,8 +558,7 @@ export class BillsService {
   private async requireOpen(billId: string): Promise<BillRow> {
     const b = await this.db.bill.findUnique({ where: { id: billId }, include: billInclude });
     if (!b) throw ApiException.notFound('Bill not found');
-    if (b.status === 'PAID' || b.status === 'WAIVED')
-      throw ApiException.conflict('CONFLICT', 'This bill is already settled');
+    if (!billOpen(b)) throw ApiException.conflict('CONFLICT', 'This bill is already settled');
     return b;
   }
 
@@ -576,7 +575,7 @@ export class BillsService {
     return can(ctx, 'maintenance.view_all') ? undefined : ctx.flatIds;
   }
 
-  private async toDto(b: BillRow): Promise<Bill> {
+  private async toDto(ctx: TenantContext, b: BillRow): Promise<Bill> {
     const allocations = await this.db.paymentAllocation.findMany({
       where: { billId: b.id, payment: { status: 'RECORDED' } },
       include: { payment: true },
@@ -597,8 +596,30 @@ export class BillsService {
       lateFeeWaived: b.lateFeeWaived,
       waivedReason: b.waivedReason,
       createdAt: b.createdAt.toISOString(),
+      ...billAccess(ctx, b),
     };
   }
+}
+
+/** Waive and waive-late-fee change only a bill that is not paid or waived. */
+function billOpen(b: Pick<BillRow, 'status'>): boolean {
+  return b.status !== 'PAID' && b.status !== 'WAIVED';
+}
+
+/** The bill's can* flags, from the waive routes' permission and the same open-bill check. */
+function billAccess(
+  ctx: TenantContext,
+  b: BillRow,
+): { canWaive: boolean; canWaiveLateFee: boolean; canPay: boolean } {
+  const open = billOpen(b);
+  return {
+    canWaive: open && mayCall(ctx, maintenanceContract.waiveBill),
+    canWaiveLateFee:
+      open &&
+      mayCall(ctx, maintenanceContract.waiveLateFee) &&
+      b.lines.some((l) => l.type === 'LATE_FEE' && l.amountPaise > 0),
+    canPay: open && ctx.flatIds.includes(b.flatId),
+  };
 }
 
 export function billName(

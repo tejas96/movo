@@ -1,10 +1,11 @@
-import type { Invitation, RouteBody, RouteQuery, societyContract } from '@movo/contracts';
+import { type Invitation, type RouteBody, type RouteQuery, societyContract } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
+import { mayCall } from '../../common/tenant/tenant.types';
 import { readableCode } from '../../common/util/codes';
 import { addMs, days } from '../../common/util/dates';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
@@ -66,6 +67,8 @@ export class InvitationsService {
       expiresAt: row.expiresAt.toISOString(),
       createdAt: row.createdAt.toISOString(),
       invitedBy: { membershipId: row.invitedByMembershipId, displayName: row.invitedByName },
+      // Expired ones show as EXPIRED and get no revoke button.
+      canRevoke: status === 'PENDING' && mayCall(requireTenant(), societyContract.revokeInvitation),
     };
   }
 

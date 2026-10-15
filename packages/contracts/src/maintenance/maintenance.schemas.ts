@@ -69,6 +69,8 @@ export const BillingPlanSchema = z.object({
   isActive: z.boolean(),
   overrides: z.array(z.object({ flat: FlatRefSchema, amountPaise: PaiseSchema })),
   createdAt: IsoDateTimeSchema,
+  /** maintenance.settings.manage. */
+  canEdit: z.boolean(),
 });
 export type BillingPlan = z.infer<typeof BillingPlanSchema>;
 
@@ -104,6 +106,12 @@ export const BillSchema = BillSummarySchema.extend({
   lateFeeWaived: z.boolean(),
   waivedReason: z.string().nullable(),
   createdAt: IsoDateTimeSchema,
+  /** maintenance.waive and the bill is not settled. */
+  canWaive: z.boolean(),
+  /** canWaive and the bill has a late fee. */
+  canWaiveLateFee: z.boolean(),
+  /** The bill is not settled and belongs to one of the viewer's flats. */
+  canPay: z.boolean(),
 });
 export type Bill = z.infer<typeof BillSchema>;
 
@@ -149,6 +157,8 @@ export const FlatAccountSchema = z.object({
   nextDueDate: IsoDateSchema.nullable(),
   openBills: z.array(BillSummarySchema),
   recentPayments: z.array(PaymentSummarySchema),
+  /** maintenance.record_payment. */
+  canRecordPayment: z.boolean(),
 });
 export type FlatAccount = z.infer<typeof FlatAccountSchema>;
 

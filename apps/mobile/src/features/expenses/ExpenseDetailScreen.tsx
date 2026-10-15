@@ -20,7 +20,7 @@ import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
-import { useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, relative } from '../../core/util/date';
 import { money } from '../../core/util/money';
@@ -35,7 +35,6 @@ export function ExpenseDetailScreen() {
   const toast = useToast();
   const withErrorToast = useMutationToast();
   const societyId = useSocietyId();
-  const tenant = useTenant();
   const { expenseId } = useRoute<RouteProp<RootStackParamList, 'ExpenseDetail'>>().params;
   const expense = useExpense(societyId, expenseId);
   const decide = useDecideExpense(societyId, expenseId);
@@ -43,7 +42,6 @@ export function ExpenseDetailScreen() {
   const [sheet, setSheet] = useState<'reject' | 'remove' | null>(null);
   const [reason, setReason] = useState('');
   const e = expense.data;
-  const mine = e?.createdBy.membershipId === tenant.id;
 
   const run = async (approve: boolean) => {
     await withErrorToast(async () => {
@@ -124,7 +122,7 @@ export function ExpenseDetailScreen() {
                   {`${t('expenses:detail.reason')}: ${e.rejectionReason}`}
                 </Text>
               ) : null}
-              {e.status === 'PENDING' && mine ? (
+              {e.status === 'PENDING' && e.isMine ? (
                 <Text variant="label" tone="secondary" className="mt-3">
                   {t('expenses:detail.ownNote')}
                 </Text>
@@ -135,7 +133,7 @@ export function ExpenseDetailScreen() {
               title={t('expenses:detail.receipts')}
               photos={e.receipts}
             />
-            {e.canEdit ? (
+            {e.canRemove ? (
               <Button
                 className="mt-4"
                 variant="ghost"

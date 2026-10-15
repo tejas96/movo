@@ -24,6 +24,8 @@ export const JoinRequestSchema = z.object({
   message: z.string().nullable(),
   status: JoinRequestStatusSchema,
   createdAt: IsoDateTimeSchema,
+  /** Approve or reject: member.manage and the request is pending. */
+  canDecide: z.boolean(),
 });
 export type JoinRequest = z.infer<typeof JoinRequestSchema>;
 

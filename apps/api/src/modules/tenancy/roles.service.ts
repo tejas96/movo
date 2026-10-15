@@ -5,6 +5,7 @@ import {
   ROLE_TEMPLATE_PERMISSIONS,
   type Role,
   type RoleTemplateKey,
+  societyContract,
 } from '@movo/contracts';
 import { Injectable, Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
@@ -12,6 +13,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
+import { mayCall } from '../../common/tenant/tenant.types';
 import { readableCode } from '../../common/util/codes';
 import type { Prisma } from '../../generated/prisma/client';
 import { ContextService } from './context.service';
@@ -52,6 +54,7 @@ const roleInclude = { permissions: true, _count: { select: { members: true } } }
 type RoleRow = Prisma.RoleGetPayload<{ include: typeof roleInclude }>;
 
 function toRole(r: RoleRow): Role {
+  const ctx = requireTenant();
   return {
     id: r.id,
     key: r.key,
@@ -59,6 +62,9 @@ function toRole(r: RoleRow): Role {
     isSystem: r.isSystem,
     permissions: r.permissions.map((p) => p.permissionKey as PermissionKey).sort(),
     memberCount: r._count.members,
+    // The admin role always keeps every permission (see update).
+    canEditPermissions: r.key !== 'admin' && mayCall(ctx, societyContract.updateRole),
+    canDelete: !r.isSystem && mayCall(ctx, societyContract.deleteRole),
   };
 }
 
