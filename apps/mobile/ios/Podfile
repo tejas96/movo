@@ -14,8 +14,19 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+# React Native Firebase: take Firebase from CocoaPods, not Swift packages
+# (Swift packages need dynamic frameworks). We keep static libraries, because
+# static frameworks break react-native-worklets headers. Firebase's Swift pods
+# then need module maps on the Objective-C pods they import.
+$RNFirebaseDisableSPM = true
+
 target 'MovoMobile' do
   config = use_native_modules!
+
+  %w[GoogleUtilities FirebaseCore FirebaseCoreExtension FirebaseInstallations
+     GoogleDataTransport nanopb].each do |name|
+    pod name, :modular_headers => true
+  end
 
   use_react_native!(
     :path => config[:reactNativePath],
