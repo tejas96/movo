@@ -54,6 +54,8 @@ export const ParkingSlotSchema = z.object({
   status: ParkingSlotStatusSchema,
   /** null = free. */
   allocation: ParkingAllocationSchema.nullable(),
+  /** Edit, give to a flat, free: parking.manage. */
+  canManage: z.boolean(),
 });
 export type ParkingSlot = z.infer<typeof ParkingSlotSchema>;
 

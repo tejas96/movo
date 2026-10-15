@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 import { whenRange } from '../../core/util/date';
@@ -49,18 +49,13 @@ export function EventDetailScreen() {
   const societyId = useSocietyId();
   const { eventId } = useRoute<RouteProp<RootStackParamList, 'EventDetail'>>().params;
   const event = useEvent(societyId, eventId);
-  const canManage = useCan('event.manage');
-  const rsvps = useEventRsvps(societyId, eventId, canManage);
+  const e = event.data;
+  const rsvps = useEventRsvps(societyId, eventId, e?.canSeeRsvps === true);
   const rsvp = useRsvp(societyId, eventId);
   const cancel = useCancelEvent(societyId, eventId);
   const [menu, setMenu] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reason, setReason] = useState('');
-  const e = event.data;
-  const over = e
-    ? new Date(e.endsAt ?? new Date(e.startsAt).getTime() + 2 * 3_600_000).getTime() < Date.now()
-    : false;
-  const canAnswer = Boolean(e && e.status === 'PUBLISHED' && e.rsvpEnabled && !over);
 
   const answer = async (response: RsvpResponse, guestsCount = 0) => {
     await withErrorToast(async () => {
@@ -85,7 +80,7 @@ export function EventDetailScreen() {
         title={t('events:title')}
         onBack={() => nav.goBack()}
         trailing={
-          canManage && e?.status === 'PUBLISHED' ? (
+          e?.canManage ? (
             <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
           ) : undefined
         }
@@ -132,7 +127,7 @@ export function EventDetailScreen() {
           {e.rsvpEnabled && e.status === 'PUBLISHED' ? (
             <>
               <SectionHeader title={t('events:rsvp.question')} />
-              {canAnswer ? (
+              {e.canRsvp ? (
                 <Card tight className="gap-3 p-3">
                   <Segmented
                     value={e.myRsvp?.response ?? ('' as RsvpResponse)}
@@ -182,7 +177,7 @@ export function EventDetailScreen() {
             </>
           ) : null}
 
-          {canManage && e.rsvpEnabled ? (
+          {e.canSeeRsvps ? (
             <>
               <SectionHeader title={t('events:responses.title')} />
               <Text variant="label" tone="secondary" className="mb-2">

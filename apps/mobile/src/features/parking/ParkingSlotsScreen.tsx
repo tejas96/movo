@@ -187,7 +187,7 @@ export function ParkingSlotsScreen() {
                 icon={slotIcon(item.type)}
                 title={item.code}
                 subtitle={subtitle(item) || undefined}
-                onPress={canManage ? () => setSelected(item) : undefined}
+                onPress={item.canManage ? () => setSelected(item) : undefined}
                 trailing={
                   item.status === 'BLOCKED' ? (
                     <StatusPill label={t('parking:slotStatus.BLOCKED')} tone="danger" />

@@ -6,7 +6,7 @@ import {
   type TaskEventKind,
   type TaskSummary,
   type TaskView,
-  type tasksContract,
+  tasksContract,
 } from '@movo/contracts';
 import { Injectable } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service';
@@ -15,7 +15,7 @@ import type { MemberLeft } from '../../common/lifecycle/lifecycle';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { dateOnly, dbDate } from '../../common/util/dates';
 import type { Prisma, Task as TaskRow, TaskStatus } from '../../generated/prisma/client';
 import { FilesService } from '../files/files.service';
@@ -185,7 +185,7 @@ export class TasksService {
   async withdraw(taskId: string): Promise<Task> {
     const ctx = requireTenant();
     const t = await this.requireTask(taskId);
-    if (t.assigneeMembershipId !== ctx.membershipId || t.status !== 'IN_PROGRESS')
+    if (!doingIt(ctx, t))
       throw ApiException.forbidden('Only the person doing a task can give it back');
     const task = await this.tenant.tx(async (tx) => {
       const updated = await tx.task.update({
@@ -205,7 +205,7 @@ export class TasksService {
   ): Promise<Task> {
     const ctx = requireTenant();
     const t = await this.requireTask(taskId);
-    if (t.assigneeMembershipId !== ctx.membershipId || t.status !== 'IN_PROGRESS')
+    if (!doingIt(ctx, t))
       throw ApiException.forbidden('Only the person doing a task can mark it done');
     // New photos replace the ones from a try that was sent back; no list keeps them.
     const proofs = proofIds
@@ -482,7 +482,6 @@ export class TasksService {
       membershipId: id,
       displayName: names.get(id)?.displayName ?? 'Committee',
     });
-    const mine = t.assigneeMembershipId === ctx.membershipId;
     return {
       ...toSummary(t, names),
       description: t.description,
@@ -499,12 +498,20 @@ export class TasksService {
       canVolunteer:
         t.status === 'OPEN' &&
         parseModuleSettings('tasks', ctx.moduleSettings.tasks).volunteeringEnabled,
-      canWithdraw: mine && t.status === 'IN_PROGRESS',
-      canSubmit: mine && t.status === 'IN_PROGRESS',
-      canVerify: t.status === 'SUBMITTED' && can(ctx, 'task.verify') && !mine,
-      canManage: can(ctx, 'task.manage') && LIVE.includes(t.status),
+      canWithdraw: doingIt(ctx, t),
+      canSubmit: doingIt(ctx, t),
+      canVerify:
+        t.status === 'SUBMITTED' &&
+        mayCall(ctx, tasksContract.verify) &&
+        t.assigneeMembershipId !== ctx.membershipId,
+      canManage: mayCall(ctx, tasksContract.update) && LIVE.includes(t.status),
     };
   }
+}
+
+/** Withdraw and submit: only the assignee, while the task is in progress. */
+function doingIt(ctx: TenantContext, t: TaskRow): boolean {
+  return t.assigneeMembershipId === ctx.membershipId && t.status === 'IN_PROGRESS';
 }
 
 function toSummary(t: TaskRow, names: Map<string, { displayName: string }>): TaskSummary {

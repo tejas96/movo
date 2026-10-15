@@ -4,6 +4,7 @@ import {
   EmailSchema,
   IdSchema,
   IsoDateTimeSchema,
+  OkSchema,
   PhoneSchema,
   page,
   SocietyParamsSchema,
@@ -32,6 +33,8 @@ export type MemberCard = z.infer<typeof MemberCardSchema>;
 export const MemberDetailSchema = MemberCardSchema.extend({
   /** null when the society's directory.showVehicles setting hides them from this viewer. */
   vehicles: z.array(VehicleSchema).nullable(),
+  /** Roles, flats, suspend, remove, reset code: member.manage and not the viewer. */
+  canManage: z.boolean(),
 });
 export type MemberDetail = z.infer<typeof MemberDetailSchema>;
 
@@ -100,6 +103,15 @@ export const societyMemberRoutes = {
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
     response: z.object({ code: z.string(), expiresAt: IsoDateTimeSchema }),
+  }),
+  leaveSociety: defineRoute({
+    method: 'POST',
+    path: '/societies/:societyId/members/me/leave',
+    summary:
+      'Leave this society. Ends my flats here and hands back my tasks, duty turns and market ' +
+      'items. The last admin cannot leave (LAST_ADMIN).',
+    params: SocietyParamsSchema,
+    response: OkSchema,
   }),
   getMyPrivacy: defineRoute({
     method: 'GET',

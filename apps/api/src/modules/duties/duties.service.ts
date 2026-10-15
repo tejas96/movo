@@ -4,7 +4,7 @@ import {
   type DutyAssignment,
   type DutyParticipant,
   type DutySummary,
-  type dutiesContract,
+  dutiesContract,
   parseModuleSettings,
   type RouteBody,
 } from '@movo/contracts';
@@ -14,7 +14,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can, type TenantContext } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { dateOnly, dbDate, todayIn } from '../../common/util/dates';
 import type { Prisma } from '../../generated/prisma/client';
 import { awardContext, awardPoints } from '../rewards/rewards.service';
@@ -183,8 +183,7 @@ export class DutiesService {
   async setStatus(dutyId: string, status: DutyRow['status']): Promise<Duty> {
     const ctx = requireTenant();
     const duty = await this.requireDuty(dutyId);
-    if (duty.status === 'ENDED')
-      throw ApiException.conflict('CONFLICT', 'An ended duty cannot restart');
+    if (!dutyOpen(duty)) throw ApiException.conflict('CONFLICT', 'An ended duty cannot restart');
     const today = todayIn(ctx.society.timezone);
     await this.tenant.tx(async (tx) => {
       await tx.responsibility.update({ where: { id: dutyId }, data: { status } });
@@ -228,7 +227,7 @@ export class DutiesService {
     const row = await this.requireAssignment(dutyId, assignmentId);
     if (row.status !== 'ACTIVE')
       throw ApiException.conflict('CONFLICT', 'Only the current turn can be marked done');
-    if (!this.isMine(ctx, participantIdOf(row)) && !can(ctx, 'duty.override'))
+    if (!mayConfirm(ctx, this.isMine(ctx, participantIdOf(row))))
       throw ApiException.forbidden('This is not your turn');
     await this.tenant.tx(async (tx) => {
       // Status in the where: a second confirm at the same time finds nothing and awards nothing.
@@ -411,6 +410,7 @@ export class DutiesService {
   ): DutyAssignment {
     const pid = participantIdOf(r);
     const participant: DutyParticipant = { id: pid, label: labels.get(pid) ?? '' };
+    const mine = this.isMine(ctx, pid);
     return {
       id: r.id,
       periodIndex: r.periodIndex,
@@ -426,7 +426,9 @@ export class DutiesService {
           }
         : null,
       overrideNote: r.overrideNote,
-      mine: this.isMine(ctx, pid),
+      mine,
+      canConfirm: r.status === 'ACTIVE' && mayConfirm(ctx, mine),
+      canOverride: mayCall(ctx, dutiesContract.override) && OVERRIDABLE.includes(r.status),
     };
   }
 
@@ -490,6 +492,20 @@ export class DutiesService {
         .map((r) => this.toAssignment(ctx, r, labels)),
       history: history.map((r) => this.toAssignment(ctx, r, labels, names)),
       createdAt: d.createdAt.toISOString(),
+      canManage: mayCall(ctx, dutiesContract.setStatus) && dutyOpen(d),
     };
   }
 }
+
+/** Order, pause, resume and end change only a duty that has not ended. */
+function dutyOpen(d: Pick<DutyRow, 'status'>): boolean {
+  return d.status !== 'ENDED';
+}
+
+/** Mark a running turn done: it is the viewer's turn, or they hold duty.override. */
+function mayConfirm(ctx: TenantContext, mine: boolean): boolean {
+  return mine || can(ctx, 'duty.override');
+}
+
+/** Turns an override can still act on: skip or reassign an open one, complete a running or missed one. */
+const OVERRIDABLE: readonly AssignmentRow['status'][] = ['UPCOMING', 'ACTIVE', 'MISSED'];

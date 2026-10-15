@@ -15,7 +15,7 @@ import { useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
+import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
 import { money } from '../../core/util/money';
@@ -29,8 +29,8 @@ export function FlatAccountScreen() {
   const societyId = useSocietyId();
   const { flatId } = useRoute<RouteProp<RootStackParamList, 'FlatAccount'>>().params;
   const account = useFlatAccount(societyId, flatId);
-  const canRecord = useCan('maintenance.record_payment');
   const a = account.data;
+  const canRecord = a?.canRecordPayment === true;
 
   return (
     <>

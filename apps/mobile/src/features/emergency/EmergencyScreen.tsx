@@ -179,7 +179,7 @@ export function EmergencyScreen() {
             <ContactRow
               key={c.id}
               contact={c}
-              onEdit={canManageContacts ? () => setDraft({ ...c }) : undefined}
+              onEdit={c.canEdit ? () => setDraft({ ...c }) : undefined}
             />
           ))}
         </Card>
@@ -193,7 +193,7 @@ export function EmergencyScreen() {
               <ContactRow
                 key={c.id}
                 contact={c}
-                onEdit={canManageContacts ? () => setDraft({ ...c }) : undefined}
+                onEdit={c.canEdit ? () => setDraft({ ...c }) : undefined}
               />
             ))}
           </Card>

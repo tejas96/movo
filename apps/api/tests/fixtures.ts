@@ -52,3 +52,36 @@ export async function societyWithResident(h: Harness, tag: string): Promise<Soci
     resident: { token: resident.token, userId: resident.userId, membershipId: membership.id },
   };
 }
+
+/**
+ * Another member of the society, in flat 102, with one role by template key
+ * (resident, committee, treasurer, staff or admin).
+ */
+export async function addMember(
+  h: Harness,
+  s: SocietyFixture,
+  tag: string,
+  roleKey: string,
+): Promise<{ token: string; userId: string; membershipId: string }> {
+  const roles = await h.http().get(`/v1/societies/${s.societyId}/roles`).set(auth(s.admin));
+  const role = roles.body.find((r: { key: string }) => r.key === roleKey);
+  if (!role) throw new Error(`no role ${roleKey}`);
+  const invite = await h
+    .http()
+    .post(`/v1/societies/${s.societyId}/invitations`)
+    .set(auth(s.admin))
+    .send({ inviteeName: `Member ${tag}`, flatId: s.flats[1]?.id, roleId: role.id });
+  const user = await h.register(`member-${tag}@movo.test`, `Member ${tag}`);
+  const joined = await h
+    .http()
+    .post('/v1/join/invite')
+    .set(auth(user.token))
+    .send({ code: invite.body.code });
+  if (joined.status !== 201)
+    throw new Error(`join failed: ${joined.status} ${JSON.stringify(joined.body)}`);
+  const ctx = await h.http().get('/v1/me/context').set(auth(user.token));
+  const membership = ctx.body.memberships.find(
+    (m: { society: { id: string } }) => m.society.id === s.societyId,
+  );
+  return { token: user.token, userId: user.userId, membershipId: membership.id };
+}

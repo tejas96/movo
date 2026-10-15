@@ -45,6 +45,10 @@ export const DutyAssignmentSchema = z.object({
   overrideNote: z.string().nullable(),
   /** This assignment is the viewer's (their flat or themselves). */
   mine: z.boolean(),
+  /** Mark done: the turn is running and it is the viewer's, or they hold duty.override. */
+  canConfirm: z.boolean(),
+  /** Skip, reassign or complete: duty.override and the turn is open or missed. */
+  canOverride: z.boolean(),
 });
 export type DutyAssignment = z.infer<typeof DutyAssignmentSchema>;
 
@@ -72,6 +76,8 @@ export const DutySchema = DutySummarySchema.extend({
   /** Finished periods, newest first. */
   history: z.array(DutyAssignmentSchema),
   createdAt: IsoDateTimeSchema,
+  /** Change the order, pause, resume or end: duty.manage and the duty has not ended. */
+  canManage: z.boolean(),
 });
 export type Duty = z.infer<typeof DutySchema>;
 

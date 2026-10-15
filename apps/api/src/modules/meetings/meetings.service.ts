@@ -2,7 +2,7 @@ import {
   AudienceSchema,
   type Meeting,
   type MeetingSummary,
-  type meetingsContract,
+  meetingsContract,
   parseModuleSettings,
   type RouteBody,
   type RouteQuery,
@@ -15,7 +15,7 @@ import { ApiException } from '../../common/errors/api.exception';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import type { TenantContext } from '../../common/tenant/tenant.types';
+import { mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { days, iso } from '../../common/util/dates';
 import type {
   Meeting as MeetingRow,
@@ -82,7 +82,7 @@ export class MeetingsService {
     const ctx = requireTenant();
     const m = await this.db.meeting.findUnique({ where: { id: meetingId } });
     if (!m || !this.items.visibleTo(ctx, m)) throw ApiException.notFound('Meeting not found');
-    return this.toDto(m);
+    return this.toDto(ctx, m);
   }
 
   async create(body: CreateBody): Promise<Meeting> {
@@ -116,7 +116,7 @@ export class MeetingsService {
       await this.items.fanOut(tx, ctx, row, 'scheduled');
       return row;
     });
-    return this.toDto(m);
+    return this.toDto(ctx, m);
   }
 
   async update(meetingId: string, body: UpdateBody): Promise<Meeting> {
@@ -169,7 +169,7 @@ export class MeetingsService {
       }
       return row;
     });
-    return this.toDto(m);
+    return this.toDto(ctx, m);
   }
 
   async addNote(meetingId: string, note: string): Promise<Meeting> {
@@ -191,7 +191,7 @@ export class MeetingsService {
       );
       await this.items.fanOut(tx, ctx, m, 'note', note);
     });
-    return this.toDto(m);
+    return this.toDto(ctx, m);
   }
 
   async cancel(meetingId: string, note: string | undefined): Promise<Meeting> {
@@ -200,15 +200,15 @@ export class MeetingsService {
     const m = await this.close(ctx, meetingId, 'CANCELLED', note, (tx, row) =>
       this.items.fanOut(tx, ctx, row, 'cancelled', note),
     );
-    return this.toDto(m);
+    return this.toDto(ctx, m);
   }
 
   async complete(meetingId: string, note: string | undefined): Promise<Meeting> {
     const ctx = requireTenant();
     const before = await this.requireScheduled(meetingId);
-    if (before.startsAt.getTime() > Date.now())
+    if (!meetingStarted(before, new Date()))
       throw ApiException.conflict('CONFLICT', 'This meeting has not started yet');
-    return this.toDto(await this.close(ctx, meetingId, 'COMPLETED', note));
+    return this.toDto(ctx, await this.close(ctx, meetingId, 'COMPLETED', note));
   }
 
   /** Scheduled or cancelled meetings in the next 14 days that the viewer may see. */
@@ -284,12 +284,12 @@ export class MeetingsService {
   private async requireScheduled(meetingId: string): Promise<MeetingRow> {
     const m = await this.db.meeting.findUnique({ where: { id: meetingId } });
     if (!m) throw ApiException.notFound('Meeting not found');
-    if (m.status !== 'SCHEDULED')
+    if (!meetingOpen(m))
       throw ApiException.conflict('CONFLICT', 'Only a scheduled meeting can change');
     return m;
   }
 
-  private async toDto(m: MeetingRow): Promise<Meeting> {
+  private async toDto(ctx: TenantContext, m: MeetingRow): Promise<Meeting> {
     const updates = await this.db.meetingUpdate.findMany({
       where: { meetingId: m.id },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -317,8 +317,29 @@ export class MeetingsService {
       })),
       createdAt: m.createdAt.toISOString(),
       updatedAt: m.updatedAt.toISOString(),
+      ...meetingAccess(ctx, m, new Date()),
     };
   }
+}
+
+/** Edit, note, cancel and complete change only a scheduled meeting. */
+function meetingOpen(m: Pick<MeetingRow, 'status'>): boolean {
+  return m.status === 'SCHEDULED';
+}
+
+/** Complete needs the meeting to have started. */
+function meetingStarted(m: Pick<MeetingRow, 'startsAt'>, now: Date): boolean {
+  return m.startsAt.getTime() <= now.getTime();
+}
+
+/** The meeting's can* flags, from the same checks the routes (meeting.manage) and guards use. */
+export function meetingAccess(
+  ctx: TenantContext,
+  m: Pick<MeetingRow, 'status' | 'startsAt'>,
+  now: Date,
+): { canManage: boolean; canComplete: boolean } {
+  const canManage = mayCall(ctx, meetingsContract.update) && meetingOpen(m);
+  return { canManage, canComplete: canManage && meetingStarted(m, now) };
 }
 
 function toSummary(m: MeetingRow): MeetingSummary {

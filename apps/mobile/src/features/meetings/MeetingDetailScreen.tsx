@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { useCan, useSocietyId } from '../../core/tenant/hooks';
+import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { dateTime, relative, whenRange } from '../../core/util/date';
 import { type MeetingAction, useMeeting, useMeetingAction } from './api';
@@ -40,24 +40,21 @@ export function MeetingDetailScreen() {
   const { meetingId } = useRoute<RouteProp<RootStackParamList, 'MeetingDetail'>>().params;
   const meeting = useMeeting(societyId, meetingId);
   const action = useMeetingAction(societyId, meetingId);
-  const canManage = useCan('meeting.manage');
   const [menu, setMenu] = useState(false);
   const [sheet, setSheet] = useState<MeetingAction | null>(null);
   const [note, setNote] = useState('');
   const m = meeting.data;
-  const started = m ? new Date(m.startsAt).getTime() <= Date.now() : false;
 
-  const options: { value: MenuKey; label: string }[] =
-    m?.status === 'SCHEDULED'
-      ? [
-          { value: 'edit', label: t('common:actions.edit') },
-          { value: 'note', label: t('meetings:actions.addNote') },
-          ...(started
-            ? [{ value: 'complete' as const, label: t('meetings:actions.complete') }]
-            : []),
-          { value: 'cancel', label: t('meetings:actions.cancel') },
-        ]
-      : [];
+  const options: { value: MenuKey; label: string }[] = m?.canManage
+    ? [
+        { value: 'edit', label: t('common:actions.edit') },
+        { value: 'note', label: t('meetings:actions.addNote') },
+        ...(m.canComplete
+          ? [{ value: 'complete' as const, label: t('meetings:actions.complete') }]
+          : []),
+        { value: 'cancel', label: t('meetings:actions.cancel') },
+      ]
+    : [];
 
   const choose = (key: MenuKey) => {
     if (key === 'edit') nav.navigate('MeetingEditor', { meetingId });
@@ -110,7 +107,7 @@ export function MeetingDetailScreen() {
         title={t('meetings:title')}
         onBack={() => nav.goBack()}
         trailing={
-          canManage && options.length > 0 ? (
+          options.length > 0 ? (
             <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
           ) : undefined
         }

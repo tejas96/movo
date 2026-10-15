@@ -1,7 +1,7 @@
 import {
   type BillingPlan,
   LateFeeRuleSchema,
-  type maintenanceContract,
+  maintenanceContract,
   type PaymentInstruction,
   type RouteBody,
   UPI_ID,
@@ -11,7 +11,7 @@ import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
 import { requireTenant } from '../../common/request-store';
-import { can } from '../../common/tenant/tenant.types';
+import { can, mayCall, type TenantContext } from '../../common/tenant/tenant.types';
 import { dateOnly, dbDate } from '../../common/util/dates';
 import type { Prisma } from '../../generated/prisma/client';
 import { toFlatRef } from '../tenancy/mappers';
@@ -44,7 +44,7 @@ export class PlansService {
       include: planInclude,
       orderBy: [{ isActive: 'desc' }, { createdAt: 'asc' }],
     });
-    return rows.map(toPlan);
+    return rows.map((p) => toPlan(requireTenant(), p));
   }
 
   async createPlan(body: PlanBody): Promise<BillingPlan> {
@@ -72,7 +72,7 @@ export class PlansService {
       entityId: row.id,
       after: { name: row.name, amountPaise: row.amountPaise, frequency: row.frequency },
     });
-    return toPlan(row);
+    return toPlan(requireTenant(), row);
   }
 
   async updatePlan(planId: string, body: PlanPatch): Promise<BillingPlan> {
@@ -110,7 +110,7 @@ export class PlansService {
       before: { amountPaise: before.amountPaise, isActive: before.isActive },
       after: { amountPaise: row.amountPaise, isActive: row.isActive },
     });
-    return toPlan(row);
+    return toPlan(requireTenant(), row);
   }
 
   async setOverride(
@@ -136,7 +136,7 @@ export class PlansService {
       entityId: planId,
       after: { flatId, amountPaise },
     });
-    return toPlan(await this.requirePlan(planId));
+    return toPlan(requireTenant(), await this.requirePlan(planId));
   }
 
   async listInstructions(): Promise<PaymentInstruction[]> {
@@ -228,7 +228,7 @@ function checkUpi(kind: string, value: string) {
     ]);
 }
 
-function toPlan(p: PlanRow): BillingPlan {
+function toPlan(ctx: TenantContext, p: PlanRow): BillingPlan {
   return {
     id: p.id,
     name: p.name,
@@ -245,5 +245,6 @@ function toPlan(p: PlanRow): BillingPlan {
       .map((o) => ({ flat: toFlatRef(o.flat), amountPaise: o.amountPaise }))
       .sort((a, b) => a.flat.number.localeCompare(b.flat.number, undefined, { numeric: true })),
     createdAt: p.createdAt.toISOString(),
+    canEdit: mayCall(ctx, maintenanceContract.updatePlan),
   };
 }

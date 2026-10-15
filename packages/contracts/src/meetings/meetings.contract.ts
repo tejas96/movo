@@ -49,6 +49,10 @@ export const MeetingSchema = MeetingSummarySchema.extend({
   updates: z.array(MeetingUpdateSchema),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
+  /** Edit, add a note, cancel: meeting.manage and the meeting is still scheduled. */
+  canManage: z.boolean(),
+  /** canManage and the meeting has started. */
+  canComplete: z.boolean(),
 });
 export type Meeting = z.infer<typeof MeetingSchema>;
 

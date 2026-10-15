@@ -360,6 +360,7 @@
       "join_request_rejected": "Join request rejected",
       "member_roles_updated": "Member roles changed",
       "member_status_updated": "Member status changed",
+      "member_left": "Member left the society",
       "member_occupancy_updated": "Member flats changed",
       "member_reset_code_issued": "Password reset code given",
       "role_created": "Role created",

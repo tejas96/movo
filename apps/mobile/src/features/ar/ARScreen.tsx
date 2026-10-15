@@ -179,7 +179,7 @@ export function ARScreen() {
           onPress={() => nav.goBack()}
           className="rounded-full bg-black/60 px-4 py-2"
         >
-          <Text className="text-white">{t('common:back', { defaultValue: 'Back' })}</Text>
+          <Text className="text-white">{t('common:actions.back')}</Text>
         </Pressable>
         <View className="rounded-full bg-black/60 px-4 py-2">
           <Text className="text-white">

@@ -91,6 +91,8 @@ export const VendorSchema = z.object({
   addedBy: ActorSchema,
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
+  /** Edit, approve, block or delete: vendor.manage. */
+  canManage: z.boolean(),
 });
 export type Vendor = z.infer<typeof VendorSchema>;
 

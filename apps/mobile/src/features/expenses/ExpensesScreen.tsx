@@ -416,7 +416,7 @@ function OtherIncome({ report, fy }: { report: FinanceReport; fy: string | undef
                   {money(i.amountPaise)}
                 </Text>
               }
-              onPress={canAdd ? () => setRemoving(i.id) : undefined}
+              onPress={i.canRemove ? () => setRemoving(i.id) : undefined}
             />
           ))}
         </Card>

@@ -72,25 +72,27 @@ export function JoinRequestsScreen() {
                 })}
                 {r.message ? `\n“${r.message}”` : ''}
               </Text>
-              <View className="flex-row gap-2 px-2 pb-1">
-                <Button
-                  label={t('common:actions.approve')}
-                  size="sm"
-                  inline
-                  onPress={() => void act(r.id, true, r.user.displayName)}
-                  disabled={decide.isPending}
-                  className="flex-1"
-                />
-                <Button
-                  label={t('common:actions.reject')}
-                  size="sm"
-                  variant="white"
-                  inline
-                  onPress={() => void act(r.id, false, r.user.displayName)}
-                  disabled={decide.isPending}
-                  className="flex-1"
-                />
-              </View>
+              {r.canDecide ? (
+                <View className="flex-row gap-2 px-2 pb-1">
+                  <Button
+                    label={t('common:actions.approve')}
+                    size="sm"
+                    inline
+                    onPress={() => void act(r.id, true, r.user.displayName)}
+                    disabled={decide.isPending}
+                    className="flex-1"
+                  />
+                  <Button
+                    label={t('common:actions.reject')}
+                    size="sm"
+                    variant="white"
+                    inline
+                    onPress={() => void act(r.id, false, r.user.displayName)}
+                    disabled={decide.isPending}
+                    className="flex-1"
+                  />
+                </View>
+              ) : null}
             </Card>
           ))}
         </View>

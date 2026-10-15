@@ -29,6 +29,8 @@ export const InvitationSchema = z.object({
   expiresAt: IsoDateTimeSchema,
   createdAt: IsoDateTimeSchema,
   invitedBy: z.object({ membershipId: IdSchema, displayName: z.string() }),
+  /** member.manage and the invitation is still pending (not used, revoked or expired). */
+  canRevoke: z.boolean(),
 });
 export type Invitation = z.infer<typeof InvitationSchema>;
 
