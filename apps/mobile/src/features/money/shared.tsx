@@ -1,6 +1,6 @@
 import type { BillStatus, BillSummary, CollectionStatus, PaymentSummary } from '@movo/contracts';
 import { Row, StatusPill as SoftPill, Text } from '@movo/design-system';
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
@@ -67,7 +67,13 @@ export function BillRow({ bill, onGray }: { bill: BillSummary; onGray?: boolean 
   );
 }
 
-export function PaymentRow({ payment, showFlat }: { payment: PaymentSummary; showFlat?: boolean }) {
+export const PaymentRow = memo(function PaymentRow({
+  payment,
+  showFlat,
+}: {
+  payment: PaymentSummary;
+  showFlat?: boolean;
+}) {
   const { t } = useTranslation('money');
   const nav = useNav();
   const flat = payment.flat.buildingName
@@ -88,4 +94,4 @@ export function PaymentRow({ payment, showFlat }: { payment: PaymentSummary; sho
       onPress={() => nav.navigate('Receipt', { paymentId: payment.id })}
     />
   );
-}
+});

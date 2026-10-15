@@ -1,5 +1,6 @@
 import type { TaskStatus, TaskSummary } from '@movo/contracts';
 import { Pill, Row } from '@movo/design-system';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
@@ -18,7 +19,7 @@ export function TaskStatusPill({ status }: { status: TaskStatus }) {
   return <StatusPill value={status} tones={TONE} labels="tasks:status" />;
 }
 
-export function TaskRow({ task }: { task: TaskSummary }) {
+export const TaskRow = memo(function TaskRow({ task }: { task: TaskSummary }) {
   const { t } = useTranslation('tasks');
   const nav = useNav();
   return (
@@ -40,4 +41,4 @@ export function TaskRow({ task }: { task: TaskSummary }) {
       onPress={() => nav.navigate('TaskDetail', { taskId: task.id })}
     />
   );
-}
+});

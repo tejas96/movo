@@ -13,7 +13,7 @@ import {
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
@@ -22,6 +22,38 @@ import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useBuildings } from '../../core/society/api';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
+
+const keyOf = (m: MemberCard) => m.membershipId;
+
+const MemberRow = memo(function MemberRow({ item, manage }: { item: MemberCard; manage: boolean }) {
+  const { t } = useTranslation(['society', 'common', 'manage']);
+  const nav = useNav();
+  const role = [
+    item.flats.map(formatFlat).join(', ') || (item.isStaff ? t('society:directory.staff') : null),
+    item.roles
+      .filter((r) => r.key !== 'resident')
+      .map((r) => r.name)
+      .join(', '),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  return (
+    <PersonCard
+      name={item.displayName}
+      avatarUri={photoUri(item.avatarUrl)}
+      verified={item.roles.some((r) => r.key === 'admin')}
+      role={role}
+      onPress={() => nav.navigate('MemberDetail', { membershipId: item.membershipId })}
+      actions={
+        manage && item.status !== 'ACTIVE' ? (
+          <StatusPill label={t(`common:status.${item.status}`)} tone="neutral" />
+        ) : item.phone ? (
+          <CircleButton icon="call" onPress={() => void Linking.openURL(`tel:${item.phone}`)} />
+        ) : undefined
+      }
+    />
+  );
+});
 
 export function DirectoryScreen() {
   const { t } = useTranslation(['society', 'common', 'manage']);
@@ -39,16 +71,10 @@ export function DirectoryScreen() {
   const wings = buildings.data ?? [];
   const list = useMembers(societyId, q, buildingId);
 
-  const role = (m: MemberCard) =>
-    [
-      m.flats.map(formatFlat).join(', ') || (m.isStaff ? t('society:directory.staff') : null),
-      m.roles
-        .filter((r) => r.key !== 'resident')
-        .map((r) => r.name)
-        .join(', '),
-    ]
-      .filter(Boolean)
-      .join(' · ');
+  const renderItem = useCallback(
+    ({ item }: { item: MemberCard }) => <MemberRow item={item} manage={manage} />,
+    [manage],
+  );
 
   return (
     <Screen scroll={false}>
@@ -108,28 +134,10 @@ export function DirectoryScreen() {
           />
         }
         className="mt-4"
-        keyExtractor={(m) => m.membershipId}
+        keyExtractor={keyOf}
         contentContainerStyle={{ paddingBottom: 40, gap: 12 }}
         keyboardShouldPersistTaps="handled"
-        renderItem={({ item }) => (
-          <PersonCard
-            name={item.displayName}
-            avatarUri={photoUri(item.avatarUrl)}
-            verified={item.roles.some((r) => r.key === 'admin')}
-            role={role(item)}
-            onPress={() => nav.navigate('MemberDetail', { membershipId: item.membershipId })}
-            actions={
-              manage && item.status !== 'ACTIVE' ? (
-                <StatusPill label={t(`common:status.${item.status}`)} tone="neutral" />
-              ) : item.phone ? (
-                <CircleButton
-                  icon="call"
-                  onPress={() => void Linking.openURL(`tel:${item.phone}`)}
-                />
-              ) : undefined
-            }
-          />
-        )}
+        renderItem={renderItem}
       />
     </Screen>
   );

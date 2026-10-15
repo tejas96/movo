@@ -10,7 +10,7 @@ import {
   Skeleton,
   TitleBar,
 } from '@movo/design-system';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Share, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
@@ -28,6 +28,37 @@ const TONE: StatusTones<Invitation['status']> = {
   REVOKED: 'neutral',
 };
 
+const keyOf = (i: Invitation) => i.id;
+
+const InvitationRow = memo(function InvitationRow({
+  item,
+  onSelect,
+}: {
+  item: Invitation;
+  onSelect: (inv: Invitation) => void;
+}) {
+  const { t } = useTranslation(['manage', 'common']);
+  return (
+    <Card tight className="mb-2">
+      <Row
+        icon="send"
+        title={`${item.inviteeName} · ${item.code}`}
+        subtitle={[
+          item.flat
+            ? item.flat.buildingName
+              ? `${item.flat.buildingName}-${item.flat.number}`
+              : item.flat.number
+            : t('manage:invite.noFlat'),
+          item.role.name,
+          t('manage:invite.expires', { date: shortDate(item.expiresAt) }),
+        ].join(' · ')}
+        trailing={<StatusPill value={item.status} tones={TONE} labels="common:status" />}
+        onPress={item.canRevoke ? () => onSelect(item) : undefined}
+      />
+    </Card>
+  );
+});
+
 export function InvitationsScreen() {
   const { t } = useTranslation(['manage', 'common']);
   const nav = useNav();
@@ -37,6 +68,10 @@ export function InvitationsScreen() {
   const list = useInvitations(societyId);
   const revoke = useRevokeInvitation(societyId);
   const [selected, setSelected] = useState<Invitation | null>(null);
+  const renderItem = useCallback(
+    ({ item }: { item: Invitation }) => <InvitationRow item={item} onSelect={setSelected} />,
+    [],
+  );
 
   const share = (inv: Invitation) =>
     void Share.share({
@@ -85,27 +120,9 @@ export function InvitationsScreen() {
           />
         }
         className="mt-4"
-        keyExtractor={(i) => i.id}
+        keyExtractor={keyOf}
         contentContainerStyle={{ paddingBottom: 40 }}
-        renderItem={({ item }) => (
-          <Card tight className="mb-2">
-            <Row
-              icon="send"
-              title={`${item.inviteeName} · ${item.code}`}
-              subtitle={[
-                item.flat
-                  ? item.flat.buildingName
-                    ? `${item.flat.buildingName}-${item.flat.number}`
-                    : item.flat.number
-                  : t('manage:invite.noFlat'),
-                item.role.name,
-                t('manage:invite.expires', { date: shortDate(item.expiresAt) }),
-              ].join(' · ')}
-              trailing={<StatusPill value={item.status} tones={TONE} labels="common:status" />}
-              onPress={item.canRevoke ? () => setSelected(item) : undefined}
-            />
-          </Card>
-        )}
+        renderItem={renderItem}
       />
       <OptionSheet
         visible={Boolean(selected)}
