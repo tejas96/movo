@@ -23,12 +23,12 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { bodyResolver, formMessage } from '../../core/forms/contract-form';
+import { MemberPickerSheet } from '../../core/members/MemberPickerSheet';
 import { useNav } from '../../core/navigation/types';
+import { useFlats } from '../../core/society/api';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, isoDay, localeTag } from '../../core/util/date';
-import { MemberPickerSheet } from '../directory/MemberPickerSheet';
-import { useFlats } from '../manage/api';
 import { useCreateDuty } from './api';
 import { OrderedPickSheet } from './shared';
 

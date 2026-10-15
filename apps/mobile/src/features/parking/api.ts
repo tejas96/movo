@@ -1,7 +1,7 @@
 import { parkingContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { directoryKeys } from '../directory/keys';
+import { directoryKeys } from '../../core/members/keys';
 import { parkingKeys } from './keys';
 
 export type SlotFilter = 'all' | 'free' | 'taken';

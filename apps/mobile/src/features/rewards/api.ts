@@ -1,7 +1,7 @@
 import { rewardsContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { rewardsKeys } from './keys';
+import { rewardsKeys } from '../../core/rewards/keys';
 
 const c = rewardsContract;
 

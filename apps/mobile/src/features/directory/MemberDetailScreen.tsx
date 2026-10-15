@@ -23,11 +23,12 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Image, Linking, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { useRoles } from '../../core/members/api';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { formatRegistration, slotIcon } from '../../core/parking/shared';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { formatRegistration, slotIcon } from '../parking/shared';
-import { useIssueResetCode, useMember, useRoles, useUpdateMember } from './api';
+import { useIssueResetCode, useMember, useUpdateMember } from './api';
 import { MemberFlatsSheet } from './MemberFlatsSheet';
 
 export function MemberDetailScreen() {

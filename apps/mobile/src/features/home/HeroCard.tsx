@@ -2,11 +2,11 @@ import type { AttentionItem, UpcomingItem } from '@movo/contracts';
 import { Button, Press, photos, StatusPill, Text } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, View } from 'react-native';
+import type { HeroSpec, HomeCtx } from '../../core/home/types';
 import { useNav } from '../../core/navigation/types';
 import { whenRange } from '../../core/util/date';
 import { CountUp, PhotoScrim, photoStyles } from './effects';
 import { attentionEntry } from './registry';
-import type { HeroSpec, HomeCtx } from './types';
 
 /** The one black surface on Home: what matters most right now, with its action. */
 export function HeroCard({

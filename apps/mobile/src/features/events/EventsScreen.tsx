@@ -1,4 +1,4 @@
-import type { EventSummary, Timeframe } from '@movo/contracts';
+import type { Timeframe } from '@movo/contracts';
 import {
   EmptyState,
   IconSquare,
@@ -7,27 +7,16 @@ import {
   Screen,
   Segmented,
   Skeleton,
-  StatusPill,
 } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { EventPill } from '../../core/calendar/EventPill';
+import { TimedCard } from '../../core/calendar/shared';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
-import { TimedCard } from '../calendar/shared';
 import { useEvents } from './api';
-
-export function EventPill({ event }: { event: Pick<EventSummary, 'status' | 'myRsvp'> }) {
-  const { t } = useTranslation('events');
-  if (event.status === 'CANCELLED')
-    return <StatusPill label={t('status.CANCELLED')} tone="danger" />;
-  if (event.myRsvp?.response === 'GOING')
-    return <StatusPill label={t('rsvp.GOING')} tone="success" dot />;
-  if (event.myRsvp?.response === 'MAYBE')
-    return <StatusPill label={t('rsvp.MAYBE')} tone="warning" />;
-  return null;
-}
 
 export function EventsScreen() {
   const { t } = useTranslation(['events', 'common']);

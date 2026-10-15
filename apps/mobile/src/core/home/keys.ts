@@ -1,5 +1,5 @@
 import type { QueryKey } from '@tanstack/react-query';
-import { meKey, societyKey } from '../../core/api/query-keys';
+import { meKey, societyKey } from '../api/query-keys';
 
 export const homeKeys = (societyId: string) => ({
   all: [...societyKey(societyId), 'home'] as const,

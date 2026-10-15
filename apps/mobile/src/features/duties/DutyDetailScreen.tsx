@@ -21,12 +21,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { useMembers } from '../../core/members/api';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { useFlats } from '../../core/society/api';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
-import { useMembers } from '../directory/api';
-import { useFlats } from '../manage/api';
 import { useDuty, useDutyAction } from './api';
 import { cadenceLabel, OrderedPickSheet, TurnPill, turnLine } from './shared';
 

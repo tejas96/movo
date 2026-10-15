@@ -1,10 +1,10 @@
 import { Card, IconSquare, Pill, Row, Screen, Skeleton, TitleBar } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { useRoles } from '../../core/members/api';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useRoles } from '../directory/api';
 
 export function RolesScreen() {
   const { t } = useTranslation(['manage', 'common']);

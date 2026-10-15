@@ -21,11 +21,11 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { Line } from '../../core/ui/Line';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
 import { money } from '../../core/util/money';
 import { usePayment, useReversePayment } from './api';
-import { Line } from './BillScreen';
 import { billName } from './shared';
 
 export function ReceiptScreen() {

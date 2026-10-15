@@ -1,17 +1,9 @@
-import { homeContract, meContract } from '@movo/contracts';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { meContract } from '@movo/contracts';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { anySocietyKey } from '../../core/api/query-keys';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { homeKeys, notificationKeys } from './keys';
-
-export function useHomeSummary(societyId: string) {
-  return useQuery({
-    queryKey: homeKeys(societyId).all,
-    queryFn: () => api(homeContract.summary, { params: { societyId } }),
-    staleTime: 15_000,
-  });
-}
+import { notificationKeys } from '../../core/home/keys';
 
 export function useNotifications() {
   return useCursorList({

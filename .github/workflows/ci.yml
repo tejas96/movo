@@ -39,6 +39,9 @@ jobs:
       # Every en key is used by the app or the API, and every key the code asks for exists.
       - name: i18n keys
         run: pnpm --filter @movo/i18n check-keys
+      # A feature imports only core/, packages and its own folder (registries excepted).
+      - name: Mobile feature boundaries
+        run: pnpm --filter @movo/mobile check-boundaries
       - name: Generate Prisma client
         run: pnpm --filter @movo/api db:generate
         env:

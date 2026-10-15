@@ -10,7 +10,7 @@ import {
   Segmented,
   Skeleton,
 } from '@movo/design-system';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
@@ -29,6 +29,38 @@ export const PRIORITY_TONE: StatusTones<NoticeSummary['priority']> = {
 
 type Tab = 'PUBLISHED' | 'DRAFT';
 
+const keyOf = (n: NoticeSummary) => n.id;
+
+const NoticeRow = memo(function NoticeRow({ item }: { item: NoticeSummary }) {
+  const { t } = useTranslation(['notices', 'common']);
+  const nav = useNav();
+  const subtitle = [
+    item.isPinned ? t('notices:pinned') : null,
+    t(`notices:category.${item.category}`),
+    relative(item.publishedAt),
+    item.createdBy.displayName,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  return (
+    <Card tight className="mb-2">
+      <Row
+        icon={item.priority === 'EMERGENCY' ? 'emergency' : 'notices'}
+        title={item.title}
+        subtitle={subtitle}
+        trailing={
+          item.priority !== 'NORMAL' ? (
+            <StatusPill value={item.priority} tones={PRIORITY_TONE} labels="notices:priority" />
+          ) : !item.readAt && item.status === 'PUBLISHED' ? (
+            <View className="h-2 w-2 rounded-full bg-ink" />
+          ) : undefined
+        }
+        onPress={() => nav.navigate('NoticeDetail', { noticeId: item.id })}
+      />
+    </Card>
+  );
+});
+
 export function NoticesScreen() {
   const { t } = useTranslation(['notices', 'common']);
   const nav = useNav();
@@ -37,43 +69,18 @@ export function NoticesScreen() {
   const [tab, setTab] = useState<Tab>('PUBLISHED');
   const list = useNotices(societyId, tab);
 
-  const subtitle = (n: NoticeSummary) =>
-    [
-      n.isPinned ? t('notices:pinned') : null,
-      t(`notices:category.${n.category}`),
-      relative(n.publishedAt),
-      n.createdBy.displayName,
-    ]
-      .filter(Boolean)
-      .join(' · ');
+  const renderItem = useCallback(
+    ({ item }: { item: NoticeSummary }) => <NoticeRow item={item} />,
+    [],
+  );
 
   return (
     <Screen scroll={false}>
       <PagedList
         list={list}
-        keyExtractor={(n) => n.id}
+        keyExtractor={keyOf}
         contentContainerStyle={{ paddingBottom: 40 }}
-        renderItem={({ item }) => (
-          <Card tight className="mb-2">
-            <Row
-              icon={item.priority === 'EMERGENCY' ? 'emergency' : 'notices'}
-              title={item.title}
-              subtitle={subtitle(item)}
-              trailing={
-                item.priority !== 'NORMAL' ? (
-                  <StatusPill
-                    value={item.priority}
-                    tones={PRIORITY_TONE}
-                    labels="notices:priority"
-                  />
-                ) : !item.readAt && item.status === 'PUBLISHED' ? (
-                  <View className="h-2 w-2 rounded-full bg-ink" />
-                ) : undefined
-              }
-              onPress={() => nav.navigate('NoticeDetail', { noticeId: item.id })}
-            />
-          </Card>
-        )}
+        renderItem={renderItem}
         ListHeaderComponent={
           <View className="mb-4">
             <ModuleHeader

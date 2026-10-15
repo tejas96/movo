@@ -1,4 +1,4 @@
-import { societyKey } from '../../core/api/query-keys';
+import { societyKey } from '../api/query-keys';
 
 /** Member lists (`members`) and member cards (`member`) are separate roots. */
 export const directoryKeys = (societyId: string) => {

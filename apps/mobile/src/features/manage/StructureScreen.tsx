@@ -22,9 +22,10 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
+import { useBuildings, useFlats } from '../../core/society/api';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useBuildings, useCreateBuilding, useCreateFlats, useFlats } from './api';
+import { useCreateBuilding, useCreateFlats } from './api';
 
 const NO_BUILDING = '__none__';
 

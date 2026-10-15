@@ -1,4 +1,4 @@
-import type { FeatureHome } from '../home/types';
+import type { FeatureHome } from '../../core/home/types';
 
 export const manageHome: FeatureHome = {
   attention: {

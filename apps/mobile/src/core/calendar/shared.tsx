@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
-import { dateTime, dayAndMonth, localeTag, timeRange } from '../../core/util/date';
+import { dateTime, dayAndMonth, localeTag, timeRange } from '../util/date';
 
 /** A meeting or event in a list: date block, title, time and place. */
 export function TimedCard({

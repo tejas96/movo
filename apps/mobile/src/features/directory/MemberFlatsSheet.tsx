@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { useFlats } from '../../core/society/api';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useFlats } from '../manage/api';
 import { useSetOccupancies } from './api';
 
 /** Committee picks the flats a member lives in or owns, and the relation to each. */

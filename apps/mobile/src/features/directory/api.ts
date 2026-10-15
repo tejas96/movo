@@ -1,35 +1,14 @@
 import { type RouteBody, societyContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { useCursorList } from '../../core/api/use-cursor-list';
 import { invalidateContext } from '../../core/auth/auth';
-import { manageKeys } from '../manage/keys';
-import { directoryKeys } from './keys';
-
-export function useMembers(societyId: string, q: string, buildingId?: string) {
-  return useCursorList({
-    queryKey: directoryKeys(societyId).list(`${q}|${buildingId ?? ''}`),
-    fetchPage: (cursor) =>
-      api(societyContract.listMembers, {
-        params: { societyId },
-        query: { q: q || undefined, buildingId, cursor, limit: 30 },
-      }),
-    staleTime: 60_000,
-  });
-}
+import { directoryKeys } from '../../core/members/keys';
+import { manageKeys } from '../../core/society/manage-keys';
 
 export function useMember(societyId: string, membershipId: string) {
   return useQuery({
     queryKey: directoryKeys(societyId).detail(membershipId),
     queryFn: () => api(societyContract.getMember, { params: { societyId, membershipId } }),
-  });
-}
-
-export function useRoles(societyId: string) {
-  return useQuery({
-    queryKey: manageKeys(societyId).roles,
-    queryFn: () => api(societyContract.listRoles, { params: { societyId } }),
-    staleTime: 5 * 60_000,
   });
 }
 

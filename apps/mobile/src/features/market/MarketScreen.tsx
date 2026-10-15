@@ -16,14 +16,14 @@ import {
   TitleBar,
   theme,
 } from '@movo/design-system';
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, ScrollView, StatusBar, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useHomeSummary } from '../../core/home/api';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useHomeSummary } from '../home/api';
 import { useListings } from './api';
 import {
   coverSource,
@@ -37,6 +37,8 @@ import {
 
 type KindFilter = ListingKind | 'ALL';
 type MenuKey = 'mine' | 'reports';
+
+const keyOf = (l: ListingSummary) => l.id;
 
 export function MarketScreen() {
   const { t } = useTranslation(['market', 'common']);
@@ -63,10 +65,25 @@ export function MarketScreen() {
   const list = useListings(societyId, activeKind === 'ALL' ? undefined : activeKind, q);
   const showFoodRow = activeKind === 'ALL' && foodOn;
   const food = useListings(societyId, 'FOOD', q, showFoodRow);
-  const foodItems = showFoodRow ? (food.data?.pages[0]?.items ?? []) : [];
-  const all = list.data?.pages.flatMap((p) => p.items) ?? [];
-  // The food row already shows food on "All", so the grid shows everything else.
-  const grid = foodItems.length > 0 ? all.filter((l) => l.kind !== 'FOOD') : all;
+  const foodData = food.data;
+  const foodItems = useMemo(
+    () => (showFoodRow ? (foodData?.pages[0]?.items ?? []) : []),
+    [showFoodRow, foodData],
+  );
+  const listData = list.data;
+  const grid = useMemo(() => {
+    const all = listData?.pages.flatMap((p) => p.items) ?? [];
+    // The food row already shows food on "All", so the grid shows everything else.
+    return foodItems.length > 0 ? all.filter((l) => l.kind !== 'FOOD') : all;
+  }, [listData, foodItems]);
+  const renderItem = useCallback(
+    ({ item }: { item: ListingSummary }) => (
+      <View style={{ width: cardWidth }}>
+        <ListingCard listing={item} />
+      </View>
+    ),
+    [cardWidth],
+  );
   const loading = list.isLoading;
   const failed = loadFailed(list);
   const empty = !loading && !failed && grid.length === 0 && foodItems.length === 0;
@@ -175,8 +192,10 @@ export function MarketScreen() {
       <StatusBar barStyle="dark-content" />
       <FlatList
         data={grid}
-        keyExtractor={(l) => l.id}
+        keyExtractor={keyOf}
         numColumns={2}
+        initialNumToRender={8}
+        windowSize={11}
         columnWrapperStyle={{ gap: 12 }}
         ListHeaderComponent={header}
         ListHeaderComponentStyle={{ marginBottom: 4 }}
@@ -195,11 +214,7 @@ export function MarketScreen() {
         onEndReached={() => {
           if (list.hasNextPage && !list.isFetchingNextPage) void list.fetchNextPage();
         }}
-        renderItem={({ item }) => (
-          <View style={{ width: cardWidth }}>
-            <ListingCard listing={item} />
-          </View>
-        )}
+        renderItem={renderItem}
         ListFooterComponent={
           list.isFetchingNextPage ? <Skeleton className="h-10 rounded-lg" /> : undefined
         }
@@ -265,7 +280,7 @@ function FoodCard({ listing: l }: { listing: ListingSummary }) {
 }
 
 /** Small grid card: photo with the kind pill, title, price, rating. */
-function ListingCard({ listing: l }: { listing: ListingSummary }) {
+const ListingCard = memo(function ListingCard({ listing: l }: { listing: ListingSummary }) {
   const { t } = useTranslation('market');
   const nav = useNav();
   return (
@@ -300,4 +315,4 @@ function ListingCard({ listing: l }: { listing: ListingSummary }) {
       </View>
     </PhotoCard>
   );
-}
+});

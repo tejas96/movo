@@ -11,7 +11,7 @@ import {
   Text,
   TitleBar,
 } from '@movo/design-system';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
@@ -54,14 +54,9 @@ export function changes(
   return out;
 }
 
-export function AuditLogScreen() {
+/** Title and actor lines of an entry, shared by the rows and the detail sheet. */
+function useEntryLabels() {
   const { t } = useTranslation(['manage', 'society', 'common']);
-  const nav = useNav();
-  const societyId = useSocietyId();
-  const [area, setArea] = useState<AuditArea | undefined>(undefined);
-  const [open, setOpen] = useState<AuditEntry | null>(null);
-  const list = useAuditLog(societyId, area);
-
   const title = (e: AuditEntry) => {
     const label = t(`manage:audit.actions.${i18nKey(e.action)}`);
     // Module changes name the module, so the list says which switch moved.
@@ -71,6 +66,43 @@ export function AuditLogScreen() {
       : label;
   };
   const who = (e: AuditEntry) => e.actor?.displayName ?? t('manage:audit.system');
+  return { title, who };
+}
+
+const keyOf = (e: AuditEntry) => e.id;
+
+const AuditRow = memo(function AuditRow({
+  item,
+  onOpen,
+}: {
+  item: AuditEntry;
+  onOpen: (e: AuditEntry) => void;
+}) {
+  const { title, who } = useEntryLabels();
+  return (
+    <Card tight className="mb-2">
+      <Row
+        icon="audit"
+        title={title(item)}
+        subtitle={`${who(item)} · ${relative(item.createdAt)}`}
+        onPress={() => onOpen(item)}
+      />
+    </Card>
+  );
+});
+
+export function AuditLogScreen() {
+  const { t } = useTranslation(['manage', 'society', 'common']);
+  const nav = useNav();
+  const societyId = useSocietyId();
+  const [area, setArea] = useState<AuditArea | undefined>(undefined);
+  const [open, setOpen] = useState<AuditEntry | null>(null);
+  const list = useAuditLog(societyId, area);
+  const { title, who } = useEntryLabels();
+  const renderItem = useCallback(
+    ({ item }: { item: AuditEntry }) => <AuditRow item={item} onOpen={setOpen} />,
+    [],
+  );
   const diff = open ? changes(open.before, open.after) : [];
 
   return (
@@ -115,18 +147,9 @@ export function AuditLogScreen() {
           />
         }
         className="mt-4"
-        keyExtractor={(i) => i.id}
+        keyExtractor={keyOf}
         contentContainerStyle={{ paddingBottom: 40 }}
-        renderItem={({ item }) => (
-          <Card tight className="mb-2">
-            <Row
-              icon="audit"
-              title={title(item)}
-              subtitle={`${who(item)} · ${relative(item.createdAt)}`}
-              onPress={() => setOpen(item)}
-            />
-          </Card>
-        )}
+        renderItem={renderItem}
       />
       <Sheet
         visible={open !== null}

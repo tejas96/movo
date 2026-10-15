@@ -11,7 +11,7 @@ import {
   StatusPill,
   Text,
 } from '@movo/design-system';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
@@ -79,7 +79,7 @@ export function DutiesScreen() {
   );
 }
 
-function DutyCard({ duty }: { duty: DutySummary }) {
+const DutyCard = memo(function DutyCard({ duty }: { duty: DutySummary }) {
   const { t } = useTranslation(['duties', 'common']);
   const nav = useNav();
   const mineNow = duty.current?.mine && duty.current.status === 'ACTIVE';
@@ -116,4 +116,4 @@ function DutyCard({ duty }: { duty: DutySummary }) {
       </Card>
     </Pressable>
   );
-}
+});

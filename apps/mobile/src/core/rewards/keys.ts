@@ -1,4 +1,4 @@
-import { societyKey } from '../../core/api/query-keys';
+import { societyKey } from '../api/query-keys';
 
 export const rewardsKeys = (societyId: string) => {
   const root = societyKey(societyId);

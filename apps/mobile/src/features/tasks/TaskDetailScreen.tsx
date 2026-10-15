@@ -23,13 +23,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { MemberPickerSheet } from '../../core/members/MemberPickerSheet';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, relative } from '../../core/util/date';
-import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { type TaskAction, useTask, useTaskAction } from './api';
 import { TaskStatusPill } from './shared';
 

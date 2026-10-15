@@ -1,4 +1,4 @@
-import type { MeetingStatus, Timeframe } from '@movo/contracts';
+import type { Timeframe } from '@movo/contracts';
 import {
   EmptyState,
   IconSquare,
@@ -11,24 +11,12 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { MeetingStatusPill } from '../../core/calendar/MeetingStatusPill';
+import { TimedCard } from '../../core/calendar/shared';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
-import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-import { TimedCard } from '../calendar/shared';
 import { useMeetings } from './api';
-
-/** SCHEDULED shows no pill. */
-const MEETING_TONE: StatusTones<MeetingStatus> = {
-  SCHEDULED: 'neutral',
-  CANCELLED: 'danger',
-  COMPLETED: 'neutral',
-};
-
-export function MeetingStatusPill({ status }: { status: MeetingStatus }) {
-  if (status === 'SCHEDULED') return null;
-  return <StatusPill value={status} tones={MEETING_TONE} labels="meetings:status" />;
-}
 
 export function MeetingsScreen() {
   const { t } = useTranslation(['meetings', 'common']);

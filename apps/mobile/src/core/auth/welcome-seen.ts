@@ -1,4 +1,4 @@
-import { kv } from '../../core/storage/mmkv';
+import { kv } from '../storage/mmkv';
 
 const KEY = 'movo.welcome.seen';
 

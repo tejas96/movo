@@ -11,11 +11,11 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Share, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { useHomeSummary } from '../../core/home/api';
 import { useNav } from '../../core/navigation/types';
+import { useSocietyProfile } from '../../core/society/api';
 import { useCan, useModuleEnabled, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useHomeSummary } from '../home/api';
-import { useSocietyProfile } from '../society/api';
 import { useRotateJoinCode } from './api';
 
 /** Keeps the last row's tiles the same width as the rows above. */

@@ -1,40 +1,10 @@
-import type { Vendor, VendorCategory, VendorCategoryIcon, VendorStatus } from '@movo/contracts';
-import { type BoldIconName, CircleButton, Row } from '@movo/design-system';
+import type { Vendor, VendorCategory, VendorStatus } from '@movo/contracts';
+import { CircleButton, Row } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Linking } from 'react-native';
 import { i18n } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
-
-/** Contract icon names map one to one onto design-system icons. The type check keeps them in sync. */
-export const CATEGORY_ICON: Record<VendorCategoryIcon, BoldIconName> = {
-  services: 'services',
-  water: 'water',
-  electricity: 'electricity',
-  ac: 'ac',
-  paint: 'paint',
-  carpentry: 'carpentry',
-  tools: 'tools',
-  cleaning: 'cleaning',
-  pest: 'pest',
-  internet: 'internet',
-  monitor: 'monitor',
-  mobile: 'mobile',
-  lift: 'lift',
-  security: 'security',
-  gas: 'gas',
-  laundry: 'laundry',
-  truck: 'truck',
-  box: 'box',
-  flat: 'flat',
-  key: 'key',
-  cctv: 'cctv',
-  lamp: 'lamp',
-  health: 'health',
-  cup: 'cup',
-  bag: 'bag',
-  people: 'people',
-};
 
 export const STATUS_TONE: StatusTones<VendorStatus> = {
   SUGGESTED: 'info',

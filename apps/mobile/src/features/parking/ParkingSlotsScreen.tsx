@@ -23,11 +23,11 @@ import { FlatList, Pressable, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
+import { slotIcon } from '../../core/parking/shared';
+import { useFlats } from '../../core/society/api';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useFlats } from '../manage/api';
 import { type SlotFilter, useCreateSlots, useParkingSlots, useSlotAction } from './api';
-import { slotIcon } from './shared';
 
 const MAX_SLOTS = 500;
 

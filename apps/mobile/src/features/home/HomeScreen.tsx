@@ -16,18 +16,18 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 import { useSessionStore } from '../../core/auth/session.store';
+import { EventPill } from '../../core/calendar/EventPill';
+import { MeetingStatusPill } from '../../core/calendar/MeetingStatusPill';
+import { useHomeSummary } from '../../core/home/api';
+import type { HomeCtx, QuickCtx } from '../../core/home/types';
 import { useNav } from '../../core/navigation/types';
 import { useCanManageSociety, useMeContext, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { greetingKey, relative, whenRange } from '../../core/util/date';
-import { EventPill } from '../events/EventsScreen';
-import { MeetingStatusPill } from '../meetings/MeetingsScreen';
-import { useHomeSummary } from './api';
 import { Reveal } from './effects';
 import { HeroCard } from './HeroCard';
 import { attentionKey, pickHero, quickTiles } from './registry';
 import { AttentionRow, HomeTile, QuickGrid, type QuickItem } from './tiles';
-import type { HomeCtx, QuickCtx } from './types';
 
 export function HomeScreen() {
   const { t } = useTranslation(['home', 'common', 'notices']);

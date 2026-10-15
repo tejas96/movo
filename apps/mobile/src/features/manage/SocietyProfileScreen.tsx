@@ -24,10 +24,10 @@ import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract
 import { useNav } from '../../core/navigation/types';
 import { type PhotoSource, usePickOne } from '../../core/photos/pick';
 import { SinglePhotoField } from '../../core/photos/SinglePhotoField';
+import { useSocietyProfile } from '../../core/society/api';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { monthName } from '../../core/util/date';
-import { useSocietyProfile } from '../society/api';
 import { useUpdateSociety } from './api';
 
 const LOCALES: Locale[] = ['en', 'hi', 'mr'];

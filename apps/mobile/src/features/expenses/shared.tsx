@@ -1,12 +1,13 @@
 import type { ExpenseCategory, ExpenseStatus, ExpenseSummary } from '@movo/contracts';
 import { Row, Text } from '@movo/design-system';
+import { memo } from 'react';
 import { View } from 'react-native';
 import { i18n } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
+import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { StatusPill, type StatusTones } from '../../core/ui/StatusPill';
 import { day } from '../../core/util/date';
 import { money } from '../../core/util/money';
-import { CATEGORY_ICON } from '../services/shared';
 
 const TONE: StatusTones<ExpenseStatus> = {
   PENDING: 'warning',
@@ -26,7 +27,7 @@ export function ExpenseStatusPill({ status }: { status: ExpenseStatus }) {
   return <StatusPill value={status} tones={TONE} labels="expenses:status" />;
 }
 
-export function ExpenseRow({ expense }: { expense: ExpenseSummary }) {
+export const ExpenseRow = memo(function ExpenseRow({ expense }: { expense: ExpenseSummary }) {
   const nav = useNav();
   return (
     <Row
@@ -44,4 +45,4 @@ export function ExpenseRow({ expense }: { expense: ExpenseSummary }) {
       onPress={() => nav.navigate('ExpenseDetail', { expenseId: expense.id })}
     />
   );
-}
+});

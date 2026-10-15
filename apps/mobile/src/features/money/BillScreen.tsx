@@ -22,6 +22,7 @@ import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { Line } from '../../core/ui/Line';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
 import { money } from '../../core/util/money';
@@ -182,22 +183,5 @@ export function BillScreen() {
         />
       </Sheet>
     </Screen>
-  );
-}
-
-export function Line({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-  return (
-    <View className="flex-row items-center justify-between gap-4">
-      <Text
-        variant={strong ? 'bodyMedium' : 'body'}
-        tone={strong ? 'primary' : 'secondary'}
-        className="flex-1"
-      >
-        {label}
-      </Text>
-      <Text variant="bodyMedium" className={strong ? 'font-semibold' : undefined}>
-        {value}
-      </Text>
-    </View>
   );
 }

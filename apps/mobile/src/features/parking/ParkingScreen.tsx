@@ -15,11 +15,11 @@ import {
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
+import { formatRegistration, slotIcon } from '../../core/parking/shared';
 import { formatFlat, useCan, useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { mediumDate } from '../../core/util/date';
 import { useMyParking } from './api';
-import { formatRegistration, slotIcon } from './shared';
 
 export function ParkingScreen() {
   const { t } = useTranslation(['parking', 'common']);

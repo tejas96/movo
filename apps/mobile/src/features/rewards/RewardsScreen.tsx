@@ -19,11 +19,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { MemberPickerSheet } from '../../core/members/MemberPickerSheet';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { relative } from '../../core/util/date';
-import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useAdjustPoints, useLeaderboard, useMyPoints } from './api';
 
 const REASON_ICON = { TASK: 'tasks', DUTY: 'duties', ADJUSTMENT: 'edit' } as const;

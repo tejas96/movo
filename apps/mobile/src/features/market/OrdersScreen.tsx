@@ -14,11 +14,11 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { useHomeSummary } from '../../core/home/api';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { money } from '../../core/util/money';
-import { useHomeSummary } from '../home/api';
 import { useOrders } from './api';
 import { OrderStatusPill, Thumb } from './shared';
 

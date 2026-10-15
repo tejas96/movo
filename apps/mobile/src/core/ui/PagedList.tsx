@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react';
+import { type ReactElement, useCallback, useMemo, useRef } from 'react';
 import { FlatList, type FlatListProps } from 'react-native';
 import { type CursorPage, listItems } from '../api/use-cursor-list';
 import { loadFailed, QueryError } from './QueryError';
@@ -47,7 +47,17 @@ export function PagedList<T>({
   loadingMore,
   ...rest
 }: PagedListProps<T>) {
-  const items = listItems(list);
+  // Same array while the pages are the same, so FlatList and memoized rows skip work.
+  const data = list.data;
+  const items = useMemo(() => (data ? listItems({ data }) : []), [data]);
+  // The query object is new on every render; read it through a ref so handlers stay stable.
+  const latest = useRef(list);
+  latest.current = list;
+  const onEndReached = useCallback(() => {
+    const l = latest.current;
+    if (l.hasNextPage && !l.isFetchingNextPage) void l.fetchNextPage();
+  }, []);
+  const onRefresh = useCallback(() => void latest.current.refetch(), []);
   const error = <QueryError query={list} className={errorClassName} />;
 
   if (loading) {
@@ -58,11 +68,14 @@ export function PagedList<T>({
 
   return (
     <FlatList
+      initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      windowSize={11}
       {...rest}
       data={items}
-      onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
+      onEndReached={onEndReached}
       refreshing={list.isRefetching}
-      onRefresh={() => void list.refetch()}
+      onRefresh={onRefresh}
       ListEmptyComponent={loading || list.isLoading ? undefined : loadFailed(list) ? error : empty}
       ListFooterComponent={
         loadingMore && list.isFetchingNextPage ? loadingMore : rest.ListFooterComponent
