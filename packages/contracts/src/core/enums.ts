@@ -156,6 +156,7 @@ export const AuditActionSchema = z.enum([
   'join_request.rejected',
   'member.roles.updated',
   'member.status.updated',
+  'member.left',
   'member.occupancy.updated',
   'member.reset_code.issued',
   'role.created',

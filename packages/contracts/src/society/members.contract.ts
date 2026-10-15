@@ -4,6 +4,7 @@ import {
   EmailSchema,
   IdSchema,
   IsoDateTimeSchema,
+  OkSchema,
   PhoneSchema,
   page,
   SocietyParamsSchema,
@@ -102,6 +103,15 @@ export const societyMemberRoutes = {
     permission: 'member.manage',
     params: SocietyParamsSchema.extend({ membershipId: IdSchema }),
     response: z.object({ code: z.string(), expiresAt: IsoDateTimeSchema }),
+  }),
+  leaveSociety: defineRoute({
+    method: 'POST',
+    path: '/societies/:societyId/members/me/leave',
+    summary:
+      'Leave this society. Ends my flats here and hands back my tasks, duty turns and market ' +
+      'items. The last admin cannot leave (LAST_ADMIN).',
+    params: SocietyParamsSchema,
+    response: OkSchema,
   }),
   getMyPrivacy: defineRoute({
     method: 'GET',

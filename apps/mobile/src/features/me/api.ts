@@ -76,3 +76,11 @@ export function useUpdatePrivacy(societyId: string) {
       ),
   });
 }
+
+/** Leave a society. The screen then switches to another society, or the join screens show. */
+export function useLeaveSociety() {
+  return useMutation({
+    mutationFn: (societyId: string) => api(societyContract.leaveSociety, { params: { societyId } }),
+    meta: { refreshHome: false },
+  });
+}

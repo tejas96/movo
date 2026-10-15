@@ -21,6 +21,13 @@
   "comingSoonBody": "{{module}} is on the way. Your committee will switch it on when it is ready.",
   "committee": "Committee",
   "mySocieties": "My societies",
+  "leave": {
+    "button": "Leave this society",
+    "confirmTitle": "Leave {{name}}?",
+    "confirmBody": "Your tasks and duty turns here go back to the society, and your flat comes off your account. To come back, you will need to join again.",
+    "confirm": "Leave",
+    "done": "You left {{name}}"
+  },
   "directory": {
     "title": "Directory",
     "search": "Search members…",

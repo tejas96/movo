@@ -12,6 +12,7 @@ import { AuditService } from '../../common/audit/audit.service';
 import { ApiException } from '../../common/errors/api.exception';
 import { Lifecycle } from '../../common/lifecycle/lifecycle';
 import { TenantPrismaService } from '../../common/prisma/tenant-prisma.service';
+import { lockFor } from '../../common/prisma/tx-lock';
 import { requireTenant } from '../../common/request-store';
 import { can, mayCall } from '../../common/tenant/tenant.types';
 import { afterCursor, decodeCursor, slicePage } from '../../common/util/pagination';
@@ -142,18 +143,8 @@ export class MembersService {
           : {},
         include: memberInclude,
       });
-      if (body.status === 'LEFT' && before.status !== 'LEFT') {
-        await tx.flatOccupancy.updateMany({
-          where: { membershipId, toDate: null },
-          data: { toDate: new Date() },
-        });
-        await this.lifecycle.memberLeft(tx, {
-          membershipId,
-          societyId: ctx.societyId,
-          userId: m.userId,
-          reason: 'left',
-        });
-      }
+      if (body.status === 'LEFT' && before.status !== 'LEFT')
+        await this.endMembership(tx, ctx.societyId, membershipId, m.userId);
       await this.audit.record(
         {
           action: body.roleIds ? 'member.roles.updated' : 'member.status.updated',
@@ -168,6 +159,56 @@ export class MembersService {
     });
     this.context.invalidateUser(updated.userId);
     return toMemberCard(updated, true);
+  }
+
+  /**
+   * The caller leaves this society: status LEFT, flats end and their work is handed back, the
+   * same as an admin removal. The last active admin cannot leave.
+   */
+  async leave(): Promise<void> {
+    const ctx = requireTenant();
+    const me = await this.db.membership.findUniqueOrThrow({
+      where: { id: ctx.membershipId },
+      include: memberInclude,
+    });
+    const isAdmin = me.roles.some((r) => r.role.key === 'admin');
+    await this.tenant.tx(async (tx) => {
+      // Two admins leaving at once must not both pass the last-admin check.
+      await lockFor(tx, `society-admins:${ctx.societyId}`);
+      if (isAdmin) await this.assertNotLastAdmin(me.id, tx);
+      const moved = await tx.membership.updateMany({
+        where: { id: me.id, societyId: ctx.societyId, status: 'ACTIVE' },
+        data: { status: 'LEFT', leftAt: new Date() },
+      });
+      if (moved.count === 0)
+        throw ApiException.conflict('CONFLICT', 'You are no longer a member of this society');
+      await this.endMembership(tx, ctx.societyId, me.id, me.userId);
+      await this.audit.record(
+        {
+          action: 'member.left',
+          entityType: 'Membership',
+          entityId: me.id,
+          before: { roles: me.roles.map((r) => r.role.key), status: me.status },
+          after: { status: 'LEFT' },
+        },
+        tx,
+      );
+    });
+    this.context.invalidateUser(me.userId);
+  }
+
+  /** A membership ended (admin removal or leaving): flats end, the member's work is handed back. */
+  private async endMembership(
+    tx: Prisma.TransactionClient,
+    societyId: string,
+    membershipId: string,
+    userId: string,
+  ): Promise<void> {
+    await tx.flatOccupancy.updateMany({
+      where: { membershipId, toDate: null },
+      data: { toDate: new Date() },
+    });
+    await this.lifecycle.memberLeft(tx, { membershipId, societyId, userId, reason: 'left' });
   }
 
   async setOccupancies(
@@ -287,9 +328,14 @@ export class MembersService {
     return { showPhone: m.privacyShowPhone, showEmail: m.privacyShowEmail };
   }
 
-  private async assertNotLastAdmin(membershipId: string): Promise<void> {
-    const others = await this.db.membership.count({
+  private async assertNotLastAdmin(
+    membershipId: string,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
+    const ctx = requireTenant();
+    const others = await (tx ?? this.db).membership.count({
       where: {
+        societyId: ctx.societyId,
         id: { not: membershipId },
         status: 'ACTIVE',
         roles: { some: { role: { key: 'admin' } } },

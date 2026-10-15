@@ -1,25 +1,58 @@
-import { Button, Card, Icon, Row, Screen, TitleBar } from '@movo/design-system';
+import { Button, Card, Icon, Row, Screen, TitleBar, useToast } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
-import { Image, View } from 'react-native';
+import { Alert, Image, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { queryClient } from '../../core/api/query-client';
 import { societyKey } from '../../core/api/query-keys';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { invalidateContext } from '../../core/auth/auth';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useMeContext } from '../../core/tenant/hooks';
 import { useTenantStore } from '../../core/tenant/tenant.store';
+import { useLeaveSociety } from './api';
 
 export function SocietySwitcherScreen() {
   const { t } = useTranslation(['society', 'onboarding', 'common']);
   const nav = useNav();
+  const toast = useToast();
+  const withErrorToast = useMutationToast();
   const ctx = useMeContext();
   const activeId = useTenantStore((s) => s.activeSocietyId);
   const setActive = useTenantStore((s) => s.setActiveSocietyId);
+  const leave = useLeaveSociety();
   const memberships = ctx.data?.memberships.filter((m) => m.status === 'ACTIVE') ?? [];
+  const current = memberships.find((m) => m.society.id === activeId) ?? memberships[0];
 
   const pick = (id: string) => {
     setActive(id);
     void queryClient.invalidateQueries({ queryKey: societyKey(id) });
     nav.goBack();
+  };
+
+  // Like a membership an admin ended: move to another active society, or (none left) the
+  // context refresh shows the join screens.
+  const leaveCurrent = async (id: string, name: string) => {
+    await withErrorToast(async () => {
+      await leave.mutateAsync(id);
+      const next = memberships.find((m) => m.society.id !== id);
+      setActive(next?.society.id ?? null);
+      if (next) nav.goBack();
+      await invalidateContext();
+      toast.show(t('society:leave.done', { name }));
+    });
+  };
+
+  const confirmLeave = () => {
+    if (!current) return;
+    const { id, name } = current.society;
+    Alert.alert(t('society:leave.confirmTitle', { name }), t('society:leave.confirmBody'), [
+      { text: t('common:actions.cancel'), style: 'cancel' },
+      {
+        text: t('society:leave.confirm'),
+        style: 'destructive',
+        onPress: () => void leaveCurrent(id, name),
+      },
+    ]);
   };
 
   return (
@@ -43,7 +76,7 @@ export function SocietySwitcherScreen() {
               .filter(Boolean)
               .join(' · ')}
             trailing={
-              m.society.id === activeId ? (
+              m.society.id === current?.society.id ? (
                 <Icon name="check" variant="bold" size={22} />
               ) : (
                 <View className="w-[22px]" />
@@ -59,6 +92,16 @@ export function SocietySwitcherScreen() {
         onPress={() => nav.navigate('Join')}
         className="mt-4"
       />
+      {current ? (
+        <Button
+          label={t('society:leave.button')}
+          variant="danger"
+          icon="logout"
+          loading={leave.isPending}
+          onPress={confirmLeave}
+          className="mt-10"
+        />
+      ) : null}
     </Screen>
   );
 }

@@ -76,6 +76,10 @@ export class SocietyController {
   ): Out<'updateMyPrivacy'> {
     return this.members.updateMyPrivacy(body);
   }
+  @Route(c.leaveSociety) async leaveSociety(): Out<'leaveSociety'> {
+    await this.members.leave();
+    return { ok: true };
+  }
   @Route(c.getMember) getMember(@Input(c.getMember) { params }: In<'getMember'>): Out<'getMember'> {
     return this.members.get(params.membershipId);
   }

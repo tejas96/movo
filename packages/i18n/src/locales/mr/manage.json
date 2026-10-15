@@ -360,6 +360,7 @@
       "join_request_rejected": "सामील होण्याची विनंती नामंजूर",
       "member_roles_updated": "सदस्याच्या भूमिका बदलल्या",
       "member_status_updated": "सदस्याची स्थिती बदलली",
+      "member_left": "सदस्याने सोसायटी सोडली",
       "member_occupancy_updated": "सदस्याचे फ्लॅट बदलले",
       "member_reset_code_issued": "पासवर्ड रीसेट कोड दिला",
       "role_created": "भूमिका तयार केली",
