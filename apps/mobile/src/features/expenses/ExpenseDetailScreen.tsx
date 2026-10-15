@@ -21,11 +21,11 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { CATEGORY_ICON } from '../../core/ui/category-icon';
+import { Line } from '../../core/ui/Line';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, relative } from '../../core/util/date';
 import { money } from '../../core/util/money';
-import { Line } from '../money/BillScreen';
-import { CATEGORY_ICON } from '../services/shared';
 import { useDecideExpense, useExpense, useRemoveExpense } from './api';
 import { ExpenseStatusPill, expenseCategoryLabel } from './shared';
 

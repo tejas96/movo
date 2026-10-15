@@ -1,5 +1,5 @@
+import type { FeatureHome } from '../../core/home/types';
 import { money } from '../../core/util/money';
-import type { FeatureHome } from '../home/types';
 
 export const expensesHome: FeatureHome = {
   attention: {

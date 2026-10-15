@@ -18,11 +18,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { useRoles } from '../../core/members/api';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { parseRupees, rupeesText } from '../../core/util/money';
-import { useRoles } from '../directory/api';
 import { useModules, useUpdateModule } from './api';
 import { MODULE_SETTINGS, type SettingField } from './module-settings';
 

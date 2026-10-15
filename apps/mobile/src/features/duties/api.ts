@@ -1,7 +1,7 @@
 import { dutiesContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { rewardsKeys } from '../rewards/keys';
+import { rewardsKeys } from '../../core/rewards/keys';
 import { dutiesKeys } from './keys';
 
 const c = dutiesContract;

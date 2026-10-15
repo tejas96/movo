@@ -30,10 +30,10 @@ import { ScrollView, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, isoDay, localeTag, periodLabel } from '../../core/util/date';
 import { money, parseRupees } from '../../core/util/money';
-import { CATEGORY_ICON } from '../services/shared';
 import { useCreateIncome, useDeleteIncome, useExpenses, useIncome, useReport } from './api';
 import { ExpenseRow, expenseCategoryLabel } from './shared';
 

@@ -17,11 +17,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, ScrollView, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
+import { useMembers } from '../../core/members/api';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { useBuildings } from '../../core/society/api';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
 import { PagedList } from '../../core/ui/PagedList';
-import { useBuildings } from '../manage/api';
-import { useMembers } from './api';
 
 export function DirectoryScreen() {
   const { t } = useTranslation(['society', 'common', 'manage']);

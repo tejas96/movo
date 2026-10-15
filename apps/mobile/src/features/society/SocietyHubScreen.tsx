@@ -17,11 +17,11 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
+import { useMembers } from '../../core/members/api';
 import { useNav } from '../../core/navigation/types';
+import { useSocietyProfile } from '../../core/society/api';
 import { formatFlat, useCanManageSociety, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useMembers } from '../directory/api';
-import { useSocietyProfile } from './api';
 
 type HubKey = ModuleKey | 'manage';
 type ModuleTile = { key: HubKey; icon: BoldIconName; photo: PhotoName; labelKey: string };

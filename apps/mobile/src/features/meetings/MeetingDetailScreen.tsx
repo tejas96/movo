@@ -22,12 +22,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
+import { MeetingStatusPill } from '../../core/calendar/MeetingStatusPill';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { dateTime, relative, whenRange } from '../../core/util/date';
 import { type MeetingAction, useMeeting, useMeetingAction } from './api';
-import { MeetingStatusPill } from './MeetingsScreen';
 
 type MenuKey = 'edit' | MeetingAction;
 

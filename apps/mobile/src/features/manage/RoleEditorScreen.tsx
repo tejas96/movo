@@ -19,10 +19,10 @@ import { Alert, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
+import { useRoles } from '../../core/members/api';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { useRoles } from '../directory/api';
 import { useDeleteRole, useSaveRole } from './api';
 import { i18nKey, PERMISSION_GROUPS } from './module-settings';
 

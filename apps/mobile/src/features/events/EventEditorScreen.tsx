@@ -17,11 +17,17 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import {
+  type DurationKey,
+  defaultStart,
+  durationOf,
+  endFor,
+  WhenFields,
+} from '../../core/calendar/shared';
 import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { type DurationKey, defaultStart, durationOf, endFor, WhenFields } from '../calendar/shared';
 import { useCreateEvent, useEvent, useUpdateEvent } from './api';
 
 interface EventForm {

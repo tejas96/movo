@@ -12,8 +12,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { markWelcomeSeen } from '../../core/auth/welcome-seen';
 import { useNav } from '../../core/navigation/types';
-import { markWelcomeSeen } from './welcome-seen';
 
 type SlideKey = 'one' | 'two' | 'three';
 const SLIDES: readonly { key: SlideKey; photo: PhotoName }[] = [

@@ -3,7 +3,7 @@ import type { BoldIconName, RowProps } from '@movo/design-system';
 import type { Namespace } from '@movo/i18n';
 import type { TFunction } from 'i18next';
 import type { ImageSourcePropType } from 'react-native';
-import type { RootNav } from '../../core/navigation/types';
+import type { RootNav } from '../navigation/types';
 
 export type AttentionType = AttentionItem['type'];
 export type AttentionOf<T extends AttentionType> = Extract<AttentionItem, { type: T }>;

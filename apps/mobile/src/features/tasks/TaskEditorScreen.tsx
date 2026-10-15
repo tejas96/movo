@@ -19,11 +19,11 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
+import { MemberPickerSheet } from '../../core/members/MemberPickerSheet';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, fromIsoDay, isoDay, localeTag } from '../../core/util/date';
-import { MemberPickerSheet } from '../directory/MemberPickerSheet';
 import { useSaveTask, useTask } from './api';
 
 interface TaskForm {

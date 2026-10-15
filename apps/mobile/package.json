@@ -11,6 +11,7 @@
     "android:apk-release": "cd android && ./gradlew assembleRelease",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
+    "check-boundaries": "node scripts/check-boundaries.mjs",
     "fonts:link": "react-native-asset",
     "pods": "cd ios && bundle exec pod install"
   },

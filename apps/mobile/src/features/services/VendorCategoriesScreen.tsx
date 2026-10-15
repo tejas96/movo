@@ -25,9 +25,10 @@ import { Pressable, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useDeleteCategory, useSaveCategory, useVendorCategories } from './api';
-import { CATEGORY_ICON, categoryLabel } from './shared';
+import { categoryLabel } from './shared';
 
 type Draft = { id?: string; name: string; icon: VendorCategoryIcon; vendorCount: number };
 

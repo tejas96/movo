@@ -1,7 +1,7 @@
 import { photos, StatusPill } from '@movo/design-system';
+import type { AttentionOf, FeatureHome, HomeT } from '../../core/home/types';
 import { formatFlat } from '../../core/tenant/hooks';
 import { relative } from '../../core/util/date';
-import type { AttentionOf, FeatureHome, HomeT } from '../home/types';
 import { ALERT_ICON } from './shared';
 
 function alertText(item: AttentionOf<'ACTIVE_ALERT'>, t: HomeT) {

@@ -13,12 +13,13 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Share, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
+import { useRoles } from '../../core/members/api';
 import { useNav } from '../../core/navigation/types';
+import { useFlats } from '../../core/society/api';
 import { useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { normalizePhone } from '../../core/util/phone';
-import { useRoles } from '../directory/api';
-import { useCreateInvitation, useFlats } from './api';
+import { useCreateInvitation } from './api';
 
 const NO_FLAT = '__none__';
 

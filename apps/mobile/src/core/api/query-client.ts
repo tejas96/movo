@@ -1,7 +1,7 @@
 import NetInfo from '@react-native-community/netinfo';
 import { focusManager, MutationCache, onlineManager, QueryClient } from '@tanstack/react-query';
 import { AppState } from 'react-native';
-import { isHomeKey } from '../../features/home/keys';
+import { isHomeKey } from '../home/keys';
 import { hasInternet } from '../network/online';
 import { isApiError } from './errors';
 

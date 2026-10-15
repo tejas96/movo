@@ -1,6 +1,6 @@
 import { photos, StatusPill } from '@movo/design-system';
+import type { FeatureHome } from '../../core/home/types';
 import { day } from '../../core/util/date';
-import type { FeatureHome } from '../home/types';
 
 export const tasksHome: FeatureHome = {
   attention: {

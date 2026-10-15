@@ -18,9 +18,10 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useVendorCategories, useVendors } from './api';
-import { CATEGORY_ICON, categoryLabel, VendorRow } from './shared';
+import { categoryLabel, VendorRow } from './shared';
 
 const PADS = ['pad-a', 'pad-b'] as const;
 

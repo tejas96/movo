@@ -17,8 +17,8 @@ import { View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { CATEGORY_ICON } from '../services/shared';
 import { useDeleteCategory, useExpenseCategories, useSaveCategory } from './api';
 import { expenseCategoryLabel } from './shared';
 

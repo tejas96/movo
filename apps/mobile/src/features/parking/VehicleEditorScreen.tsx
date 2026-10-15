@@ -24,9 +24,9 @@ import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { bodyResolver, formMessage } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { formatRegistration } from '../../core/parking/shared';
 import { formatFlat, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { useDeleteVehicle, useSaveVehicle } from './api';
-import { formatRegistration } from './shared';
 
 interface VehicleForm {
   flatId: string;

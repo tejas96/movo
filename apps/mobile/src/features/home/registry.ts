@@ -1,4 +1,10 @@
 import type { AttentionItem } from '@movo/contracts';
+import type {
+  AttentionEntries,
+  AttentionEntry,
+  FeatureHome,
+  QuickTile,
+} from '../../core/home/types';
 import { directoryHome } from '../directory/home';
 import { dutiesHome } from '../duties/home';
 import { emergencyHome } from '../emergency/home';
@@ -10,7 +16,6 @@ import { moneyHome } from '../money/home';
 import { noticesHome } from '../notices/home';
 import { servicesHome } from '../services/home';
 import { tasksHome } from '../tasks/home';
-import type { AttentionEntries, AttentionEntry, FeatureHome, QuickTile } from './types';
 
 /** The AR guide lives on its own track (features/ar), so its tile is declared here. */
 const arHome: FeatureHome = {

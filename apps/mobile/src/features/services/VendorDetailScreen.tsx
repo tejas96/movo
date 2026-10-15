@@ -19,11 +19,12 @@ import { Linking, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
 import { formatPhone } from '../../core/util/phone';
 import { useDeleteVendor, useUpdateVendor, useVendor, useVendorCategories } from './api';
-import { CATEGORY_ICON, categoryLabel, STATUS_TONE } from './shared';
+import { categoryLabel, STATUS_TONE } from './shared';
 
 export function VendorDetailScreen() {
   const { t } = useTranslation(['services', 'common']);

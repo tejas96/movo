@@ -1,7 +1,7 @@
 import { type RouteBody, type TaskView, tasksContract } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
-import { rewardsKeys } from '../rewards/keys';
+import { rewardsKeys } from '../../core/rewards/keys';
 import { tasksKeys } from './keys';
 
 const c = tasksContract;

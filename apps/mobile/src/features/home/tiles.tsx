@@ -7,9 +7,9 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import type { HomeCtx } from '../../core/home/types';
 import { PhotoScrim, photoStyles } from './effects';
 import { attentionEntry } from './registry';
-import type { HomeCtx } from './types';
 
 /** One "Needs you" row, drawn from the entry its feature registered. Unknown types draw nothing. */
 export function AttentionRow({ item, ctx }: { item: AttentionItem; ctx: HomeCtx }) {

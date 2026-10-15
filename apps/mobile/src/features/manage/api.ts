@@ -11,23 +11,9 @@ import { api } from '../../core/api/client';
 import { societyKey } from '../../core/api/query-keys';
 import { useCursorList } from '../../core/api/use-cursor-list';
 import { invalidateContext } from '../../core/auth/auth';
-import { directoryKeys } from '../directory/keys';
-import { societyKeys } from '../society/keys';
-import { manageKeys } from './keys';
-
-export function useBuildings(societyId: string) {
-  return useQuery({
-    queryKey: manageKeys(societyId).buildings,
-    queryFn: () => api(societyContract.listBuildings, { params: { societyId } }),
-  });
-}
-
-export function useFlats(societyId: string) {
-  return useQuery({
-    queryKey: manageKeys(societyId).flats,
-    queryFn: () => api(societyContract.listFlats, { params: { societyId } }),
-  });
-}
+import { directoryKeys } from '../../core/members/keys';
+import { societyKeys } from '../../core/society/keys';
+import { manageKeys } from '../../core/society/manage-keys';
 
 export function useCreateBuilding(societyId: string) {
   const qc = useQueryClient();

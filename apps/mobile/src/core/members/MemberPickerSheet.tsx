@@ -3,8 +3,8 @@ import { Button, EmptyState, SearchBar, Sheet, Skeleton, Text } from '@movo/desi
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
-import { formatFlat } from '../../core/tenant/hooks';
-import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { formatFlat } from '../tenant/hooks';
+import { loadFailed, QueryError } from '../ui/QueryError';
 import { useMembers } from './api';
 
 interface BaseProps {
