@@ -38,7 +38,10 @@ export function PhotoHeader({
   className,
 }: PhotoHeaderProps) {
   return (
-    <View className={cn('overflow-hidden rounded-xl bg-card', className)} style={{ height }}>
+    <View
+      className={cn('overflow-hidden rounded-[34px] bg-card border-[5px] border-white', className)}
+      style={[{ height }, theme.shadow.rim]}
+    >
       <Image
         source={source}
         resizeMode="cover"
@@ -46,7 +49,7 @@ export function PhotoHeader({
       />
       <View className="flex-row items-start justify-between p-3">
         {onBack ? (
-          <IconSquare icon="back" variant="linear" tone="white" onPress={onBack} />
+          <IconSquare icon="back" variant="linear" tone="white" diameter={46} onPress={onBack} />
         ) : (
           <View />
         )}
@@ -90,7 +93,7 @@ export function PhotoCard({
 }: PhotoCardProps) {
   const body = (
     <>
-      <View className="overflow-hidden rounded-lg" style={{ height: photoHeight }}>
+      <View className="overflow-hidden rounded-[24px]" style={{ height: photoHeight }}>
         <Image
           source={source}
           resizeMode="cover"
@@ -109,7 +112,7 @@ export function PhotoCard({
       {children ? <View className="px-3 pb-3 pt-4">{children}</View> : null}
     </>
   );
-  const cls = cn('rounded-xl bg-card p-2', className);
+  const cls = cn('rounded-[30px] bg-card border-[1.5px] border-glass p-1.5', className);
   if (!onPress) return <View className={cls}>{body}</View>;
   return (
     <Press
@@ -193,19 +196,34 @@ export interface ModuleHeaderProps extends Omit<PhotoHeaderProps, 'className'> {
   className?: string;
 }
 
-/** Top of a module screen: the module photo with back and action on it, a big title under it. */
-export function ModuleHeader({ title, subtitle, className, ...photo }: ModuleHeaderProps) {
+/**
+ * Top of a module screen, as on the Soft Glow mockups (Members, Notices, Emergency): round back
+ * button, big title, an action on the right, a gray line under it. Soft Glow has no stock
+ * photos, so `source` is no longer drawn.
+ */
+export function ModuleHeader({ title, subtitle, className, onBack, trailing }: ModuleHeaderProps) {
   return (
-    <View className={className}>
-      <PhotoHeader height={200} {...photo} />
-      <Text variant="h1" className="mt-4">
-        {title}
-      </Text>
-      {subtitle ? (
-        <Text variant="body" tone="secondary" className="mt-0.5">
-          {subtitle}
-        </Text>
+    <View className={cn('flex-row items-center gap-3 min-h-[52px]', className)}>
+      {onBack ? (
+        <IconSquare
+          icon="back"
+          variant="linear"
+          diameter={46}
+          onPress={onBack}
+          accessibilityLabel="Back"
+        />
       ) : null}
+      <View className="flex-1 min-w-0">
+        <Text variant="h1" numberOfLines={1}>
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text variant="caption" tone="secondary" numberOfLines={2}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
+      {trailing}
     </View>
   );
 }

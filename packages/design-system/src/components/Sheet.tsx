@@ -35,7 +35,7 @@ export function Sheet({ visible, onClose, title, children, footer }: SheetProps)
         />
         <KeyboardAvoidingView behavior="padding">
           <View
-            className="rounded-t-xl bg-card-alt px-5 pt-3"
+            className="rounded-t-[32px] bg-canvas px-5 pt-3"
             style={[
               {
                 paddingBottom: keyboard > 0 ? 16 : Math.max(insets.bottom, 16) + 8,
@@ -99,8 +99,8 @@ export function OptionSheet<T extends string>({
               }}
               className={
                 on
-                  ? 'flex-row items-center justify-between rounded-md bg-ink px-4 py-3.5'
-                  : 'flex-row items-center justify-between rounded-md bg-card-nested px-4 py-3.5 active:bg-card'
+                  ? 'flex-row items-center justify-between rounded-[22px] bg-ink px-4 py-3.5'
+                  : 'flex-row items-center justify-between rounded-[22px] bg-card-nested px-4 py-3.5 active:bg-card'
               }
             >
               <View className="flex-1 min-w-0">

@@ -22,9 +22,9 @@ export type TileProps = Omit<PressableProps, 'children' | 'style'> &
   };
 
 const TONE = {
-  gray: 'bg-card active:bg-card-deep',
-  deep: 'bg-card-deep active:bg-gray-300',
-  white: 'bg-card-nested active:bg-card',
+  gray: 'bg-card border-[1.5px] border-glass',
+  deep: 'bg-card-deep border-[1.5px] border-glass',
+  white: 'bg-card-nested',
 } as const;
 
 /** Facility-style tile for the Society hub and stats. Put three in a row. */
@@ -42,7 +42,12 @@ export function Tile({
     <Press
       accessibilityRole="button"
       {...rest}
-      className={cn('flex-1 min-h-[96px] justify-between rounded-md p-4', TONE[tone], className)}
+      className={cn(
+        'flex-1 min-h-[96px] justify-between rounded-[24px] p-4',
+        TONE[tone],
+        className,
+      )}
+      scaleTo={0.96}
     >
       <Icon name={icon as BoldIconName} variant={iconVariant} size={24} />
       <View className="mt-3">
