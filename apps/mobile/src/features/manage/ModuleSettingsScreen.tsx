@@ -1,6 +1,7 @@
 import {
   BottomBar,
   Button,
+  Card,
   Chip,
   Input,
   OptionSheet,
@@ -219,11 +220,11 @@ export function ModuleSettingsScreen() {
         ) : !current ? (
           <Skeleton className="mt-6 h-64 rounded-xl" />
         ) : (
-          <View className="mt-6 gap-4">
+          <Card className="mt-5 gap-4">
             {fields.filter(visible).map((f) => (
               <View key={f.key}>{renderField(f)}</View>
             ))}
-          </View>
+          </Card>
         )}
         {error ? (
           <Text variant="caption" tone="danger" className="mt-3">

@@ -2,6 +2,7 @@ import { type Locale, type SocietyProfile, societyContract } from '@movo/contrac
 import {
   BottomBar,
   Button,
+  Card,
   IconSquare,
   Input,
   OptionSheet,
@@ -147,7 +148,7 @@ export function SocietyProfileScreen() {
         ) : !p ? (
           <Skeleton className="mt-6 h-96 rounded-xl" />
         ) : (
-          <View className="mt-6 gap-3">
+          <Card className="mt-5 gap-3.5">
             <SinglePhotoField
               title={t('manage:profile.logo')}
               help={t('manage:profile.logoHelp')}
@@ -263,7 +264,7 @@ export function SocietyProfileScreen() {
                 {error}
               </Text>
             ) : null}
-          </View>
+          </Card>
         )}
       </Screen>
       <BottomBar

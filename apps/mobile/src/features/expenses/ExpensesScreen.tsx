@@ -290,7 +290,7 @@ function Bar({
 }) {
   const pct = total > 0 ? Math.max(2, Math.round((amount / total) * 100)) : 0;
   return (
-    <View className="rounded-lg bg-card px-4 py-3">
+    <View className="rounded-[22px] bg-card border-[1.5px] border-glass px-4 py-3">
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1 flex-row items-center gap-2">
           <IconSquare icon={icon ?? 'receipt'} size="sm" tone="white" />

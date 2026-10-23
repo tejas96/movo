@@ -48,16 +48,13 @@ export function ModulesScreen() {
       ) : loadFailed(modules) ? (
         <QueryError query={modules} className="mt-6" />
       ) : (
-        <Card tight className="mt-4 gap-2">
+        <Card tight className="mt-4">
           {MANAGED_MODULES.map((key) => {
             const m = byKey.get(key);
             if (!m) return null;
             const hasSettings = Boolean(MODULE_SETTINGS[key]?.length);
             return (
-              <View
-                key={key}
-                className="flex-row items-center gap-3 rounded-lg bg-card px-3 py-2.5"
-              >
+              <View key={key} className="flex-row items-center gap-3 px-2 py-2.5">
                 <Pressable
                   className="flex-1 flex-row items-center gap-3"
                   disabled={!hasSettings || !m.enabled}

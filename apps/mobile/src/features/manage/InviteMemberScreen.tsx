@@ -1,6 +1,7 @@
 import { type Invitation, type OccupancyRelation, OccupancyRelationSchema } from '@movo/contracts';
 import {
   Button,
+  Card,
   Input,
   OptionSheet,
   Screen,
@@ -99,7 +100,7 @@ export function InviteMemberScreen() {
   return (
     <Screen>
       <TitleBar title={t('manage:invite.title')} onBack={() => nav.goBack()} />
-      <View className="mt-6 gap-3">
+      <Card className="mt-5 gap-3.5">
         <Input label={t('manage:invite.name')} value={name} onChangeText={setName} />
         <Input
           label={t('manage:invite.phone')}
@@ -140,7 +141,7 @@ export function InviteMemberScreen() {
           loading={create.isPending}
           className="mt-2"
         />
-      </View>
+      </Card>
       <OptionSheet
         visible={open === 'flat'}
         onClose={() => setOpen(null)}
