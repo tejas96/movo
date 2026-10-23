@@ -52,5 +52,12 @@
   "flats_one": "{{count}} फ़्लैट",
   "flats_other": "{{count}} फ़्लैट",
   "members_one": "{{count}} सदस्य",
-  "members_other": "{{count}} सदस्य"
+  "members_other": "{{count}} सदस्य",
+  "hub": {
+    "now": "अभी क्या हो रहा है",
+    "alerts_one": "{{count}} चालू अलर्ट",
+    "alerts_other": "{{count}} चालू अलर्ट",
+    "newNotices_one": "{{count}} नया नोटिस",
+    "newNotices_other": "{{count}} नए नोटिस"
+  }
 }

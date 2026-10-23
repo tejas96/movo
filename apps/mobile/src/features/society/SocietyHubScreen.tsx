@@ -1,7 +1,6 @@
-import type { ModuleKey } from '@movo/contracts';
+import type { AttentionItem, ModuleKey } from '@movo/contracts';
 import {
   ArtCard,
-  type ArtName,
   Avatar,
   Building,
   Glass,
@@ -19,54 +18,79 @@ import {
   TitleBar,
   theme,
 } from '@movo/design-system';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Linking, StyleSheet, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
+import { useHomeSummary } from '../../core/home/api';
 import { useMembers } from '../../core/members/api';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyProfile } from '../../core/society/api';
 import { formatFlat, useCanManageSociety, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { relative, whenRange } from '../../core/util/date';
 
 type HubKey = ModuleKey | 'manage';
-/** Each module gets its own moving colour art and a small moving icon, as on the Home tiles. */
+/** Each module: its icon, how the icon moves, and a soft tint for the circle behind it. */
 type ModuleTile = {
   key: HubKey;
   icon: IconName;
   motion: IconMotion;
-  art: ArtName;
+  tint: string;
   labelKey: string;
 };
 
+const TINT = {
+  peach: '#FDE6DA',
+  lavender: '#EEE6FB',
+  sage: '#E6F1E3',
+  blue: '#E6E9FA',
+  sand: '#FBEBD3',
+  pink: '#FBE2E2',
+};
+
 const ORDER: ModuleTile[] = [
-  { key: 'notices', icon: 'notices', motion: 'wiggle', art: 'rose', labelKey: 'notices' },
-  { key: 'meetings', icon: 'meetings', motion: 'bob', art: 'meeting', labelKey: 'meetings' },
-  { key: 'events', icon: 'events', motion: 'flick', art: 'flame', labelKey: 'events' },
-  { key: 'directory', icon: 'directory', motion: 'bob', art: 'sand', labelKey: 'directory' },
-  { key: 'vendors', icon: 'services', motion: 'wobble', art: 'meadow', labelKey: 'vendors' },
-  { key: 'parking', icon: 'parking', motion: 'drive', art: 'dusk', labelKey: 'parking' },
-  { key: 'tasks', icon: 'tasks', motion: 'bob', art: 'tileSage', labelKey: 'tasks' },
+  { key: 'notices', icon: 'notices', motion: 'wiggle', tint: TINT.peach, labelKey: 'notices' },
+  { key: 'meetings', icon: 'meetings', motion: 'bob', tint: TINT.lavender, labelKey: 'meetings' },
+  { key: 'events', icon: 'events', motion: 'flick', tint: TINT.sand, labelKey: 'events' },
+  { key: 'directory', icon: 'directory', motion: 'bob', tint: TINT.peach, labelKey: 'directory' },
+  { key: 'vendors', icon: 'services', motion: 'wobble', tint: TINT.sage, labelKey: 'vendors' },
+  { key: 'parking', icon: 'parking', motion: 'drive', tint: TINT.blue, labelKey: 'parking' },
+  { key: 'tasks', icon: 'tasks', motion: 'bob', tint: TINT.sage, labelKey: 'tasks' },
   {
     key: 'responsibilities',
     icon: 'duties',
     motion: 'bob',
-    art: 'tileBlue',
+    tint: TINT.blue,
     labelKey: 'responsibilities',
   },
-  { key: 'rewards', icon: 'rewards', motion: 'wobble', art: 'sunset', labelKey: 'rewards' },
-  { key: 'expenses', icon: 'receipt', motion: 'bob', art: 'tileFlame', labelKey: 'expenses' },
-  { key: 'emergency', icon: 'emergency', motion: 'wiggle', art: 'tilePink', labelKey: 'emergency' },
+  { key: 'rewards', icon: 'rewards', motion: 'wobble', tint: TINT.sand, labelKey: 'rewards' },
+  { key: 'expenses', icon: 'receipt', motion: 'bob', tint: TINT.sand, labelKey: 'expenses' },
+  { key: 'emergency', icon: 'emergency', motion: 'wiggle', tint: TINT.pink, labelKey: 'emergency' },
 ];
 
 const COMMITTEE_ROLES = new Set(['admin', 'committee', 'treasurer']);
 
 export function SocietyHubScreen() {
-  const { t } = useTranslation(['society', 'common']);
+  const { t } = useTranslation(['society', 'common', 'emergency']);
   const nav = useNav();
   const tenant = useTenant();
   const profile = useSocietyProfile(tenant.society.id);
   const canManage = useCanManageSociety();
   const members = useMembers(tenant.society.id, '');
+  const summary = useHomeSummary(tenant.society.id).data;
+  const attention = summary?.attention ?? [];
+  const alerts = attention.filter((a) => a.type === 'ACTIVE_ALERT');
+  const unread = (summary?.notices ?? []).filter((n) => !n.readAt).length;
+  const next = summary?.upcoming[0];
+  const dot: Partial<Record<HubKey, string>> = {
+    ...(unread > 0 ? { notices: theme.color.accent.fg } : {}),
+    ...(alerts.length > 0 ? { emergency: theme.color.status.danger.fg } : {}),
+    ...(attention.some((a) => a.type === 'MY_TASK') ? { tasks: theme.color.accent.fg } : {}),
+    ...(attention.some((a) => a.type === 'MY_DUTY')
+      ? { responsibilities: theme.color.accent.fg }
+      : {}),
+  };
   const enabled = new Set(tenant.modules.filter((m) => m.enabled).map((m) => m.key));
   const tiles: ModuleTile[] = [
     ...ORDER.filter((m) => enabled.has(m.key as ModuleKey)),
@@ -76,7 +100,7 @@ export function SocietyHubScreen() {
             key: 'manage',
             icon: 'settings',
             motion: 'wobble',
-            art: 'tileBlue',
+            tint: TINT.lavender,
             labelKey: 'manage',
           } as ModuleTile,
         ]
@@ -103,8 +127,6 @@ export function SocietyHubScreen() {
     else nav.navigate('ComingSoon', { moduleKey: tile.key, title });
   };
 
-  const rows: ModuleTile[][] = [];
-  for (let i = 0; i < tiles.length; i += 2) rows.push(tiles.slice(i, i + 2));
   const p = profile.data;
 
   return (
@@ -128,9 +150,9 @@ export function SocietyHubScreen() {
 
         {/* The society on its art card, with the floating building. */}
         <Rise delay={60}>
-          <ArtCard art="home" height={210} contentStyle={styles.hero}>
+          <ArtCard art="home" height={150} contentStyle={styles.hero}>
             <View style={styles.heroArt} pointerEvents="none">
-              <Building width={128} />
+              <Building width={96} />
             </View>
             {tenant.society.city ? (
               <View style={styles.cityPill}>
@@ -156,38 +178,80 @@ export function SocietyHubScreen() {
         </Rise>
         {loadFailed(profile) ? <QueryError query={profile} /> : null}
 
-        <SectionLabel className="px-1 pt-1 pb-0">{t('society:explore')}</SectionLabel>
-        <View style={styles.grid}>
-          {rows.map((row, r) => (
-            <Rise key={row.map((x) => x.key).join('-')} delay={100 + r * 50}>
-              <View style={styles.row}>
-                {row.map((tile) => {
-                  const label = t(`society:modules.${tile.labelKey}` as 'society:modules.notices');
-                  return (
-                    <ArtCard
-                      key={tile.key}
-                      art={tile.art}
-                      height={128}
-                      radius={30}
-                      onPress={() => open(tile)}
-                      accessibilityLabel={label}
-                      style={styles.flex}
-                      contentStyle={styles.tile}
-                    >
-                      <View style={styles.tileIcon} pointerEvents="none">
-                        <MovingIcon name={tile.icon} motion={tile.motion} />
-                      </View>
-                      <Text variant="h3" numberOfLines={2} style={styles.tileTitle}>
-                        {label}
-                      </Text>
-                    </ArtCard>
-                  );
-                })}
-                {row.length < 2 ? <View style={styles.flex} /> : null}
-              </View>
-            </Rise>
-          ))}
-        </View>
+        {alerts.length > 0 || next || unread > 0 ? (
+          <Rise delay={100}>
+            <Glass radius={28} style={styles.list}>
+              <SectionLabel>{t('society:hub.now')}</SectionLabel>
+              {alerts.length > 0 ? (
+                <Row
+                  tone="danger"
+                  icon="emergency"
+                  title={t('society:hub.alerts', { count: alerts.length })}
+                  subtitle={alertLine(alerts[0], t)}
+                  onPress={() => nav.navigate('Emergency')}
+                />
+              ) : null}
+              {next ? (
+                <Row
+                  leading={
+                    <Disc
+                      icon={next.kind === 'MEETING' ? 'meetings' : 'events'}
+                      tint={next.kind === 'MEETING' ? TINT.lavender : TINT.sand}
+                    />
+                  }
+                  title={next.title}
+                  subtitle={[whenRange(next.startsAt, next.endsAt), next.location]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  onPress={() =>
+                    next.kind === 'MEETING'
+                      ? nav.navigate('MeetingDetail', { meetingId: next.id })
+                      : nav.navigate('EventDetail', { eventId: next.id })
+                  }
+                />
+              ) : null}
+              {unread > 0 ? (
+                <Row
+                  leading={<Disc icon="notices" tint={TINT.peach} />}
+                  title={t('society:hub.newNotices', { count: unread })}
+                  subtitle={summary?.notices.find((n) => !n.readAt)?.title}
+                  onPress={() => nav.navigate('Notices')}
+                />
+              ) : null}
+            </Glass>
+          </Rise>
+        ) : null}
+
+        <Rise delay={140}>
+          <Glass radius={28} style={styles.explore}>
+            <SectionLabel>{t('society:explore')}</SectionLabel>
+            <View style={styles.grid}>
+              {tiles.map((tile) => {
+                const label = t(`society:modules.${tile.labelKey}` as 'society:modules.notices');
+                return (
+                  <Press
+                    key={tile.key}
+                    accessibilityRole="button"
+                    accessibilityLabel={label}
+                    onPress={() => open(tile)}
+                    scaleTo={0.92}
+                    style={styles.item}
+                  >
+                    <View style={[styles.circle, { backgroundColor: tile.tint }]}>
+                      <MovingIcon name={tile.icon} motion={tile.motion} size={22} />
+                      {dot[tile.key] ? (
+                        <View style={[styles.dot, { backgroundColor: dot[tile.key] }]} />
+                      ) : null}
+                    </View>
+                    <Text variant="label" center numberOfLines={2} className="font-medium">
+                      {label}
+                    </Text>
+                  </Press>
+                );
+              })}
+            </View>
+          </Glass>
+        </Rise>
 
         {committee.length > 0 ? (
           <Glass radius={28} style={styles.list}>
@@ -252,7 +316,52 @@ function Fact({ label }: { label: string }) {
   );
 }
 
+/** A small round icon on a soft tint, for the rows in Happening now. */
+function Disc({ icon, tint }: { icon: IconName; tint: string }) {
+  return (
+    <View style={[styles.disc, { backgroundColor: tint }]}>
+      <Icon name={icon} size={20} color={theme.color.icon.primary} />
+    </View>
+  );
+}
+
+function alertLine(
+  a: AttentionItem | undefined,
+  t: TFunction<['society', 'common', 'emergency']>,
+): string {
+  if (a?.type !== 'ACTIVE_ALERT') return '';
+  return [
+    t(`emergency:type.${a.alertType}`),
+    a.flat ? formatFlat(a.flat) : null,
+    relative(a.createdAt),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
 const styles = StyleSheet.create({
+  explore: { padding: 8, paddingBottom: 14 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 14 },
+  item: { width: '25%', alignItems: 'center', gap: 6, paddingHorizontal: 2 },
+  circle: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 4px 14px rgba(70,40,70,0.06)',
+  },
+  dot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  disc: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   page: { gap: 14 },
   hero: { padding: 16, justifyContent: 'space-between' },
   heroArt: { position: 'absolute', right: 10, top: 6 },
@@ -275,19 +384,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(255,255,255,0.75)',
   },
-  grid: { gap: 12 },
-  row: { flexDirection: 'row', gap: 12 },
   flex: { flex: 1, minWidth: 0 },
-  tile: { padding: 14, justifyContent: 'space-between' },
-  tileIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tileTitle: { fontSize: 17, lineHeight: 23 },
   list: { padding: 8 },
   listHead: { flexDirection: 'row', alignItems: 'center' },
   seeAll: { paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 },
