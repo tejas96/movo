@@ -3,16 +3,12 @@ import {
   ArrowCircle,
   ArtCard,
   ArtFill,
-  AvatarStack,
-  type AvatarTone,
   Building,
   Button,
-  Coin,
   DotTexture,
   DuesRing,
   Glass,
   Icon,
-  MapPin,
   Megaphone,
   Press,
   type RingSegment,
@@ -261,98 +257,6 @@ export function NoticesCard({
   );
 }
 
-/** The two short tiles: Bills (gold coin) and Find my way (bobbing pin). */
-export function ShortcutTiles({
-  onBills,
-  onFindWay,
-}: {
-  onBills: (() => void) | undefined;
-  onFindWay: () => void;
-}) {
-  const { t } = useTranslation('home');
-  return (
-    <View style={styles.tiles}>
-      {onBills ? (
-        <ArtCard
-          art="meadow"
-          height={108}
-          radius={30}
-          onPress={onBills}
-          accessibilityLabel={t('glow.bills.title')}
-          style={styles.bigTile}
-          contentStyle={styles.tileContent}
-        >
-          <View style={styles.coin} pointerEvents="none">
-            <Coin />
-          </View>
-          <Text variant="h3" style={styles.tileTitle} numberOfLines={2}>
-            {t('glow.bills.title')}
-          </Text>
-          <Text variant="label" tone="soft" numberOfLines={1}>
-            {t('glow.bills.sub')}
-          </Text>
-        </ArtCard>
-      ) : null}
-      <ArtCard
-        art="dusk"
-        height={108}
-        radius={30}
-        onPress={onFindWay}
-        accessibilityLabel={t('glow.findWay.title')}
-        style={styles.flex}
-        contentStyle={styles.tileContent}
-      >
-        <View style={styles.pin} pointerEvents="none">
-          <MapPin />
-        </View>
-        <Text variant="h3" style={styles.tileTitle} numberOfLines={2}>
-          {t('glow.findWay.title')}
-        </Text>
-        <Text variant="label" tone="soft" numberOfLines={1}>
-          {t('quick.ar')}
-        </Text>
-      </ArtCard>
-    </View>
-  );
-}
-
-/** Members art card with the bobbing avatar stack. */
-export function MembersCard({
-  people,
-  more,
-  sub,
-  onPress,
-}: {
-  people: readonly { id: string; initials: string; tone?: AvatarTone }[];
-  more: string | undefined;
-  sub: string;
-  onPress: () => void;
-}) {
-  const { t } = useTranslation('home');
-  return (
-    <ArtCard
-      art="sand"
-      height={92}
-      onPress={onPress}
-      accessibilityLabel={t('glow.members.title')}
-      contentStyle={styles.line}
-    >
-      <View style={styles.flex}>
-        <Text variant="h3">{t('glow.members.title')}</Text>
-        <Text variant="label" tone="soft" numberOfLines={1}>
-          {sub}
-        </Text>
-      </View>
-      {people.length > 0 ? (
-        <View pointerEvents="none">
-          <AvatarStack bob people={people} more={more} />
-        </View>
-      ) : null}
-      <ArrowCircle />
-    </ArtCard>
-  );
-}
-
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
@@ -415,10 +319,4 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   amount: { fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: theme.color.text.primary },
-  tiles: { flexDirection: 'row', gap: 12 },
-  bigTile: { flex: 1.6 },
-  tileContent: { padding: 14, justifyContent: 'flex-end' },
-  tileTitle: { fontSize: 17, lineHeight: 23 },
-  coin: { position: 'absolute', top: 10, right: 12 },
-  pin: { position: 'absolute', top: 12, right: 14 },
 });

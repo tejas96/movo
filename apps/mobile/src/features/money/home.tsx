@@ -44,4 +44,13 @@ export const moneyHome: FeatureHome = {
       },
     },
   },
+  quick: [
+    {
+      key: 'bills',
+      icon: 'receipt',
+      label: (t) => t('home:glow.bills.title'),
+      visible: (q) => q.moduleOn('maintenance'),
+      go: (nav) => nav.navigate('Tabs', { screen: 'Money' }),
+    },
+  ],
 };

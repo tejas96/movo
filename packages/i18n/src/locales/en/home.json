@@ -6,11 +6,8 @@
   },
   "quick": {
     "services": "Services",
-    "directory": "Directory",
     "emergency": "Emergency",
-    "market": "Market",
-    "manage": "Manage",
-    "ar": "AR guide"
+    "manage": "Manage"
   },
   "needsYou": "Needs you today",
   "notices": "Notices",
@@ -145,8 +142,7 @@
       "sub": "{{count}} new · {{title}}"
     },
     "bills": {
-      "title": "Bills",
-      "sub": "Receipts and history"
+      "title": "Bills"
     },
     "findWay": {
       "title": "Find way"

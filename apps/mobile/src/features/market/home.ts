@@ -11,13 +11,4 @@ export const marketHome: FeatureHome = {
       }),
     },
   },
-  quick: [
-    {
-      key: 'market',
-      icon: 'market',
-      label: (t) => t('home:quick.market'),
-      visible: (q) => q.moduleOn('marketplace'),
-      go: (nav) => nav.navigate('Tabs', { screen: 'Market' }),
-    },
-  ],
 };

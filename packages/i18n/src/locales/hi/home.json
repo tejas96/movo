@@ -6,11 +6,8 @@
   },
   "quick": {
     "services": "सेवाएँ",
-    "directory": "सदस्य",
     "emergency": "आपातकाल",
-    "market": "मार्केट",
-    "manage": "प्रबंधन",
-    "ar": "AR गाइड"
+    "manage": "प्रबंधन"
   },
   "needsYou": "आज आपके लिए",
   "notices": "नोटिस",
@@ -145,8 +142,7 @@
       "sub": "{{count}} नई · {{title}}"
     },
     "bills": {
-      "title": "बिल",
-      "sub": "रसीद और पुराने भुगतान"
+      "title": "बिल"
     },
     "findWay": {
       "title": "रास्ता खोजें"

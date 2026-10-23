@@ -6,11 +6,8 @@
   },
   "quick": {
     "services": "सेवा",
-    "directory": "सदस्य",
     "emergency": "आणीबाणी",
-    "market": "मार्केट",
-    "manage": "व्यवस्थापन",
-    "ar": "AR मार्गदर्शक"
+    "manage": "व्यवस्थापन"
   },
   "needsYou": "आज तुमच्यासाठी",
   "notices": "नोटीस",
@@ -145,8 +142,7 @@
       "sub": "{{count}} नव्या · {{title}}"
     },
     "bills": {
-      "title": "बिलं",
-      "sub": "पावत्या आणि जुनी पेमेंट"
+      "title": "बिलं"
     },
     "findWay": {
       "title": "वाट शोधा"

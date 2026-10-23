@@ -20,7 +20,12 @@ import { tasksHome } from '../tasks/home';
 /** The AR guide lives on its own track (features/ar), so its tile is declared here. */
 const arHome: FeatureHome = {
   quick: [
-    { key: 'ar', icon: 'map', label: (t) => t('home:quick.ar'), go: (nav) => nav.navigate('AR') },
+    {
+      key: 'ar',
+      icon: 'location',
+      label: (t) => t('home:glow.findWay.title'),
+      go: (nav) => nav.navigate('AR'),
+    },
   ],
 };
 
@@ -29,13 +34,13 @@ const arHome: FeatureHome = {
  * the server sends. Adding a feature: write its `home.tsx` and add it here.
  */
 const featureHomes: readonly FeatureHome[] = [
+  moneyHome,
   directoryHome,
+  arHome,
   servicesHome,
   emergencyHome,
-  arHome,
   marketHome,
   manageHome,
-  moneyHome,
   dutiesHome,
   tasksHome,
   expensesHome,

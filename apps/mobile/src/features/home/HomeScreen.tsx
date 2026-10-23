@@ -14,7 +14,6 @@ import { StyleSheet, View } from 'react-native';
 import { useSessionStore } from '../../core/auth/session.store';
 import { useHomeSummary } from '../../core/home/api';
 import type { HomeCtx, QuickCtx } from '../../core/home/types';
-import { useMembers } from '../../core/members/api';
 import { useMyDues } from '../../core/money/api';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyProfile } from '../../core/society/api';
@@ -26,12 +25,10 @@ import {
   GreetingCard,
   HomeCard,
   type HomeStatus,
-  MembersCard,
   NextUpPill,
   NoticesCard,
-  ShortcutTiles,
 } from './cards';
-import { initialsOf, ringMonths } from './dues-ring';
+import { ringMonths } from './dues-ring';
 import { attentionKey, quickTiles } from './registry';
 import { AttentionRow, QuickActions, type QuickItem } from './tiles';
 
@@ -52,7 +49,6 @@ export function HomeScreen() {
   const maintenance = moduleOn('maintenance');
   const dues = useMyDues(societyId, maintenance);
   const profile = useSocietyProfile(societyId);
-  const members = useMembers(societyId, '');
 
   const attention = summary.data?.attention ?? [];
   const upcoming = summary.data?.upcoming ?? [];
@@ -108,25 +104,12 @@ export function HomeScreen() {
     .filter((d): d is string => Boolean(d))
     .sort()[0];
 
-  // Members: counts from the society profile, faces from the first three members.
-  const counts = profile.data?.counts;
-  const faces = (members.data?.pages.flatMap((p) => p.items) ?? []).slice(0, 3).map((m) => ({
-    id: m.membershipId,
-    initials: initialsOf(m.displayName),
-  }));
-  const moreFaces =
-    counts && counts.members > faces.length ? `+${counts.members - faces.length}` : undefined;
-  const membersSub = counts
-    ? t('home:glow.members.sub', { flats: counts.flats, people: counts.members })
-    : t('home:quick.directory');
-
   // Everything that needs the user, except dues, which the Maintenance card already shows.
   const needs = attention.filter((a) => !(maintenance && a.type === 'DUES'));
 
-  // Shortcuts not already on a card above (Members and Find my way are cards).
+  // Small round shortcuts: Bills, Members, Find way, Services, Emergency, Manage.
   const quickCtx: QuickCtx = { moduleOn, canManage, attention };
   const quick: QuickItem[] = quickTiles
-    .filter((q) => q.key !== 'ar' && q.key !== 'directory')
     .filter((q) => q.visible?.(quickCtx) ?? true)
     .map((q) => ({
       key: q.key,
@@ -244,22 +227,6 @@ export function HomeScreen() {
             unread={unread}
             latest={notices[0]}
             onPress={() => nav.navigate('Notices')}
-          />
-        </Rise>
-
-        <Rise delay={next()}>
-          <ShortcutTiles
-            onBills={maintenance ? () => nav.navigate('Tabs', { screen: 'Money' }) : undefined}
-            onFindWay={() => nav.navigate('AR')}
-          />
-        </Rise>
-
-        <Rise delay={next()}>
-          <MembersCard
-            people={faces}
-            more={moreFaces}
-            sub={membersSub}
-            onPress={() => nav.navigate('Directory')}
           />
         </Rise>
 
