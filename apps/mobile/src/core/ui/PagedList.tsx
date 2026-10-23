@@ -131,7 +131,7 @@ export function PagedList<T, U = T>({
   );
 }
 
-const groupKey = () => 'group';
+const groupKey = () => 'glass-list';
 
 const styles = StyleSheet.create({
   group: { padding: 8 },
