@@ -65,5 +65,11 @@
     "raisedBodyNoMessage": "Raised by {{name}}. Open MOVO to help or call.",
     "closedTitle": "✅ {{type}} alert closed",
     "closedBody": "{{place}} · {{outcome}}"
+  },
+  "glow": {
+    "what": "What is happening?",
+    "hold": "Hold to alert",
+    "keep": "Keep holding",
+    "left": "{{count}} s left"
   }
 }

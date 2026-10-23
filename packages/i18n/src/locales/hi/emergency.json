@@ -65,5 +65,11 @@
     "raisedBodyNoMessage": "{{name}} ने भेजा। मदद या कॉल के लिए MOVO खोलें।",
     "closedTitle": "✅ {{type}} अलर्ट बंद",
     "closedBody": "{{place}} · {{outcome}}"
+  },
+  "glow": {
+    "what": "क्या हो रहा है?",
+    "hold": "अलर्ट के लिए दबाकर रखें",
+    "keep": "दबाए रखें",
+    "left": "{{count}} सेकंड बाकी"
   }
 }
