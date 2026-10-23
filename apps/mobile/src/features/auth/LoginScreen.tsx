@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Input, PasswordInput, Press, Text, WavingHand } from '@movo/design-system';
+import { Button, Input, PasswordInput, Text, WavingHand } from '@movo/design-system';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -11,8 +11,9 @@ import { PRIVACY_POLICY_URL } from '../../core/env';
 import { useNav } from '../../core/navigation/types';
 import { AuthShell } from '../../core/ui/AuthShell';
 
-type Mode = 'phone' | 'email';
 const COUNTRY = '+91';
+/** Only digits and spaces so far: show +91 in front so it reads as a phone number. */
+const looksLikePhone = (v: string) => /^\d[\d ]*$/.test(v);
 
 /** Soft Glow log in, laid out like docs/design/soft-glow/source/Login.dc.html. */
 export function LoginScreen() {
@@ -20,7 +21,6 @@ export function LoginScreen() {
   const nav = useNav();
   const toMessage = useErrorMessage();
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<Mode>('phone');
   const schema = useMemo(
     () =>
       z.object({
@@ -44,13 +44,6 @@ export function LoginScreen() {
       setError(toMessage(e));
     }
   });
-
-  const pick = (m: Mode) => {
-    if (m === mode) return;
-    setMode(m);
-    form.setValue('identifier', '');
-    form.clearErrors('identifier');
-  };
 
   return (
     <AuthShell
@@ -93,40 +86,24 @@ export function LoginScreen() {
         </>
       }
     >
-      <View style={styles.modes} accessibilityRole="radiogroup">
-        {(['phone', 'email'] as const).map((m) => (
-          <Press
-            key={m}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: mode === m }}
-            onPress={() => pick(m)}
-            scaleTo={0.97}
-            style={[styles.mode, mode === m && styles.modeOn]}
-          >
-            <Text variant="bodyMedium">
-              {m === 'phone' ? t('auth:glow.byPhone') : t('auth:glow.byEmail')}
-            </Text>
-          </Press>
-        ))}
-      </View>
       <Controller
         control={form.control}
         name="identifier"
         render={({ field, fieldState }) => (
           <Input
-            label={mode === 'phone' ? t('auth:glow.mobile') : t('auth:glow.email')}
-            placeholder={mode === 'phone' ? t('auth:glow.phoneHint') : t('auth:glow.emailHint')}
+            label={t('auth:identifier')}
+            placeholder={t('auth:glow.identifierHint')}
             autoCapitalize="none"
             autoCorrect={false}
-            keyboardType={mode === 'phone' ? 'phone-pad' : 'email-address'}
-            textContentType={mode === 'phone' ? 'telephoneNumber' : 'username'}
-            autoComplete={mode === 'phone' ? 'tel' : 'username'}
+            keyboardType="email-address"
+            textContentType="username"
+            autoComplete="username"
             returnKeyType="next"
             value={field.value}
             onChangeText={field.onChange}
             onBlur={field.onBlur}
             error={fieldState.error?.message}
-            prefix={mode === 'phone' ? COUNTRY : undefined}
+            prefix={looksLikePhone(field.value) ? COUNTRY : undefined}
           />
         )}
       />
@@ -168,16 +145,6 @@ export function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  modes: {
-    flexDirection: 'row',
-    padding: 4,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.55)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.95)',
-  },
-  mode: { flex: 1, height: 42, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  modeOn: { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(70,40,70,0.1)' },
   forgot: { alignSelf: 'flex-end', paddingHorizontal: 6, paddingVertical: 2 },
   newRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   small: { fontSize: 14 },
