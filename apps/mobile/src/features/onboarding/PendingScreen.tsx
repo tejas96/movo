@@ -80,7 +80,7 @@ export function PendingScreen() {
               ) : null}
             </View>
             <View style={styles.heroArt} pointerEvents="none">
-              <Building width={120} pin={flat || undefined} />
+              <Building width={120} pin={pending?.flatNumber} />
             </View>
           </ArtCard>
         </Rise>

@@ -46,6 +46,14 @@ export function PickFlatScreen() {
     return buildingId ? all.filter((f) => f.buildingId === buildingId) : all;
   }, [preview.data, buildingId]);
 
+  const picked = flats.find((f) => f.id === flatId);
+  const pickedWing = preview.data?.buildings.find((b) => b.id === picked?.buildingId);
+  const pickedLabel = picked
+    ? pickedWing
+      ? `${pickedWing.name}-${picked.number}`
+      : picked.number
+    : '—';
+
   const submit = async () => {
     if (!flatId) return;
     await withErrorToast(async () => {
@@ -188,12 +196,11 @@ export function PickFlatScreen() {
       </Screen>
       <BottomBar
         label={preview.data?.society.name}
-        value={flatId ? (flats.find((f) => f.id === flatId)?.number ?? '') : '—'}
+        value={pickedLabel}
         action={
           <Button
             label={t('onboarding:sendRequest')}
             inline
-            arrow
             onPress={() => void submit()}
             disabled={!flatId}
             loading={request.isPending}
