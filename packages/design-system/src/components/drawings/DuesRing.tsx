@@ -16,9 +16,13 @@ const EMPTY = 'rgba(43, 42, 46, 0.08)';
 /** The month that is due now. */
 const DUE = '#F5A3C7';
 
+export type RingSegment = 'paid' | 'due' | 'empty';
+
 export interface DuesRingProps {
-  /** Segments filled in orange (months paid). */
-  filled: number;
+  /** Segments filled in orange (months paid), from the left. Ignored when `segments` is given. */
+  filled?: number;
+  /** Each segment's state, left to right. Overrides `filled`, `total` and `dueIndex`. */
+  segments?: readonly RingSegment[];
   /** Segments in all. Default 12 (months). */
   total?: number;
   /** One segment shown pink: the month that is due. Default the one after the last filled. */
@@ -35,8 +39,9 @@ export interface DuesRingProps {
  * one after another (0.7 s, then 80 ms apart); the due month is pink.
  */
 export function DuesRing({
-  filled,
-  total = 12,
+  filled = 0,
+  segments,
+  total: totalProp = 12,
   dueIndex,
   width = 240,
   children,
@@ -44,7 +49,10 @@ export function DuesRing({
 }: DuesRingProps) {
   // Mockup: viewBox 0 0 200 116 drawn at 240 × 140, the box is 240 × 130.
   const s = width / 200;
+  const total = segments?.length ?? totalProp;
   const due = dueIndex === undefined ? (filled < total ? filled : null) : dueIndex;
+  const stateOf = (i: number): RingSegment =>
+    segments?.[i] ?? (i < filled ? 'paid' : i === due ? 'due' : 'empty');
   const step = 198 / (total - 1);
   return (
     <View
@@ -63,7 +71,7 @@ export function DuesRing({
                 // biome-ignore lint/suspicious/noArrayIndexKey: fixed list
                 key={i}
                 angle={angle}
-                state={i < filled ? 'paid' : i === due ? 'due' : 'empty'}
+                state={stateOf(i)}
                 delay={700 + i * 80}
               />
             );

@@ -11,12 +11,20 @@
   <helmet>, and a `class Component extends DCLogic` with state, setState and lifecycle.
 -->
 <style>
+/* Poppins from the app's own font files, so captures never wait on (or miss) Google Fonts. */
+@font-face{font-family:'Poppins';font-weight:400;src:url(../../../packages/design-system/assets/fonts/Poppins-Regular.ttf)}
+@font-face{font-family:'Poppins';font-weight:500;src:url(../../../packages/design-system/assets/fonts/Poppins-Medium.ttf)}
+@font-face{font-family:'Poppins';font-weight:600;src:url(../../../packages/design-system/assets/fonts/Poppins-SemiBold.ttf)}
+@font-face{font-family:'Poppins';font-weight:700;src:url(../../../packages/design-system/assets/fonts/Poppins-Bold.ttf)}
 html,body{margin:0;padding:0;background:#EEEDEC}
 /* The mockups stack cards in a flex column; cards must keep their own height and not shrink. */
 .scroll > *{flex-shrink:0}
 /* ?full=1 renders the whole scrolling page instead of the first screen. */
 .full #root > div{height:auto !important;min-height:844px}
 .full .scroll{position:relative !important;overflow:visible !important}
+/* ?still=1 jumps every CSS animation 60 s ahead: cards have risen, rings have filled, and
+   looping motion sits at a fixed point, so captures are complete and repeatable. */
+.still *,.still *::before,.still *::after{animation-delay:-60s !important}
 </style>
 </head>
 <body>
@@ -25,7 +33,10 @@ html,body{margin:0;padding:0;background:#EEEDEC}
 (function () {
   var query = new URLSearchParams(location.search);
   var name = query.get('f') || 'Main';
-  if (query.get('full')) document.documentElement.className = 'full';
+  var classes = [];
+  if (query.get('full')) classes.push('full');
+  if (query.get('still')) classes.push('still');
+  document.documentElement.className = classes.join(' ');
 
   function DCLogic(props) { this.props = props || {}; this.state = {}; }
   DCLogic.prototype.setState = function (p) {

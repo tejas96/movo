@@ -16,8 +16,8 @@ fi
 
 shoot() { # name width height query
   "$chrome" --headless=new --disable-gpu --hide-scrollbars --allow-file-access-from-files \
-    --force-device-scale-factor=3 --window-size="$2,$3" --virtual-time-budget=9000 \
-    --screenshot="$here/ref/$1.png" "file://$here/viewer.html?$4" >/dev/null 2>&1
+    --force-device-scale-factor=3 --window-size="$2,$3" --virtual-time-budget=6000 \
+    --screenshot="$here/ref/$1.png" "file://$here/viewer.html?still=1&$4" >/dev/null 2>&1
   echo "ref/$1.png"
 }
 

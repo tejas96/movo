@@ -1,58 +1,132 @@
-import type { NoticeSummary, UpcomingItem } from '@movo/contracts';
 import {
-  Card,
-  Icon,
+  Chip,
+  Glass,
   IconSquare,
-  PhotoCard,
-  Press,
-  photos,
+  Rise,
   Row,
   Screen,
-  SectionHeader,
+  SearchBar,
+  SectionLabel,
   Skeleton,
-  Text,
-  theme,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSessionStore } from '../../core/auth/session.store';
-import { EventPill } from '../../core/calendar/EventPill';
-import { MeetingStatusPill } from '../../core/calendar/MeetingStatusPill';
 import { useHomeSummary } from '../../core/home/api';
 import type { HomeCtx, QuickCtx } from '../../core/home/types';
+import { useMembers } from '../../core/members/api';
 import { useNav } from '../../core/navigation/types';
-import { useCanManageSociety, useMeContext, useTenant } from '../../core/tenant/hooks';
+import { useSocietyProfile } from '../../core/society/api';
+import { formatFlat, useCanManageSociety, useMeContext, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
-import { greetingKey, relative, whenRange } from '../../core/util/date';
-import { Reveal } from './effects';
-import { HeroCard } from './HeroCard';
-import { attentionKey, pickHero, quickTiles } from './registry';
-import { AttentionRow, HomeTile, QuickGrid, type QuickItem } from './tiles';
+import { money } from '../../core/util/money';
+import { useMyDues } from '../money/api';
+import {
+  DuesCard,
+  GreetingCard,
+  HomeCard,
+  type HomeStatus,
+  MembersCard,
+  NextUpPill,
+  NoticesCard,
+  ShortcutTiles,
+} from './cards';
+import { initialsOf, ringMonths } from './dues-ring';
+import { attentionKey, quickTiles } from './registry';
+import { AttentionRow, QuickActions, type QuickItem } from './tiles';
 
+/** Rise delay between cards, as in the mockup (0.06 s apart). */
+const STEP = 60;
+
+/** Soft Glow Home, laid out like docs/design/soft-glow/source/Main.dc.html. */
 export function HomeScreen() {
-  const { t } = useTranslation(['home', 'common', 'notices']);
+  const { t } = useTranslation(['home', 'common', 'notices', 'me']);
   const nav = useNav();
   const tenant = useTenant();
   const me = useMeContext();
   const user = useSessionStore((s) => s.user);
-  const summary = useHomeSummary(tenant.society.id);
+  const societyId = tenant.society.id;
+  const summary = useHomeSummary(societyId);
   const canManage = useCanManageSociety();
-  const attention = summary.data?.attention ?? [];
-  const manySocieties = (me.data?.memberships.filter((m) => m.status === 'ACTIVE').length ?? 0) > 1;
-  const firstName = user?.displayName.split(' ')[0] ?? '';
+  const moduleOn = (key: string) => tenant.modules.find((m) => m.key === key)?.enabled ?? false;
+  const maintenance = moduleOn('maintenance');
+  const dues = useMyDues(societyId, maintenance);
+  const profile = useSocietyProfile(societyId);
+  const members = useMembers(societyId, '');
 
-  // One thing on the black card; everything else stays in the "Needs you" rows.
-  const hero = pickHero(attention);
-  const rest = attention.filter((a) => a !== hero);
+  const attention = summary.data?.attention ?? [];
   const upcoming = summary.data?.upcoming ?? [];
   const notices = summary.data?.notices ?? [];
+  const myFlat = summary.data?.flats[0];
+  const manySocieties = (me.data?.memberships.filter((m) => m.status === 'ACTIVE').length ?? 0) > 1;
+  const firstName = user?.displayName.split(' ')[0] ?? '';
   const ctx: HomeCtx = { t, nav };
-  const quickCtx: QuickCtx = {
-    moduleOn: (key) => tenant.modules.find((m) => m.key === key)?.enabled ?? false,
-    canManage,
-    attention,
+
+  // Facts on the greeting card: notices, dues, alerts. All real, never made up.
+  const unread = notices.filter((n) => !n.readAt).length;
+  const alerts = attention.filter((a) => a.type === 'ACTIVE_ALERT');
+  const accounts = dues.data?.flats ?? [];
+  const outstanding = accounts.reduce((sum, f) => sum + f.outstandingPaise, 0);
+  const overdue = accounts.some((f) => f.overdue);
+  const facts = [
+    unread > 0
+      ? t('home:glow.facts.newNotices', { count: unread })
+      : t('home:glow.facts.noNotices'),
+    ...(maintenance
+      ? [
+          outstanding > 0
+            ? t('home:glow.facts.due', { amount: money(outstanding) })
+            : t('home:glow.facts.allPaid'),
+        ]
+      : []),
+    alerts.length > 0
+      ? t('home:glow.facts.alerts', { count: alerts.length })
+      : t('home:glow.facts.noAlerts'),
+  ];
+
+  // The building card: its status and where a tap goes.
+  const status: HomeStatus = alerts.length > 0 ? 'alert' : overdue ? 'overdue' : 'good';
+  const openHome = () => {
+    const alert = alerts[0];
+    if (alert) return nav.navigate('AlertDetail', { alertId: alert.alertId });
+    if (maintenance && myFlat) return nav.navigate('FlatAccount', { flatId: myFlat.id });
+    return nav.navigate('Tabs', { screen: 'Society' });
   };
+  const homeDetail = myFlat
+    ? [t(`common:relation.${myFlat.relation}`), tenant.society.name].join(' · ')
+    : tenant.society.name;
+
+  // The dues ring: this financial year, open monthly bills in pink.
+  const openBills = accounts.flatMap((f) => f.openBills);
+  const segments = ringMonths(
+    profile.data?.fyStartMonth ?? 4,
+    openBills.map((b) => b.periodKey),
+    outstanding > 0,
+  );
+  const nextDue = accounts
+    .map((f) => f.nextDueDate)
+    .filter((d): d is string => Boolean(d))
+    .sort()[0];
+
+  // Members: counts from the society profile, faces from the first three members.
+  const counts = profile.data?.counts;
+  const faces = (members.data?.pages.flatMap((p) => p.items) ?? []).slice(0, 3).map((m) => ({
+    id: m.membershipId,
+    initials: initialsOf(m.displayName),
+  }));
+  const moreFaces =
+    counts && counts.members > faces.length ? `+${counts.members - faces.length}` : undefined;
+  const membersSub = counts
+    ? t('home:glow.members.sub', { flats: counts.flats, people: counts.members })
+    : t('home:quick.directory');
+
+  // Everything that needs the user, except dues, which the Maintenance card already shows.
+  const needs = attention.filter((a) => !(maintenance && a.type === 'DUES'));
+
+  // Shortcuts not already on a card above (Members and Find my way are cards).
+  const quickCtx: QuickCtx = { moduleOn, canManage, attention };
   const quick: QuickItem[] = quickTiles
+    .filter((q) => q.key !== 'ar' && q.key !== 'directory')
     .filter((q) => q.visible?.(quickCtx) ?? true)
     .map((q) => ({
       key: q.key,
@@ -62,207 +136,172 @@ export function HomeScreen() {
       go: () => q.go(nav),
     }));
 
+  // Cards rise one after another in the order they appear.
+  let order = 0;
+  const next = () => {
+    order += 1;
+    return order * STEP;
+  };
+
   return (
-    <Screen tabBar refreshing={summary.isRefetching} onRefresh={() => void summary.refetch()}>
-      <Reveal order={0}>
-        <View className="flex-row items-center gap-3 min-h-[52px]">
-          <Press
-            onPress={manySocieties ? () => nav.navigate('SocietySwitcher') : undefined}
-            disabled={!manySocieties}
-            className="flex-1 min-w-0"
-            accessibilityRole="button"
-          >
-            <Text variant="label" tone="secondary" numberOfLines={1}>
-              {firstName
-                ? `${t(`home:greeting.${greetingKey()}`)}, ${firstName}`
-                : t(`home:greeting.${greetingKey()}`)}
-            </Text>
-            <View className="flex-row items-center gap-1.5">
-              <Text variant="h2" numberOfLines={1} className="shrink">
-                {tenant.society.name}
-              </Text>
-              {manySocieties ? (
-                <Icon name="chevronDown" size={18} color={theme.color.text.secondary} />
-              ) : null}
-            </View>
-          </Press>
-          <View className="flex-row gap-2">
-            <IconSquare
-              icon="search"
-              variant="linear"
-              onPress={() => nav.navigate('Directory')}
-              accessibilityLabel={t('common:actions.search')}
+    <Screen
+      tabBar
+      glow="home"
+      refreshing={summary.isRefetching}
+      onRefresh={() => {
+        void summary.refetch();
+        void dues.refetch();
+      }}
+    >
+      <View style={styles.stack}>
+        <Rise>
+          <View style={styles.header}>
+            <SearchBar
+              className="flex-1"
+              placeholder={t('home:glow.searchHint')}
+              onPressOpen={() => nav.navigate('Directory')}
             />
             <IconSquare
               icon="bell"
+              variant="linear"
               dot={(summary.data?.unreadNotifications ?? 0) > 0}
               onPress={() => nav.navigate('Notifications')}
+              accessibilityLabel={t('me:notifications')}
+            />
+            <IconSquare
+              icon="user"
+              variant="linear"
+              onPress={() => nav.navigate('Tabs', { screen: 'Me' })}
+              accessibilityLabel={t('home:glow.profile')}
             />
           </View>
-        </View>
-      </Reveal>
+        </Rise>
 
-      <Reveal order={1}>
+        <Rise delay={next()}>
+          <View style={styles.chips}>
+            <Chip label={t('home:glow.chips.today')} selected />
+            {maintenance && myFlat ? (
+              <Chip
+                label={t('home:glow.chips.myFlat')}
+                onPress={() => nav.navigate('FlatAccount', { flatId: myFlat.id })}
+              />
+            ) : null}
+            <Chip
+              label={t('home:glow.chips.society')}
+              onPress={() => nav.navigate('Tabs', { screen: 'Society' })}
+            />
+          </View>
+        </Rise>
+
+        <Rise delay={next()}>
+          <GreetingCard
+            society={tenant.society.name}
+            onSwitch={manySocieties ? () => nav.navigate('SocietySwitcher') : undefined}
+            firstName={firstName}
+            facts={summary.data ? facts : []}
+          />
+        </Rise>
+
         {summary.isLoading ? (
-          <Skeleton className="mt-5 h-[172px] rounded-xl" />
+          <Skeleton className="h-[214px] rounded-rim" />
         ) : loadFailed(summary) ? (
-          <QueryError query={summary} className="mt-5" />
-        ) : (
-          <HeroCard hero={hero} next={upcoming[0]} />
-        )}
-      </Reveal>
+          <QueryError query={summary} />
+        ) : null}
 
-      <Reveal order={2}>
-        <View className="mt-3 flex-row gap-2.5">
-          <HomeTile
-            source={photos.notices}
-            icon="notices"
-            label={t('home:notices')}
-            hint={notices[0]?.title ?? t('home:tiles.noticesEmpty')}
-            count={notices.filter((n) => !n.readAt).length || undefined}
+        {upcoming[0] ? (
+          <Rise delay={next()}>
+            <NextUpPill item={upcoming[0]} />
+          </Rise>
+        ) : null}
+
+        {summary.data ? (
+          <Rise delay={next()}>
+            <HomeCard
+              flat={myFlat ? formatFlat(myFlat) : tenant.society.name}
+              pin={myFlat?.number ?? ''}
+              detail={homeDetail}
+              status={status}
+              onPress={openHome}
+            />
+          </Rise>
+        ) : null}
+
+        {maintenance && dues.data && accounts.length > 0 ? (
+          <Rise delay={next()}>
+            <DuesCard
+              outstandingPaise={outstanding}
+              overdue={overdue}
+              nextDueDate={nextDue ?? null}
+              openBills={openBills.length}
+              segments={segments}
+              onPay={() => nav.navigate('Tabs', { screen: 'Money' })}
+            />
+          </Rise>
+        ) : null}
+
+        <Rise delay={next()}>
+          <NoticesCard
+            unread={unread}
+            latest={notices[0]}
             onPress={() => nav.navigate('Notices')}
           />
-          <HomeTile
-            source={upcoming[0]?.kind === 'MEETING' ? photos.meetings : photos.events}
-            icon={upcoming[0]?.kind === 'MEETING' ? 'meetings' : 'events'}
-            label={t('home:upcoming')}
-            hint={upcoming[0] ? upcoming[0].title : t('home:tiles.upcomingEmpty')}
-            onPress={() => {
-              const u = upcoming[0];
-              if (!u) return nav.navigate('Events');
-              return u.kind === 'MEETING'
-                ? nav.navigate('MeetingDetail', { meetingId: u.id })
-                : nav.navigate('EventDetail', { eventId: u.id });
-            }}
+        </Rise>
+
+        <Rise delay={next()}>
+          <ShortcutTiles
+            onBills={maintenance ? () => nav.navigate('Tabs', { screen: 'Money' }) : undefined}
+            onFindWay={() => nav.navigate('AR')}
           />
-        </View>
-      </Reveal>
+        </Rise>
 
-      <Reveal order={3}>
-        <QuickGrid items={quick} />
-      </Reveal>
-
-      {rest.length > 0 ? (
-        <Reveal order={5}>
-          <SectionHeader title={t('home:needsYou')} />
-          <Card tight className="gap-2">
-            {rest.map((item) => (
-              <AttentionRow key={attentionKey(item)} item={item} ctx={ctx} />
-            ))}
-          </Card>
-        </Reveal>
-      ) : null}
-
-      {upcoming.length > 1 ? (
-        <Reveal order={6}>
-          <SectionHeader title={t('home:upcoming')} />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="-mx-5"
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
-          >
-            {upcoming.map((u) => (
-              <UpcomingCard key={`${u.kind}-${u.id}`} item={u} wide={false} />
-            ))}
-          </ScrollView>
-        </Reveal>
-      ) : null}
-
-      {notices.length > 0 ? (
-        <Reveal order={7}>
-          <SectionHeader
-            title={t('home:notices')}
-            actionLabel={t('common:actions.seeAll')}
-            onAction={() => nav.navigate('Notices')}
+        <Rise delay={next()}>
+          <MembersCard
+            people={faces}
+            more={moreFaces}
+            sub={membersSub}
+            onPress={() => nav.navigate('Directory')}
           />
-          <Card tight className="gap-2">
-            {notices.map((n) => (
-              <NoticeRow key={n.id} notice={n} />
-            ))}
-          </Card>
-        </Reveal>
-      ) : null}
+        </Rise>
 
-      {summary.data?.contribution ? (
-        <Reveal order={8}>
-          <SectionHeader title={t('home:contribution.title')} />
-          <Card tight>
+        {needs.length > 0 ? (
+          <Rise delay={next()}>
+            <Glass radius={28} style={styles.list}>
+              <SectionLabel>{t('home:needsYou')}</SectionLabel>
+              {needs.map((item) => (
+                <AttentionRow key={attentionKey(item)} item={item} ctx={ctx} />
+              ))}
+            </Glass>
+          </Rise>
+        ) : null}
+
+        <Rise delay={next()}>
+          <QuickActions title={t('home:glow.more')} items={quick} />
+        </Rise>
+
+        {summary.data?.contribution ? (
+          <Rise delay={next()}>
             <Row
               icon="rewards"
               title={t('home:contribution.points', { count: summary.data.contribution.points })}
               subtitle={
                 summary.data.contribution.openTasks > 0
-                  ? t('home:contribution.openTasks', { count: summary.data.contribution.openTasks })
+                  ? t('home:contribution.openTasks', {
+                      count: summary.data.contribution.openTasks,
+                    })
                   : undefined
               }
               onPress={() => nav.navigate('Rewards')}
             />
-          </Card>
-        </Reveal>
-      ) : null}
+          </Rise>
+        ) : null}
+      </View>
     </Screen>
   );
 }
 
-function UpcomingCard({ item, wide }: { item: UpcomingItem; wide: boolean }) {
-  const { t } = useTranslation('home');
-  const nav = useNav();
-  const meeting = item.kind === 'MEETING';
-  return (
-    <PhotoCard
-      source={meeting ? photos.meetings : photos.events}
-      photoHeight={150}
-      badge={{ icon: meeting ? 'meetings' : 'events', label: t(`upcomingKind.${item.kind}`) }}
-      action={meeting ? <MeetingStatusPill status={item.status} /> : <EventPill event={item} />}
-      className={item.status === 'CANCELLED' ? 'opacity-60' : undefined}
-      onPress={() =>
-        meeting
-          ? nav.navigate('MeetingDetail', { meetingId: item.id })
-          : nav.navigate('EventDetail', { eventId: item.id })
-      }
-    >
-      <View style={{ width: wide ? undefined : 256 }}>
-        <Text variant="h3" numberOfLines={1}>
-          {item.title}
-        </Text>
-        <View className="mt-1.5 flex-row items-center gap-1.5">
-          <Icon name="calendar" variant="bold" size={16} color={theme.color.icon.secondary} />
-          <Text variant="label" tone="secondary" numberOfLines={1} className="shrink">
-            {whenRange(item.startsAt, item.endsAt)}
-          </Text>
-        </View>
-        {item.location ? (
-          <View className="mt-1 flex-row items-center gap-1.5">
-            <Icon name="location" variant="bold" size={16} color={theme.color.icon.secondary} />
-            <Text variant="label" tone="secondary" numberOfLines={1} className="shrink">
-              {item.location}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-    </PhotoCard>
-  );
-}
-
-function NoticeRow({ notice }: { notice: NoticeSummary }) {
-  const { t } = useTranslation('notices');
-  const nav = useNav();
-  const meta = [notice.isPinned ? t('pinned') : null, relative(notice.publishedAt)]
-    .filter(Boolean)
-    .join(' · ');
-  return (
-    <Row
-      icon={notice.priority === 'EMERGENCY' ? 'emergency' : 'notices'}
-      title={notice.title}
-      subtitle={meta}
-      trailing={
-        <View className="flex-row items-center gap-2">
-          {!notice.readAt ? <View className="h-2 w-2 rounded-full bg-ink" /> : null}
-          <Icon name="chevronRight" size={20} color={theme.color.text.secondary} />
-        </View>
-      }
-      onPress={() => nav.navigate('NoticeDetail', { noticeId: notice.id })}
-    />
-  );
-}
+const styles = StyleSheet.create({
+  stack: { gap: 14 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  chips: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  list: { padding: 8 },
+});

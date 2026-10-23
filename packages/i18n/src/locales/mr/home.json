@@ -114,5 +114,60 @@
   "tiles": {
     "noticesEmpty": "नवीन काही नाही",
     "upcomingEmpty": "काही ठरलेलं नाही"
+  },
+  "glow": {
+    "searchHint": "लोक किंवा फ्लॅट शोधा…",
+    "profile": "माझी प्रोफाइल",
+    "chips": {
+      "today": "आज",
+      "myFlat": "माझा फ्लॅट",
+      "society": "सोसायटी"
+    },
+    "greetTail": "आज तुमच्या घराची माहिती",
+    "facts": {
+      "newNotices_one": "{{count}} नवी सूचना",
+      "newNotices_other": "{{count}} नव्या सूचना",
+      "noNotices": "नवी सूचना नाही",
+      "due": "{{amount}} बाकी",
+      "allPaid": "बिल भरलेलं",
+      "alerts_one": "{{count}} अलर्ट",
+      "alerts_other": "{{count}} अलर्ट",
+      "noAlerts": "अलर्ट नाही"
+    },
+    "home": {
+      "yours": "तुमचं घर,",
+      "flat": "फ्लॅट {{flat}}",
+      "good": "सगळं ठीक आहे",
+      "alert": "अलर्ट सुरू आहे",
+      "overdue": "थकीत बिल",
+      "label": "तुमची बिल्डिंग, {{flat}}"
+    },
+    "dues": {
+      "title": "मेंटेनन्स",
+      "openBills_one": "{{count}} बिल बाकी",
+      "openBills_other": "{{count}} बिलं बाकी",
+      "allPaid": "सगळं भरलेलं",
+      "dueBy": "{{date}} पर्यंत भरा",
+      "overdueSince": "{{date}} पासून थकलं",
+      "nothingDue": "काही भरायचं नाही",
+      "pay": "{{amount}} भरा",
+      "history": "पेमेंट पहा",
+      "ring": "या वर्षी: {{paid}} महिने भरले, {{due}} बाकी"
+    },
+    "notices": {
+      "sub": "{{count}} नव्या · {{title}}"
+    },
+    "bills": {
+      "title": "बिलं",
+      "sub": "पावत्या आणि जुनी पेमेंट"
+    },
+    "findWay": {
+      "title": "वाट शोधा"
+    },
+    "members": {
+      "title": "सदस्य",
+      "sub": "{{flats}} फ्लॅट · {{people}} लोक"
+    },
+    "more": "आणखी"
   }
 }
