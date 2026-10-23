@@ -84,7 +84,9 @@ export const light: SemanticColors = {
     inkPressed: '#1C1B1E',
     overlay: 'rgba(255, 255, 255, 0.85)',
     scrim: 'rgba(43, 42, 46, 0.4)',
-    tabBar: 'rgba(255, 255, 255, 0.72)',
+    // The mockup is white at 0.72 with a backdrop blur. Phones have no live blur here and even
+    // 0.95 let scrolling text show through on Android, so the bar is solid, a hair off white.
+    tabBar: '#FDFCFD',
   },
   text: {
     primary: palette.ink,

@@ -29,8 +29,12 @@ Commit only the files of your change. Commit messages: short imperative subject,
 
 ## Rules that do not change
 
-- Look: mono white / soft gray / black, Poppins, Iconsax icons, bundled Unsplash photos as the
-  only colour. No new colour themes or icon packs. See `docs/06-design-system.md`.
+- Look: **Soft Glow** (chosen by the user on 2026-10-23): mist page with a drifting pastel glow,
+  frosted glass cards, moving colour art in rimmed cards, the glowing orb, small animated
+  drawings, Poppins (light headline + one bold word), ink buttons, orange only for small
+  accents, red only for urgent. Iconsax icons. Match the mockup in `docs/design/soft-glow`
+  pixel for pixel (`capture.sh` makes the reference PNGs). No other colour themes or icon packs.
+  See `docs/06-design-system.md`.
 - Languages: English, Hindi, Marathi for every user-facing string (`packages/i18n`). No
   per-language test runs. Instead, at planning time write the en, hi and mr text in the plan:
   - **Wording:** plain spoken words a resident uses, not a word-for-word translation. Keep

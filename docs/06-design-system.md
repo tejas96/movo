@@ -1,20 +1,25 @@
 # Design system
 
-Name: **MOVO DS**. Version 0.3. Light theme. Source of truth: `packages/design-system/src/tokens/` and `src/icons/`.
+Name: **MOVO DS**. Version 1.0, **Soft Glow**. Light theme. Source of truth: `packages/design-system/src/tokens/` and `src/icons/`.
 Preview: run `pnpm design:preview` and open `packages/design-system/preview/dist/index.html`.
+Visual reference: `docs/design/soft-glow/` — the mockup source (`source/*.dc.html`), a local viewer and
+`capture.sh`, which renders the reference PNGs in `ref/` at 390 × 844 pt, 3x. Screens must match them.
 
 ## 1. Feel
 
-A copy of the reference real-estate app's language, applied to society life:
+Calm, light and premium, inspired by the "Sense" meditation app. Chosen by the user on 2026-10-23.
 
-- **Photos bring the colour.** The UI is white, gray and black; warm daylight photos carry the life. Home, the Society hub, every module screen, empty states and sign-in show a photo. Bundled stock photos live in `packages/design-system/assets/photos/` (free licences, credits in `CREDITS.md`) and are used through `photos.<name>`. A society's own photos replace them when uploads exist.
-- **White canvas, gray blocks.** Screens are white. Lists are gray rows (radius 24) straight on the white screen, with a white icon square. No white row inside a gray card inside a white screen. A white row appears only inside a real gray card (the dues card, the listing card).
-- **No borders, no shadows.** Depth comes from photos and fills. The floating tab bar and sheets are the only things with a shadow.
-- **Black is the only action color.** Filled buttons, the filter square, the active tab pill, and the call and chat circles are near-black. Everything else is gray or white.
-- **Big radii.** 20 for chips, tiles, icon squares and inputs. 24 for photos inside cards. 28 for cards and sheets. Full pills for buttons, info pills and the tab bar.
-- **Poppins.** Titles SemiBold, gray labels Regular, chips and buttons Medium. Poppins covers Devanagari, so Hindi and Marathi look identical in weight and rhythm.
-- **Iconsax icons.** Outline (`linear`) by default. Filled (`bold`) for the active tab, header icons, tiles and pills.
-- **Status color stays small.** Paid, Pending, Overdue live in small soft pills. Nothing else is coloured.
+- **Mist and glow.** Pages are mist `#EEEDEC`. A soft pink and lavender glow drifts slowly at the bottom (`Backdrop`, scenes in `tokens/glow.ts`). `Screen` draws it by default.
+- **Frosted glass.** Cards are white at 50% with a bright white rim, a white top highlight and a wide plum-tinted shadow (`Glass`, `Card`). Lists are rows inside one glass card, with no fill per row.
+- **Moving colour art.** Big cards are dreamy blurred gradients that drift slowly inside a thick white rim (`ArtCard`, `ArtFill`, presets in `tokens/glow.ts`). A white fade at the bottom keeps text readable.
+- **The orb.** A glossy coral sphere that breathes is the brand mark and the avatar style (`Orb`). Do not add it where a drawing already fills the card.
+- **Small animated drawings.** The building, dues ring, coins, diya, water drop, megaphone, map pin and avatars move gently. Everything rises into place on open (`Rise`) and all motion stops when the phone asks for less motion.
+- **Ink for actions, orange for accents.** Main buttons are ink pills with a white circle and an orange arrow (`Button arrow`). Orange marks only small things: unread dots, the selected tab icon, arrows, play buttons. Red is only for urgent things.
+- **Big radii.** 30 for glass cards, 34 outside / 29 inside for rimmed art cards, 28 for glass lists, 22 for rows, full pills for buttons, chips, search and the tab bar.
+- **Poppins.** Headlines are Regular with one SemiBold word (`Strong`). Screen titles SemiBold, card titles Medium, labels Regular, section labels in small capitals. Poppins covers Devanagari, so Hindi and Marathi keep the same weight and rhythm.
+- **Iconsax icons.** Outline (`linear`) by default; filled (`bold`) and orange for the selected tab.
+
+> The token tables below are being moved to the Soft Glow values in Phase 5 of the redesign. Until then the TypeScript tokens are the truth.
 
 ## 2. Tokens
 
