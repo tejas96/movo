@@ -61,7 +61,8 @@ export function DuesRing({
       accessibilityRole="progressbar"
       accessibilityLabel={accessibilityLabel}
     >
-      <Canvas style={{ position: 'absolute', left: 0, top: 0, width, height: 140 * (width / 240) }}>
+      {/* Taller than the box: the lowest bars reach below the 116 viewBox and were cut flat. */}
+      <Canvas style={{ position: 'absolute', left: 0, top: 0, width, height: 160 * (width / 240) }}>
         <Group transform={[{ scale: s }]}>
           {Array.from({ length: total }, (_, i) => {
             const angle = -99 + step * i;

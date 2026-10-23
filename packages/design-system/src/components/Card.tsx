@@ -60,7 +60,7 @@ export interface RowProps extends Omit<PressableProps, 'children' | 'style'> {
   trailing?: ReactNode;
   /** The row sits inside a gray card, so it turns white. */
   onGray?: boolean;
-  /** danger = soft red, for active emergency alerts. */
+  /** danger = an active emergency alert: the icon sits on a soft red disc, the row keeps its fill. */
   tone?: 'default' | 'danger';
   className?: string;
 }
@@ -86,7 +86,15 @@ export function Row({
   const body = (
     <>
       {leading ??
-        (icon ? <IconSquare icon={icon} variant="linear" size="sm" tone="white" /> : null)}
+        (icon ? (
+          tone === 'danger' ? (
+            <View className="h-11 w-11 items-center justify-center rounded-full bg-danger-soft">
+              <Icon name={icon} size={20} color={theme.color.status.danger.fg} />
+            </View>
+          ) : (
+            <IconSquare icon={icon} variant="linear" size="sm" tone="white" />
+          )
+        ) : null)}
       <View className="flex-1 min-w-0">
         <Text variant="title" numberOfLines={2}>
           {title}
@@ -105,11 +113,7 @@ export function Row({
   );
   const cls = cn(
     'flex-row items-center gap-3 rounded-[22px] p-2.5 pr-3.5 min-h-[66px]',
-    tone === 'danger'
-      ? 'bg-danger-soft'
-      : plain
-        ? 'bg-transparent'
-        : 'bg-card border-[1.5px] border-glass',
+    plain ? 'bg-transparent' : 'bg-card border-[1.5px] border-glass',
     className,
   );
   if (!onPress) return <View className={cls}>{body}</View>;

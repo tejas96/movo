@@ -133,13 +133,13 @@ export function HomeCard({
   return (
     <ArtCard
       art="home"
-      height={214}
+      height={150}
       onPress={onPress}
       accessibilityLabel={t('glow.home.label', { flat })}
     >
       <View style={styles.homeText}>
         <DotPill label={t(`glow.home.${status}`)} dot={dot} />
-        <Text variant="h2" className="font-normal" numberOfLines={3}>
+        <Text variant="h2" className="font-normal" numberOfLines={2}>
           {t('glow.home.yours')} <Strong>{t('glow.home.flat', { flat })}</Strong>
         </Text>
         <Text variant="label" tone="soft" numberOfLines={2}>
@@ -147,7 +147,7 @@ export function HomeCard({
         </Text>
       </View>
       <View style={styles.building} pointerEvents="none">
-        <Building width={180} pin={pin.length <= 4 ? pin : undefined} />
+        <Building width={118} pin={pin.length <= 4 ? pin : undefined} />
       </View>
     </ArtCard>
   );
@@ -189,20 +189,31 @@ export function DuesCard({
           {openBills > 0 ? t('glow.dues.openBills', { count: openBills }) : t('glow.dues.allPaid')}
         </Text>
       </View>
-      <DuesRing segments={segments} accessibilityLabel={t('glow.dues.ring', { paid, due })}>
-        {caption ? (
-          <Text variant="label" tone="secondary">
-            {caption}
+      <View style={styles.duesBody}>
+        <DuesRing
+          width={128}
+          segments={segments}
+          accessibilityLabel={t('glow.dues.ring', { paid, due })}
+        />
+        <View style={styles.duesText}>
+          {caption ? (
+            <Text variant="label" tone={overdue && owes ? 'danger' : 'secondary'} numberOfLines={2}>
+              {caption}
+            </Text>
+          ) : null}
+          <Text
+            className="font-medium"
+            style={styles.amount}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {money(rupees * 100)}
           </Text>
-        ) : null}
-        <Text className="font-medium" style={styles.amount}>
-          {money(rupees * 100)}
-        </Text>
-      </DuesRing>
+        </View>
+      </View>
       <Button
         arrow
-        size="lg"
-        className="mt-3"
+        size="md"
         label={
           owes ? t('glow.dues.pay', { amount: money(outstandingPaise) }) : t('glow.dues.history')
         }
@@ -231,23 +242,21 @@ export function NoticesCard({
   return (
     <ArtCard
       art="rose"
-      height={150}
+      height={92}
       onPress={onPress}
       accessibilityLabel={t('notices')}
-      contentStyle={styles.bottom}
+      contentStyle={styles.line}
     >
-      <View style={styles.cornerBox} pointerEvents="none">
+      <View style={styles.lineIcon} pointerEvents="none">
         <Megaphone />
       </View>
-      <View style={styles.row}>
-        <View style={styles.flex}>
-          <Text variant="h2">{t('notices')}</Text>
-          <Text variant="label" tone="soft" numberOfLines={1}>
-            {sub}
-          </Text>
-        </View>
-        <ArrowCircle />
+      <View style={styles.flex}>
+        <Text variant="h3">{t('notices')}</Text>
+        <Text variant="label" tone="soft" numberOfLines={1}>
+          {sub}
+        </Text>
       </View>
+      <ArrowCircle />
     </ArtCard>
   );
 }
@@ -266,7 +275,7 @@ export function ShortcutTiles({
       {onBills ? (
         <ArtCard
           art="meadow"
-          height={150}
+          height={108}
           radius={30}
           onPress={onBills}
           accessibilityLabel={t('glow.bills.title')}
@@ -286,7 +295,7 @@ export function ShortcutTiles({
       ) : null}
       <ArtCard
         art="dusk"
-        height={150}
+        height={108}
         radius={30}
         onPress={onFindWay}
         accessibilityLabel={t('glow.findWay.title')}
@@ -323,25 +332,23 @@ export function MembersCard({
   return (
     <ArtCard
       art="sand"
-      height={120}
+      height={92}
       onPress={onPress}
       accessibilityLabel={t('glow.members.title')}
-      contentStyle={styles.bottom}
+      contentStyle={styles.line}
     >
+      <View style={styles.flex}>
+        <Text variant="h3">{t('glow.members.title')}</Text>
+        <Text variant="label" tone="soft" numberOfLines={1}>
+          {sub}
+        </Text>
+      </View>
       {people.length > 0 ? (
-        <View style={styles.corner} pointerEvents="none">
+        <View pointerEvents="none">
           <AvatarStack bob people={people} more={more} />
         </View>
       ) : null}
-      <View style={styles.row}>
-        <View style={styles.flex}>
-          <Text variant="h2">{t('glow.members.title')}</Text>
-          <Text variant="label" tone="soft" numberOfLines={1}>
-            {sub}
-          </Text>
-        </View>
-        <ArrowCircle />
-      </View>
+      <ArrowCircle />
     </ArtCard>
   );
 }
@@ -350,6 +357,21 @@ const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
   bottom: { justifyContent: 'flex-end' },
+  line: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  lineIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   dotPill: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
@@ -379,9 +401,12 @@ const styles = StyleSheet.create({
   nextUp: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 8 },
   nextArt: { width: 52, height: 52 },
   nextArrow: { marginRight: 2 },
-  homeText: { width: 160, gap: 8 },
-  building: { position: 'absolute', right: -2, bottom: 0 },
-  dues: { padding: 18, paddingBottom: 16, alignItems: 'center' },
+  homeText: { width: '62%', gap: 6 },
+  building: { position: 'absolute', right: 4, bottom: -8 },
+  dues: { padding: 18, paddingBottom: 16, gap: 12 },
+  // The ring draws a little below its own box, so the body keeps room under it.
+  duesBody: { flexDirection: 'row', alignItems: 'flex-end', gap: 16, paddingBottom: 14 },
+  duesText: { flex: 1, minWidth: 0, gap: 2, paddingBottom: 4 },
   duesHead: {
     alignSelf: 'stretch',
     flexDirection: 'row',
@@ -389,23 +414,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  amount: { fontSize: 38, lineHeight: 44, letterSpacing: -1, color: theme.color.text.primary },
-  cornerBox: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  corner: { position: 'absolute', top: 16, right: 16 },
+  amount: { fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: theme.color.text.primary },
   tiles: { flexDirection: 'row', gap: 12 },
   bigTile: { flex: 1.6 },
   tileContent: { padding: 14, justifyContent: 'flex-end' },
-  tileTitle: { fontSize: 18, lineHeight: 25 },
-  coin: { position: 'absolute', top: 14, right: 14 },
-  pin: { position: 'absolute', top: 16, left: 16 },
+  tileTitle: { fontSize: 17, lineHeight: 23 },
+  coin: { position: 'absolute', top: 10, right: 12 },
+  pin: { position: 'absolute', top: 12, right: 14 },
 });
