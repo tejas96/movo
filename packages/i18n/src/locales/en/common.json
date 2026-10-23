@@ -21,7 +21,8 @@
     "approve": "Approve",
     "reject": "Reject",
     "signOut": "Sign out",
-    "showMore": "Show more"
+    "showMore": "Show more",
+    "more": "More options"
   },
   "tabs": {
     "home": "Home",

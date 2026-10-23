@@ -136,14 +136,19 @@ export interface SectionHeaderProps {
   className?: string;
 }
 
-/** "Notices ........ See all" */
+/**
+ * Small capitals heading above a block, as on the mockups (COMMITTEE, EVERYONE), with an
+ * optional orange action on the right ("See all").
+ */
 export function SectionHeader({ title, actionLabel, onAction, className }: SectionHeaderProps) {
   return (
-    <View className={cn('flex-row items-end justify-between mt-6 mb-3', className)}>
-      <Text variant="h2">{title}</Text>
+    <View className={cn('flex-row items-end justify-between mt-6 mb-2.5 px-1', className)}>
+      <Text variant="section" tone="secondary" className="shrink" numberOfLines={1}>
+        {title}
+      </Text>
       {actionLabel ? (
         <Pressable onPress={onAction} hitSlop={8} accessibilityRole="button">
-          <Text variant="body" tone="secondary">
+          <Text variant="label" tone="accent" className="font-medium">
             {actionLabel}
           </Text>
         </Pressable>

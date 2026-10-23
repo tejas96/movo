@@ -1,12 +1,14 @@
 import { MAX_TASK_PROOFS } from '@movo/contracts';
 import {
+  Avatar,
   BottomBar,
   Button,
   Card,
   Divider,
+  Glass,
   IconSquare,
   OptionSheet,
-  Pill,
+  Rise,
   Row,
   Screen,
   SectionHeader,
@@ -14,20 +16,20 @@ import {
   Skeleton,
   Text,
   TextArea,
-  TitleBar,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { MemberPickerSheet } from '../../core/members/MemberPickerSheet';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { PhotoField, usePhotoPicker } from '../../core/photos/PhotoPickerRow';
 import { PhotoSection } from '../../core/photos/PhotoStrip';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { DetailHero, HeroPill } from '../../core/ui/DetailHero';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day, relative } from '../../core/util/date';
 import { type TaskAction, useTask, useTaskAction } from './api';
@@ -98,59 +100,77 @@ export function TaskDetailScreen() {
         refreshing={task.isRefetching}
         onRefresh={() => void task.refetch()}
       >
-        <TitleBar
-          title={t('tasks:title')}
-          onBack={() => nav.goBack()}
-          trailing={
-            menuOptions.length > 0 ? (
-              <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
-            ) : undefined
-          }
-        />
         {loadFailed(task) ? (
           <QueryError query={task} className="mt-6" />
         ) : task.isLoading || !x ? (
-          <Skeleton className="mt-6 h-48 rounded-xl" />
+          <View className="gap-3">
+            <Skeleton className="h-[312px] rounded-[40px]" />
+            <Skeleton className="h-40 rounded-[30px]" />
+          </View>
         ) : (
           <>
-            <Card className="mt-6">
-              <View className="flex-row flex-wrap items-center gap-2">
-                <TaskStatusPill status={x.status} />
-                {x.points > 0 ? (
-                  <Pill icon="star" label={t('tasks:points', { count: x.points })} size="sm" />
+            <Rise>
+              <DetailHero
+                art="tileSage"
+                onBack={() => nav.goBack()}
+                trailing={
+                  menuOptions.length > 0 ? (
+                    <IconSquare
+                      icon="more"
+                      variant="linear"
+                      diameter={46}
+                      onPress={() => setMenu(true)}
+                      accessibilityLabel={t('common:actions.more')}
+                    />
+                  ) : undefined
+                }
+                icon={{ name: 'tasks', motion: 'bob' }}
+                pills={
+                  <>
+                    <TaskStatusPill status={x.status} />
+                    {x.points > 0 ? (
+                      <HeroPill label={t('tasks:points', { count: x.points })} />
+                    ) : null}
+                    {x.dueOn ? (
+                      <HeroPill
+                        dot={false}
+                        label={t('tasks:due', { date: day(x.dueOn, 'short') })}
+                      />
+                    ) : null}
+                  </>
+                }
+                title={x.title}
+                meta={t('tasks:createdBy', { name: x.createdBy.displayName })}
+              />
+            </Rise>
+            <Rise delay={80}>
+              <Glass radius={30} style={styles.card}>
+                {x.description ? (
+                  <Text variant="body" style={styles.text}>
+                    {x.description}
+                  </Text>
                 ) : null}
-                {x.dueOn ? (
-                  <Pill
-                    icon="calendar"
-                    label={t('tasks:due', { date: day(x.dueOn, 'short') })}
-                    size="sm"
-                  />
-                ) : null}
-              </View>
-              <Text variant="h2" className="mt-3">
-                {x.title}
-              </Text>
-              {x.description ? (
-                <Text variant="body" className="mt-2 leading-6">
-                  {x.description}
-                </Text>
-              ) : null}
-              <Divider />
-              <Text variant="bodyMedium">{x.assignee?.displayName ?? t('tasks:openForAll')}</Text>
-              {x.submissionNote ? (
-                <Text variant="body" tone="secondary" className="mt-1">
-                  {x.submissionNote}
-                </Text>
-              ) : null}
-              <Text variant="label" tone="secondary" className="mt-3">
-                {t('tasks:createdBy', { name: x.createdBy.displayName })}
-              </Text>
-            </Card>
-            <PhotoSection className="mt-6" title={t('tasks:proofs')} photos={x.proofs} />
+                {x.description ? <Divider className="my-4" /> : null}
+                <View style={styles.who}>
+                  <Avatar name={x.assignee?.displayName ?? '?'} size={40} />
+                  <View className="flex-1 min-w-0">
+                    <Text variant="title" numberOfLines={1}>
+                      {x.assignee?.displayName ?? t('tasks:openForAll')}
+                    </Text>
+                    {x.submissionNote ? (
+                      <Text variant="caption" tone="secondary">
+                        {x.submissionNote}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              </Glass>
+            </Rise>
+            <PhotoSection className="mt-3.5" title={t('tasks:proofs')} photos={x.proofs} />
             {x.canVerify ? (
               <Button
                 className="mt-3"
-                variant="gray"
+                variant="white"
                 label={t('tasks:actions.sendBack')}
                 onPress={() => {
                   setText('');
@@ -282,3 +302,9 @@ export function TaskDetailScreen() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  card: { padding: 18, marginTop: 14 },
+  text: { lineHeight: 24 },
+  who: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+});

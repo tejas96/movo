@@ -2,9 +2,11 @@ import type { DutyAssignment } from '@movo/contracts';
 import {
   Button,
   Card,
+  Glass,
   IconSquare,
   Input,
   OptionSheet,
+  Rise,
   Row,
   Screen,
   SectionHeader,
@@ -12,19 +14,19 @@ import {
   Sheet,
   Skeleton,
   Text,
-  TitleBar,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useMembers } from '../../core/members/api';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useFlats } from '../../core/society/api';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { DetailHero, HeroPill } from '../../core/ui/DetailHero';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
 import { useDuty, useDutyAction } from './api';
@@ -104,74 +106,95 @@ export function DutyDetailScreen() {
 
   return (
     <Screen refreshing={duty.isRefetching} onRefresh={() => void duty.refetch()}>
-      <TitleBar
-        title={t('duties:title')}
-        onBack={() => nav.goBack()}
-        trailing={
-          d?.canManage ? (
-            <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
-          ) : undefined
-        }
-      />
       {loadFailed(duty) ? (
         <QueryError query={duty} className="mt-6" />
       ) : duty.isLoading || !d ? (
-        <Skeleton className="mt-6 h-48 rounded-xl" />
+        <View className="gap-3">
+          <Skeleton className="h-[312px] rounded-[40px]" />
+          <Skeleton className="h-40 rounded-[30px]" />
+        </View>
       ) : (
         <>
-          <Card className={myTurnNow ? 'mt-6 bg-ink' : 'mt-6'}>
-            <Text variant="h2" tone={myTurnNow ? 'inverse' : 'primary'}>
-              {d.title}
-            </Text>
-            <Text variant="label" tone={myTurnNow ? 'inverse' : 'secondary'}>
-              {[
-                cadenceLabel(t as never, d),
-                d.points ? t('duties:pointsEach', { count: d.points }) : null,
-                d.status !== 'ACTIVE' ? t(`duties:dutyStatus.${d.status}`) : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </Text>
-            {d.description ? (
-              <Text variant="body" tone={myTurnNow ? 'inverse' : 'primary'} className="mt-3">
-                {d.description}
+          <Rise>
+            <DetailHero
+              art={myTurnNow ? 'sunset' : 'tileBlue'}
+              onBack={() => nav.goBack()}
+              trailing={
+                d.canManage ? (
+                  <IconSquare
+                    icon="more"
+                    variant="linear"
+                    diameter={46}
+                    onPress={() => setMenu(true)}
+                    accessibilityLabel={t('common:actions.more')}
+                  />
+                ) : undefined
+              }
+              icon={{ name: 'duties', motion: myTurnNow ? 'wiggle' : 'bob' }}
+              pills={
+                <>
+                  {myTurnNow ? <HeroPill label={t('duties:yourTurn')} /> : null}
+                  {d.points ? (
+                    <HeroPill dot={false} label={t('duties:pointsEach', { count: d.points })} />
+                  ) : null}
+                  {d.status !== 'ACTIVE' ? (
+                    <HeroPill dot={false} label={t(`duties:dutyStatus.${d.status}`)} />
+                  ) : null}
+                </>
+              }
+              title={d.title}
+              meta={cadenceLabel(t as never, d)}
+            />
+          </Rise>
+          <Rise delay={80}>
+            <Glass radius={30} style={styles.card}>
+              {d.description ? (
+                <Text variant="body" style={styles.text}>
+                  {d.description}
+                </Text>
+              ) : null}
+              <Text variant="title" className={d.description ? 'mt-3' : undefined}>
+                {d.current ? turnLine(t as never, d.current) : t('duties:noCurrent')}
               </Text>
-            ) : null}
-            <Text variant="bodyMedium" tone={myTurnNow ? 'inverse' : 'primary'} className="mt-4">
-              {d.current ? turnLine(t as never, d.current) : t('duties:noCurrent')}
-            </Text>
-            {d.current?.canConfirm ? (
-              <>
-                {d.current.mine && d.requiresConfirmation ? (
-                  <Text variant="label" tone="inverse" className="mt-1">
-                    {t('duties:confirmHint')}
-                  </Text>
-                ) : null}
-                <Button
-                  className="mt-4"
-                  variant={myTurnNow ? 'white' : 'ink'}
-                  icon="check"
-                  label={t('duties:markDone')}
-                  loading={action.isPending}
-                  onPress={() =>
-                    d.current &&
-                    void run({ kind: 'confirm', assignmentId: d.current.id }, t('duties:marked'))
-                  }
-                />
-              </>
-            ) : null}
-          </Card>
+              {d.current?.canConfirm ? (
+                <>
+                  {d.current.mine && d.requiresConfirmation ? (
+                    <Text variant="caption" tone="secondary" className="mt-1">
+                      {t('duties:confirmHint')}
+                    </Text>
+                  ) : null}
+                  <Button
+                    className="mt-4"
+                    size="xl"
+                    arrow
+                    label={t('duties:markDone')}
+                    loading={action.isPending}
+                    onPress={() =>
+                      d.current &&
+                      void run({ kind: 'confirm', assignmentId: d.current.id }, t('duties:marked'))
+                    }
+                  />
+                </>
+              ) : null}
+            </Glass>
+          </Rise>
 
           <SectionHeader title={t('duties:order')} />
-          <Card tight className="gap-2">
+          <Glass radius={28} style={styles.order}>
             {d.participants.map((p, i) => (
-              <Row
+              <View
                 key={p.id}
-                icon={d.participantKind === 'FLAT' ? 'flat' : 'user'}
-                title={`${i + 1}. ${p.label}`}
-              />
+                style={[styles.turn, d.current?.participant.id === p.id && styles.turnNow]}
+              >
+                <Text variant="label" tone="secondary">
+                  {String(i + 1)}
+                </Text>
+                <Text variant="label" className="font-medium" numberOfLines={1}>
+                  {p.label}
+                </Text>
+              </View>
             ))}
-          </Card>
+          </Glass>
 
           {d.upcoming.length > 0 ? (
             <>
@@ -345,3 +368,19 @@ function TurnRow({ turn, onPress }: { turn: DutyAssignment; onPress?: () => void
     />
   );
 }
+
+const styles = StyleSheet.create({
+  card: { padding: 18, marginTop: 14 },
+  text: { lineHeight: 24 },
+  order: { padding: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  turn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+  },
+  turnNow: { boxShadow: '0 0 0 2px rgba(240,106,46,0.6)' },
+});
