@@ -37,5 +37,18 @@
   "readBy": "{{count}} ने पढ़ा",
   "archive": "संग्रह में डालें",
   "archived": "नोटिस संग्रह में डाला गया",
-  "unpin": "पिन हटाएँ"
+  "unpin": "पिन हटाएँ",
+  "glow": {
+    "titleA": "नोटिस",
+    "titleB": "बोर्ड",
+    "newCount": "{{count}} नए",
+    "all": "सभी",
+    "urgent": "ज़रूरी",
+    "open": "खोलें",
+    "gotIt": "ठीक है",
+    "thisWeek": "इस हफ़्ते",
+    "earlier": "पहले के",
+    "rowSub": "{{category}} · {{author}}",
+    "nothing": "अभी यहाँ कुछ नहीं है।"
+  }
 }

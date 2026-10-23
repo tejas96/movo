@@ -16,11 +16,16 @@ interface PagedQuery<T> {
   refetch: () => Promise<unknown>;
 }
 
-type PagedListProps<T> = Omit<
-  FlatListProps<T>,
+type PagedListProps<T, U> = Omit<
+  FlatListProps<U>,
   'data' | 'onEndReached' | 'refreshing' | 'onRefresh' | 'ListEmptyComponent'
 > & {
   list: PagedQuery<T>;
+  /**
+   * Turns the loaded items into the rows to draw (filter, group). Without it the rows are the
+   * items. Keep it stable (useCallback) so the rows only change when the pages do.
+   */
+  select?: (items: T[]) => U[];
   /** Shown when the list loaded and has no items. */
   empty: ReactElement;
   /** Spacing class for the "something went wrong" block. */
@@ -39,17 +44,21 @@ type PagedListProps<T> = Omit<
  * A cursor-paged FlatList: loads the next page at the end, pulls to refresh, and shows the
  * skeleton, error (with retry) and empty state the same way on every list screen.
  */
-export function PagedList<T>({
+export function PagedList<T, U = T>({
   list,
+  select,
   empty,
   errorClassName,
   loading,
   loadingMore,
   ...rest
-}: PagedListProps<T>) {
+}: PagedListProps<T, U>) {
   // Same array while the pages are the same, so FlatList and memoized rows skip work.
   const data = list.data;
-  const items = useMemo(() => (data ? listItems({ data }) : []), [data]);
+  const items = useMemo(() => {
+    const loaded = data ? listItems({ data }) : [];
+    return select ? select(loaded) : (loaded as unknown as U[]);
+  }, [data, select]);
   // The query object is new on every render; read it through a ref so handlers stay stable.
   const latest = useRef(list);
   latest.current = list;

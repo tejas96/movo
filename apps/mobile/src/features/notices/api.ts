@@ -8,7 +8,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { z } from 'zod';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
+import { homeKeys } from '../../core/home/keys';
 import { noticesKeys } from './keys';
+
+/** Mark a notice read without opening it ("Got it" on the pinned card). */
+export function useMarkNoticeRead(societyId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (noticeId: string) =>
+      api(noticesContract.markRead, { params: { societyId, noticeId } }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: noticesKeys(societyId).lists });
+      void qc.invalidateQueries({ queryKey: homeKeys(societyId).all });
+    },
+  });
+}
 
 type Status = z.infer<typeof NoticeStatusSchema>;
 type CreateBody = RouteBody<typeof noticesContract.create>;

@@ -29,9 +29,26 @@
     "EMERGENCY": "Emergency",
     "OTHER": "Other"
   },
-  "priority": { "NORMAL": "Normal", "IMPORTANT": "Important", "EMERGENCY": "Emergency" },
+  "priority": {
+    "NORMAL": "Normal",
+    "IMPORTANT": "Important",
+    "EMERGENCY": "Emergency"
+  },
   "readBy": "Read by {{count}}",
   "archive": "Archive",
   "archived": "Notice archived",
-  "unpin": "Unpin"
+  "unpin": "Unpin",
+  "glow": {
+    "titleA": "Notice",
+    "titleB": "board",
+    "newCount": "{{count}} new",
+    "all": "All",
+    "urgent": "Urgent",
+    "open": "Open",
+    "gotIt": "Got it",
+    "thisWeek": "This week",
+    "earlier": "Earlier",
+    "rowSub": "{{category}} · {{author}}",
+    "nothing": "Nothing here right now."
+  }
 }
