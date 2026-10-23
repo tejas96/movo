@@ -214,8 +214,8 @@ export function ExpenseEditorScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              className="-mx-5"
-              contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
+              className="-mx-[18px]"
+              contentContainerStyle={{ paddingHorizontal: 18, gap: 8 }}
             >
               {PaymentMethodSchema.options.map((m) => (
                 <Chip

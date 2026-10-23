@@ -14,6 +14,7 @@ import {
 import {
   BottomBar,
   Button,
+  Card,
   Chip,
   DateTimeSheet,
   Input,
@@ -258,7 +259,7 @@ export function ListingEditorScreen() {
           title={listingId ? t('market:editor.editTitle') : t('market:editor.newTitle')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6 gap-4">
+        <Card className="mt-5 gap-4">
           <Field label={t('market:editor.kind')}>
             <ChipRow>
               {kinds.map((k) => (
@@ -481,7 +482,7 @@ export function ListingEditorScreen() {
               {formError}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={
@@ -543,8 +544,8 @@ function ChipRow({ children, className }: { children: ReactNode; className?: str
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      className={className ? `-mx-5 ${className}` : '-mx-5'}
-      contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
+      className={className ? `-mx-[18px] ${className}` : '-mx-[18px]'}
+      contentContainerStyle={{ paddingHorizontal: 18, gap: 8 }}
       keyboardShouldPersistTaps="handled"
     >
       {children}
@@ -602,7 +603,7 @@ function ToggleRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <View className="flex-row items-center gap-3 rounded-md bg-card px-[18px] py-3">
+    <View className="flex-row items-center gap-3 rounded-[22px] bg-card-nested px-[18px] py-3">
       <View className="flex-1">
         <Text variant="body">{label}</Text>
         <Text variant="label" tone="secondary">
