@@ -1,7 +1,6 @@
-import { Button, PasswordInput, Screen, Text, TitleBar, useToast } from '@movo/design-system';
+import { Button, Card, PasswordInput, Screen, Text, TitleBar, useToast } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { useNav } from '../../core/navigation/types';
 import { useChangePassword } from './api';
@@ -33,7 +32,7 @@ export function ChangePasswordScreen() {
   return (
     <Screen>
       <TitleBar title={t('auth:changePassword')} onBack={() => nav.goBack()} />
-      <View className="mt-6 gap-3">
+      <Card className="mt-5 gap-3.5">
         <PasswordInput
           label={t('auth:currentPassword')}
           value={current}
@@ -55,7 +54,7 @@ export function ChangePasswordScreen() {
           onPress={() => void save()}
           loading={change.isPending}
         />
-      </View>
+      </Card>
     </Screen>
   );
 }

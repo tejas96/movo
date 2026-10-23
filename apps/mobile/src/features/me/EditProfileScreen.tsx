@@ -1,7 +1,6 @@
-import { Avatar, Button, Input, Screen, Text, TitleBar, useToast } from '@movo/design-system';
+import { Avatar, Button, Card, Input, Screen, Text, TitleBar, useToast } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useSessionStore } from '../../core/auth/session.store';
@@ -49,7 +48,7 @@ export function EditProfileScreen() {
   return (
     <Screen>
       <TitleBar title={t('me:profile')} onBack={() => nav.goBack()} />
-      <View className="mt-6 gap-3">
+      <Card className="mt-5 gap-3.5">
         <SinglePhotoField
           title={t('me:photo')}
           help={t('me:photoHelp')}
@@ -82,7 +81,7 @@ export function EditProfileScreen() {
           onPress={() => void save()}
           loading={update.isPending}
         />
-      </View>
+      </Card>
     </Screen>
   );
 }

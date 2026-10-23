@@ -11,7 +11,8 @@ import { Press } from './Press';
 import { Text } from './Text';
 import { theme } from './theme';
 
-export type ButtonVariant = 'ink' | 'gray' | 'white' | 'ghost' | 'danger';
+/** dangerText = red words on no fill, for a destructive step that is not urgent (Leave). */
+export type ButtonVariant = 'ink' | 'gray' | 'white' | 'ghost' | 'danger' | 'dangerText';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
@@ -39,6 +40,7 @@ const BG: Record<ButtonVariant, string> = {
   white: 'bg-card-nested active:bg-card-deep',
   ghost: 'bg-transparent active:bg-card',
   danger: 'bg-danger active:opacity-pressed',
+  dangerText: 'bg-transparent active:bg-card',
 };
 const FG: Record<ButtonVariant, string> = {
   ink: theme.color.text.onInk,
@@ -46,6 +48,7 @@ const FG: Record<ButtonVariant, string> = {
   white: theme.color.text.primary,
   ghost: theme.color.text.primary,
   danger: theme.color.text.onInk,
+  dangerText: theme.color.status.danger.fg,
 };
 const HEIGHT: Record<ButtonSize, number> = {
   sm: theme.layout.control.sm,
