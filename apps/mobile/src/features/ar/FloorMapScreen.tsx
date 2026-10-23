@@ -7,10 +7,13 @@ import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Polygon, Polyline, Rect } from 'react-native-svg';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { LayersSheet, SERVICE_HEX } from './ArHud';
 import { DestinationPicker } from './DestinationPicker';
 import { levelKey } from './labels';
+import { useArLayers } from './layers';
 import { useLocalizer } from './spatial/localizer';
 import { levelById, levels, model, spacesOnLevel } from './spatial/model';
+import { type MarkerKind, servicesOnLevel } from './spatial/services';
 import type { LevelDef, NavNode } from './spatial/types';
 import { useRoute } from './useRoute';
 
@@ -27,6 +30,17 @@ const FILL: Record<string, string> = {
   lift: '#c9c9ff',
   stair: '#ffd6d6',
   parking_area: '#f6f6f6',
+};
+
+/** Marker colour on the plan, by what it is. */
+const MARKER_HEX: Record<MarkerKind, string> = {
+  switchboard: SERVICE_HEX.electric,
+  db: '#D9780A',
+  light: '#E8C25A',
+  sink: SERVICE_HEX.water,
+  basin: SERVICE_HEX.water,
+  floorTrap: SERVICE_HEX.drain,
+  riser: '#8A8A90',
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FloorMap'>;
@@ -53,8 +67,22 @@ export function FloorMapScreen(_props: Props) {
     () => model.building.nav.nodes.find((n) => n.id === params?.destinationId) ?? null,
   );
   const [picker, setPicker] = useState(false);
+  const [layersOpen, setLayersOpen] = useState(false);
+  const layers = useArLayers((s) => s.layers);
+  const toggleLayer = useArLayers((s) => s.toggle);
   const level = levelById(levelId) ?? levels[0] ?? FALLBACK_LEVEL;
   const routeView = useRoute(dest, level.id);
+  const services = useMemo(() => servicesOnLevel(level), [level]);
+  const serviceLines = services.lines.filter((l) => layers[l.kind]);
+  const serviceMarkers = services.markers.filter((m) =>
+    m.kind === 'floorTrap'
+      ? layers.drain
+      : m.kind === 'riser'
+        ? layers.water
+        : m.kind === 'sink' || m.kind === 'basin'
+          ? layers.water
+          : layers.electric,
+  );
 
   const plan = useMemo(() => {
     const spaces = spacesOnLevel(level);
@@ -85,6 +113,13 @@ export function FloorMapScreen(_props: Props) {
         <Text className="flex-1 text-lg font-semibold">{t('ar:map')}</Text>
         <Pressable
           accessibilityRole="button"
+          onPress={() => setLayersOpen(true)}
+          className="mr-2 rounded-full bg-card px-4 py-2"
+        >
+          <Text>{t('ar:layers.title')}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
           onPress={() => nav.navigate('AR')}
           className="rounded-full bg-ink px-4 py-2"
         >
@@ -93,8 +128,9 @@ export function FloorMapScreen(_props: Props) {
       </View>
       <ScrollView
         horizontal
+        style={{ flexGrow: 0 }}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8, alignItems: 'center' }}
       >
         {levels.map((l) => (
           <Pressable
@@ -133,7 +169,31 @@ export function FloorMapScreen(_props: Props) {
                 />
               );
             })}
-            {routeView ? (
+            {serviceLines.map((l) => (
+              <Polyline
+                key={l.id}
+                points={l.points.map((p) => `${plan.X(p[0])},${plan.Y(p[1])}`).join(' ')}
+                stroke={SERVICE_HEX[l.kind]}
+                strokeWidth={l.kind === 'drain' ? 3 : 2}
+                strokeOpacity={0.85}
+                strokeDasharray={l.kind === 'electric' ? '6 4' : undefined}
+                fill="none"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+            ))}
+            {serviceMarkers.map((m) => (
+              <Circle
+                key={m.id}
+                cx={plan.X(m.p[0])}
+                cy={plan.Y(m.p[1])}
+                r={m.kind === 'db' || m.kind === 'riser' ? 5 : 3}
+                fill={MARKER_HEX[m.kind]}
+                stroke="#fff"
+                strokeWidth={1}
+              />
+            ))}
+            {routeView && layers.route ? (
               <Polyline
                 points={routeView.route.nodes
                   .filter((n) => n.levelId === level.id)
@@ -177,6 +237,31 @@ export function FloorMapScreen(_props: Props) {
             ) : null}
           </Svg>
         ) : null}
+        {serviceLines.length > 0 ? (
+          <View className="mt-3 flex-row flex-wrap items-center gap-2">
+            {(['water', 'drain', 'electric'] as const)
+              .filter((k) => layers[k])
+              .map((k) => (
+                <View
+                  key={k}
+                  className="flex-row items-center gap-1.5 rounded-full bg-card px-3 py-1"
+                >
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: SERVICE_HEX[k],
+                    }}
+                  />
+                  <Text className="text-xs">{t(`ar:legend.${k}`)}</Text>
+                </View>
+              ))}
+            <Text className="text-xs" tone="warning">
+              {t('ar:layers.indicative')}
+            </Text>
+          </View>
+        ) : null}
         <Text className="mt-3 text-xs">
           {pose && pose.levelId === level.id
             ? t('ar:status.confidence', { pct: Math.round(pose.confidence * 100) })
@@ -212,6 +297,21 @@ export function FloorMapScreen(_props: Props) {
           </Pressable>
         ) : null}
       </View>
+      <LayersSheet
+        visible={layersOpen}
+        onClose={() => setLayersOpen(false)}
+        layers={layers}
+        onToggle={toggleLayer}
+        title={t('ar:layers.title')}
+        labels={{
+          route: t('ar:layers.route'),
+          rooms: t('ar:layers.rooms'),
+          water: t('ar:layers.water'),
+          drain: t('ar:layers.drain'),
+          electric: t('ar:layers.electric'),
+        }}
+        note={t('ar:layers.note')}
+      />
       <DestinationPicker open={picker} onClose={() => setPicker(false)} onPick={setDest} />
     </View>
   );

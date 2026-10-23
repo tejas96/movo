@@ -23,9 +23,9 @@ export function mul(a: Mat4, b: Mat4): Mat4 {
   return out;
 }
 
-/** Inverse of a rigid transform (rotation + translation). */
+/** Inverse of a rigid transform (rotation + translation): [R^T | -R^T t]. */
 export function invertRigid(m: Mat4): Mat4 {
-  // R^T
+  // R in row-major: r[i * 3 + j] = R(i, j); the column-major input stores column j at m[j * 4 ..]
   const r: [number, number, number, number, number, number, number, number, number] = [
     m[0],
     m[4],
@@ -40,22 +40,23 @@ export function invertRigid(m: Mat4): Mat4 {
   const tx = m[12];
   const ty = m[13];
   const tz = m[14];
+  // output column i of R^T is row i of R; translation is -(R^T t)
   return [
     r[0],
-    r[3],
-    r[6],
-    0,
     r[1],
-    r[4],
-    r[7],
-    0,
     r[2],
+    0,
+    r[3],
+    r[4],
     r[5],
+    0,
+    r[6],
+    r[7],
     r[8],
     0,
-    -(r[0] * tx + r[1] * ty + r[2] * tz),
-    -(r[3] * tx + r[4] * ty + r[5] * tz),
-    -(r[6] * tx + r[7] * ty + r[8] * tz),
+    -(r[0] * tx + r[3] * ty + r[6] * tz),
+    -(r[1] * tx + r[4] * ty + r[7] * tz),
+    -(r[2] * tx + r[5] * ty + r[8] * tz),
     1,
   ];
 }

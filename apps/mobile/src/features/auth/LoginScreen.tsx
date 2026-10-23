@@ -3,10 +3,11 @@ import { Button, Input, PasswordInput, Text } from '@movo/design-system';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { Linking, Pressable, View } from 'react-native';
 import { z } from 'zod';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { signIn } from '../../core/auth/auth';
+import { PRIVACY_POLICY_URL } from '../../core/env';
 import { useNav } from '../../core/navigation/types';
 import { AuthShell } from './AuthShell';
 
@@ -38,23 +39,51 @@ export function LoginScreen() {
   });
 
   return (
-    <AuthShell title={t('auth:welcomeTitle')} subtitle={t('auth:welcomeBody')}>
+    <AuthShell
+      title={t('auth:welcomeBack')}
+      subtitle={t('auth:welcomeBackBody')}
+      footer={
+        <>
+          <View className="flex-row items-center gap-1.5">
+            <Text variant="caption" tone="secondary">
+              {t('auth:noAccount')}
+            </Text>
+            <Pressable onPress={() => nav.navigate('Register')} hitSlop={8}>
+              <Text variant="caption" className="font-semibold">
+                {t('auth:register')}
+              </Text>
+            </Pressable>
+          </View>
+          <Text
+            variant="micro"
+            tone="tertiary"
+            center
+            className="mt-2 font-normal"
+            onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+          >
+            {t('auth:termsNote')}
+          </Text>
+        </>
+      }
+    >
       <View className="gap-3">
         <Controller
           control={form.control}
           name="identifier"
           render={({ field, fieldState }) => (
             <Input
-              label={t('auth:identifier')}
-              placeholder={t('auth:identifierHint')}
+              icon="mail"
+              placeholder={t('auth:identifier')}
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
               textContentType="username"
+              returnKeyType="next"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               error={fieldState.error?.message}
+              helper={fieldState.error ? undefined : t('auth:identifierHint')}
             />
           )}
         />
@@ -63,7 +92,8 @@ export function LoginScreen() {
           name="password"
           render={({ field, fieldState }) => (
             <PasswordInput
-              label={t('auth:password')}
+              icon="lock"
+              placeholder={t('auth:password')}
               textContentType="password"
               value={field.value}
               onChangeText={field.onChange}
@@ -88,21 +118,8 @@ export function LoginScreen() {
           label={t('auth:login')}
           onPress={() => void submit()}
           loading={form.formState.isSubmitting}
-          className="mt-2"
+          className="mt-1"
         />
-      </View>
-      <View className="mt-8 items-center gap-3">
-        <Text variant="caption" tone="secondary">
-          {t('auth:noAccount')}
-        </Text>
-        <Button
-          label={t('auth:register')}
-          variant="gray"
-          onPress={() => nav.navigate('Register')}
-        />
-        <Text variant="micro" tone="tertiary" center className="mt-2 font-normal">
-          {t('auth:termsNote')}
-        </Text>
       </View>
     </AuthShell>
   );

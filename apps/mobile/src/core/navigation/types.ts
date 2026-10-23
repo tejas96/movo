@@ -11,6 +11,7 @@ import { type NavigatorScreenParams, useNavigation } from '@react-navigation/nat
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
+  Welcome: undefined;
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;

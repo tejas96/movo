@@ -1,7 +1,8 @@
-import { Pressable, type PressableProps, View } from 'react-native';
+import { type PressableProps, View } from 'react-native';
 import type { IconName, IconStyle } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
+import { Press } from './Press';
 import { Text } from './Text';
 
 export interface TileProps extends Omit<PressableProps, 'children' | 'style'> {
@@ -34,7 +35,7 @@ export function Tile({
   ...rest
 }: TileProps) {
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       {...rest}
       className={cn('flex-1 min-h-[96px] justify-between rounded-md p-4', TONE[tone], className)}
@@ -57,6 +58,6 @@ export function Tile({
           </Text>
         </View>
       ) : null}
-    </Pressable>
+    </Press>
   );
 }

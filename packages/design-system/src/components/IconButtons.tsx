@@ -1,7 +1,8 @@
-import { Pressable, type PressableProps, View } from 'react-native';
+import { type PressableProps, View } from 'react-native';
 import type { IconName, IconStyle } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
+import { Press } from './Press';
 import { theme } from './theme';
 
 type Tone = 'gray' | 'white' | 'ink';
@@ -56,14 +57,15 @@ export function IconSquare({
       </View>
     );
   return (
-    <Pressable
+    <Press
+      scaleTo={0.9}
       accessibilityRole="button"
       onPress={onPress}
       {...rest}
       className={cn('items-center justify-center', dims, BG[tone], className)}
     >
       {content}
-    </Pressable>
+    </Press>
   );
 }
 
@@ -85,13 +87,14 @@ export function CircleButton({
   ...rest
 }: CircleButtonProps) {
   return (
-    <Pressable
+    <Press
+      scaleTo={0.9}
       accessibilityRole="button"
       {...rest}
       style={{ width: size, height: size }}
       className={cn('items-center justify-center rounded-full', BG[tone], className)}
     >
       <Icon name={icon} variant={variant} size={Math.round(size * 0.45)} color={FG[tone]} />
-    </Pressable>
+    </Press>
   );
 }

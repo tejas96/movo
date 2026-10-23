@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, type PressableProps, View } from 'react-native';
+import { ActivityIndicator, type PressableProps, View } from 'react-native';
 import type { IconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
+import { Press } from './Press';
 import { Text } from './Text';
 import { theme } from './theme';
 
@@ -56,7 +57,7 @@ export function Button({
   const fg = FG[variant];
   const isDisabled = disabled || loading;
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityState={{ disabled: Boolean(isDisabled), busy: Boolean(loading) }}
       disabled={isDisabled}
@@ -85,6 +86,6 @@ export function Button({
           {trailing}
         </View>
       )}
-    </Pressable>
+    </Press>
   );
 }

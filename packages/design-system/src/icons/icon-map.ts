@@ -101,6 +101,7 @@ export const iconMap = {
   cleaning: 'broom',
   internet: 'wifi',
   gate: 'lock',
+  lock: 'lock',
   key: 'key',
   lamp: 'lamp-charge',
   automation: 'cpu-setting',

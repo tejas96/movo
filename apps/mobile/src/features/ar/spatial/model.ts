@@ -43,7 +43,8 @@ const WALKABLE = new Set([
   'unknown',
 ]);
 
-function centroid(P: number[][]): [number, number] {
+/** Area-weighted centroid of a polygon (mm). */
+export function centroid(P: number[][]): [number, number] {
   let a = 0;
   let cx = 0;
   let cy = 0;

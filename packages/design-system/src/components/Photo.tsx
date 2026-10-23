@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { Image, type ImageSourcePropType, Pressable, StyleSheet, View } from 'react-native';
+import { Image, type ImageSourcePropType, StyleSheet, View } from 'react-native';
 import type { IconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
 import { IconSquare } from './IconButtons';
 import { Pill } from './Pill';
+import { Press } from './Press';
 import { Text } from './Text';
 import { theme } from './theme';
 
@@ -111,13 +112,13 @@ export function PhotoCard({
   const cls = cn('rounded-xl bg-card p-2', className);
   if (!onPress) return <View className={cls}>{body}</View>;
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       onPress={onPress}
       className={cn(cls, 'active:opacity-pressed')}
     >
       {body}
-    </Pressable>
+    </Press>
   );
 }
 
@@ -144,7 +145,7 @@ export function PhotoTile({
   className,
 }: PhotoTileProps) {
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
@@ -178,7 +179,7 @@ export function PhotoTile({
           ) : null}
         </View>
       </View>
-    </Pressable>
+    </Press>
   );
 }
 

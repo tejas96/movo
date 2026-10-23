@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LOCALES, type Locale } from '@movo/contracts';
-import { Button, Chip, Input, PasswordInput, Text, TitleBar } from '@movo/design-system';
+import { Button, Chip, Input, PasswordInput, Text } from '@movo/design-system';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -59,36 +59,43 @@ export function RegisterScreen() {
   };
 
   return (
-    <AuthShell title={t('auth:register')}>
-      <TitleBar
-        title=""
-        onBack={() => nav.goBack()}
-        className="absolute -top-[132px] left-0 right-0"
-      />
+    <AuthShell
+      title={t('auth:register')}
+      subtitle={t('auth:registerBody')}
+      onBack={() => nav.goBack()}
+      footer={
+        <Text
+          variant="micro"
+          tone="tertiary"
+          center
+          className="font-normal"
+          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+        >
+          {t('auth:termsNote')}
+        </Text>
+      }
+    >
       <View className="gap-3">
-        <View>
-          <Text variant="label" tone="secondary" className="mb-1.5">
-            {t('common:language.label')}
-          </Text>
-          <View className="flex-row gap-2">
-            {LOCALES.map((l) => (
-              <Chip
-                key={l}
-                label={t(`common:language.${l}`)}
-                selected={l === locale}
-                onPress={() => pickLocale(l)}
-                className="h-11"
-              />
-            ))}
-          </View>
+        <View className="flex-row gap-2">
+          {LOCALES.map((l) => (
+            <Chip
+              key={l}
+              label={t(`common:language.${l}`)}
+              selected={l === locale}
+              onPress={() => pickLocale(l)}
+              className="h-11"
+            />
+          ))}
         </View>
         <Controller
           control={form.control}
           name="displayName"
           render={({ field, fieldState }) => (
             <Input
-              label={t('auth:fullName')}
+              icon="user"
+              placeholder={t('auth:fullName')}
               textContentType="name"
+              returnKeyType="next"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
@@ -101,15 +108,17 @@ export function RegisterScreen() {
           name="identifier"
           render={({ field, fieldState }) => (
             <Input
-              label={t('auth:identifier')}
-              placeholder={t('auth:identifierHint')}
+              icon="mail"
+              placeholder={t('auth:identifier')}
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
+              returnKeyType="next"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               error={fieldState.error?.message}
+              helper={fieldState.error ? undefined : t('auth:identifierHint')}
             />
           )}
         />
@@ -118,8 +127,10 @@ export function RegisterScreen() {
           name="password"
           render={({ field, fieldState }) => (
             <PasswordInput
-              label={t('auth:password')}
+              icon="lock"
+              placeholder={t('auth:password')}
               textContentType="newPassword"
+              returnKeyType="next"
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
@@ -132,11 +143,14 @@ export function RegisterScreen() {
           name="confirm"
           render={({ field, fieldState }) => (
             <PasswordInput
-              label={t('auth:confirmPassword')}
+              icon="lock"
+              placeholder={t('auth:confirmPassword')}
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
               error={fieldState.error?.message}
+              onSubmitEditing={() => void submit()}
+              returnKeyType="go"
             />
           )}
         />
@@ -146,20 +160,11 @@ export function RegisterScreen() {
           </Text>
         ) : null}
         <Button
-          label={t('common:actions.continue')}
+          label={t('auth:register')}
           onPress={() => void submit()}
           loading={form.formState.isSubmitting}
-          className="mt-2"
+          className="mt-1"
         />
-        <Text
-          variant="micro"
-          tone="tertiary"
-          center
-          className="mt-2 font-normal underline"
-          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
-        >
-          {t('auth:termsNote')}
-        </Text>
       </View>
     </AuthShell>
   );

@@ -11,26 +11,31 @@ export interface RouteView {
   next: NavNode | null;
 }
 
-/** Route from where the phone is (or from the lift on `fallbackLevelId`) to a destination node. */
+const START_KINDS = ['space', 'door', 'lift', 'stair', 'entrance'];
+
+/**
+ * Route from where the phone is (or from the lift on `fallbackLevelId`) to a destination node.
+ * The route object only changes when the nearest start node changes, so the camera scene is not
+ * re-sent while the phone drifts inside one room.
+ */
 export function useRoute(dest: NavNode | null, fallbackLevelId: string | null): RouteView | null {
   const pose = useLocalizer((s) => s.pose);
   const levelId = pose?.levelId ?? fallbackLevelId;
-  // round to 0.25 m so the route is not recomputed on every camera frame
-  const px = pose ? Math.round(pose.x / 250) * 250 : null;
-  const py = pose ? Math.round(pose.y / 250) * 250 : null;
-  return useMemo(() => {
+  const startId = useMemo(() => {
     if (!dest || !levelId) return null;
-    const start =
-      px !== null && py !== null
-        ? nearestNode(model, levelId, px, py, ['space', 'door', 'lift', 'stair', 'entrance'])
-        : nearestNode(model, levelId, -600, 970, ['lift']);
-    if (!start) return null;
-    const r = route(model, start.id, dest.id);
+    const start = pose
+      ? nearestNode(model, levelId, pose.x, pose.y, START_KINDS)
+      : nearestNode(model, levelId, -600, 970, ['lift']);
+    return start?.id ?? null;
+  }, [dest, levelId, pose]);
+  return useMemo(() => {
+    if (!dest || !startId) return null;
+    const r = route(model, startId, dest.id);
     if (!r) return null;
     const points: Vec3[] = r.nodes.map((n) => {
       const lv = levelById(n.levelId);
       return [n.p[0], n.p[1], (lv?.elevationMm ?? 0) + 100];
     });
     return { route: r, points, next: r.nodes[1] ?? null };
-  }, [dest, levelId, px, py]);
+  }, [dest, startId]);
 }

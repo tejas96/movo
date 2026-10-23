@@ -2,30 +2,56 @@ import ARKit
 import SceneKit
 import UIKit
 
-/// ARKit camera view. Detects the landmark plates (ARReferenceImage) and streams the camera pose to JS.
-/// No 3D content is rendered here on purpose: JS projects the building model onto the screen.
+/// ARKit camera view. Detects the landmark plates (ARReferenceImage), draws the building content with
+/// [SceneRenderer] every frame, and streams a low-rate camera pose to JS.
 @objc(MovoArView)
-public class MovoArView: UIView, ARSessionDelegate {
+public class MovoArView: UIView, ARSessionDelegate, ARSCNViewDelegate {
   private let sceneView = ARSCNView()
+  private var content: SceneRenderer!
   private var referenceImages = Set<ARReferenceImage>()
   private var running = false
   private var lastPoseAt: TimeInterval = 0
+  private var lastImageAt: [String: TimeInterval] = [:]
+  private var lastImageTracked: [String: Bool] = [:]
+  private var platesSerial = 0
 
   @objc public var onPose: (([String: Any]) -> Void)?
   @objc public var onImage: (([String: Any]) -> Void)?
   @objc public var onTrackingState: (([String: Any]) -> Void)?
   @objc public var onError: (([String: Any]) -> Void)?
-  @objc public var poseHz: Double = 15
+  @objc public var poseHz: Double = 4
 
   @objc public var active: Bool = false {
     didSet { if active { start() } else { pause() } }
   }
 
   @objc public var plates: String? {
+    didSet { loadPlates() }
+  }
+
+  /// AR world (m) <- building (m), 16 numbers column-major. Empty or wrong length hides the content.
+  @objc public var anchor: NSArray? {
     didSet {
-      loadPlates()
-      if running { start() }
+      guard let a = anchor as? [NSNumber], a.count == 16 else {
+        content.anchor = nil
+        return
+      }
+      let f = a.map { $0.floatValue }
+      content.anchor = simd_float4x4(
+        simd_float4(f[0], f[1], f[2], f[3]),
+        simd_float4(f[4], f[5], f[6], f[7]),
+        simd_float4(f[8], f[9], f[10], f[11]),
+        simd_float4(f[12], f[13], f[14], f[15])
+      )
     }
+  }
+
+  @objc public var scene: String? {
+    didSet { content.setScene(scene) }
+  }
+
+  @objc public var route: String? {
+    didSet { content.setRoute(route) }
   }
 
   public override init(frame: CGRect) {
@@ -41,8 +67,12 @@ public class MovoArView: UIView, ARSessionDelegate {
   private func setup() {
     sceneView.frame = bounds
     sceneView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-    sceneView.automaticallyUpdatesLighting = true
+    sceneView.automaticallyUpdatesLighting = false
+    sceneView.rendersCameraGrain = false
+    sceneView.scene = SCNScene()
     sceneView.session.delegate = self
+    sceneView.delegate = self
+    content = SceneRenderer(scene: sceneView.scene)
     addSubview(sceneView)
   }
 
@@ -59,20 +89,32 @@ public class MovoArView: UIView, ARSessionDelegate {
 
   // MARK: plates
 
+  /// Decodes the plate images off the main thread, then (re)starts the session once.
   private func loadPlates() {
-    referenceImages.removeAll()
-    guard let json = plates, let data = json.data(using: .utf8),
-          let list = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]] else { return }
-    for item in list {
-      guard let id = item["id"] as? String,
-            let b64 = item["imageBase64"] as? String,
-            let width = item["physicalWidthM"] as? Double,
-            let imageData = Data(base64Encoded: b64),
-            let image = UIImage(data: imageData),
-            let cg = image.cgImage else { continue }
-      let ref = ARReferenceImage(cg, orientation: .up, physicalWidth: CGFloat(width))
-      ref.name = id
-      referenceImages.insert(ref)
+    platesSerial += 1
+    let serial = platesSerial
+    let json = plates
+    DispatchQueue.global(qos: .userInitiated).async {
+      var set = Set<ARReferenceImage>()
+      if let json = json, let data = json.data(using: .utf8),
+         let list = (try? JSONSerialization.jsonObject(with: data)) as? [[String: Any]] {
+        for item in list {
+          guard let id = item["id"] as? String,
+                let b64 = item["imageBase64"] as? String,
+                let width = item["physicalWidthM"] as? Double,
+                let imageData = Data(base64Encoded: b64),
+                let image = UIImage(data: imageData),
+                let cg = image.cgImage else { continue }
+          let ref = ARReferenceImage(cg, orientation: .up, physicalWidth: CGFloat(width))
+          ref.name = id
+          set.insert(ref)
+        }
+      }
+      DispatchQueue.main.async {
+        guard serial == self.platesSerial else { return }
+        self.referenceImages = set
+        if self.running { self.start() }
+      }
     }
   }
 
@@ -84,10 +126,12 @@ public class MovoArView: UIView, ARSessionDelegate {
       return
     }
     let config = ARWorldTrackingConfiguration()
-    config.worldAlignment = .gravity
-    config.planeDetection = [.horizontal]
+    // -Z of the AR world points to true north, so the camera's heading can be read from its transform
+    config.worldAlignment = .gravityAndHeading
+    config.planeDetection = []
+    config.isAutoFocusEnabled = true
     config.detectionImages = referenceImages
-    config.maximumNumberOfTrackedImages = 2
+    config.maximumNumberOfTrackedImages = 1
     sceneView.session.run(config, options: [.resetTracking, .removeExistingAnchors])
     running = true
     onTrackingState?(["state": "initializing"])
@@ -104,11 +148,17 @@ public class MovoArView: UIView, ARSessionDelegate {
     return window?.windowScene?.interfaceOrientation ?? .portrait
   }
 
+  // MARK: ARSCNViewDelegate (render thread)
+
+  public func renderer(_ renderer: SCNSceneRenderer, updateAtTime time: TimeInterval) {
+    content.update(pointOfView: renderer.pointOfView)
+  }
+
   // MARK: ARSessionDelegate
 
   public func session(_ session: ARSession, didUpdate frame: ARFrame) {
     let now = frame.timestamp
-    if now - lastPoseAt < 1.0 / max(poseHz, 1) { return }
+    if now - lastPoseAt < 1.0 / max(poseHz, 0.5) { return }
     lastPoseAt = now
     let size = sceneView.bounds.size
     guard size.width > 0, size.height > 0 else { return }
@@ -123,16 +173,23 @@ public class MovoArView: UIView, ARSessionDelegate {
       "width": size.width,
       "height": size.height,
       "t": now * 1000,
+      "heading": heading(camera.transform),
       "tracking": trackingName(camera.trackingState),
     ])
   }
 
-  public func session(_ session: ARSession, didAdd anchors: [ARAnchor]) { emitImages(anchors) }
-  public func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) { emitImages(anchors) }
+  public func session(_ session: ARSession, didAdd anchors: [ARAnchor]) { emitImages(anchors, force: true) }
+  public func session(_ session: ARSession, didUpdate anchors: [ARAnchor]) { emitImages(anchors, force: false) }
 
-  private func emitImages(_ anchors: [ARAnchor]) {
+  /// One event when a plate appears or its tracked state changes, then at most twice a second.
+  private func emitImages(_ anchors: [ARAnchor], force: Bool) {
+    let now = Date().timeIntervalSince1970
     for anchor in anchors {
       guard let image = anchor as? ARImageAnchor, let name = image.referenceImage.name else { continue }
+      let changed = lastImageTracked[name] != image.isTracked
+      if !force && !changed && now - (lastImageAt[name] ?? 0) < 0.5 { continue }
+      lastImageAt[name] = now
+      lastImageTracked[name] = image.isTracked
       onImage?(["plateId": name, "transform": flatten(image.transform), "tracked": image.isTracked])
     }
   }
@@ -175,6 +232,15 @@ public class MovoArView: UIView, ARSessionDelegate {
       }
     default: return ""
     }
+  }
+
+  /// Where the camera points, degrees clockwise from north, on the ground plane. -1 while not tracking.
+  private func heading(_ m: simd_float4x4) -> Double {
+    let f = m.columns.2 // camera looks down its -Z axis: forward = -column 2
+    let fx = -f.x, fz = -f.z
+    if fx * fx + fz * fz < 1e-6 { return -1 }
+    let deg = atan2(Double(fx), -Double(fz)) * 180 / .pi
+    return (deg + 360).truncatingRemainder(dividingBy: 360)
   }
 
   /// Column-major 16 floats, same layout as simd and ARCore.

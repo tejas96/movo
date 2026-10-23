@@ -1,13 +1,5 @@
 import { authContract } from '@movo/contracts';
-import {
-  Button,
-  Input,
-  PasswordInput,
-  Screen,
-  Text,
-  TitleBar,
-  useToast,
-} from '@movo/design-system';
+import { Button, Input, PasswordInput, Text, useToast } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
@@ -16,6 +8,7 @@ import { View } from 'react-native';
 import { api } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
+import { AuthShell } from './AuthShell';
 
 export function ResetPasswordScreen() {
   const { t } = useTranslation(['auth', 'common']);
@@ -50,28 +43,39 @@ export function ResetPasswordScreen() {
   };
 
   return (
-    <Screen>
-      <TitleBar title={t('auth:resetTitle')} onBack={() => nav.goBack()} />
-      <View className="mt-6 gap-3">
+    <AuthShell
+      title={t('auth:resetTitle')}
+      subtitle={t('auth:resetBody')}
+      onBack={() => nav.goBack()}
+    >
+      <View className="gap-3">
         <Input
-          label={t('auth:identifier')}
+          icon="mail"
+          placeholder={t('auth:identifier')}
           autoCapitalize="none"
+          autoCorrect={false}
           keyboardType="email-address"
+          returnKeyType="next"
           value={identifier}
           onChangeText={setIdentifier}
         />
         <Input
-          label={t('auth:resetCode')}
-          autoCapitalize="none"
+          icon="key"
+          placeholder={t('auth:resetCode')}
+          autoCapitalize="characters"
           autoCorrect={false}
+          returnKeyType="next"
           value={code}
           onChangeText={setCode}
         />
         <PasswordInput
-          label={t('auth:newPassword')}
+          icon="lock"
+          placeholder={t('auth:newPassword')}
           textContentType="newPassword"
           value={password}
           onChangeText={setPassword}
+          onSubmitEditing={() => void submit()}
+          returnKeyType="go"
         />
         {error ? (
           <Text variant="caption" tone="danger">
@@ -80,6 +84,6 @@ export function ResetPasswordScreen() {
         ) : null}
         <Button label={t('common:actions.continue')} onPress={() => void submit()} loading={busy} />
       </View>
-    </Screen>
+    </AuthShell>
   );
 }

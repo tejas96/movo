@@ -1,7 +1,8 @@
-import { Pressable, type PressableProps, View } from 'react-native';
+import { type PressableProps, View } from 'react-native';
 import type { IconName } from '../icons';
 import { cn } from './cn';
 import { Icon } from './Icon';
+import { Press } from './Press';
 import { Text } from './Text';
 import { theme } from './theme';
 
@@ -15,7 +16,7 @@ export interface ChipProps extends Omit<PressableProps, 'children' | 'style'> {
 /** Category chip: gray, 52 high, white icon box. Selected = black. */
 export function Chip({ label, icon, selected, className, ...rest }: ChipProps) {
   return (
-    <Pressable
+    <Press
       accessibilityRole="button"
       accessibilityState={{ selected: Boolean(selected) }}
       {...rest}
@@ -43,6 +44,6 @@ export function Chip({ label, icon, selected, className, ...rest }: ChipProps) {
       <Text variant="bodyMedium" tone={selected ? 'inverse' : 'primary'}>
         {label}
       </Text>
-    </Pressable>
+    </Press>
   );
 }

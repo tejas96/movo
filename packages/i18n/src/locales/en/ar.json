@@ -33,5 +33,57 @@
     "L5": "5th floor",
     "L6": "6th floor"
   },
-  "you": "You"
+  "you": "You",
+  "scan": {
+    "title": "Find a floor plate",
+    "body": "Point the camera at the plate by the lift door and hold still."
+  },
+  "starting": "Starting the camera…",
+  "layers": {
+    "title": "Show in the camera",
+    "route": "Route",
+    "rooms": "Room names",
+    "water": "Water supply",
+    "drain": "Drainage",
+    "electric": "Electric lines",
+    "indicative": "Indicative",
+    "note": "Pipe and wire routes follow normal practice for this building. They are not surveyed. Do not drill or cut by them."
+  },
+  "step": {
+    "straight": "Go straight",
+    "left": "Turn left",
+    "right": "Turn right",
+    "back": "Turn around",
+    "toward": "Head to {{name}}",
+    "then": "Then {{name}}",
+    "metres": "{{m}} m",
+    "minutes": "{{min}} min",
+    "arrive": "Arrive at {{name}}"
+  },
+  "node": {
+    "door": "Door",
+    "lift": "Lift",
+    "stair": "Stairs",
+    "entrance": "Entrance",
+    "space": "Room",
+    "shop": "Shop",
+    "parking_slot": "Parking slot",
+    "two_wheeler_area": "Two-wheeler parking"
+  },
+  "end": "End",
+  "legend": {
+    "water": "Water",
+    "drain": "Drain",
+    "electric": "Electric"
+  },
+  "manual": {
+    "link": "I know where I am",
+    "title": "Where are you?",
+    "myFlat": "My flat",
+    "flats": "Flats",
+    "common": "Common areas",
+    "flat": "Flat {{flat}}",
+    "setBy": "Set by you",
+    "approx": "Approximate position. Look at a floor plate to improve it."
+  }
 }

@@ -1,5 +1,6 @@
 package com.movo.ar
 
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -20,9 +21,24 @@ class MovoArViewManager : SimpleViewManager<MovoArView>() {
     view.setActive(active)
   }
 
-  @ReactProp(name = "poseHz", defaultDouble = 15.0)
+  @ReactProp(name = "poseHz", defaultDouble = 4.0)
   fun setPoseHz(view: MovoArView, hz: Double) {
     view.poseHz = hz
+  }
+
+  @ReactProp(name = "anchor")
+  fun setAnchor(view: MovoArView, anchor: ReadableArray?) {
+    view.setAnchor(anchor)
+  }
+
+  @ReactProp(name = "scene")
+  fun setScene(view: MovoArView, scene: String?) {
+    view.setScene(scene)
+  }
+
+  @ReactProp(name = "route")
+  fun setRoute(view: MovoArView, route: String?) {
+    view.setRoute(route)
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any> =

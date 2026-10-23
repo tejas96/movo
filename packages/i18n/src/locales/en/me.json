@@ -20,5 +20,11 @@
   "deleteBody": "Your personal details are removed. Society records like payments keep an anonymous reference. This cannot be undone.",
   "deleteConfirm": "Enter your password to confirm",
   "signOutConfirm": "Sign out of MOVO?",
-  "version": "Version {{version}}"
+  "version": "Version {{version}}",
+  "groups": {
+    "account": "Account",
+    "privacy": "Privacy",
+    "society": "Society",
+    "support": "Support"
+  }
 }

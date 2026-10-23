@@ -87,5 +87,35 @@
     "points_other": "{{count}} points this year",
     "openTasks": "{{count}} task in progress",
     "openTasks_other": "{{count}} tasks in progress"
+  },
+  "hero": {
+    "alert": {
+      "label": "Active alert",
+      "cta": "Open alert"
+    },
+    "dues": {
+      "label": "Maintenance due",
+      "cta": "Pay now",
+      "dueIn_one": "Due {{date}} · {{count}} day left",
+      "dueIn_other": "Due {{date}} · {{count}} days left",
+      "overdue": "Overdue · was due {{date}}"
+    },
+    "duty": {
+      "label": "Your turn",
+      "cta": "Open duty"
+    },
+    "task": {
+      "label": "Your task",
+      "cta": "Open task"
+    },
+    "clear": {
+      "label": "All clear today",
+      "cta": "See what is next",
+      "next": "Next: {{title}} · {{when}}"
+    }
+  },
+  "tiles": {
+    "noticesEmpty": "Nothing new",
+    "upcomingEmpty": "Nothing planned"
   }
 }

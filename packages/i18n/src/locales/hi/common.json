@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "MOVO"
+    "name": "MOVO",
+    "tagline": "आपकी सोसायटी, आपकी जेब में"
   },
   "actions": {
     "continue": "आगे बढ़ें",

@@ -8,6 +8,11 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+# Firebase: resolve the Firebase iOS SDK through CocoaPods instead of Swift
+# Package Manager. RNFB's SPM mode only works with dynamic frameworks, and this
+# app links its pods as static libraries (no use_frameworks!).
+$RNFirebaseDisableSPM = true
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -16,6 +21,10 @@ end
 
 target 'MovoMobile' do
   config = use_native_modules!
+
+  # FirebaseCoreInternal is a Swift pod that imports GoogleUtilities. With
+  # static libraries, GoogleUtilities needs a module map or pod install fails.
+  pod 'GoogleUtilities', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],

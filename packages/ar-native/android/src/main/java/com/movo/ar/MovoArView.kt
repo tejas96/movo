@@ -5,6 +5,10 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.util.Base64
@@ -13,6 +17,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.LifecycleEventListener
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
@@ -30,25 +35,46 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 /**
- * ARCore camera view. Renders the camera image, detects landmark plates (Augmented Images) and streams
- * the camera pose to JS. No 3D content is drawn natively; JS projects the building model onto the screen.
+ * ARCore camera view. Renders the camera image, detects landmark plates (Augmented Images), draws the
+ * building content ([SceneRenderer]) every frame on the GPU, and streams a low-rate camera pose to JS.
+ *
+ * Heavy work stays off the UI thread: plate decoding and the image database are built on a worker
+ * thread, scene JSON is parsed on a worker thread, and the GL thread only draws.
  */
 class MovoArView(private val reactContext: ThemedReactContext) :
-  FrameLayout(reactContext), GLSurfaceView.Renderer, LifecycleEventListener {
+  FrameLayout(reactContext), GLSurfaceView.Renderer, LifecycleEventListener, SensorEventListener {
 
   private class PlateSpec(val id: String, val bitmap: Bitmap, val widthM: Float)
 
   private val surface = GLSurfaceView(reactContext)
   private val background = BackgroundRenderer()
+  private val sceneRenderer = SceneRenderer(reactContext)
   private var session: Session? = null
-  private var plates: List<PlateSpec> = emptyList()
+  @Volatile private var plates: List<PlateSpec> = emptyList()
+  @Volatile private var platesJson: String? = null
   private var active = false
   private var installRequested = false
+  private var creating = false
   private var viewportChanged = false
   private var viewportWidth = 0
   private var viewportHeight = 0
   private var lastPoseNs = 0L
-  var poseHz = 15.0
+  private var firstFrameNs = 0L
+  private var lastTrackingName = ""
+
+  private val lastImageEmitNs = HashMap<String, Long>()
+  private val lastImageMethod = HashMap<String, AugmentedImage.TrackingMethod>()
+  private val viewM = FloatArray(16)
+  private val projM = FloatArray(16)
+  private val poseM = FloatArray(16)
+  var poseHz = 4.0
+
+  // compass: where the camera points, degrees clockwise from magnetic north; -1 until the sensor reports
+  private val sensorManager = reactContext.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+  private val rotation = FloatArray(9)
+  private val remapped = FloatArray(9)
+  private val orientation = FloatArray(3)
+  @Volatile private var headingDeg = -1.0
 
   init {
     surface.preserveEGLContextOnPause = true
@@ -62,23 +88,42 @@ class MovoArView(private val reactContext: ThemedReactContext) :
 
   // ---- props ----
 
+  /** Decodes the plate images on a worker thread. Reconfigures a live session once they are ready. */
   fun setPlates(json: String?) {
-    val list = ArrayList<PlateSpec>()
-    if (!json.isNullOrEmpty()) {
-      try {
-        val arr = JSONArray(json)
-        for (i in 0 until arr.length()) {
-          val o = arr.getJSONObject(i)
-          val bytes = Base64.decode(o.getString("imageBase64"), Base64.DEFAULT)
-          val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: continue
-          list.add(PlateSpec(o.getString("id"), bmp, o.getDouble("physicalWidthM").toFloat()))
+    if (json == platesJson) return
+    platesJson = json
+    Thread {
+      val list = ArrayList<PlateSpec>()
+      if (!json.isNullOrEmpty()) {
+        try {
+          val arr = JSONArray(json)
+          for (i in 0 until arr.length()) {
+            val o = arr.getJSONObject(i)
+            val bytes = Base64.decode(o.getString("imageBase64"), Base64.DEFAULT)
+            val bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: continue
+            list.add(PlateSpec(o.getString("id"), bmp, o.getDouble("physicalWidthM").toFloat()))
+          }
+        } catch (e: Exception) {
+          emit("onError", mapOf("code" to "plates", "message" to (e.message ?: "bad plates json")))
         }
-      } catch (e: Exception) {
-        emit("onError", mapOf("code" to "plates", "message" to (e.message ?: "bad plates json")))
       }
-    }
-    plates = list
-    session?.let { configure(it) }
+      plates = list
+      val s = session
+      if (s != null) {
+        // the database must be rebuilt for the new images; do it off the UI thread, then swap in
+        val cfg = buildConfig(s, list)
+        post {
+          val wasResumed = resumed
+          if (wasResumed) pause()
+          try {
+            s.configure(cfg)
+          } catch (e: Exception) {
+            emit("onError", mapOf("code" to "configure", "message" to (e.message ?: e.javaClass.simpleName)))
+          }
+          if (wasResumed && active) resume()
+        }
+      }
+    }.start()
   }
 
   fun setActive(on: Boolean) {
@@ -86,6 +131,20 @@ class MovoArView(private val reactContext: ThemedReactContext) :
     active = on
     if (on) resume() else pause()
   }
+
+  fun setAnchor(arr: ReadableArray?) {
+    if (arr == null || arr.size() != 16) {
+      sceneRenderer.anchor = null
+      return
+    }
+    val m = FloatArray(16)
+    for (i in 0 until 16) m[i] = arr.getDouble(i).toFloat()
+    sceneRenderer.anchor = m
+  }
+
+  fun setScene(json: String?) = sceneRenderer.setScene(json)
+
+  fun setRoute(json: String?) = sceneRenderer.setRoute(json)
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
@@ -108,7 +167,7 @@ class MovoArView(private val reactContext: ThemedReactContext) :
       Log.d(TAG, "resume: not attached yet, waiting for onAttachedToWindow")
       return
     }
-    if (resumed) return
+    if (resumed || creating) return
     if (session == null) {
       try {
         when (ArCoreApk.getInstance().requestInstall(activity, !installRequested)) {
@@ -123,22 +182,42 @@ class MovoArView(private val reactContext: ThemedReactContext) :
           emit("onError", mapOf("code" to "cameraPermission", "message" to "camera permission not granted"))
           return
         }
-        val s = Session(activity)
-        configure(s)
-        session = s
-        Log.d(TAG, "session created with ${plates.size} plates")
       } catch (e: Exception) {
-        Log.e(TAG, "session create failed", e)
+        Log.e(TAG, "ARCore check failed", e)
         emit("onError", mapOf("code" to "arcore", "message" to (e.message ?: e.javaClass.simpleName)))
         emit("onTrackingState", mapOf("state" to "notAvailable", "reason" to e.javaClass.simpleName))
         return
       }
+      // Session creation plus the image database take seconds on a budget phone: never on the UI thread.
+      creating = true
+      emit("onTrackingState", mapOf("state" to "initializing", "reason" to "starting"))
+      Thread {
+        try {
+          val s = Session(activity)
+          s.configure(buildConfig(s, plates))
+          post {
+            session = s
+            creating = false
+            Log.d(TAG, "session created with ${plates.size} plates")
+            if (active) resume()
+          }
+        } catch (e: Exception) {
+          Log.e(TAG, "session create failed", e)
+          post { creating = false }
+          emit("onError", mapOf("code" to "arcore", "message" to (e.message ?: e.javaClass.simpleName)))
+          emit("onTrackingState", mapOf("state" to "notAvailable", "reason" to e.javaClass.simpleName))
+        }
+      }.start()
+      return
     }
     try {
       session?.resume()
       surface.onResume()
       viewportChanged = true
       resumed = true
+      sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)?.let {
+        sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+      }
       Log.d(TAG, "session resumed")
       emit("onTrackingState", mapOf("state" to "initializing"))
     } catch (e: CameraNotAvailableException) {
@@ -151,13 +230,15 @@ class MovoArView(private val reactContext: ThemedReactContext) :
     }
   }
 
-  private fun configure(s: Session) {
+  /** Builds the session config with the plate database. Slow; call it on a worker thread. */
+  private fun buildConfig(s: Session, list: List<PlateSpec>): Config {
     val cfg = Config(s)
     cfg.focusMode = Config.FocusMode.AUTO
     cfg.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
-    cfg.planeFindingMode = Config.PlaneFindingMode.HORIZONTAL
+    cfg.planeFindingMode = Config.PlaneFindingMode.DISABLED
+    cfg.lightEstimationMode = Config.LightEstimationMode.DISABLED
     val db = AugmentedImageDatabase(s)
-    for (p in plates) {
+    for (p in list) {
       try {
         db.addImage(p.id, p.bitmap, p.widthM)
       } catch (e: Exception) {
@@ -165,12 +246,13 @@ class MovoArView(private val reactContext: ThemedReactContext) :
       }
     }
     cfg.augmentedImageDatabase = db
-    s.configure(cfg)
+    return cfg
   }
 
   private fun pause() {
     if (!resumed) return
     Log.d(TAG, "pause")
+    sensorManager?.unregisterListener(this)
     surface.onPause()
     try {
       session?.pause()
@@ -187,6 +269,20 @@ class MovoArView(private val reactContext: ThemedReactContext) :
     session = null
     reactContext.removeLifecycleEventListener(this)
   }
+
+  // ---- SensorEventListener (compass) ----
+
+  override fun onSensorChanged(event: SensorEvent) {
+    if (event.sensor.type != Sensor.TYPE_ROTATION_VECTOR) return
+    SensorManager.getRotationMatrixFromVector(rotation, event.values)
+    // the phone is held upright with the back camera looking forward: map the device -Z (camera) axis to "forward"
+    SensorManager.remapCoordinateSystem(rotation, SensorManager.AXIS_X, SensorManager.AXIS_Z, remapped)
+    SensorManager.getOrientation(remapped, orientation)
+    val deg = Math.toDegrees(orientation[0].toDouble())
+    headingDeg = (deg + 360.0) % 360.0
+  }
+
+  override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
   // ---- LifecycleEventListener ----
 
@@ -207,6 +303,7 @@ class MovoArView(private val reactContext: ThemedReactContext) :
   override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
     GLES20.glClearColor(0f, 0f, 0f, 1f)
     background.createOnGlThread()
+    sceneRenderer.createOnGlThread()
   }
 
   override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -237,10 +334,17 @@ class MovoArView(private val reactContext: ThemedReactContext) :
     }
     background.draw(frame)
     val camera = frame.camera
+    val now = frame.timestamp
+    if (firstFrameNs == 0L) firstFrameNs = now
 
     for (img in frame.getUpdatedTrackables(AugmentedImage::class.java)) {
       if (img.trackingState != TrackingState.TRACKING) continue
-      Log.d(TAG, "image ${img.name} method=${img.trackingMethod} extent=${img.extentX}x${img.extentZ}")
+      // one event when a plate appears or its tracking method changes, then at most twice a second
+      val last = lastImageEmitNs[img.name] ?: 0L
+      val methodChanged = lastImageMethod[img.name] != img.trackingMethod
+      if (!methodChanged && now - last < 500_000_000L) continue
+      lastImageEmitNs[img.name] = now
+      lastImageMethod[img.name] = img.trackingMethod
       val m = FloatArray(16)
       img.centerPose.toMatrix(m, 0)
       emit(
@@ -253,25 +357,36 @@ class MovoArView(private val reactContext: ThemedReactContext) :
       )
     }
 
-    val now = frame.timestamp
-    if (now - lastPoseNs < (1e9 / poseHz.coerceAtLeast(1.0)).toLong()) return
+    val trackingNow = trackingName(camera.trackingState, camera.trackingFailureReason)
+    if (trackingNow != lastTrackingName) {
+      lastTrackingName = trackingNow
+      emit("onTrackingState", mapOf("state" to trackingNow, "reason" to camera.trackingFailureReason.name))
+    }
+
+    if (camera.trackingState == TrackingState.TRACKING) {
+      camera.getViewMatrix(viewM, 0)
+      camera.getProjectionMatrix(projM, 0, 0.05f, 100f)
+      sceneRenderer.draw(viewM, projM, (now - firstFrameNs) / 1e9f)
+    }
+
+    if (now - lastPoseNs < (1e9 / poseHz.coerceAtLeast(0.5)).toLong()) return
     lastPoseNs = now
-    val pose = FloatArray(16)
-    camera.pose.toMatrix(pose, 0)
-    val view = FloatArray(16)
-    camera.getViewMatrix(view, 0)
-    val proj = FloatArray(16)
-    camera.getProjectionMatrix(proj, 0, 0.05f, 100f)
+    camera.pose.toMatrix(poseM, 0)
+    if (camera.trackingState != TrackingState.TRACKING) {
+      camera.getViewMatrix(viewM, 0)
+      camera.getProjectionMatrix(projM, 0, 0.05f, 100f)
+    }
     emit(
       "onPose",
       mapOf(
-        "camera" to pose.toList(),
-        "view" to view.toList(),
-        "projection" to proj.toList(),
+        "camera" to poseM.toList(),
+        "view" to viewM.toList(),
+        "projection" to projM.toList(),
         "width" to viewportWidth,
         "height" to viewportHeight,
         "t" to now / 1e6,
-        "tracking" to trackingName(camera.trackingState, camera.trackingFailureReason),
+        "heading" to headingDeg,
+        "tracking" to trackingNow,
       ),
     )
   }

@@ -6,18 +6,20 @@ import {
   EmptyState,
   Input,
   OptionSheet,
+  PhotoHeader,
+  Press,
+  photos,
   Screen,
   SelectField,
   Skeleton,
   Text,
-  TitleBar,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useJoinPreview, useJoinRequest } from './api';
@@ -64,10 +66,15 @@ export function PickFlatScreen() {
   return (
     <>
       <Screen bottomBar>
-        <TitleBar
-          title={preview.data?.society.name ?? t('onboarding:findSociety')}
-          onBack={() => nav.goBack()}
-        />
+        <PhotoHeader source={photos.society} height={200} onBack={() => nav.goBack()} />
+        <Text variant="h1" className="mt-4" numberOfLines={1}>
+          {preview.data?.society.name ?? t('onboarding:findSociety')}
+        </Text>
+        {preview.data?.society.city ? (
+          <Text variant="label" tone="secondary" className="mt-0.5">
+            {preview.data.society.city}
+          </Text>
+        ) : null}
         <Text variant="h2" className="mt-6">
           {t('onboarding:pickFlat')}
         </Text>
@@ -109,7 +116,7 @@ export function PickFlatScreen() {
                 const on = f.id === flatId;
                 const building = preview.data?.buildings.find((b) => b.id === f.buildingId);
                 return (
-                  <Pressable
+                  <Press
                     key={f.id}
                     onPress={() => setFlatId(f.id)}
                     accessibilityRole="radio"
@@ -123,7 +130,7 @@ export function PickFlatScreen() {
                     <Text variant="bodyMedium" tone={on ? 'inverse' : 'primary'}>
                       {building && !buildingId ? `${building.name}-${f.number}` : f.number}
                     </Text>
-                  </Pressable>
+                  </Press>
                 );
               })}
             </View>

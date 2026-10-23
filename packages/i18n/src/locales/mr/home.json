@@ -87,5 +87,35 @@
     "points_other": "या वर्षी {{count}} पॉइंट्स",
     "openTasks": "{{count}} काम सुरू आहे",
     "openTasks_other": "{{count}} कामे सुरू आहेत"
+  },
+  "hero": {
+    "alert": {
+      "label": "सक्रिय अलर्ट",
+      "cta": "अलर्ट उघडा"
+    },
+    "dues": {
+      "label": "मेंटेनन्स थकबाकी",
+      "cta": "आता भरा",
+      "dueIn_one": "{{date}} पर्यंत · {{count}} दिवस बाकी",
+      "dueIn_other": "{{date}} पर्यंत · {{count}} दिवस बाकी",
+      "overdue": "मुदत उलटली · {{date}} पर्यंत होती"
+    },
+    "duty": {
+      "label": "तुमची पाळी",
+      "cta": "ड्युटी उघडा"
+    },
+    "task": {
+      "label": "तुमचं काम",
+      "cta": "काम उघडा"
+    },
+    "clear": {
+      "label": "आज सर्व काही ठीक आहे",
+      "cta": "पुढे काय ते पाहा",
+      "next": "पुढे: {{title}} · {{when}}"
+    }
+  },
+  "tiles": {
+    "noticesEmpty": "नवीन काही नाही",
+    "upcomingEmpty": "काही ठरलेलं नाही"
   }
 }
