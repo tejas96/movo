@@ -58,5 +58,15 @@
     "cancelledTitle": "Event cancelled: {{title}}",
     "cancelledBody": "It was on {{when}}",
     "reminderTitle": "Tomorrow: {{title}}"
+  },
+  "glow": {
+    "by": "Event · by {{name}}",
+    "areYou": "Are you",
+    "goingQ": "going?",
+    "goingCount": "{{count}} going",
+    "maybeCount": "· {{count}} maybe",
+    "options": "More options",
+    "lessGuest": "One less guest",
+    "moreGuest": "One more guest"
   }
 }
