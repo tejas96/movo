@@ -29,14 +29,31 @@ export function ForgotPasswordScreen() {
 
   return (
     <AuthShell
-      title={t('auth:forgotTitle')}
+      title={t('auth:glow.forgotA')}
+      titleBold={t('auth:glow.forgotB')}
       subtitle={t('auth:forgotBody')}
       onBack={() => nav.goBack()}
+      action={
+        <>
+          <Button
+            size="xl"
+            arrow
+            label={t('auth:sendLink')}
+            onPress={() => void send()}
+            loading={busy}
+          />
+          <Button
+            label={t('auth:haveCode')}
+            variant="white"
+            onPress={() => nav.navigate('ResetPassword', { identifier })}
+          />
+        </>
+      }
     >
       <View className="gap-3">
         <Input
-          icon="mail"
-          placeholder={t('auth:identifier')}
+          label={t('auth:identifier')}
+          placeholder={t('auth:glow.phoneHint')}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="email-address"
@@ -44,12 +61,6 @@ export function ForgotPasswordScreen() {
           value={identifier}
           onChangeText={setIdentifier}
           onSubmitEditing={() => void send()}
-        />
-        <Button label={t('auth:sendLink')} onPress={() => void send()} loading={busy} />
-        <Button
-          label={t('auth:haveCode')}
-          variant="gray"
-          onPress={() => nav.navigate('ResetPassword', { identifier })}
         />
       </View>
     </AuthShell>

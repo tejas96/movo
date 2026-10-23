@@ -12,19 +12,22 @@ export interface InputProps extends TextInputProps {
   helper?: string | undefined;
   error?: string | undefined;
   icon?: IconName;
+  /** Fixed text before the value, with a thin line after it ("+91"). */
+  prefix?: string | undefined;
   trailing?: ReactNode;
-  /** White field for use on a gray sheet. */
+  /** Kept for old call sites: every Soft Glow field is white now. */
   white?: boolean;
   containerClassName?: string;
 }
 
-/** Gray 56 field, 20 radius, no border until focused. */
+/** Soft Glow field: a white 54 pill with a soft shadow and an orange ring while focused. */
 export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(function Input(
   {
     label,
     helper,
     error,
     icon,
+    prefix,
     trailing,
     white,
     containerClassName,
@@ -42,20 +45,39 @@ export const Input = forwardRef<ComponentRef<typeof TextInput>, InputProps>(func
   return (
     <View className={containerClassName}>
       {label ? (
-        <Text variant="label" tone="secondary" className="mb-1.5">
+        <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
           {label}
         </Text>
       ) : null}
       <View
+        style={{
+          boxShadow:
+            focused && !error
+              ? '0 0 0 4px rgba(240,106,46,0.18), 0 4px 14px rgba(70,40,70,0.06)'
+              : '0 4px 14px rgba(70,40,70,0.06)',
+        }}
         className={cn(
-          'flex-row gap-3 rounded-md px-[18px] border-[1.5px]',
-          multiline ? 'min-h-control-lg items-start py-3' : 'h-control-lg items-center',
-          white ? 'bg-card-nested' : 'bg-card',
-          error ? 'border-danger' : focused ? 'border-ink bg-card-nested' : 'border-transparent',
+          'flex-row gap-2.5 px-[18px] border-[1.5px] bg-card-nested',
+          multiline
+            ? 'min-h-control-lg items-start py-3 rounded-[22px]'
+            : 'h-control-lg items-center rounded-full',
+          error ? 'border-danger' : 'border-transparent',
           !editable && 'opacity-disabled',
         )}
       >
         {icon ? <Icon name={icon} size={20} color={theme.color.text.secondary} /> : null}
+        {prefix ? (
+          <Text
+            variant="bodyMedium"
+            style={{
+              paddingRight: 10,
+              borderRightWidth: 1,
+              borderRightColor: 'rgba(43,42,46,0.12)',
+            }}
+          >
+            {prefix}
+          </Text>
+        ) : null}
         <TextInput
           ref={ref}
           editable={editable}
@@ -119,16 +141,20 @@ export function PasswordInput(props: PasswordInputProps) {
       trailing={
         <Pressable
           onPress={() => setVisible((v) => !v)}
-          hitSlop={10}
+          hitSlop={6}
           accessibilityRole="button"
           accessibilityLabel={visible ? 'Hide password' : 'Show password'}
+          style={{
+            width: 44,
+            height: 44,
+            marginRight: -12,
+            borderRadius: 22,
+            backgroundColor: '#F4F3F2',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          <Icon
-            name="eye"
-            variant={visible ? 'bold' : 'linear'}
-            size={20}
-            color={theme.color.text.secondary}
-          />
+          <Icon name={visible ? 'eyeSlash' : 'eye'} size={19} color={theme.color.text.secondary} />
         </Pressable>
       }
     />
@@ -158,7 +184,7 @@ export function SelectField({
   return (
     <View className={className}>
       {label ? (
-        <Text variant="label" tone="secondary" className="mb-1.5">
+        <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
           {label}
         </Text>
       ) : null}

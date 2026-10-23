@@ -60,9 +60,19 @@ export function RegisterScreen() {
 
   return (
     <AuthShell
-      title={t('auth:register')}
+      title={t('auth:glow.registerA')}
+      titleBold={t('auth:glow.registerB')}
       subtitle={t('auth:registerBody')}
       onBack={() => nav.goBack()}
+      action={
+        <Button
+          size="xl"
+          arrow
+          label={t('auth:register')}
+          onPress={() => void submit()}
+          loading={form.formState.isSubmitting}
+        />
+      }
       footer={
         <Text
           variant="micro"
@@ -83,7 +93,6 @@ export function RegisterScreen() {
               label={t(`common:language.${l}`)}
               selected={l === locale}
               onPress={() => pickLocale(l)}
-              className="h-11"
             />
           ))}
         </View>
@@ -92,7 +101,7 @@ export function RegisterScreen() {
           name="displayName"
           render={({ field, fieldState }) => (
             <Input
-              icon="user"
+              label={t('auth:fullName')}
               placeholder={t('auth:fullName')}
               textContentType="name"
               returnKeyType="next"
@@ -108,8 +117,8 @@ export function RegisterScreen() {
           name="identifier"
           render={({ field, fieldState }) => (
             <Input
-              icon="mail"
-              placeholder={t('auth:identifier')}
+              label={t('auth:identifier')}
+              placeholder={t('auth:glow.phoneHint')}
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
@@ -127,8 +136,8 @@ export function RegisterScreen() {
           name="password"
           render={({ field, fieldState }) => (
             <PasswordInput
-              icon="lock"
-              placeholder={t('auth:password')}
+              label={t('auth:password')}
+              placeholder={t('auth:glow.passwordHint')}
               textContentType="newPassword"
               returnKeyType="next"
               value={field.value}
@@ -143,8 +152,8 @@ export function RegisterScreen() {
           name="confirm"
           render={({ field, fieldState }) => (
             <PasswordInput
-              icon="lock"
-              placeholder={t('auth:confirmPassword')}
+              label={t('auth:confirmPassword')}
+              placeholder={t('auth:glow.passwordHint')}
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
@@ -159,12 +168,6 @@ export function RegisterScreen() {
             {error}
           </Text>
         ) : null}
-        <Button
-          label={t('auth:register')}
-          onPress={() => void submit()}
-          loading={form.formState.isSubmitting}
-          className="mt-1"
-        />
       </View>
     </AuthShell>
   );

@@ -1,159 +1,145 @@
-import { IconSquare, photos, Text, theme, Wordmark } from '@movo/design-system';
-import { type ReactNode, useCallback, useEffect, useRef } from 'react';
 import {
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  ScrollView,
-  type ScrollViewInstance,
-  StatusBar,
-  StyleSheet,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+  Backdrop,
+  DotTexture,
+  Glass,
+  IconSquare,
+  Rise,
+  Strong,
+  Text,
+  theme,
+} from '@movo/design-system';
+import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { KeyboardAvoidingView, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
 export interface AuthShellProps {
+  /** Light part of the headline. */
   title: string;
+  /** The one bold word at the end of the headline ("Good to see you **again**"). */
+  titleBold?: string;
   subtitle?: string;
-  /** Back square on the photo, for screens reached from Login. */
+  /** A small moving drawing at the top of the card (the waving hand on Log in). */
+  art?: ReactNode;
+  /** Back button, for screens reached from Log in or Welcome. */
   onBack?: () => void;
+  /** The form, inside the glass card. */
   children: ReactNode;
-  /** Pinned under the form, above the home indicator. */
+  /** The main button, pinned under the card near the bottom. */
+  action?: ReactNode;
+  /** Links under the main button. */
   footer?: ReactNode;
 }
 
-/** Share of the screen the photo takes while the keyboard is closed. */
-const HERO_SHARE = 0.4;
-/** The sheet's top corners overlap the photo by this much. */
-const OVERLAP = 30;
-
 /**
- * The front door: a photo fills the top, a white sheet with big round corners slides over it
- * and holds the form. When the keyboard opens the photo shrinks to a thin band and the sheet
- * takes the room, so the fields never hide behind the keyboard.
+ * The Soft Glow front door, laid out like docs/design/soft-glow/source/Login.dc.html: mist with
+ * the pink and lavender glow, back · MOVO header, a dotted glass card with the drawing, the
+ * headline and the form, then the main button and links at the bottom. The page scrolls and
+ * moves up with the keyboard, so fields never hide behind it.
  */
-export function AuthShell({ title, subtitle, onBack, children, footer }: AuthShellProps) {
+export function AuthShell({
+  title,
+  titleBold,
+  subtitle,
+  art,
+  onBack,
+  children,
+  action,
+  footer,
+}: AuthShellProps) {
+  const { t } = useTranslation('common');
   const insets = useSafeAreaInsets();
-  const { height: screenHeight } = useWindowDimensions();
-  const full = Math.max(220, Math.round(screenHeight * HERO_SHARE));
-  const compact = insets.top + 76;
-  const hero = useSharedValue(full);
-  const scrollRef = useRef<ScrollViewInstance>(null);
-  const offset = useRef(0);
-
-  // Scroll just enough to show the focused field above the keyboard.
-  const reveal = useCallback((keyboardTop: number) => {
-    setTimeout(() => {
-      const input = TextInput.State.currentlyFocusedInput();
-      if (!input || !scrollRef.current) return;
-      input.measureInWindow((_x, y, _w, h) => {
-        const limit = keyboardTop - 16;
-        if (y + h > limit)
-          scrollRef.current?.scrollTo({ y: offset.current + (y + h - limit), animated: true });
-      });
-    }, 300);
-  }, []);
-
-  useEffect(() => {
-    const ease = { duration: 280, easing: Easing.bezier(0.2, 0, 0, 1) };
-    const show = Keyboard.addListener('keyboardDidShow', (e) => {
-      hero.value = withTiming(compact, ease);
-      reveal(e.endCoordinates.screenY);
-    });
-    const hide = Keyboard.addListener('keyboardDidHide', () => {
-      hero.value = withTiming(full, ease);
-    });
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, [hero, full, compact, reveal]);
-
-  const heroStyle = useAnimatedStyle(() => ({ height: hero.value }));
-
   return (
-    <View className="flex-1 bg-ink">
-      <StatusBar barStyle="light-content" />
-      <Animated.View style={[styles.hero, heroStyle]}>
-        <Image
-          source={photos.auth}
-          resizeMode="cover"
-          style={[StyleSheet.absoluteFill, styles.photo]}
-        />
-        <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
-          <Defs>
-            <LinearGradient id="authScrim" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={theme.color.overlay.shade} stopOpacity="0.32" />
-              <Stop offset="0.6" stopColor={theme.color.overlay.shade} stopOpacity="0" />
-            </LinearGradient>
-          </Defs>
-          <Rect x="0" y="0" width="100%" height="100%" fill="url(#authScrim)" />
-        </Svg>
-        <View style={[styles.heroBar, { top: insets.top + 16 }]} pointerEvents="box-none">
-          {onBack ? (
-            <IconSquare icon="back" variant="linear" tone="white" onPress={onBack} />
-          ) : null}
-          <Wordmark width={92} color={theme.color.text.inverse} />
-        </View>
-      </Animated.View>
-
-      <KeyboardAvoidingView behavior="padding" style={styles.sheetWrap}>
-        <View className="flex-1 rounded-t-[30px] bg-canvas">
-          <ScrollView
-            ref={scrollRef}
-            onScroll={(e) => {
-              offset.current = e.nativeEvent.contentOffset.y;
-            }}
-            scrollEventThrottle={32}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={[
-              styles.content,
-              { paddingBottom: Math.max(insets.bottom, 16) + 12 },
-            ]}
-          >
-            <View className="mb-6">
-              <Text variant="h1">{title}</Text>
-              {subtitle ? (
-                <Text variant="body" tone="secondary" className="mt-1">
-                  {subtitle}
-                </Text>
-              ) : null}
+    <View style={styles.root}>
+      <StatusBar barStyle="dark-content" />
+      <Backdrop scene="soft" />
+      <KeyboardAvoidingView behavior="padding" style={styles.flex}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: insets.top + 14, paddingBottom: Math.max(insets.bottom, 16) + 14 },
+          ]}
+        >
+          <Rise>
+            <View style={styles.header}>
+              {onBack ? (
+                <IconSquare
+                  icon="back"
+                  variant="linear"
+                  diameter={46}
+                  onPress={onBack}
+                  accessibilityLabel={t('actions.back')}
+                />
+              ) : (
+                <View style={styles.side} />
+              )}
+              <Text style={styles.brand}>{BRAND}</Text>
+              <View style={styles.side} />
             </View>
-            {children}
-            {footer ? <View style={styles.footer}>{footer}</View> : null}
-          </ScrollView>
-        </View>
+          </Rise>
+
+          <Rise delay={80}>
+            <Glass radius={32} style={styles.card}>
+              <DotTexture center={{ x: 0.5, y: 0.22 }} reach={0.6} />
+              {art ? <View style={styles.art}>{art}</View> : null}
+              <View style={styles.head}>
+                <Text variant="greet" center>
+                  {title}
+                  {titleBold ? (
+                    <>
+                      {' '}
+                      <Strong>{titleBold}</Strong>
+                    </>
+                  ) : null}
+                </Text>
+                {subtitle ? (
+                  <Text variant="body" tone="secondary" center style={styles.subtitle}>
+                    {subtitle}
+                  </Text>
+                ) : null}
+              </View>
+              {children}
+            </Glass>
+          </Rise>
+
+          <View style={styles.flex} />
+
+          {action || footer ? (
+            <Rise delay={200}>
+              <View style={styles.bottom}>
+                {action}
+                {footer ? <View style={styles.footer}>{footer}</View> : null}
+              </View>
+            </Rise>
+          ) : null}
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 }
 
+/** The name in the header, as the mockup writes it. Not translated. */
+const BRAND = 'MOVO';
+
 const styles = StyleSheet.create({
-  hero: { overflow: 'hidden', backgroundColor: theme.color.bg.ink },
-  photo: { width: '100%', height: '100%' },
-  heroBar: {
-    position: 'absolute',
-    left: 20,
-    right: 22,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  root: { flex: 1, backgroundColor: theme.color.bg.canvas },
+  flex: { flexGrow: 1 },
+  content: { flexGrow: 1, paddingHorizontal: theme.layout.gutter, gap: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  side: { width: 46, height: 46 },
+  brand: {
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 20,
+    lineHeight: 28,
+    color: theme.color.text.primary,
   },
-  sheetWrap: { flex: 1, marginTop: -OVERLAP },
-  content: {
-    flexGrow: 1,
-    paddingHorizontal: theme.layout.gutter,
-    paddingTop: 28,
-  },
-  footer: { marginTop: 'auto', paddingTop: 28, alignItems: 'center', gap: 6 },
+  card: { overflow: 'hidden', paddingTop: 28, paddingHorizontal: 18, paddingBottom: 20, gap: 16 },
+  art: { alignSelf: 'center' },
+  head: { gap: 6 },
+  subtitle: { fontSize: 14, lineHeight: 21 },
+  bottom: { gap: 14, paddingTop: 16 },
+  footer: { alignItems: 'center', gap: 6 },
 });
