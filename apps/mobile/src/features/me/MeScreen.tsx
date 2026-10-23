@@ -6,6 +6,7 @@ import {
   initialsOf,
   Orb,
   Press,
+  Ripple,
   Rise,
   Screen,
   SectionLabel,
@@ -67,9 +68,13 @@ export function MeScreen() {
             {avatarUri ? (
               <Image source={{ uri: avatarUri }} style={styles.photo} accessibilityLabel={name} />
             ) : (
-              <Orb size={AVATAR} ripple>
-                <Text style={styles.initials}>{initialsOf(name || '?')}</Text>
-              </Orb>
+              <View style={styles.avatar}>
+                {/* Mockup: one coral ring that grows to 1.7x and fades every 3.2 s. */}
+                <Ripple size={AVATAR} color="#F0735A" from={0.3} to={1.7} period={3200} />
+                <Orb size={AVATAR}>
+                  <Text style={styles.initials}>{initialsOf(name || '?')}</Text>
+                </Orb>
+              </View>
             )}
             <Text variant="greet" style={styles.hello} numberOfLines={1}>
               {t('me:glow.hello')} <Strong>{firstName}</Strong>
@@ -253,7 +258,7 @@ function Item({
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 14, paddingTop: 10 },
+  page: { gap: 14 },
   profile: {
     overflow: 'hidden',
     paddingTop: 26,
@@ -262,6 +267,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  avatar: { width: AVATAR, height: AVATAR },
   photo: { width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2 },
   initials: {
     color: '#FFFFFF',

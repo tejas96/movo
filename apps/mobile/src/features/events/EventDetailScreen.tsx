@@ -447,7 +447,8 @@ function Bit({
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 14, marginHorizontal: -4, paddingTop: 4 },
+  // The Event mockup starts 4 pt higher than the other screens (54 instead of 58).
+  page: { gap: 14, marginHorizontal: -4, marginTop: -4 },
   hero: { padding: 14, justifyContent: 'space-between' },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between' },
   diya: { position: 'absolute', left: 0, right: 0, top: 66, alignItems: 'center' },
