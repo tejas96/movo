@@ -36,7 +36,15 @@
     "phoneHidden": "Phone hidden",
     "staff": "Staff",
     "vehicles": "Vehicles",
-    "allWings": "All wings"
+    "allWings": "All wings",
+    "glow": {
+      "title": "Members",
+      "search": "Search name or flat…",
+      "everyone": "Everyone",
+      "you": "you",
+      "call": "Call {{name}}",
+      "noMatch": "No one matches “{{q}}”."
+    }
   },
   "explore": "Explore",
   "wings_one": "{{count}} wing",

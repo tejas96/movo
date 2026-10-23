@@ -36,7 +36,15 @@
     "phoneHidden": "नंबर लपवला आहे",
     "staff": "कर्मचारी",
     "vehicles": "वाहने",
-    "allWings": "सर्व विंग"
+    "allWings": "सर्व विंग",
+    "glow": {
+      "title": "सदस्य",
+      "search": "नाव किंवा फ्लॅट शोधा…",
+      "everyone": "सर्व",
+      "you": "तुम्ही",
+      "call": "{{name}} यांना कॉल करा",
+      "noMatch": "“{{q}}” शी कोणी जुळत नाही."
+    }
   },
   "explore": "पहा",
   "wings_one": "{{count}} विंग",

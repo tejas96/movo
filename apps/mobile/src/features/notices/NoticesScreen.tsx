@@ -5,6 +5,7 @@ import {
   Button,
   Chip,
   EmptyState,
+  Glass,
   IconSquare,
   MovingIcon,
   Press,
@@ -36,15 +37,17 @@ export const PRIORITY_TONE: StatusTones<NoticeSummary['priority']> = {
   EMERGENCY: 'danger',
 };
 
-/** One list entry: a notice and where it sits in its glass group. */
-interface Entry {
-  notice: NoticeSummary;
-  group: string | null;
-  first: boolean;
-  last: boolean;
+/**
+ * One list item: a whole glass card (This week, Earlier, or the drafts). Separate glass parts
+ * per row leave hairline seams on Android where their soft edges meet.
+ */
+interface Group {
+  key: string;
+  label: string | null;
+  notices: NoticeSummary[];
 }
 
-const keyOf = (e: Entry) => e.notice.id;
+const keyOf = (g: Group) => g.key;
 
 /** Soft Glow notice board, laid out like docs/design/soft-glow/source/Notices.dc.html. */
 export function NoticesScreen() {
@@ -61,10 +64,9 @@ export function NoticesScreen() {
   const categories = [...new Set(all.map((n) => n.category))];
   const pinned = drafts ? undefined : all.find((n) => n.isPinned && matchesFilter(n, filter));
 
-  // Rows: filtered, pinned one taken out, grouped into This week / Earlier. Each row knows if
-  // it opens or closes its glass card.
+  // Rows: filtered, pinned one taken out, grouped into This week / Earlier cards.
   const select = useCallback(
-    (items: NoticeSummary[]): Entry[] => {
+    (items: NoticeSummary[]): Group[] => {
       const rest = items.filter((n) => matchesFilter(n, filter) && n.id !== pinned?.id);
       const label = (n: NoticeSummary) =>
         drafts
@@ -72,17 +74,29 @@ export function NoticesScreen() {
           : isThisWeek(n.publishedAt)
             ? t('notices:glow.thisWeek')
             : t('notices:glow.earlier');
-      return rest.map((n, i) => ({
-        notice: n,
-        group: label(n),
-        first: i === 0 || label(rest[i - 1] as NoticeSummary) !== label(n),
-        last: i === rest.length - 1 || label(rest[i + 1] as NoticeSummary) !== label(n),
-      }));
+      const groups: Group[] = [];
+      for (const n of rest) {
+        const l = label(n);
+        const last = groups[groups.length - 1];
+        if (last && last.label === l) last.notices.push(n);
+        else groups.push({ key: l ?? 'all', label: l, notices: [n] });
+      }
+      return groups;
     },
     [filter, drafts, pinned?.id, t],
   );
 
-  const renderItem = useCallback(({ item }: { item: Entry }) => <NoticeRow entry={item} />, []);
+  const renderItem = useCallback(
+    ({ item }: { item: Group }) => (
+      <Glass radius={30} style={styles.group}>
+        {item.label ? <SectionLabel>{item.label}</SectionLabel> : null}
+        {item.notices.map((n) => (
+          <NoticeRow key={n.id} notice={n} />
+        ))}
+      </Glass>
+    ),
+    [],
+  );
 
   const header = (
     <View style={styles.header}>
@@ -295,59 +309,51 @@ function PinnedCard({ notice }: { notice: NoticeSummary }) {
 }
 
 /** A row inside a glass group: moving category tile, title, category · author, time, dot. */
-const NoticeRow = memo(function NoticeRow({ entry }: { entry: Entry }) {
+const NoticeRow = memo(function NoticeRow({ notice: n }: { notice: NoticeSummary }) {
   const { t } = useTranslation(['notices']);
   const nav = useNav();
-  const n = entry.notice;
   const look = CATEGORY_LOOK[n.category];
   const unread = !n.readAt && n.status === 'PUBLISHED';
   return (
-    <View
-      style={[styles.groupPart, entry.first && styles.groupTop, entry.last && styles.groupBottom]}
+    <Press
+      accessibilityRole="button"
+      accessibilityLabel={n.title}
+      onPress={() => nav.navigate('NoticeDetail', { noticeId: n.id })}
+      scaleTo={0.98}
+      style={styles.row}
     >
-      {entry.first && entry.group ? <SectionLabel>{entry.group}</SectionLabel> : null}
-      <Press
-        accessibilityRole="button"
-        accessibilityLabel={n.title}
-        onPress={() => nav.navigate('NoticeDetail', { noticeId: n.id })}
-        scaleTo={0.98}
-        style={styles.row}
-      >
-        <ArtFill art={look.tile} radius={17} fade={0} blur={14} style={styles.tile}>
-          <View style={styles.tileIcon}>
-            <MovingIcon name={look.icon} motion={look.motion} />
-          </View>
-        </ArtFill>
-        <View style={styles.flex}>
-          <View style={styles.rowTop}>
-            <Text
-              variant="title"
-              className={unread ? 'font-semibold' : undefined}
-              numberOfLines={1}
-              style={styles.flex}
-            >
-              {n.title}
-            </Text>
-            <Text variant="micro" tone="secondary" className="font-normal">
-              {n.status === 'DRAFT' ? t('notices:draft') : relative(n.publishedAt)}
-            </Text>
-          </View>
-          <View style={styles.rowTop}>
-            <Text variant="caption" tone="secondary" numberOfLines={1} style={styles.flex}>
-              {t('notices:glow.rowSub', {
-                category: t(`notices:category.${n.category}`),
-                author: n.createdBy.displayName,
-              })}
-            </Text>
-            {unread ? <View style={styles.unread} /> : null}
-          </View>
+      <ArtFill art={look.tile} radius={17} fade={0} blur={14} style={styles.tile}>
+        <View style={styles.tileIcon}>
+          <MovingIcon name={look.icon} motion={look.motion} />
         </View>
-      </Press>
-    </View>
+      </ArtFill>
+      <View style={styles.flex}>
+        <View style={styles.rowTop}>
+          <Text
+            variant="title"
+            className={unread ? 'font-semibold' : undefined}
+            numberOfLines={1}
+            style={styles.flex}
+          >
+            {n.title}
+          </Text>
+          <Text variant="micro" tone="secondary" className="font-normal">
+            {n.status === 'DRAFT' ? t('notices:draft') : relative(n.publishedAt)}
+          </Text>
+        </View>
+        <View style={styles.rowTop}>
+          <Text variant="caption" tone="secondary" numberOfLines={1} style={styles.flex}>
+            {t('notices:glow.rowSub', {
+              category: t(`notices:category.${n.category}`),
+              author: n.createdBy.displayName,
+            })}
+          </Text>
+          {unread ? <View style={styles.unread} /> : null}
+        </View>
+      </View>
+    </Press>
   );
 });
-
-const GLASS = theme.color.border.glass;
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
@@ -391,26 +397,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   actions: { flexDirection: 'row', gap: 8, marginTop: 14 },
-  groupPart: {
-    backgroundColor: theme.color.bg.card,
-    borderColor: GLASS,
-    borderLeftWidth: 1.5,
-    borderRightWidth: 1.5,
-    paddingHorizontal: 8,
-  },
-  groupTop: {
-    borderTopWidth: 1.5,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingTop: 8,
-  },
-  groupBottom: {
-    borderBottomWidth: 1.5,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    paddingBottom: 8,
-    marginBottom: 14,
-  },
+  group: { padding: 8, marginBottom: 14 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: 22 },
   tile: { width: 50, height: 50 },
   tileIcon: { flex: 1, alignItems: 'center', justifyContent: 'center' },
