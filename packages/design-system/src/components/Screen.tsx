@@ -11,8 +11,10 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { GlowSceneName } from '../tokens/glow';
 import { BOTTOM_BAR_KEYBOARD_HEIGHT } from './BottomBar';
 import { cn } from './cn';
+import { Backdrop } from './glow/Backdrop';
 import { RevealFocusedContext } from './keyboard-reveal';
 import { theme } from './theme';
 import { useKeyboardHeight } from './useKeyboardHeight';
@@ -29,11 +31,14 @@ export interface ScreenProps {
   onRefresh?: () => void;
   /** No horizontal gutter, for full-bleed lists. */
   bleed?: boolean;
+  /** Kept for old callers; every screen now sits on the same mist. */
   gray?: boolean;
+  /** The soft glow behind the screen. `false` for plain mist. Default `soft`. */
+  glow?: GlowSceneName | false;
   className?: string;
 }
 
-/** White canvas, safe area, 20 gutter. Every screen starts here. */
+/** Mist page with the drifting glow behind it, safe area, 18 gutter. Every screen starts here. */
 export function Screen({
   children,
   scroll = true,
@@ -42,7 +47,7 @@ export function Screen({
   refreshing,
   onRefresh,
   bleed,
-  gray,
+  glow = 'soft',
   className,
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
@@ -75,60 +80,64 @@ export function Screen({
   const paddingBottom =
     (tabBar ? theme.layout.tabBar.height + theme.layout.tabBar.bottom + 24 : bottomBar ? 120 : 24) +
     insets.bottom;
-  const bg = gray ? 'bg-card-alt' : 'bg-canvas';
+  // The page colour sits on the outer view; everything inside is see-through so the glow shows.
+  const bg = 'bg-transparent';
   return (
-    <KeyboardAvoidingView
-      // Padding on both platforms: edge to edge, Android no longer resizes the window itself.
-      behavior="padding"
-      // The BottomBar rides on the keyboard, so leave room for it too, in the same step.
-      keyboardVerticalOffset={bottomBar ? -BOTTOM_BAR_KEYBOARD_HEIGHT : 0}
-      className={cn('flex-1', bg)}
-      // The status bar area stays outside the scroll, so content never slides under the clock.
-      style={{ paddingTop: insets.top }}
-    >
-      <StatusBar barStyle="dark-content" />
-      {scroll ? (
-        <ScrollView
-          ref={scrollRef}
-          onScroll={(e) => {
-            offset.current = e.nativeEvent.contentOffset.y;
-          }}
-          scrollEventThrottle={32}
-          className={cn('flex-1', bg)}
-          contentContainerStyle={{
-            paddingTop: 8,
-            paddingBottom,
-            paddingHorizontal: bleed ? 0 : theme.layout.gutter,
-          }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            onRefresh ? (
-              <RefreshControl
-                refreshing={Boolean(refreshing)}
-                onRefresh={onRefresh}
-                tintColor={theme.color.bg.ink}
-              />
-            ) : undefined
-          }
-        >
-          <RevealFocusedContext.Provider value={reveal}>
-            <View className={className}>{children}</View>
-          </RevealFocusedContext.Provider>
-        </ScrollView>
-      ) : (
-        <View
-          className={cn('flex-1', className)}
-          style={{
-            paddingTop: 8,
-            paddingHorizontal: bleed ? 0 : theme.layout.gutter,
-            // The keyboard already covers the navigation bar area.
-            paddingBottom: bottomBar || tabBar || keyboard > 0 ? 0 : insets.bottom,
-          }}
-        >
-          {children}
-        </View>
-      )}
-    </KeyboardAvoidingView>
+    <View className="flex-1 bg-canvas">
+      {glow ? <Backdrop scene={glow} /> : null}
+      <KeyboardAvoidingView
+        // Padding on both platforms: edge to edge, Android no longer resizes the window itself.
+        behavior="padding"
+        // The BottomBar rides on the keyboard, so leave room for it too, in the same step.
+        keyboardVerticalOffset={bottomBar ? -BOTTOM_BAR_KEYBOARD_HEIGHT : 0}
+        className={cn('flex-1', bg)}
+        // The status bar area stays outside the scroll, so content never slides under the clock.
+        style={{ paddingTop: insets.top }}
+      >
+        <StatusBar barStyle="dark-content" />
+        {scroll ? (
+          <ScrollView
+            ref={scrollRef}
+            onScroll={(e) => {
+              offset.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={32}
+            className={cn('flex-1', bg)}
+            contentContainerStyle={{
+              paddingTop: 8,
+              paddingBottom,
+              paddingHorizontal: bleed ? 0 : theme.layout.gutter,
+            }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              onRefresh ? (
+                <RefreshControl
+                  refreshing={Boolean(refreshing)}
+                  onRefresh={onRefresh}
+                  tintColor={theme.color.bg.ink}
+                />
+              ) : undefined
+            }
+          >
+            <RevealFocusedContext.Provider value={reveal}>
+              <View className={className}>{children}</View>
+            </RevealFocusedContext.Provider>
+          </ScrollView>
+        ) : (
+          <View
+            className={cn('flex-1', className)}
+            style={{
+              paddingTop: 8,
+              paddingHorizontal: bleed ? 0 : theme.layout.gutter,
+              // The keyboard already covers the navigation bar area.
+              paddingBottom: bottomBar || tabBar || keyboard > 0 ? 0 : insets.bottom,
+            }}
+          >
+            {children}
+          </View>
+        )}
+      </KeyboardAvoidingView>
+    </View>
   );
 }

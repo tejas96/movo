@@ -9,24 +9,40 @@ import { Text } from './Text';
 import { theme } from './theme';
 
 export interface CardProps extends ViewProps {
-  /** tight = a plain stack of gray rows on the white screen. No fill, no padding. */
+  /** tight = a plain stack of rows on the page. No fill, no padding. */
   tight?: boolean;
-  /** white card on a gray canvas. */
+  /** Solid white card instead of glass. */
   white?: boolean;
   className?: string;
 }
 
-/** Soft gray card with 28 radius. The building block of every screen. */
-export function Card({ tight, white, className, ...rest }: CardProps) {
+/** Frosted glass card with 30 radius. The building block of every screen. */
+export function Card({ tight, white, className, style, ...rest }: CardProps) {
+  if (tight) return <View {...rest} style={style} className={className} />;
   return (
     <View
       {...rest}
-      className={cn(
-        'rounded-xl',
-        tight ? null : white ? 'bg-card-nested p-5' : 'bg-card p-5',
-        className,
-      )}
+      style={[
+        {
+          borderRadius: theme.radius['2xl'],
+          borderWidth: 1.5,
+          borderColor: theme.color.border.glass,
+          backgroundColor: white ? theme.color.bg.nested : theme.color.bg.card,
+        },
+        theme.shadow.glass,
+        style,
+      ]}
+      className={cn('p-[18px]', className)}
     />
+  );
+}
+
+/** Small capitals label above a list or inside a glass list (THIS WEEK, GENERAL). */
+export function SectionLabel({ children, className }: { children: string; className?: string }) {
+  return (
+    <Text variant="section" tone="secondary" className={cn('px-3 pt-2.5 pb-1.5', className)}>
+      {children}
+    </Text>
   );
 }
 
@@ -46,7 +62,10 @@ export interface RowProps extends Omit<PressableProps, 'children' | 'style'> {
   className?: string;
 }
 
-/** Gray row on the white screen: white icon square, bold title, gray subtitle. 72 min height. */
+/**
+ * List row: round icon, medium title, gray subtitle. On the page it is a glass pill; inside a
+ * glass card (`onGray`) it has no fill, as in the mockup's grouped lists.
+ */
 export function Row({
   title,
   subtitle,
@@ -62,13 +81,13 @@ export function Row({
   const body = (
     <>
       {leading ??
-        (icon ? <IconSquare icon={icon} size="sm" tone={onGray ? 'gray' : 'white'} /> : null)}
+        (icon ? <IconSquare icon={icon} variant="linear" size="sm" tone="white" /> : null)}
       <View className="flex-1 min-w-0">
-        <Text variant="bodyMedium" className="font-semibold" numberOfLines={2}>
+        <Text variant="title" numberOfLines={2}>
           {title}
         </Text>
         {subtitle ? (
-          <Text variant="label" tone="secondary" numberOfLines={2} className="mt-0.5">
+          <Text variant="caption" tone="secondary" numberOfLines={2} className="mt-0.5">
             {subtitle}
           </Text>
         ) : null}
@@ -80,8 +99,12 @@ export function Row({
     </>
   );
   const cls = cn(
-    'flex-row items-center gap-3 rounded-lg py-3 pl-3 pr-4 min-h-[72px]',
-    tone === 'danger' ? 'bg-danger-soft' : onGray ? 'bg-card-nested' : 'bg-card',
+    'flex-row items-center gap-3 rounded-[22px] p-2.5 pr-3.5 min-h-[66px]',
+    tone === 'danger'
+      ? 'bg-danger-soft'
+      : onGray
+        ? 'bg-transparent'
+        : 'bg-card border-[1.5px] border-glass',
     className,
   );
   if (!onPress) return <View className={cls}>{body}</View>;

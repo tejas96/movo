@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { cn } from './cn';
 import { Text } from './Text';
+import { theme } from './theme';
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -14,7 +15,7 @@ export interface SegmentedProps<T extends string> {
   className?: string;
 }
 
-/** Gray pill track, black active pill. Two or three options. */
+/** Glass pill track with a white lifted pill on the chosen option. Two or three options. */
 export function Segmented<T extends string>({
   options,
   value,
@@ -23,7 +24,13 @@ export function Segmented<T extends string>({
 }: SegmentedProps<T>) {
   return (
     <View
-      className={cn('h-12 flex-row rounded-full bg-card p-1', className)}
+      className={cn('flex-row rounded-full p-1', className)}
+      style={{
+        height: 50,
+        backgroundColor: 'rgba(255, 255, 255, 0.55)',
+        borderWidth: 1.5,
+        borderColor: theme.color.border.glass,
+      }}
       accessibilityRole="tablist"
     >
       {options.map((o) => {
@@ -34,9 +41,10 @@ export function Segmented<T extends string>({
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
             onPress={() => onChange(o.value)}
-            className={cn('flex-1 items-center justify-center rounded-full', on && 'bg-ink')}
+            className="flex-1 items-center justify-center rounded-full"
+            style={on ? [{ backgroundColor: theme.color.bg.nested }, theme.shadow.lifted] : null}
           >
-            <Text variant="bodyMedium" tone={on ? 'inverse' : 'secondary'}>
+            <Text variant="bodyMedium" numberOfLines={1}>
               {o.label}
             </Text>
           </Pressable>

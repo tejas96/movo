@@ -13,35 +13,43 @@ export interface ChipProps extends Omit<PressableProps, 'children' | 'style'> {
   className?: string;
 }
 
-/** Category chip: gray, 52 high, white icon box. Selected = black. */
+/** Glass chip, 40 high, white rim. Selected = solid white. */
 export function Chip({ label, icon, selected, className, ...rest }: ChipProps) {
   return (
     <Press
+      scaleTo={0.95}
       accessibilityRole="button"
       accessibilityState={{ selected: Boolean(selected) }}
       {...rest}
+      style={{
+        height: theme.layout.chip.height,
+        borderWidth: 1.5,
+        borderColor: theme.color.border.glass,
+        backgroundColor: selected ? theme.color.bg.nested : 'rgba(255, 255, 255, 0.3)',
+      }}
       className={cn(
-        'h-chip flex-row items-center rounded-md pr-5',
-        icon ? 'pl-1.5 gap-3' : 'pl-5',
-        selected ? 'bg-ink' : 'bg-card active:bg-card-deep',
+        'flex-row items-center rounded-full',
+        icon ? 'pl-1 pr-4 gap-2' : 'px-4',
         className,
       )}
     >
       {icon ? (
         <View
-          className={cn(
-            'h-chip-icon w-chip-icon items-center justify-center rounded-sm',
-            selected ? 'bg-white/15' : 'bg-card-nested',
-          )}
+          className="items-center justify-center rounded-full"
+          style={{
+            width: theme.layout.chip.iconBox,
+            height: theme.layout.chip.iconBox,
+            backgroundColor: selected ? theme.color.accent.bg : theme.color.bg.nested,
+          }}
         >
           <Icon
             name={icon}
-            size={22}
-            color={selected ? theme.color.icon.onInk : theme.color.icon.primary}
+            size={16}
+            color={selected ? theme.color.accent.fg : theme.color.icon.primary}
           />
         </View>
       ) : null}
-      <Text variant="bodyMedium" tone={selected ? 'inverse' : 'primary'}>
+      <Text variant="bodyMedium" numberOfLines={1}>
         {label}
       </Text>
     </Press>

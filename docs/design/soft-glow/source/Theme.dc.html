@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Theme</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.rim{padding:5px;background:rgba(255,255,255,.75);box-shadow:0 10px 30px rgba(70,40,70,.08)}
+.art{position:relative;overflow:hidden}
+.art::before{content:"";position:absolute;inset:-35%;background:var(--g);filter:blur(22px);animation:flow 14s ease-in-out infinite alternate}
+.art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.8) 100%)}
+.art > *{position:relative;z-index:1}
+.orb{border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF3EC 0%,#FBB59D 16%,#F0735A 46%,#D9465A 76%,#B8457A 100%);box-shadow:0 14px 30px rgba(217,70,90,.32),inset -6px -8px 16px rgba(120,20,60,.22),inset 4px 6px 10px rgba(255,255,255,.45);animation:breathe 4.5s ease-in-out infinite}
+@keyframes flow{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(-8%,6%) rotate(10deg) scale(1.15)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,-30px) scale(1.15)}}
+</style>
+</helmet>
+<div style="width: 880px; height: 1100px; box-sizing: border-box; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: #2B2A2E; padding: 48px;">
+  <div aria-hidden="true" style="position: absolute; width: 520px; height: 380px; border-radius: 50%; background: #F4B3C2; filter: blur(100px); opacity: .7; bottom: -140px; left: -120px; animation: aur1 16s ease-in-out infinite;"></div>
+  <div aria-hidden="true" style="position: absolute; width: 520px; height: 380px; border-radius: 50%; background: #CDB2F0; filter: blur(100px); opacity: .75; bottom: -160px; right: -120px; animation: aur1 18s ease-in-out infinite reverse;"></div>
+
+  <div style="position: relative; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <span class="orb" aria-hidden="true" style="width: 72px; height: 72px; flex-shrink: 0;"></span>
+      <div>
+        <div style="font-size: 14px; color: #706F76;">MOVO theme</div>
+        <h1 style="margin: 2px 0 0; font-weight: 400; font-size: 44px; letter-spacing: -1px;">Soft <strong style="font-weight: 600;">Glow</strong></h1>
+      </div>
+    </div>
+    <p style="margin: -12px 0 0; font-size: 16px; color: #706F76; max-width: 600px; line-height: 1.55;">Calm and light. Frosted glass cards with a white rim, dreamy moving colour art, a glowing orb as our mark, and a soft pink-to-lavender glow at the bottom. Orange only for small accents.</p>
+
+    <div>
+      <div style="font-weight: 500; font-size: 18px; margin-bottom: 14px;">Core colours</div>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+        <div class="glass" style="border-radius: 22px; overflow: hidden;"><div style="height: 72px; background: #EEEDEC;"></div><div style="padding: 10px 12px;"><div style="font-weight: 500; font-size: 13px;">Mist</div><div style="font-size: 11px; color: #706F76;">#EEEDEC page</div></div></div>
+        <div class="glass" style="border-radius: 22px; overflow: hidden;"><div style="height: 72px; background: #2B2A2E;"></div><div style="padding: 10px 12px;"><div style="font-weight: 500; font-size: 13px;">Ink</div><div style="font-size: 11px; color: #706F76;">#2B2A2E text, main button</div></div></div>
+        <div class="glass" style="border-radius: 22px; overflow: hidden;"><div style="height: 72px; background: #F06A2E;"></div><div style="padding: 10px 12px;"><div style="font-weight: 500; font-size: 13px;">Orange</div><div style="font-size: 11px; color: #706F76;">#F06A2E small accents</div></div></div>
+        <div class="glass" style="border-radius: 22px; overflow: hidden;"><div style="height: 72px; background: #D63B3B;"></div><div style="padding: 10px 12px;"><div style="font-weight: 500; font-size: 13px;">Red</div><div style="font-size: 11px; color: #706F76;">#D63B3B urgent only</div></div></div>
+        <div class="glass" style="border-radius: 22px; overflow: hidden;"><div style="height: 72px; background: rgba(255,255,255,.55);"></div><div style="padding: 10px 12px;"><div style="font-weight: 500; font-size: 13px;">Glass</div><div style="font-size: 11px; color: #706F76;">white 50% + blur</div></div></div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-weight: 500; font-size: 18px; margin-bottom: 14px;">Moving art (one per section)</div>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+        <div class="rim" style="border-radius: 26px;"><div class="art" style="height: 110px; border-radius: 21px; --g: radial-gradient(at 25% 35%, #F5A3C7, transparent 50%), radial-gradient(at 75% 30%, #C9B6F2, transparent 55%), radial-gradient(at 50% 85%, #FFD3C0, transparent 60%), #F1E3EC; padding: 12px; box-sizing: border-box; display: flex; align-items: flex-end;"><span style="font-size: 14px; font-weight: 500;">Notices</span></div></div>
+        <div class="rim" style="border-radius: 26px;"><div class="art" style="height: 110px; border-radius: 21px; --g: radial-gradient(at 20% 30%, #F7B48A, transparent 50%), radial-gradient(at 60% 55%, #A8D69F, transparent 50%), radial-gradient(at 85% 20%, #F6C2C9, transparent 55%), #F3E7DE; padding: 12px; box-sizing: border-box; display: flex; align-items: flex-end;"><span style="font-size: 14px; font-weight: 500;">Money</span></div></div>
+        <div class="rim" style="border-radius: 26px;"><div class="art" style="height: 110px; border-radius: 21px; --g: radial-gradient(at 40% 30%, #8FA8E0, transparent 55%), radial-gradient(at 70% 70%, #F3A6B9, transparent 55%), #E3DCEB; padding: 12px; box-sizing: border-box; display: flex; align-items: flex-end;"><span style="font-size: 14px; font-weight: 500;">Find way</span></div></div>
+        <div class="rim" style="border-radius: 26px;"><div class="art" style="height: 110px; border-radius: 21px; --g: radial-gradient(at 30% 60%, #F6C7A0, transparent 50%), radial-gradient(at 65% 35%, #D8E8C8, transparent 55%), #EFEADF; padding: 12px; box-sizing: border-box; display: flex; align-items: flex-end;"><span style="font-size: 14px; font-weight: 500;">Members</span></div></div>
+        <div class="rim" style="border-radius: 26px;"><div class="art" style="height: 110px; border-radius: 21px; --g: radial-gradient(at 50% 60%, #F59A4A, transparent 45%), radial-gradient(at 40% 40%, #F6D35B, transparent 40%), radial-gradient(at 70% 30%, #E8B4D0, transparent 50%), #EDE3E8; padding: 12px; box-sizing: border-box; display: flex; align-items: flex-end;"><span style="font-size: 14px; font-weight: 500;">Events</span></div></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+      <div class="glass" style="border-radius: 30px; padding: 24px;">
+        <div style="font-size: 13px; color: #706F76; margin-bottom: 10px;">Type · Poppins, light with a bold word</div>
+        <div style="font-weight: 400; font-size: 30px; line-height: 1.2; letter-spacing: -0.5px;">Good evening <strong style="font-weight: 600;">Priya,</strong> here is your home</div>
+        <div style="font-weight: 600; font-size: 26px; margin-top: 12px;">Screen title 26</div>
+        <div style="font-weight: 500; font-size: 16px; margin-top: 8px;">Card title 16</div>
+        <div style="font-size: 14px; margin-top: 6px;">Body 14–15</div>
+        <div style="font-size: 12px; letter-spacing: .6px; color: #706F76; margin-top: 6px;">SECTION LABEL 12</div>
+      </div>
+      <div class="glass" style="border-radius: 30px; padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-size: 13px; color: #706F76;">Buttons, chips and inputs</div>
+        <a href="#" style="height: 56px; border-radius: 999px; background: #2B2A2E; color: #FFFFFF; text-decoration: none; font-weight: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 22px;">Main action<span style="width: 44px; height: 44px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span></a>
+        <a href="#" style="height: 50px; border-radius: 999px; background: #FFFFFF; text-decoration: none; font-weight: 500; display: flex; align-items: center; justify-content: center;">Second action</a>
+        <div style="display: flex; gap: 8px;">
+          <span style="height: 38px; padding: 0 15px; border-radius: 999px; background: #FFFFFF; border: 1.5px solid rgba(255,255,255,.95); font-size: 13px; font-weight: 500; display: flex; align-items: center;">Selected</span>
+          <span style="height: 38px; padding: 0 15px; border-radius: 999px; background: rgba(255,255,255,.3); border: 1.5px solid rgba(255,255,255,.95); font-size: 13px; font-weight: 500; display: flex; align-items: center;">Chip</span>
+          <span style="height: 38px; padding: 0 12px; border-radius: 999px; background: rgba(255,255,255,.85); font-size: 12px; display: flex; align-items: center; gap: 6px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #F06A2E;"></span>Status</span>
+        </div>
+        <div style="height: 46px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; gap: 10px; padding: 0 16px; font-size: 14px; color: #8C8B91;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#706F76" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>Search…</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

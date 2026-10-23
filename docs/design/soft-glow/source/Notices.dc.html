@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Notices</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A2E;--muted:#706F76;--accent:#F06A2E;--red:#D63B3B}
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.scroll::-webkit-scrollbar{display:none}
+.hs::-webkit-scrollbar{display:none}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.rim{padding:5px;background:rgba(255,255,255,.8);box-shadow:0 12px 32px rgba(70,40,70,.09)}
+.art{position:relative;overflow:hidden}
+.art::before{content:"";position:absolute;inset:-35%;background:var(--g);filter:blur(24px);animation:flow 14s ease-in-out infinite alternate}
+.art > *{position:relative;z-index:1}
+.ibtn{width:46px;height:46px;border-radius:50%;background:#FFFFFF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(70,40,70,.06)}
+.chip{height:38px;padding:0 15px;border-radius:999px;border:1.5px solid rgba(255,255,255,.95);font-family:Poppins,sans-serif;font-size:13px;font-weight:500;color:#2B2A2E;cursor:pointer;flex-shrink:0;transition:background .2s}
+.row{transition:background .25s}
+.row:hover{background:rgba(255,255,255,.55)}
+@keyframes flow{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(-8%,6%) rotate(10deg) scale(1.15)}}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-30px) scale(1.15)}}
+@keyframes aur2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-20px)}}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes open{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fall{0%{transform:translateY(-6px);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateY(46px);opacity:0}}
+@keyframes ripple{0%{transform:scale(.3);opacity:.8}100%{transform:scale(1.4);opacity:0}}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes flick{0%,100%{transform:scale(1,1)}50%{transform:scale(.9,1.1)}}
+@keyframes drive{0%,100%{transform:translateX(-2px)}50%{transform:translateX(2px)}}
+@keyframes wob{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@keyframes dot{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+.rise{opacity:0;animation:rise .7s cubic-bezier(.2,.8,.2,1) forwards}
+.body{animation:open .4s ease forwards}
+.a-bob{animation:bob 1.8s ease-in-out infinite}
+.a-flick{animation:flick 1s ease-in-out infinite;transform-origin:50% 80%}
+.a-drive{animation:drive 1.4s ease-in-out infinite}
+.a-wob{animation:wob 2s ease-in-out infinite;transform-origin:30% 60%}
+.press{transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.press:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}.rise{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: var(--ink);">
+  <div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+    <div style="position: absolute; width: 360px; height: 300px; border-radius: 50%; background: #F4B3C2; filter: blur(80px); opacity: .7; bottom: -90px; left: -120px; animation: aur1 16s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 340px; height: 300px; border-radius: 50%; background: #CDB2F0; filter: blur(80px); opacity: .75; bottom: -110px; right: -120px; animation: aur2 18s ease-in-out infinite;"></div>
+  </div>
+
+  <div class="scroll" style="position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; padding: 58px 18px 130px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+    <div class="rise" style="display: flex; align-items: center; gap: 12px;">
+      <a href="Main.dc.html" aria-label="Back to Home" class="ibtn press"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+      <h1 style="margin: 0; flex-grow: 1; font-weight: 400; font-size: 26px; letter-spacing: -0.4px;">Notice <strong style="font-weight: 600;">board</strong></h1>
+      <span style="font-size: 12px; font-weight: 500; background: #FFFFFF; border-radius: 999px; padding: 6px 12px; display: flex; align-items: center; gap: 6px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: dot 1.6s ease-in-out infinite;"></span>3 new</span>
+    </div>
+
+    <div class="rise hs" role="group" aria-label="Filter notices" style="display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -18px; padding: 0 18px; animation-delay: .06s;">
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+        <button class="chip press" onClick="{{f.pick}}" aria-pressed="{{f.pressed}}" style="background: {{f.bg}};">{{f.label}}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{showPinned}}" hint-placeholder-val="{{yes}}">
+      <div class="rim rise" style="border-radius: 34px; animation-delay: .12s;">
+        <div class="art" style="border-radius: 29px; --g: radial-gradient(at 80% 30%, #A9C2F2, transparent 50%), radial-gradient(at 20% 30%, #F5A3C7, transparent 50%), radial-gradient(at 50% 90%, #FFD3C0, transparent 60%), #EEE5EE; padding: 18px; box-sizing: border-box;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="font-size: 12px; font-weight: 500; background: rgba(255,255,255,.88); border-radius: 999px; padding: 5px 11px; display: flex; align-items: center; gap: 6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="#2B2A2E" aria-hidden="true"><path d="M14 3l7 7-3 1-4 4 1 5-2 2-4-4-5 5-1-1 5-5-4-4 2-2 5 1 4-4z"></path></svg>Pinned</span>
+            <span style="font-size: 12px; font-weight: 500; background: var(--red); color: #FFFFFF; border-radius: 999px; padding: 5px 11px;">Urgent</span>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <div style="flex-grow: 1; min-width: 0;">
+              <div style="font-weight: 500; font-size: 22px; line-height: 1.2; letter-spacing: -0.3px;">Water cut tomorrow</div>
+              <div style="font-size: 13px; color: #4D4C52; margin-top: 4px;">Fri 24 Oct · 10 AM to 2 PM</div>
+              <div style="font-size: 13px; line-height: 1.5; margin-top: 10px;">Tank cleaning in Wing A and B. Please store water tonight.</div>
+            </div>
+            <div aria-hidden="true" style="position: relative; width: 104px; height: 132px; flex-shrink: 0;">
+              <svg width="104" height="132" viewBox="0 0 104 132" style="position: absolute; inset: 0;">
+                <defs>
+                  <linearGradient id="dropG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9D8FA"></stop><stop offset="1" stop-color="#6C8CE0"></stop></linearGradient>
+                </defs>
+                <g style="transform-origin: 52px 60px; animation: sway 3s ease-in-out infinite;">
+                  <path d="M52 6C52 6 84 46 84 66a32 32 0 01-64 0C20 46 52 6 52 6z" fill="url(#dropG)"></path>
+                  <path d="M38 58c-2 6-2 12 2 18" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" fill="none" opacity=".75"></path>
+                  <path d="M42 70l20 -14M42 56l20 14" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" opacity=".0"></path>
+                </g>
+                <g>
+                  <circle cx="52" cy="104" r="3" fill="#6C8CE0" style="animation: fall 1.6s ease-in infinite;"></circle>
+                  <circle cx="40" cy="100" r="2.2" fill="#8FA8E0" style="animation: fall 1.6s ease-in .5s infinite;"></circle>
+                  <circle cx="64" cy="100" r="2.2" fill="#8FA8E0" style="animation: fall 1.6s ease-in 1s infinite;"></circle>
+                </g>
+                <ellipse cx="52" cy="126" rx="26" ry="5" fill="none" stroke="#6C8CE0" stroke-width="1.6" style="transform-origin: 52px 126px; animation: ripple 1.6s ease-out infinite;"></ellipse>
+                <ellipse cx="52" cy="126" rx="26" ry="5" fill="none" stroke="#6C8CE0" stroke-width="1.2" style="transform-origin: 52px 126px; animation: ripple 1.6s ease-out .8s infinite;"></ellipse>
+              </svg>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 14px;">
+            <button onClick="{{ack}}" class="press" style="flex-grow: 1; height: 50px; border: none; border-radius: 999px; background: #2B2A2E; color: #FFFFFF; cursor: pointer; font-family: Poppins, sans-serif; font-size: 14px; font-weight: 500;">{{ackText}}</button>
+            <button onClick="{{remind}}" class="press" style="height: 50px; padding: 0 18px; border: none; border-radius: 999px; background: #FFFFFF; cursor: pointer; font-family: Poppins, sans-serif; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 2M5 3L2 6M19 3l3 3"></path></svg>{{remindText}}
+            </button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+      <div class="glass rise" style="border-radius: 30px; padding: 8px; animation-delay: {{g.delay}};">
+        <div style="padding: 10px 12px 6px; font-size: 12px; letter-spacing: .6px; color: var(--muted);">{{g.label}}</div>
+        <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="3">
+          <div class="row" style="border-radius: 22px; background: {{r.rowBg}};">
+            <button onClick="{{r.pick}}" aria-expanded="{{r.isOpen}}" style="all: unset; cursor: pointer; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px;">
+              <span class="art" style="width: 50px; height: 50px; border-radius: 17px; flex-shrink: 0; --g: {{r.g}}; display: flex; align-items: center; justify-content: center;">
+                <svg class="{{r.anim}}" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.icon}}"></path></svg>
+              </span>
+              <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                <span style="display: flex; align-items: center; gap: 8px;">
+                  <span style="flex-grow: 1; min-width: 0; font-size: 15px; font-weight: {{r.fw}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.title}}</span>
+                  <span style="font-size: 11px; color: var(--muted); flex-shrink: 0;">{{r.ago}}</span>
+                </span>
+                <span style="display: flex; align-items: center; gap: 8px;">
+                  <span style="flex-grow: 1; min-width: 0; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.summary}}</span>
+                  <sc-if value="{{r.unread}}" hint-placeholder-val="{{no}}">
+                    <span aria-label="Unread" style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0;"></span>
+                  </sc-if>
+                </span>
+              </span>
+            </button>
+            <sc-if value="{{r.isOpen}}" hint-placeholder-val="{{no}}">
+              <div class="body" style="padding: 0 12px 12px 72px; display: flex; flex-direction: column; gap: 10px;">
+                <span style="align-self: flex-start; font-size: 11px; font-weight: 500; background: #FFFFFF; border-radius: 999px; padding: 4px 10px; display: flex; align-items: center; gap: 6px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{r.dot}};"></span>{{r.tag}} · {{r.when}}</span>
+                <p style="margin: 0; font-size: 14px; line-height: 1.55;">{{r.body}}</p>
+                <div style="display: flex; gap: 8px;">
+                  <a href="{{r.href}}" class="press" style="height: 40px; padding: 0 16px; border-radius: 999px; background: #2B2A2E; color: #FFFFFF; text-decoration: none; font-size: 13px; font-weight: 500; display: flex; align-items: center;">{{r.cta}}</a>
+                  <a href="#" class="press" style="height: 40px; padding: 0 16px; border-radius: 999px; background: #FFFFFF; text-decoration: none; font-size: 13px; font-weight: 500; display: flex; align-items: center;">Share</a>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+
+    <sc-if value="{{empty}}" hint-placeholder-val="{{no}}">
+      <div class="glass" style="border-radius: 30px; padding: 28px; text-align: center; font-size: 14px; color: var(--muted);">Nothing here right now.</div>
+    </sc-if>
+  </div>
+
+  <nav aria-label="Main" class="glass" style="position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; gap: 4px; padding: 7px; border-radius: 999px; background: rgba(255,255,255,.72); z-index: 20;">
+    <a href="Main.dc.html" aria-label="Home" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="2"></rect><rect x="13" y="4" width="7" height="7" rx="2"></rect><rect x="4" y="13" width="7" height="7" rx="2"></rect><rect x="13" y="13" width="7" height="7" rx="2"></rect></svg></a>
+    <a href="Notices.dc.html" aria-label="Notices" aria-current="page" class="press" style="height: 50px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(70,40,70,.08);"><svg width="20" height="20" viewBox="0 0 24 24" fill="#F06A2E" stroke="#F06A2E" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"></path></svg>Notices</a>
+    <a href="Money.dc.html" aria-label="Money" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M3 10h18M16 15h2"></path></svg></a>
+    <a href="Members.dc.html" aria-label="Members" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 4.5a3.5 3.5 0 010 7M21 20c0-2.6-1.6-4.8-4-5.6"></path></svg></a>
+    <a href="Me.dc.html" aria-label="Me" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: 'lift', filter: 'all', acked: false, reminded: false, read: {} };
+  }
+  renderVals() {
+    var self = this;
+    var G = {
+      blue: 'radial-gradient(at 30% 30%, #A9C2F2, transparent 60%), radial-gradient(at 70% 70%, #CDB2F0, transparent 60%), #E6E1F1',
+      flame: 'radial-gradient(at 40% 60%, #F7B48A, transparent 60%), radial-gradient(at 70% 30%, #F6D35B, transparent 60%), #F6E7DC',
+      pink: 'radial-gradient(at 30% 30%, #F5A3C7, transparent 60%), radial-gradient(at 70% 70%, #F8CDB0, transparent 60%), #F3E1E6',
+      sage: 'radial-gradient(at 30% 60%, #BFDDB0, transparent 60%), radial-gradient(at 70% 30%, #F6C7A0, transparent 60%), #EDEADF'
+    };
+    var all = [
+      { id: 'lift', grp: 'week', kind: 'service', tag: 'Service', dot: '#6C7FD8', g: G.blue, anim: 'a-bob', icon: 'M6 3h12v18H6zM10 9l2-2 2 2M10 15l2 2 2-2', ago: 'Yesterday', title: 'Lift B service', summary: 'Off from 11 AM to 1 PM. Use Lift A.', when: 'Sat 25 Oct', body: 'Lift B is off for service from 11 AM to 1 PM. Please use Lift A.', cta: 'Got it', href: '#', unread: true },
+      { id: 'diwali', grp: 'week', kind: 'event', tag: 'Event', dot: '#F06A2E', g: G.flame, anim: 'a-flick', icon: 'M12 3c2 3 3 5 3 7a3 3 0 01-6 0c0-2 1-4 3-7zM7 21h10M12 13v8', ago: '2 d', title: 'Diwali night in the garden', summary: 'Lights, food stalls and rangoli.', when: 'Sun 2 Nov · 7 PM', body: 'Lights, food stalls and a rangoli contest. Tell us if you come by 30 Oct.', cta: 'See event', href: 'Event.dc.html', unread: true },
+      { id: 'agm', grp: 'week', kind: 'event', tag: 'Meeting', dot: '#C2457A', g: G.pink, anim: 'a-wob', icon: 'M4 10v4h3l6 4V6L7 10zM17 9a4 4 0 010 6', ago: '3 d', title: 'Society meeting on Sunday', summary: 'Clubhouse, 10 AM. Budget and repairs.', when: 'Sun 26 Oct · 10 AM', body: 'We will discuss the yearly budget and lift repairs. All owners please join.', cta: 'Add to calendar', href: '#', unread: false },
+      { id: 'parking', grp: 'earlier', kind: 'rules', tag: 'Rules', dot: '#4E9A55', g: G.sage, anim: 'a-drive', icon: 'M5 16h14M6 16l1.5-5h9L18 16M8 16v2M16 16v2M9 7h6', ago: '4 d', title: 'New parking stickers', summary: 'Collect yours at the office.', when: 'From Mon 27 Oct', body: 'Collect your 2026 sticker at the office, 9 AM to 6 PM. Bring your RC.', cta: 'Got it', href: '#', unread: false },
+      { id: 'pest', grp: 'earlier', kind: 'service', tag: 'Service', dot: '#6C7FD8', g: G.blue, anim: 'a-bob', icon: 'M12 4v4M8 6l2 3M16 6l-2 3M7 13a5 5 0 0010 0v-1a5 5 0 00-10 0zM5 13H3M21 13h-2M6 18l-2 2M18 18l2 2', ago: '1 w', title: 'Pest control in common areas', summary: 'Stairs and parking, Saturday morning.', when: 'Sat 18 Oct', body: 'Pest control was done in the stairs and parking. Keep pets away for one day.', cta: 'Got it', href: '#', unread: false }
+    ];
+    var f = this.state.filter;
+    var open = this.state.open;
+    var read = this.state.read;
+    var rows = all.filter(function (n) { return f === 'all' || n.kind === f; }).map(function (n) {
+      var isOpen = open === n.id;
+      var unread = n.unread && !read[n.id];
+      return Object.assign({}, n, {
+        isOpen: isOpen,
+        unread: unread,
+        fw: unread ? '600' : '500',
+        rowBg: isOpen ? 'rgba(255,255,255,.7)' : 'transparent',
+        pick: function () {
+          var r = Object.assign({}, self.state.read);
+          r[n.id] = true;
+          self.setState({ open: isOpen ? null : n.id, read: r });
+        }
+      });
+    });
+    var week = rows.filter(function (r) { return r.grp === 'week'; });
+    var earlier = rows.filter(function (r) { return r.grp === 'earlier'; });
+    var groups = [];
+    if (week.length) groups.push({ label: 'THIS WEEK', rows: week, delay: '.18s' });
+    if (earlier.length) groups.push({ label: 'EARLIER', rows: earlier, delay: '.24s' });
+    var showPinned = f === 'all' || f === 'urgent';
+    var defs = [['all', 'All'], ['urgent', 'Urgent'], ['event', 'Events'], ['service', 'Service'], ['rules', 'Rules']];
+    var filters = defs.map(function (d) {
+      var on = f === d[0];
+      return {
+        label: d[1],
+        pressed: on ? 'true' : 'false',
+        bg: on ? '#FFFFFF' : 'rgba(255,255,255,.3)',
+        pick: function () { self.setState({ filter: d[0] }); }
+      };
+    });
+    return {
+      yes: true, no: false,
+      filters: filters,
+      groups: groups,
+      showPinned: showPinned,
+      empty: !showPinned && groups.length === 0,
+      ackText: this.state.acked ? 'Noted ✓' : 'Got it',
+      remindText: this.state.reminded ? 'Set for 8 PM' : 'Remind me',
+      ack: function () { self.setState({ acked: true }); },
+      remind: function () { self.setState({ reminded: !self.state.reminded }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -27,32 +27,41 @@ export const radius = {
   md: 20,
   /** Photos inside cards. */
   lg: 24,
-  /** Cards, sheets, hero corners. */
+  /** Glass lists, sheets. */
   xl: 28,
+  /** Glass cards. */
+  '2xl': 30,
+  /** Big glass cards (greeting). */
+  '3xl': 32,
+  /** Outer corner of a rimmed art card (the art inside is 5 less). */
+  rim: 34,
   /** Buttons, pills, tab bar. */
   full: 9999,
 } as const;
 
 export const layout = {
   /** Horizontal screen padding. */
-  gutter: 20,
+  gutter: 18,
+  /** Width of the white rim around art cards. */
+  rim: 5,
   /** Padding inside a card's text area. */
   cardPadding: 20,
   /** Gap between a card edge and the photo inside it. */
   cardInset: 8,
   sectionGap: 24,
   /** Floating tab bar. */
-  tabBar: { height: 60, inset: 24, bottom: 20, activeHeight: 48 },
+  /** Glass tab bar: 7 padding around 50 high items, centred, 24 above the bottom. */
+  tabBar: { height: 64, inset: 24, bottom: 24, activeHeight: 50, padding: 7, item: 50 },
   /** Minimum size of anything tappable. */
-  touchTarget: 48,
-  /** Buttons and inputs. */
-  control: { sm: 44, md: 52, lg: 56 },
-  /** Square icon buttons (header actions, filter). */
-  iconButton: { md: 52, sm: 44 },
-  /** Round icon buttons (heart, call, chat). */
+  touchTarget: 44,
+  /** Buttons and inputs. md = pill buttons in cards, lg = page buttons, xl = hero buttons. */
+  control: { sm: 40, md: 50, lg: 54, xl: 60 },
+  /** Round white icon buttons (header actions, filter). */
+  iconButton: { md: 46, sm: 44 },
+  /** Round icon buttons (call, arrow). */
   circleButton: 44,
-  /** Category chip height and the white icon box inside it. */
-  chip: { height: 52, iconBox: 40 },
+  /** Chip height and the icon box inside it. */
+  chip: { height: 40, iconBox: 30 },
   /** Info pills (bed 4, rating 4.5) and photo overlay pills. */
   pill: { md: 40, sm: 34 },
   icon: { sm: 18, md: 20, lg: 24, xl: 28 },

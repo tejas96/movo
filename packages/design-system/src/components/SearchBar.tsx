@@ -11,7 +11,7 @@ export interface SearchBarProps extends TextInputProps {
   className?: string;
 }
 
-/** Gray 56 pill with a search icon, and the black filter square next to it. */
+/** White search pill with a soft shadow, and a round white filter button next to it. */
 export function SearchBar({
   onFilterPress,
   onPressOpen,
@@ -21,13 +21,16 @@ export function SearchBar({
   ...rest
 }: SearchBarProps) {
   const field = (
-    <View className="h-control-lg flex-1 flex-row items-center gap-3 rounded-full bg-card px-5">
-      <Icon name="search" size={22} color={theme.color.text.secondary} />
+    <View
+      className="flex-1 flex-row items-center gap-2.5 rounded-full bg-card-nested px-[18px]"
+      style={[{ height: 50 }, theme.shadow.control]}
+    >
+      <Icon name="search" size={18} color={theme.color.text.secondary} />
       <TextInput
         editable={!onPressOpen}
         pointerEvents={onPressOpen ? 'none' : 'auto'}
-        placeholderTextColor={theme.color.text.secondary}
-        selectionColor={theme.color.bg.ink}
+        placeholderTextColor={theme.color.text.tertiary}
+        selectionColor={theme.color.accent.fg}
         value={value}
         onChangeText={onChangeText}
         className="flex-1 font-sans text-body text-ink py-0"
@@ -42,13 +45,13 @@ export function SearchBar({
           accessibilityRole="button"
           accessibilityLabel="Clear"
         >
-          <Icon name="close" variant="bold" size={20} color={theme.color.text.secondary} />
+          <Icon name="close" variant="bold" size={20} color={theme.color.text.tertiary} />
         </Pressable>
       ) : null}
     </View>
   );
   return (
-    <View className={cn('flex-row items-center gap-3', className)}>
+    <View className={cn('flex-row items-center gap-2.5', className)}>
       {onPressOpen ? (
         <Pressable onPress={onPressOpen} className="flex-1" accessibilityRole="search">
           {field}
@@ -60,9 +63,9 @@ export function SearchBar({
         <IconSquare
           icon="filter"
           variant="linear"
-          tone="ink"
+          tone="white"
           onPress={onFilterPress}
-          className="w-control-lg h-control-lg"
+          diameter={50}
         />
       ) : null}
     </View>

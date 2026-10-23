@@ -8,6 +8,7 @@ export * from './DateBlock';
 export * from './DateTimeSheet';
 export * from './EmptyState';
 export * from './FloatingTabBar';
+export * from './glow';
 export * from './HoldButton';
 export * from './Icon';
 export * from './IconButtons';

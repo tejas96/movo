@@ -1,19 +1,26 @@
 import { color, light } from './color';
 import { blur, elevation, motion, opacity } from './effects';
+import { art, dots, glow, glowScene, orb } from './glow';
 import { layout, radius, space } from './layout';
 import { palette } from './palette';
 import { typography } from './typography';
 
 export type { ColorPair, SemanticColors } from './color';
+export type { ArtName, ArtPreset, ArtSpot, GlowBlob, GlowSceneName } from './glow';
 export type { TypeVariant } from './typography';
 export {
+  art,
   blur,
   color,
+  dots,
   elevation,
+  glow,
+  glowScene,
   layout,
   light,
   motion,
   opacity,
+  orb,
   palette,
   radius,
   space,
@@ -32,6 +39,7 @@ export const tokens = {
   blur,
   motion,
   opacity,
+  glow,
 } as const;
 
 export type Tokens = typeof tokens;
