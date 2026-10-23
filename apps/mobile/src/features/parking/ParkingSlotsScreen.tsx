@@ -131,6 +131,7 @@ export function ParkingSlotsScreen() {
             <IconSquare
               icon="add"
               variant="linear"
+              tone="ink"
               accessibilityLabel={t('parking:slots.add')}
               onPress={() => {
                 setAddError(null);

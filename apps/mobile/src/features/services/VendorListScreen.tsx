@@ -40,6 +40,7 @@ export function VendorListScreen() {
             <IconSquare
               icon="add"
               variant="linear"
+              tone="ink"
               accessibilityLabel={canManage ? t('services:add') : t('services:suggest')}
               onPress={() => nav.navigate('VendorEditor', { categoryId })}
             />

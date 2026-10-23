@@ -97,6 +97,7 @@ export function VendorCategoriesScreen() {
           <IconSquare
             icon="add"
             variant="linear"
+            tone="ink"
             accessibilityLabel={t('services:categories.add')}
             onPress={() => open()}
           />

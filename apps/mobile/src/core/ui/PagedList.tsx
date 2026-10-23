@@ -1,5 +1,6 @@
-import { type ReactElement, useCallback, useMemo, useRef } from 'react';
-import { FlatList, type FlatListProps } from 'react-native';
+import { Glass, SectionLabel } from '@movo/design-system';
+import { Fragment, type ReactElement, useCallback, useMemo, useRef } from 'react';
+import { FlatList, type FlatListProps, type ListRenderItem, StyleSheet } from 'react-native';
 import { type CursorPage, listItems } from '../api/use-cursor-list';
 import { loadFailed, QueryError } from './QueryError';
 
@@ -38,6 +39,11 @@ type PagedListProps<T, U> = Omit<
   loading?: ReactElement;
   /** Shown under the items while the next page loads. */
   loadingMore?: ReactElement;
+  /**
+   * All rows in one glass card, as on the mockup's lists. A string adds a small capitals label
+   * at the top of the card. The rows drop their own pill inside it.
+   */
+  glass?: boolean | string;
 };
 
 /**
@@ -51,6 +57,7 @@ export function PagedList<T, U = T>({
   errorClassName,
   loading,
   loadingMore,
+  glass,
   ...rest
 }: PagedListProps<T, U>) {
   // Same array while the pages are the same, so FlatList and memoized rows skip work.
@@ -75,6 +82,37 @@ export function PagedList<T, U = T>({
     if (items.length === 0) return empty;
   }
 
+  if (glass) {
+    const { renderItem, keyExtractor, ...flat } = rest;
+    const group: ListRenderItem<U[]> = ({ item: rows, separators }) => (
+      <Glass radius={28} style={styles.group}>
+        {typeof glass === 'string' ? <SectionLabel>{glass}</SectionLabel> : null}
+        {rows.map((row, index) => (
+          <Fragment key={keyExtractor ? keyExtractor(row, index) : String(index)}>
+            {renderItem?.({ item: row, index, separators })}
+          </Fragment>
+        ))}
+      </Glass>
+    );
+    return (
+      <FlatList
+        {...(flat as Omit<FlatListProps<U[]>, 'data' | 'renderItem'>)}
+        data={items.length > 0 ? [items] : []}
+        keyExtractor={groupKey}
+        renderItem={group}
+        onEndReached={onEndReached}
+        refreshing={list.isRefetching}
+        onRefresh={onRefresh}
+        ListEmptyComponent={
+          loading || list.isLoading ? undefined : loadFailed(list) ? error : empty
+        }
+        ListFooterComponent={
+          loadingMore && list.isFetchingNextPage ? loadingMore : rest.ListFooterComponent
+        }
+      />
+    );
+  }
+
   return (
     <FlatList
       initialNumToRender={10}
@@ -92,3 +130,9 @@ export function PagedList<T, U = T>({
     />
   );
 }
+
+const groupKey = () => 'group';
+
+const styles = StyleSheet.create({
+  group: { padding: 8 },
+});

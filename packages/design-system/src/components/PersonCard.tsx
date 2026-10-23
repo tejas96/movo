@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { Avatar } from './Avatar';
 import { cn } from './cn';
+import { useInGlass } from './glow/in-glass';
 import { Icon } from './Icon';
 import { Text } from './Text';
 
@@ -47,9 +48,10 @@ export function PersonCard({
       {actions ? <View className="flex-row items-center gap-2">{actions}</View> : null}
     </>
   );
+  const inGlass = useInGlass();
   const cls = cn(
     'flex-row items-center gap-3 rounded-[24px] p-2.5 pr-3',
-    white ? 'bg-card-nested' : 'bg-card border-[1.5px] border-glass',
+    white ? 'bg-card-nested' : inGlass ? 'bg-transparent' : 'bg-card border-[1.5px] border-glass',
     className,
   );
   if (!onPress) return <View className={cls}>{body}</View>;

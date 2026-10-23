@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, type PressableProps, View, type ViewProps } from 'react-native';
 import type { BoldIconName } from '../icons';
 import { cn } from './cn';
+import { InGlass, useInGlass } from './glow/in-glass';
 import { Icon } from './Icon';
 import { IconSquare } from './IconButtons';
 import { Press } from './Press';
@@ -9,7 +10,7 @@ import { Text } from './Text';
 import { theme } from './theme';
 
 export interface CardProps extends ViewProps {
-  /** tight = a plain stack of rows on the page. No fill, no padding. */
+  /** tight = a list of rows: one glass card, 8 padding, the rows inside drop their own pill. */
   tight?: boolean;
   /** Solid white card instead of glass. */
   white?: boolean;
@@ -17,8 +18,7 @@ export interface CardProps extends ViewProps {
 }
 
 /** Frosted glass card with 30 radius. The building block of every screen. */
-export function Card({ tight, white, className, style, ...rest }: CardProps) {
-  if (tight) return <View {...rest} style={style} className={className} />;
+export function Card({ tight, white, className, style, children, ...rest }: CardProps) {
   return (
     <View
       {...rest}
@@ -30,10 +30,13 @@ export function Card({ tight, white, className, style, ...rest }: CardProps) {
           backgroundColor: white ? theme.color.bg.nested : theme.color.bg.card,
         },
         theme.shadow.glass,
+        tight ? { borderRadius: 28 } : null,
         style,
       ]}
-      className={cn('p-[18px]', className)}
-    />
+      className={cn(tight ? 'p-2' : 'p-[18px]', className)}
+    >
+      <InGlass.Provider value={true}>{children}</InGlass.Provider>
+    </View>
   );
 }
 
@@ -78,6 +81,8 @@ export function Row({
   className,
   ...rest
 }: RowProps) {
+  const inGlass = useInGlass();
+  const plain = onGray ?? inGlass;
   const body = (
     <>
       {leading ??
@@ -102,7 +107,7 @@ export function Row({
     'flex-row items-center gap-3 rounded-[22px] p-2.5 pr-3.5 min-h-[66px]',
     tone === 'danger'
       ? 'bg-danger-soft'
-      : onGray
+      : plain
         ? 'bg-transparent'
         : 'bg-card border-[1.5px] border-glass',
     className,

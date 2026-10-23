@@ -11,6 +11,7 @@ import type { ArtName, ArtPreset } from '../../tokens/glow';
 import { Press } from '../Press';
 import { theme } from '../theme';
 import { ArtFill } from './ArtFill';
+import { InGlass } from './in-glass';
 
 const glassStyle = (radius: number): ViewStyle => ({
   borderRadius: radius,
@@ -62,7 +63,7 @@ export function Glass({
       className={className}
       style={[glassStyle(radius), style]}
     >
-      {children}
+      <InGlass.Provider value={true}>{children}</InGlass.Provider>
     </View>
   );
 }

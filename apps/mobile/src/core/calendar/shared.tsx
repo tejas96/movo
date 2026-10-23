@@ -1,15 +1,16 @@
 import {
-  Card,
   DateBlock,
   DateTimeSheet,
   OptionSheet,
+  Press,
   SelectField,
   Text,
+  useInGlass,
 } from '@movo/design-system';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { dateTime, dayAndMonth, localeTag, timeRange } from '../util/date';
 
 /** A meeting or event in a list: date block, title, time and place. */
@@ -33,33 +34,42 @@ export function TimedCard({
   onPress: () => void;
 }) {
   const { day, month } = dayAndMonth(startsAt);
+  const inGlass = useInGlass();
   return (
-    <Pressable onPress={onPress} accessibilityRole="button">
-      <Card
-        tight
-        className={
-          dimmed ? 'flex-row items-center gap-3 opacity-60' : 'flex-row items-center gap-3'
-        }
-      >
-        <DateBlock day={day} month={month} />
-        <View className="min-w-0 flex-1">
-          <Text variant="bodyMedium" numberOfLines={1}>
-            {title}
-          </Text>
+    <Press
+      onPress={onPress}
+      accessibilityRole="button"
+      scaleTo={0.98}
+      style={[timed.row, !inGlass && timed.alone, dimmed && timed.dimmed]}
+    >
+      <DateBlock day={day} month={month} />
+      <View className="min-w-0 flex-1">
+        <Text variant="bodyMedium" numberOfLines={1}>
+          {title}
+        </Text>
+        <Text variant="label" tone="secondary" numberOfLines={1}>
+          {[timeRange(startsAt, endsAt), location].filter(Boolean).join(' · ')}
+        </Text>
+        {meta ? (
           <Text variant="label" tone="secondary" numberOfLines={1}>
-            {[timeRange(startsAt, endsAt), location].filter(Boolean).join(' · ')}
+            {meta}
           </Text>
-          {meta ? (
-            <Text variant="label" tone="secondary" numberOfLines={1}>
-              {meta}
-            </Text>
-          ) : null}
-        </View>
-        {pill}
-      </Card>
-    </Pressable>
+        ) : null}
+      </View>
+      {pill}
+    </Press>
   );
 }
+
+const timed = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 8, borderRadius: 22 },
+  alone: {
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.95)',
+  },
+  dimmed: { opacity: 0.6 },
+});
 
 export const DURATIONS = [
   { key: 'none', minutes: null },

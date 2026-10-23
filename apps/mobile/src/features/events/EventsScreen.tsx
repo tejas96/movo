@@ -29,9 +29,10 @@ export function EventsScreen() {
   return (
     <Screen scroll={false}>
       <PagedList
+        glass
         list={list}
         keyExtractor={(e) => e.id}
-        contentContainerStyle={{ paddingBottom: 40, gap: 8 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
         renderItem={({ item }) => (
           <TimedCard
             startsAt={item.startsAt}

@@ -1,6 +1,5 @@
 import type { Notification } from '@movo/contracts';
 import {
-  Card,
   EmptyState,
   IconSquare,
   photos,
@@ -43,15 +42,13 @@ const NotificationRow = memo(function NotificationRow({
   onOpen: (n: Notification) => void;
 }) {
   return (
-    <Card tight className="mb-2">
-      <Row
-        icon={ICONS[item.category]}
-        title={item.title}
-        subtitle={`${item.body}${item.body ? ' · ' : ''}${relative(item.createdAt)}`}
-        trailing={!item.readAt ? <View className="h-2 w-2 rounded-full bg-ink" /> : <View />}
-        onPress={() => onOpen(item)}
-      />
-    </Card>
+    <Row
+      icon={ICONS[item.category]}
+      title={item.title}
+      subtitle={`${item.body}${item.body ? ' · ' : ''}${relative(item.createdAt)}`}
+      trailing={!item.readAt ? <View className="h-2 w-2 rounded-full bg-accent" /> : <View />}
+      onPress={() => onOpen(item)}
+    />
   );
 });
 
@@ -90,6 +87,7 @@ export function NotificationsScreen() {
         }
       />
       <PagedList
+        glass
         list={list}
         loading={
           <View className="mt-4 gap-3">
