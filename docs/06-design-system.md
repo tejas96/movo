@@ -17,6 +17,7 @@ Calm, light and premium, inspired by the "Sense" meditation app. Chosen by the u
 - **Ink for actions, orange for accents.** Main buttons are ink pills with a white circle and an orange arrow (`Button arrow`). Orange marks only small things: unread dots, the selected tab icon, arrows, play buttons. Red is only for urgent things.
 - **Big radii.** 30 for glass cards, 34 outside / 29 inside for rimmed art cards, 28 for glass lists, 22 for rows, full pills for buttons, chips, search and the tab bar.
 - **Poppins.** Headlines are Regular with one SemiBold word (`Strong`). Screen titles SemiBold, card titles Medium, labels Regular, section labels in small capitals. Poppins covers Devanagari, so Hindi and Marathi keep the same weight and rhythm.
+- **App icon.** The glowing orb with the roof M on the pastel glow. Sources and the build script are in `docs/design/app-icon/`.
 - **Iconsax icons.** Outline (`linear`) by default; filled (`bold`) and orange for the selected tab.
 
 ## 2. Tokens
