@@ -15,18 +15,19 @@ export interface BottomBarProps {
   action: ReactNode;
 }
 
-/** White sticky bar: small label + big value on the left, the one black button on the right. */
+/** Solid near-white sticky bar with round top corners: label + big value left, the ink button right. */
 export function BottomBar({ label, value, action }: BottomBarProps) {
   const insets = useSafeAreaInsets();
   const keyboard = useKeyboardHeight();
   return (
     <View
-      className="absolute left-0 right-0 bottom-0 flex-row items-center justify-between gap-4 bg-canvas px-5 pt-4"
+      className="absolute left-0 right-0 bottom-0 flex-row items-center justify-between gap-4 rounded-t-[30px] px-5 pt-4"
       style={[
         // Sits on top of the keyboard while it is open.
         keyboard > 0
           ? { bottom: keyboard, paddingBottom: 16 }
           : { paddingBottom: Math.max(insets.bottom, 16) + 8 },
+        { backgroundColor: theme.color.bg.tabBar },
         theme.shadow.sheet,
       ]}
     >

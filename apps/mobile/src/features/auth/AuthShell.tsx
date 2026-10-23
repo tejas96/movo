@@ -23,6 +23,8 @@ export interface AuthShellProps {
   art?: ReactNode;
   /** Back button, for screens reached from Log in or Welcome. */
   onBack?: () => void;
+  /** Any other button in the back button's place (Sign out on Join). */
+  leading?: ReactNode;
   /** The form, inside the glass card. */
   children: ReactNode;
   /** The main button, pinned under the card near the bottom. */
@@ -43,6 +45,7 @@ export function AuthShell({
   subtitle,
   art,
   onBack,
+  leading,
   children,
   action,
   footer,
@@ -64,7 +67,9 @@ export function AuthShell({
         >
           <Rise>
             <View style={styles.header}>
-              {onBack ? (
+              {leading ? (
+                leading
+              ) : onBack ? (
                 <IconSquare
                   icon="back"
                   variant="linear"

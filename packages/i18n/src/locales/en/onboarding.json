@@ -35,5 +35,16 @@
     "reviewHint": "Usually within a day. We will send a notification.",
     "in": "You are in",
     "inHint": "Notices, dues and the directory unlock."
+  },
+  "glow": {
+    "inviteA": "Enter your",
+    "inviteB": "invite code",
+    "societyA": "Enter the",
+    "societyB": "society code",
+    "pickA": "Which flat is",
+    "pickB": "yours?",
+    "pendingA": "Almost",
+    "pendingB": "in",
+    "you": "You are the"
   }
 }
