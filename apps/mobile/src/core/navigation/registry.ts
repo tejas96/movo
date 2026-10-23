@@ -1,4 +1,5 @@
 import { authRoutes } from '../../features/auth/routes';
+import { devRoutes } from '../../features/dev/routes';
 import { directoryRoutes } from '../../features/directory/routes';
 import { dutiesRoutes } from '../../features/duties/routes';
 import { emergencyRoutes } from '../../features/emergency/routes';
@@ -52,6 +53,7 @@ export const featureRoutes = [
   dutiesRoutes,
   tasksRoutes,
   rewardsRoutes,
+  devRoutes,
 ] as const;
 
 const features: readonly AnyFeatureRoutes[] = featureRoutes;

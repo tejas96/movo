@@ -6,6 +6,7 @@ export * from './Chip';
 export * from './cn';
 export * from './DateBlock';
 export * from './DateTimeSheet';
+export * from './drawings';
 export * from './EmptyState';
 export * from './FloatingTabBar';
 export * from './glow';
