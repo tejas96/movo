@@ -27,5 +27,15 @@
     "support": "Support"
   },
   "photo": "Profile photo",
-  "photoHelp": "Members of your society see it in the directory."
+  "photoHelp": "Members of your society see it in the directory.",
+  "glow": {
+    "hello": "Hello",
+    "edit": "Edit profile",
+    "points": "Points",
+    "tasks": "Tasks",
+    "flats": "Flats",
+    "general": "General",
+    "others": "Others",
+    "notifications": "Notifications"
+  }
 }

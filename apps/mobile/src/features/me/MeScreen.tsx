@@ -1,31 +1,55 @@
 import {
-  Avatar,
-  Button,
-  Card,
-  photos,
-  Row,
+  DotTexture,
+  Glass,
+  Icon,
+  type IconName,
+  initialsOf,
+  Orb,
+  Press,
+  Rise,
   Screen,
+  SectionLabel,
+  Strong,
   Text,
-  TitleBar,
+  Toggle,
   theme,
 } from '@movo/design-system';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Image, Linking, StyleSheet, View } from 'react-native';
+import { Alert, Image, Linking, Text as RNText, StyleSheet, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
+import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { signOut } from '../../core/auth/auth';
 import { useSessionStore } from '../../core/auth/session.store';
 import { APP_VERSION, PRIVACY_POLICY_URL } from '../../core/env';
+import { useHomeSummary } from '../../core/home/api';
 import { currentLocale } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCanManageSociety, useTenant } from '../../core/tenant/hooks';
+import { useMyPrivacy, useUpdatePrivacy } from './api';
+
+const AVATAR = 92;
 
 export function MeScreen() {
-  const { t } = useTranslation(['me', 'common', 'auth']);
+  const { t } = useTranslation(['me', 'common', 'auth', 'rewards']);
   const nav = useNav();
   const user = useSessionStore((s) => s.user);
   const tenant = useTenant();
   const canManage = useCanManageSociety();
+  const contribution = useHomeSummary(tenant.society.id).data?.contribution ?? null;
+  const privacy = useMyPrivacy(tenant.society.id).data;
+  const updatePrivacy = useUpdatePrivacy(tenant.society.id);
+  const withErrorToast = useMutationToast();
+
+  const name = user?.displayName ?? '';
+  const firstName = name.split(' ')[0] ?? name;
+  const flat = tenant.flats[0];
+  const facts = [
+    flat ? formatFlat(flat) : null,
+    flat ? t(`common:relation.${flat.relation}`) : null,
+    tenant.society.name,
+  ].filter((x): x is string => Boolean(x));
+  const avatarUri = photoUri(user?.avatarUrl);
 
   const confirmSignOut = () =>
     Alert.alert(t('me:signOutConfirm'), undefined, [
@@ -35,139 +59,240 @@ export function MeScreen() {
 
   return (
     <Screen tabBar>
-      <TitleBar large title={t('me:title')} />
+      <View style={styles.page}>
+        {/* Profile card: dots, the glowing avatar, "Hello Name", flat | relation | society. */}
+        <Rise>
+          <Glass radius={32} style={styles.profile}>
+            <DotTexture center={{ x: 0.5, y: 0.3 }} reach={0.7} />
+            {avatarUri ? (
+              <Image source={{ uri: avatarUri }} style={styles.photo} accessibilityLabel={name} />
+            ) : (
+              <Orb size={AVATAR} ripple>
+                <Text style={styles.initials}>{initialsOf(name || '?')}</Text>
+              </Orb>
+            )}
+            <Text variant="greet" style={styles.hello} numberOfLines={1}>
+              {t('me:glow.hello')} <Strong>{firstName}</Strong>
+            </Text>
+            <Text variant="caption" tone="secondary" numberOfLines={1} className="text-center">
+              {facts.map((f, i) => (
+                <RNText key={f}>
+                  {i > 0 ? <RNText style={styles.bar}>{'  |  '}</RNText> : null}
+                  {f}
+                </RNText>
+              ))}
+            </Text>
+            <Press
+              accessibilityRole="button"
+              onPress={() => nav.navigate('EditProfile')}
+              scaleTo={0.97}
+              style={styles.edit}
+            >
+              <Icon name="edit" size={15} color={theme.color.accent.fg} />
+              <Text variant="bodyMedium">{t('me:glow.edit')}</Text>
+            </Press>
+          </Glass>
+        </Rise>
 
-      {/* Profile: the society photo as a backdrop, the avatar sitting on its lower edge. */}
-      <View className="mt-5">
-        <View style={styles.backdrop}>
-          <Image
-            source={
-              tenant.society.logoUrl
-                ? { uri: photoUri(tenant.society.logoUrl) ?? undefined }
-                : photos.society2
-            }
-            resizeMode="cover"
-            style={styles.photo}
-          />
-        </View>
-        <View style={styles.avatar}>
-          <Avatar
-            name={user?.displayName ?? '?'}
-            uri={photoUri(user?.avatarUrl)}
-            size={64}
-            tone="gray"
-          />
-        </View>
-        <View style={styles.identity}>
-          <Text variant="h2" numberOfLines={1}>
-            {user?.displayName}
-          </Text>
-          <Text variant="label" tone="secondary" numberOfLines={1}>
-            {user?.phone ?? user?.email ?? t('me:notSet')}
-          </Text>
-          <Text variant="label" tone="secondary" numberOfLines={1}>
-            {[tenant.society.name, tenant.flats[0] ? formatFlat(tenant.flats[0]) : null]
-              .filter(Boolean)
-              .join(' · ')}
-          </Text>
-        </View>
-      </View>
+        {/* Small stats, only when rewards are on and there is something to count. */}
+        {contribution ? (
+          <Rise delay={80}>
+            <View style={styles.stats}>
+              <Stat value={contribution.points} label={t('me:glow.points')} />
+              <Stat value={contribution.openTasks} label={t('me:glow.tasks')} />
+              <Stat value={tenant.flats.length} label={t('me:glow.flats')} />
+            </View>
+          </Rise>
+        ) : null}
 
-      <Group title={t('me:groups.account')}>
-        <Row icon="user" title={t('me:profile')} onPress={() => nav.navigate('EditProfile')} />
-        <Row
-          icon="building"
-          title={t('me:societiesAndFlats')}
-          onPress={() => nav.navigate('SocietySwitcher')}
-        />
-        <Row
-          icon="language"
-          title={t('common:language.label')}
-          subtitle={t(`common:language.${currentLocale()}`)}
-          onPress={() => nav.navigate('Language')}
-        />
-        <Row
-          icon="key"
-          title={t('auth:changePassword')}
-          onPress={() => nav.navigate('ChangePassword')}
-        />
-      </Group>
+        <Rise delay={140}>
+          <Glass radius={30} style={styles.list}>
+            <SectionLabel>{t('me:glow.general')}</SectionLabel>
+            <Item
+              icon="home"
+              label={t('me:societiesAndFlats')}
+              onPress={() => nav.navigate('SocietySwitcher')}
+            />
+            <Item
+              icon="bell"
+              label={t('me:glow.notifications')}
+              onPress={() => nav.navigate('Notifications')}
+            />
+            <Item
+              icon="language"
+              label={t('common:language.label')}
+              value={t(`common:language.${currentLocale()}`)}
+              onPress={() => nav.navigate('Language')}
+            />
+            <Item
+              icon="lock"
+              label={t('auth:changePassword')}
+              onPress={() => nav.navigate('ChangePassword')}
+            />
+            {privacy?.phoneOptInAllowed ? (
+              <View style={styles.item}>
+                <Icon name="call" size={21} color={theme.color.icon.primary} />
+                <Text variant="body" numberOfLines={1} style={styles.itemLabel}>
+                  {t('me:privacyShowPhone')}
+                </Text>
+                <Toggle
+                  value={privacy.showPhone}
+                  disabled={updatePrivacy.isPending}
+                  accessibilityLabel={t('me:privacyShowPhone')}
+                  onValueChange={(v) =>
+                    void withErrorToast(async () => {
+                      await updatePrivacy.mutateAsync({ showPhone: v });
+                    })
+                  }
+                />
+              </View>
+            ) : null}
+            <Item icon="eye" label={t('me:privacy')} onPress={() => nav.navigate('Privacy')} />
+            <Item
+              icon="shield"
+              label={t('me:privacyPolicy')}
+              onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+            />
+            {canManage ? (
+              <Item
+                icon="settings"
+                label={t('me:manageSociety')}
+                onPress={() => nav.navigate('Manage')}
+              />
+            ) : null}
+          </Glass>
+        </Rise>
 
-      <Group title={t('me:groups.privacy')}>
-        <Row icon="eye" title={t('me:privacy')} onPress={() => nav.navigate('Privacy')} />
-        <Row
-          icon="shield"
-          title={t('me:privacyPolicy')}
-          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
-        />
-      </Group>
+        <Rise delay={200}>
+          <Glass radius={30} style={styles.list}>
+            <SectionLabel>{t('me:glow.others')}</SectionLabel>
+            {contribution ? (
+              <Item
+                icon="star"
+                label={t('rewards:title')}
+                onPress={() => nav.navigate('Rewards')}
+              />
+            ) : null}
+            <Item
+              icon="help"
+              label={t('me:help')}
+              onPress={() =>
+                nav.navigate('ComingSoon', { moduleKey: 'emergency', title: t('me:help') })
+              }
+            />
+            <Item
+              icon="trash"
+              label={t('me:deleteAccount')}
+              onPress={() => nav.navigate('DeleteAccount')}
+            />
+            <Item
+              icon="logout"
+              label={t('common:actions.signOut')}
+              danger
+              onPress={confirmSignOut}
+            />
+          </Glass>
+        </Rise>
 
-      {canManage ? (
-        <Group title={t('me:groups.society')}>
-          <Row
-            icon="settings"
-            title={t('me:manageSociety')}
-            onPress={() => nav.navigate('Manage')}
-          />
-        </Group>
-      ) : null}
-
-      <Group title={t('me:groups.support')}>
-        <Row
-          icon="help"
-          title={t('me:help')}
-          onPress={() =>
-            nav.navigate('ComingSoon', { moduleKey: 'emergency', title: t('me:help') })
-          }
-        />
-        <Row
-          icon="info"
-          title={t('me:about')}
-          subtitle={t('me:version', { version: APP_VERSION })}
-        />
-      </Group>
-
-      <View className="mt-8 gap-2">
-        <Button
-          label={t('common:actions.signOut')}
-          variant="gray"
-          icon="logout"
-          onPress={confirmSignOut}
-        />
-        <Button
-          label={t('me:deleteAccount')}
-          variant="ghost"
-          onPress={() => nav.navigate('DeleteAccount')}
-        />
+        <Text variant="label" tone="secondary" className="text-center">
+          {`MOVO · ${t('me:version', { version: APP_VERSION })}`}
+        </Text>
       </View>
     </Screen>
   );
 }
 
-/** A small gray label, then the rows that belong together. */
-function Group({ title, children }: { title: string; children: ReactNode }) {
+function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <View className="mt-6">
-      <Text variant="label" tone="secondary" className="mb-2 ml-1">
-        {title}
+    <Glass radius={24} style={styles.stat}>
+      <Text style={styles.statValue}>{String(value)}</Text>
+      <Text variant="label" tone="secondary" numberOfLines={1}>
+        {label}
       </Text>
-      <Card tight className="gap-2">
-        {children}
-      </Card>
-    </View>
+    </Glass>
+  );
+}
+
+/** A plain list line: line icon, label, an optional value on the right. */
+function Item({
+  icon,
+  label,
+  value,
+  danger,
+  onPress,
+}: {
+  icon: IconName;
+  label: string;
+  value?: string;
+  danger?: boolean;
+  onPress: () => void;
+}): ReactNode {
+  return (
+    <Press accessibilityRole="button" onPress={onPress} className="active:opacity-pressed">
+      <View style={styles.item}>
+        <Icon
+          name={icon}
+          size={21}
+          color={danger ? theme.color.status.danger.fg : theme.color.icon.primary}
+        />
+        <Text
+          variant="body"
+          numberOfLines={1}
+          style={[styles.itemLabel, danger ? { color: theme.color.status.danger.fg } : null]}
+        >
+          {label}
+        </Text>
+        {value ? (
+          <Text variant="caption" tone="secondary">
+            {value}
+          </Text>
+        ) : null}
+      </View>
+    </Press>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { height: 132, borderRadius: 28, overflow: 'hidden' },
-  photo: { width: '100%', height: '100%' },
-  avatar: {
-    marginTop: -32,
-    marginLeft: 16,
-    alignSelf: 'flex-start',
-    padding: 3,
-    borderRadius: 999,
-    backgroundColor: theme.color.bg.canvas,
+  page: { gap: 14, paddingTop: 10 },
+  profile: {
+    overflow: 'hidden',
+    paddingTop: 26,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    alignItems: 'center',
+    gap: 12,
   },
-  identity: { marginTop: 8, paddingHorizontal: 4, gap: 1 },
+  photo: { width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2 },
+  initials: {
+    color: '#FFFFFF',
+    fontFamily: 'Poppins',
+    fontWeight: '600',
+    fontSize: 28,
+    lineHeight: 36,
+  },
+  hello: { fontSize: 24, lineHeight: 32, letterSpacing: -0.3 },
+  edit: {
+    height: 42,
+    paddingHorizontal: 18,
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    boxShadow: '0 4px 12px rgba(70,40,70,0.06)',
+  },
+  stats: { flexDirection: 'row', gap: 10 },
+  stat: { flex: 1, padding: 14 },
+  statValue: { fontFamily: 'Poppins', fontWeight: '500', fontSize: 22, lineHeight: 30 },
+  list: { padding: 8 },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingHorizontal: 14,
+    minHeight: 54,
+    borderRadius: 20,
+  },
+  itemLabel: { flex: 1 },
+  bar: { color: 'rgba(106,105,112,0.4)' },
 });
