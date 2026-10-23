@@ -208,5 +208,17 @@
     "reversedBody": "Receipt {{receipt}} · {{reason}}",
     "waivedTitle": "Bill waived: {{name}}",
     "waivedBody": "Flat {{flat}} · {{reason}}"
+  },
+  "glow": {
+    "pay": "Pay {{amount}}",
+    "openBills": "Open bills",
+    "paid": "What you paid",
+    "months": "Last 6 months",
+    "collectedFy": "Collected this year",
+    "flatsPaid": "{{paid}} of {{total}} flats paid",
+    "due": "Due",
+    "flatsCount_one": "{{count}} flat",
+    "flatsCount_other": "{{count}} flats",
+    "flats": "Flats"
   }
 }

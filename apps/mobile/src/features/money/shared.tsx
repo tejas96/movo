@@ -1,5 +1,14 @@
 import type { BillStatus, BillSummary, CollectionStatus, PaymentSummary } from '@movo/contracts';
-import { Row, StatusPill as SoftPill, Text } from '@movo/design-system';
+import {
+  ArtFill,
+  type ArtName,
+  Icon,
+  type IconName,
+  Row,
+  StatusPill as SoftPill,
+  Text,
+  theme,
+} from '@movo/design-system';
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -39,13 +48,24 @@ export function billName(b: { title: string; periodKey: string | null }): string
 function Amount({ paise, children }: { paise: number; children?: ReactNode }) {
   return (
     <View className="items-end gap-1">
-      <Text variant="bodyMedium" className="font-semibold">
-        {money(paise)}
-      </Text>
+      <Text variant="title">{money(paise)}</Text>
       {children}
     </View>
   );
 }
+
+/** A small round colour-art disc with an icon: the leading mark of Money rows. */
+export function ArtIcon({ art, icon }: { art: ArtName; icon: IconName }) {
+  return (
+    <ArtFill art={art} radius={24} fade={0} blur={14} style={artIconStyle}>
+      <View className="flex-1 items-center justify-center">
+        <Icon name={icon} size={20} color={theme.color.icon.primary} />
+      </View>
+    </ArtFill>
+  );
+}
+
+const artIconStyle = { width: 48, height: 48 };
 
 export function BillRow({ bill, onGray }: { bill: BillSummary; onGray?: boolean }) {
   const { t } = useTranslation('money');
@@ -53,7 +73,7 @@ export function BillRow({ bill, onGray }: { bill: BillSummary; onGray?: boolean 
   const open = bill.status !== 'PAID' && bill.status !== 'WAIVED';
   return (
     <Row
-      icon="receipt"
+      leading={<ArtIcon art="tileFlame" icon="receipt" />}
       onGray={onGray}
       title={billName(bill)}
       subtitle={t('dueOn', { date: day(bill.dueDate, 'short') })}
@@ -70,9 +90,12 @@ export function BillRow({ bill, onGray }: { bill: BillSummary; onGray?: boolean 
 export const PaymentRow = memo(function PaymentRow({
   payment,
   showFlat,
+  onGray,
 }: {
   payment: PaymentSummary;
   showFlat?: boolean;
+  /** Inside a glass list: no fill of its own. */
+  onGray?: boolean;
 }) {
   const { t } = useTranslation('money');
   const nav = useNav();
@@ -81,7 +104,8 @@ export const PaymentRow = memo(function PaymentRow({
     : payment.flat.number;
   return (
     <Row
-      icon="receipt"
+      leading={<ArtIcon art="tileSage" icon="receipt" />}
+      onGray={onGray}
       title={showFlat ? `${flat} · ${day(payment.paidOn, 'short')}` : day(payment.paidOn)}
       subtitle={[t(`method.${payment.method}`), payment.receiptNo].join(' · ')}
       trailing={

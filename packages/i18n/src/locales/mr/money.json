@@ -208,5 +208,17 @@
     "reversedBody": "पावती {{receipt}} · {{reason}}",
     "waivedTitle": "बिल माफ: {{name}}",
     "waivedBody": "फ्लॅट {{flat}} · {{reason}}"
+  },
+  "glow": {
+    "pay": "{{amount}} भरा",
+    "openBills": "बाकी बिलं",
+    "paid": "तुम्ही किती भरलं",
+    "months": "मागचे 6 महिने",
+    "collectedFy": "या वर्षी जमा झालं",
+    "flatsPaid": "{{total}} पैकी {{paid}} फ्लॅटनी भरलं",
+    "due": "बाकी",
+    "flatsCount_one": "{{count}} फ्लॅट",
+    "flatsCount_other": "{{count}} फ्लॅट",
+    "flats": "फ्लॅट"
   }
 }
