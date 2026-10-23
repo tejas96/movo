@@ -11,7 +11,6 @@
     "CANCELLED": "रद्द"
   },
   "about": "माहिती",
-  "postedBy": "{{name}} यांनी पोस्ट केले",
   "going": "{{count}} येत आहेत",
   "rsvp": {
     "question": "तुम्ही येणार का?",

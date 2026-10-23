@@ -13,8 +13,6 @@
     "ar": "AR guide"
   },
   "needsYou": "Needs you today",
-  "allClearBody": "No dues, no duties, no alerts.",
-  "upcoming": "Upcoming",
   "notices": "Notices",
   "attention": {
     "MARKET_ORDERS_WAITING": {
@@ -74,12 +72,7 @@
       "sub": "Accept the work to give points"
     }
   },
-  "upcomingKind": {
-    "MEETING": "Meeting",
-    "EVENT": "Event"
-  },
   "contribution": {
-    "title": "My contribution",
     "points": "{{count}} point this year",
     "points_other": "{{count}} points this year",
     "openTasks": "{{count}} task in progress",
@@ -104,16 +97,10 @@
     "task": {
       "label": "Your task",
       "cta": "Open task"
-    },
-    "clear": {
-      "label": "All clear today",
-      "cta": "See what is next",
-      "next": "Next: {{title}} · {{when}}"
     }
   },
   "tiles": {
-    "noticesEmpty": "Nothing new",
-    "upcomingEmpty": "Nothing planned"
+    "noticesEmpty": "Nothing new"
   },
   "glow": {
     "searchHint": "Search people and flats…",

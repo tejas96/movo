@@ -13,8 +13,6 @@
     "ar": "AR गाइड"
   },
   "needsYou": "आज आपके लिए",
-  "allClearBody": "कोई बकाया, ज़िम्मेदारी या अलर्ट नहीं।",
-  "upcoming": "आगामी",
   "notices": "नोटिस",
   "attention": {
     "MARKET_ORDERS_WAITING": {
@@ -74,12 +72,7 @@
       "sub": "काम स्वीकार करें ताकि पॉइंट्स मिलें"
     }
   },
-  "upcomingKind": {
-    "MEETING": "बैठक",
-    "EVENT": "कार्यक्रम"
-  },
   "contribution": {
-    "title": "मेरा योगदान",
     "points": "इस साल {{count}} पॉइंट",
     "points_other": "इस साल {{count}} पॉइंट्स",
     "openTasks": "{{count}} काम चल रहा है",
@@ -104,16 +97,10 @@
     "task": {
       "label": "आपका काम",
       "cta": "काम खोलें"
-    },
-    "clear": {
-      "label": "आज सब ठीक है",
-      "cta": "आगे क्या है देखें",
-      "next": "आगे: {{title}} · {{when}}"
     }
   },
   "tiles": {
-    "noticesEmpty": "कुछ नया नहीं",
-    "upcomingEmpty": "कुछ तय नहीं"
+    "noticesEmpty": "कुछ नया नहीं"
   },
   "glow": {
     "searchHint": "लोग या फ्लैट खोजें…",

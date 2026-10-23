@@ -70,9 +70,6 @@
   },
   "collection": {
     "fy": "Financial year {{fy}}",
-    "paidOf": "paid of {{total}}",
-    "pending": "pending",
-    "collected": "collected",
     "billed": "Billed",
     "outstanding": "Outstanding",
     "lastPaid": "Last paid {{date}}"
@@ -214,7 +211,6 @@
     "openBills": "Open bills",
     "paid": "What you paid",
     "months": "Last 6 months",
-    "collectedFy": "Collected this year",
     "flatsPaid": "{{paid}} of {{total}} flats paid",
     "due": "Due",
     "flatsCount_one": "{{count}} flat",

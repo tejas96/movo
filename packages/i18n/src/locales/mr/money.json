@@ -70,9 +70,6 @@
   },
   "collection": {
     "fy": "आर्थिक वर्ष {{fy}}",
-    "paidOf": "{{total}} पैकी भरले",
-    "pending": "बाकी",
-    "collected": "वसूल",
     "billed": "बिल केलेले",
     "outstanding": "थकबाकी",
     "lastPaid": "शेवटचा भरणा {{date}}"
@@ -214,7 +211,6 @@
     "openBills": "बाकी बिलं",
     "paid": "तुम्ही किती भरलं",
     "months": "मागचे 6 महिने",
-    "collectedFy": "या वर्षी जमा झालं",
     "flatsPaid": "{{total}} पैकी {{paid}} फ्लॅटनी भरलं",
     "due": "बाकी",
     "flatsCount_one": "{{count}} फ्लॅट",

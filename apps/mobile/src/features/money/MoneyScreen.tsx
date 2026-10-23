@@ -332,6 +332,12 @@ function SocietyCollection({
               {`${Math.round(share * 100)}%`}
             </Text>
           </View>
+          {/* Society totals for whoever may see amounts (the server sends null otherwise). */}
+          {data.outstandingPaise !== null ? (
+            <Text variant="label" tone="secondary" className="mt-2">
+              {`${t('collection.billed')} ${money(data.billedPaise ?? 0)} · ${t('collection.outstanding')} ${money(data.outstandingPaise)}`}
+            </Text>
+          ) : null}
         </Glass>
       </Rise>
       <Rise delay={80}>
