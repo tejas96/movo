@@ -19,7 +19,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { signOut } from '../../core/auth/auth';
 import { useNav } from '../../core/navigation/types';
 import { useMeContext } from '../../core/tenant/hooks';
-import { AuthShell } from '../auth/AuthShell';
+import { AuthShell } from '../../core/ui/AuthShell';
 import { useAcceptInvite, useJoinPreview } from './api';
 import { CodeInput } from './CodeInput';
 

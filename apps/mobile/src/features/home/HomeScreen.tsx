@@ -15,12 +15,12 @@ import { useSessionStore } from '../../core/auth/session.store';
 import { useHomeSummary } from '../../core/home/api';
 import type { HomeCtx, QuickCtx } from '../../core/home/types';
 import { useMembers } from '../../core/members/api';
+import { useMyDues } from '../../core/money/api';
 import { useNav } from '../../core/navigation/types';
 import { useSocietyProfile } from '../../core/society/api';
 import { formatFlat, useCanManageSociety, useMeContext, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { money } from '../../core/util/money';
-import { useMyDues } from '../money/api';
 import {
   DuesCard,
   GreetingCard,

@@ -8,7 +8,7 @@ import { View } from 'react-native';
 import { api } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { AuthShell } from './AuthShell';
+import { AuthShell } from '../../core/ui/AuthShell';
 
 export function ResetPasswordScreen() {
   const { t } = useTranslation(['auth', 'common']);

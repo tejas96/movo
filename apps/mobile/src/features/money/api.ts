@@ -2,17 +2,9 @@ import { maintenanceContract, type RouteBody } from '@movo/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../core/api/client';
 import { useCursorList } from '../../core/api/use-cursor-list';
-import { moneyKeys } from './keys';
+import { moneyKeys } from '../../core/money/keys';
 
 const c = maintenanceContract;
-
-export function useMyDues(societyId: string, enabled = true) {
-  return useQuery({
-    queryKey: moneyKeys(societyId).myDues,
-    queryFn: () => api(c.myDues, { params: { societyId } }),
-    enabled,
-  });
-}
 
 export function useFlatAccount(societyId: string, flatId: string) {
   return useQuery({
@@ -173,3 +165,5 @@ export function useDeleteInstruction(societyId: string) {
     onSuccess: invalidate,
   });
 }
+
+export { useMyDues } from '../../core/money/api';

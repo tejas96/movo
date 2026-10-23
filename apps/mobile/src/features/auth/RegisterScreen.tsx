@@ -11,7 +11,7 @@ import { signUp } from '../../core/auth/auth';
 import { PRIVACY_POLICY_URL } from '../../core/env';
 import { currentLocale, setAppLocale } from '../../core/i18n';
 import { useNav } from '../../core/navigation/types';
-import { AuthShell } from './AuthShell';
+import { AuthShell } from '../../core/ui/AuthShell';
 
 export function RegisterScreen() {
   const { t } = useTranslation(['auth', 'common']);

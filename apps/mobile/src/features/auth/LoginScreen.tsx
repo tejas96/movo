@@ -9,7 +9,7 @@ import { useErrorMessage } from '../../core/api/use-error-message';
 import { signIn } from '../../core/auth/auth';
 import { PRIVACY_POLICY_URL } from '../../core/env';
 import { useNav } from '../../core/navigation/types';
-import { AuthShell } from './AuthShell';
+import { AuthShell } from '../../core/ui/AuthShell';
 
 type Mode = 'phone' | 'email';
 const COUNTRY = '+91';

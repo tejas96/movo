@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import { api } from '../../core/api/client';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
-import { AuthShell } from './AuthShell';
+import { AuthShell } from '../../core/ui/AuthShell';
 
 export function ForgotPasswordScreen() {
   const { t } = useTranslation(['auth', 'common']);
