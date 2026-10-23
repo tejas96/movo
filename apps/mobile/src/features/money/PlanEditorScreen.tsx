@@ -205,7 +205,7 @@ export function PlanEditorScreen() {
             onPress={() => setSheet('freq')}
           />
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('money:plan.rule')}
             </Text>
             <Segmented
@@ -323,7 +323,7 @@ export function PlanEditorScreen() {
               ) : null}
             </>
           ) : null}
-          <View className="flex-row items-center justify-between rounded-md bg-card px-[18px] py-3">
+          <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
             <Text variant="body" className="flex-1">
               {t('money:plan.active')}
             </Text>

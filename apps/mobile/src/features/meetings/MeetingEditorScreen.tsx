@@ -2,6 +2,7 @@ import { type Meeting, meetingsContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
+  Card,
   Input,
   Screen,
   Text,
@@ -14,7 +15,6 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import {
   type DurationKey,
@@ -141,7 +141,7 @@ export function MeetingEditorScreen() {
           title={meetingId ? t('common:actions.edit') : t('meetings:new')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6 gap-3">
+        <Card className="mt-5 gap-3.5">
           <Controller
             control={form.control}
             name="title"
@@ -216,7 +216,7 @@ export function MeetingEditorScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

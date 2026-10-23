@@ -8,6 +8,7 @@ import {
 import {
   BottomBar,
   Button,
+  Card,
   Chip,
   DateTimeSheet,
   Input,
@@ -156,7 +157,7 @@ export function ExpenseEditorScreen() {
           title={expenseId ? t('expenses:edit') : t('expenses:new')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6 gap-3">
+        <Card className="mt-5 gap-3.5">
           <SelectField
             label={t('expenses:form.category')}
             placeholder={t('expenses:form.pickCategory')}
@@ -207,7 +208,7 @@ export function ExpenseEditorScreen() {
             )}
           />
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('expenses:form.method')}
             </Text>
             <ScrollView
@@ -252,7 +253,7 @@ export function ExpenseEditorScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

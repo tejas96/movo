@@ -329,7 +329,7 @@ export function ParkingSlotsScreen() {
             />
           </View>
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('parking:form.type')}
             </Text>
             <View className="flex-row flex-wrap gap-2">

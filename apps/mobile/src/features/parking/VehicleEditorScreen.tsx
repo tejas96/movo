@@ -7,6 +7,7 @@ import {
 import {
   BottomBar,
   Button,
+  Card,
   Input,
   OptionSheet,
   Screen,
@@ -20,7 +21,6 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { bodyResolver, formMessage } from '../../core/forms/contract-form';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
@@ -107,7 +107,7 @@ export function VehicleEditorScreen() {
           title={vehicle ? t('parking:editVehicle') : t('parking:addVehicle')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6 gap-3">
+        <Card className="mt-5 gap-3.5">
           <SelectField
             label={t('parking:form.flat')}
             value={flatLabel}
@@ -172,7 +172,7 @@ export function VehicleEditorScreen() {
               className="mt-4"
             />
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

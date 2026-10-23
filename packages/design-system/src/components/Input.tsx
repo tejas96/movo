@@ -171,14 +171,13 @@ export interface SelectFieldProps {
   className?: string;
 }
 
-/** Looks like an Input, opens a picker on press. */
+/** Looks like an Input (white pill), opens a picker on press. */
 export function SelectField({
   label,
   value,
   placeholder,
   error,
   onPress,
-  white,
   className,
 }: SelectFieldProps) {
   return (
@@ -191,11 +190,11 @@ export function SelectField({
       <Pressable
         accessibilityRole="button"
         onPress={onPress}
+        style={{ boxShadow: '0 4px 14px rgba(70,40,70,0.06)' }}
         className={cn(
-          'h-control-lg flex-row items-center justify-between rounded-md px-[18px] border-[1.5px]',
-          white ? 'bg-card-nested' : 'bg-card',
+          'h-control-lg flex-row items-center justify-between rounded-full px-[18px] border-[1.5px] bg-card-nested',
           error ? 'border-danger' : 'border-transparent',
-          'active:bg-card-deep',
+          'active:opacity-pressed',
         )}
       >
         <Text

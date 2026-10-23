@@ -428,7 +428,7 @@ function ContactSheet({
             maxLength={20}
           />
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('emergency:contactForm.type')}
             </Text>
             <View className="flex-row flex-wrap gap-2">
@@ -442,7 +442,7 @@ function ContactSheet({
               ))}
             </View>
           </View>
-          <View className="flex-row items-center justify-between rounded-md bg-card-nested px-[18px] py-3">
+          <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
             <Text variant="body" className="flex-1 pr-3">
               {t('emergency:contactForm.isPublic')}
             </Text>

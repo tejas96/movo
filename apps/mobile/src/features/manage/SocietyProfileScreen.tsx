@@ -246,7 +246,7 @@ export function SocietyProfileScreen() {
               value={monthName(fyStart)}
               onPress={() => setSheet('fy')}
             />
-            <View className="flex-row items-center justify-between rounded-md bg-card px-[18px] py-3">
+            <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
               <View className="flex-1 pr-3">
                 <Text variant="body">{t('manage:profile.joinRequests')}</Text>
                 <Text variant="caption" tone="secondary">

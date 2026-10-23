@@ -2,6 +2,7 @@ import { eventsContract, type SocietyEvent } from '@movo/contracts';
 import {
   BottomBar,
   Button,
+  Card,
   Input,
   Screen,
   Text,
@@ -134,7 +135,7 @@ export function EventEditorScreen() {
           title={eventId ? t('common:actions.edit') : t('events:new')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6 gap-3">
+        <Card className="mt-5 gap-3.5">
           <Controller
             control={form.control}
             name="title"
@@ -182,7 +183,7 @@ export function EventEditorScreen() {
               />
             )}
           />
-          <View className="flex-row items-center justify-between rounded-md bg-card px-[18px] py-3">
+          <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
             <Text variant="body">{t('events:form.rsvp')}</Text>
             <Toggle value={rsvpEnabled} onValueChange={(v) => form.setValue('rsvpEnabled', v)} />
           </View>
@@ -196,7 +197,7 @@ export function EventEditorScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

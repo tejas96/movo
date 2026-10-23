@@ -163,7 +163,7 @@ export function DutyEditorScreen() {
             )}
           />
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('duties:form.kind')}
             </Text>
             <Segmented
@@ -187,7 +187,7 @@ export function DutyEditorScreen() {
             onPress={() => setSheet('people')}
           />
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('duties:form.unit')}
             </Text>
             <Segmented
@@ -204,7 +204,7 @@ export function DutyEditorScreen() {
             value={day(isoDay(start))}
             onPress={() => setSheet('date')}
           />
-          <View className="flex-row items-center justify-between rounded-md bg-card px-[18px] py-3">
+          <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
             <Text variant="body" className="flex-1">
               {t('duties:form.confirm')}
             </Text>
@@ -212,7 +212,7 @@ export function DutyEditorScreen() {
           </View>
           {confirm ? (
             <View>
-              <Text variant="label" tone="secondary" className="mb-1.5">
+              <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
                 {t('duties:form.onMiss')}
               </Text>
               <Segmented

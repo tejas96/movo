@@ -521,7 +521,7 @@ function Field({
 }) {
   return (
     <View>
-      <Text variant="label" tone="secondary" className="mb-1.5">
+      <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
         {label}
       </Text>
       {children}

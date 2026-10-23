@@ -2,6 +2,7 @@ import { type Task, tasksContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
+  Card,
   DateTimeSheet,
   Input,
   Screen,
@@ -16,7 +17,6 @@ import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { bodyResolver, formMessage, usePrefill } from '../../core/forms/contract-form';
 import { MemberPickerSheet } from '../../core/members/MemberPickerSheet';
@@ -101,7 +101,7 @@ export function TaskEditorScreen() {
           title={taskId ? t('common:actions.edit') : t('tasks:new')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6 gap-3">
+        <Card className="mt-5 gap-3.5">
           <Controller
             control={form.control}
             name="title"
@@ -158,7 +158,7 @@ export function TaskEditorScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={
