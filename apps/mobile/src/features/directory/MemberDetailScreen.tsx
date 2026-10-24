@@ -4,7 +4,6 @@ import {
   Card,
   Chip,
   CircleButton,
-  Divider,
   DotTexture,
   Glass,
   GlowAvatar,
@@ -205,41 +204,42 @@ export function MemberDetailScreen() {
           ) : null}
           {m.canManage ? (
             <>
-              <Divider className="my-6" />
-              <View className="gap-3">
-                <Button label={t('manage:member.roles')} variant="white" onPress={openRoles} />
-                <Button
-                  label={t('manage:member.editFlats')}
-                  variant="white"
+              <Card tight className="mt-6">
+                <Row icon="shield" title={t('manage:member.roles')} onPress={openRoles} />
+                <Row
+                  icon="flat"
+                  title={t('manage:member.editFlats')}
                   onPress={() => setFlatsOpen(true)}
                 />
                 {m.status === 'ACTIVE' ? (
-                  <Button
-                    label={t('manage:member.suspend')}
-                    variant="white"
+                  <Row
+                    icon="pause"
+                    title={t('manage:member.suspend')}
+                    disabled={update.isPending}
                     onPress={() => confirmStatus('SUSPENDED')}
-                    loading={update.isPending}
                   />
                 ) : (
-                  <Button
-                    label={t('manage:member.activate')}
-                    variant="white"
+                  <Row
+                    icon="play"
+                    title={t('manage:member.activate')}
+                    disabled={update.isPending}
                     onPress={() => void setStatus('ACTIVE')}
-                    loading={update.isPending}
                   />
                 )}
-                <Button
-                  label={t('manage:member.resetCode')}
-                  variant="white"
+                <Row
+                  icon="key"
+                  title={t('manage:member.resetCode')}
+                  disabled={reset.isPending}
                   onPress={() => void issueCode()}
-                  loading={reset.isPending}
                 />
-                <Button
-                  label={t('manage:member.remove')}
-                  variant="danger"
-                  onPress={() => confirmStatus('LEFT')}
-                />
-              </View>
+              </Card>
+              <Button
+                label={t('manage:member.remove')}
+                variant="dangerText"
+                icon="logout"
+                className="mt-4"
+                onPress={() => confirmStatus('LEFT')}
+              />
             </>
           ) : null}
         </>
