@@ -195,7 +195,6 @@ export function NoticeEditorScreen() {
                 label={t('notices:form.saveDraft')}
                 variant="gray"
                 inline
-                size="sm"
                 onPress={() => void save(false)}
                 disabled={busy}
               />

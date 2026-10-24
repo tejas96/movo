@@ -13,6 +13,7 @@ export * from './glow';
 export * from './HoldButton';
 export * from './Icon';
 export * from './IconButtons';
+export * from './IconGrid';
 export * from './Input';
 export * from './PersonCard';
 export * from './Photo';

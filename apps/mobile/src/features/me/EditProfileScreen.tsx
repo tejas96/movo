@@ -1,4 +1,14 @@
-import { Avatar, Button, Card, Input, Screen, Text, TitleBar, useToast } from '@movo/design-system';
+import {
+  Avatar,
+  BottomBar,
+  Button,
+  Card,
+  Input,
+  Screen,
+  Text,
+  TitleBar,
+  useToast,
+} from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { photoUri } from '../../core/api/client';
@@ -46,42 +56,49 @@ export function EditProfileScreen() {
   };
 
   return (
-    <Screen>
-      <TitleBar title={t('me:profile')} onBack={() => nav.goBack()} />
-      <Card className="mt-5 gap-3.5">
-        <SinglePhotoField
-          title={t('me:photo')}
-          help={t('me:photoHelp')}
-          hasPhoto={Boolean(user?.avatarUrl)}
-          busy={setAvatar.isPending || removeAvatar.isPending}
-          preview={
-            <Avatar name={user?.displayName ?? '?'} uri={photoUri(user?.avatarUrl)} size={64} />
-          }
-          onPick={(source) => void changePhoto(source)}
-          onRemove={() => void clearPhoto()}
-        />
-        <Input label={t('auth:fullName')} value={name} onChangeText={setName} />
-        <Input
-          label={t('me:phone')}
-          value={user?.phone ?? ''}
-          placeholder={t('me:notSet')}
-          editable={false}
-        />
-        <Input
-          label={t('me:email')}
-          value={user?.email ?? ''}
-          placeholder={t('me:notSet')}
-          editable={false}
-        />
-        <Text variant="micro" tone="secondary" className="font-normal">
-          {t('home:attention.PROFILE_INCOMPLETE.sub')}
-        </Text>
-        <Button
-          label={t('common:actions.save')}
-          onPress={() => void save()}
-          loading={update.isPending}
-        />
-      </Card>
-    </Screen>
+    <>
+      <Screen bottomBar>
+        <TitleBar title={t('me:profile')} onBack={() => nav.goBack()} />
+        <Card className="mt-5 gap-3.5">
+          <SinglePhotoField
+            title={t('me:photo')}
+            help={t('me:photoHelp')}
+            hasPhoto={Boolean(user?.avatarUrl)}
+            busy={setAvatar.isPending || removeAvatar.isPending}
+            preview={
+              <Avatar name={user?.displayName ?? '?'} uri={photoUri(user?.avatarUrl)} size={64} />
+            }
+            onPick={(source) => void changePhoto(source)}
+            onRemove={() => void clearPhoto()}
+          />
+          <Input label={t('auth:fullName')} value={name} onChangeText={setName} />
+          <Input
+            label={t('me:phone')}
+            value={user?.phone ?? ''}
+            placeholder={t('me:notSet')}
+            editable={false}
+          />
+          <Input
+            label={t('me:email')}
+            value={user?.email ?? ''}
+            placeholder={t('me:notSet')}
+            editable={false}
+          />
+          <Text variant="micro" tone="secondary" className="font-normal">
+            {t('home:attention.PROFILE_INCOMPLETE.sub')}
+          </Text>
+        </Card>
+      </Screen>
+      <BottomBar
+        action={
+          <Button
+            inline
+            label={t('common:actions.save')}
+            onPress={() => void save()}
+            loading={update.isPending}
+          />
+        }
+      />
+    </>
   );
 }

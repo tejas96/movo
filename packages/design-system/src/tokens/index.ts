@@ -1,12 +1,12 @@
 import { color, light } from './color';
 import { blur, elevation, motion, opacity } from './effects';
-import { art, dots, glow, glowScene, orb } from './glow';
+import { art, dots, glow, glowScene, orb, tint, tintCycle } from './glow';
 import { layout, radius, space } from './layout';
 import { palette } from './palette';
 import { typography } from './typography';
 
 export type { ColorPair, SemanticColors } from './color';
-export type { ArtName, ArtPreset, ArtSpot, GlowBlob, GlowSceneName } from './glow';
+export type { ArtName, ArtPreset, ArtSpot, GlowBlob, GlowSceneName, TintName } from './glow';
 export type { TypeVariant } from './typography';
 export {
   art,
@@ -24,6 +24,8 @@ export {
   palette,
   radius,
   space,
+  tint,
+  tintCycle,
   typography,
 };
 

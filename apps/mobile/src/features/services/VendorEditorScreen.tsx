@@ -2,6 +2,7 @@ import { type Vendor, vendorsContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
+  Card,
   Input,
   OptionSheet,
   Screen,
@@ -146,7 +147,7 @@ export function VendorEditorScreen() {
             {t('services:suggestHelp')}
           </Text>
         ) : null}
-        <View className="mt-6 gap-3">
+        <Card className="mt-6 gap-3">
           <SelectField
             label={t('services:form.category')}
             value={category ? categoryLabel(category) : undefined}
@@ -254,7 +255,7 @@ export function VendorEditorScreen() {
               {formError}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

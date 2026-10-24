@@ -87,10 +87,19 @@ export function DetailHero({
 }
 
 /** A white pill with an orange dot, for the hero ("Event · by committee"). */
-export function HeroPill({ label, dot = true }: { label: string; dot?: boolean }) {
+export function HeroPill({
+  label,
+  dot = true,
+  dotColor,
+}: {
+  label: string;
+  dot?: boolean;
+  /** Default orange; red for overdue or urgent. */
+  dotColor?: string;
+}) {
   return (
     <View style={styles.pill}>
-      {dot ? <View style={styles.dot} /> : null}
+      {dot ? <View style={[styles.dot, dotColor ? { backgroundColor: dotColor } : null]} /> : null}
       <Text variant="label" className="font-medium" numberOfLines={1}>
         {label}
       </Text>

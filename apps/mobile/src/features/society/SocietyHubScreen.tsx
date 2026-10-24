@@ -5,10 +5,10 @@ import {
   Building,
   Glass,
   Icon,
+  IconGrid,
   type IconMotion,
   type IconName,
   IconSquare,
-  MovingIcon,
   Press,
   Rise,
   Row,
@@ -17,6 +17,7 @@ import {
   Text,
   TitleBar,
   theme,
+  tint,
 } from '@movo/design-system';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -40,14 +41,7 @@ type ModuleTile = {
   labelKey: string;
 };
 
-const TINT = {
-  peach: '#FDE6DA',
-  lavender: '#EEE6FB',
-  sage: '#E6F1E3',
-  blue: '#E6E9FA',
-  sand: '#FBEBD3',
-  pink: '#FBE2E2',
-};
+const TINT = tint;
 
 const ORDER: ModuleTile[] = [
   { key: 'notices', icon: 'notices', motion: 'wiggle', tint: TINT.peach, labelKey: 'notices' },
@@ -225,31 +219,17 @@ export function SocietyHubScreen() {
         <Rise delay={140}>
           <Glass radius={28} style={styles.explore}>
             <SectionLabel>{t('society:explore')}</SectionLabel>
-            <View style={styles.grid}>
-              {tiles.map((tile) => {
-                const label = t(`society:modules.${tile.labelKey}` as 'society:modules.notices');
-                return (
-                  <Press
-                    key={tile.key}
-                    accessibilityRole="button"
-                    accessibilityLabel={label}
-                    onPress={() => open(tile)}
-                    scaleTo={0.92}
-                    style={styles.item}
-                  >
-                    <View style={[styles.circle, { backgroundColor: tile.tint }]}>
-                      <MovingIcon name={tile.icon} motion={tile.motion} size={22} />
-                      {dot[tile.key] ? (
-                        <View style={[styles.dot, { backgroundColor: dot[tile.key] }]} />
-                      ) : null}
-                    </View>
-                    <Text variant="label" center numberOfLines={2} className="font-medium">
-                      {label}
-                    </Text>
-                  </Press>
-                );
-              })}
-            </View>
+            <IconGrid
+              items={tiles.map((tile) => ({
+                key: tile.key,
+                icon: tile.icon,
+                motion: tile.motion,
+                tint: tile.tint,
+                label: t(`society:modules.${tile.labelKey}` as 'society:modules.notices'),
+                dot: dot[tile.key],
+                onPress: () => open(tile),
+              }))}
+            />
           </Glass>
         </Rise>
 
@@ -341,26 +321,6 @@ function alertLine(
 
 const styles = StyleSheet.create({
   explore: { padding: 8, paddingBottom: 14 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 14 },
-  item: { width: '25%', alignItems: 'center', gap: 6, paddingHorizontal: 2 },
-  circle: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 4px 14px rgba(70,40,70,0.06)',
-  },
-  dot: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
   disc: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   page: { gap: 14 },
   hero: { padding: 16, justifyContent: 'space-between' },

@@ -1,12 +1,13 @@
 import {
   Card,
   Icon,
-  IconSquare,
   Screen,
   Skeleton,
   Text,
+  TintDisc,
   TitleBar,
   Toggle,
+  tintFor,
   useToast,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
@@ -60,7 +61,7 @@ export function ModulesScreen() {
                   disabled={!hasSettings || !m.enabled}
                   onPress={() => nav.navigate('ModuleSettings', { moduleKey: key })}
                 >
-                  <IconSquare icon={MODULE_ICON[key]} variant="linear" tone="white" size="sm" />
+                  <TintDisc icon={MODULE_ICON[key]} tint={tintFor(key)} size={44} />
                   <View className="flex-1 min-w-0">
                     <Text variant="bodyMedium">{t(`society:modules.${key}`)}</Text>
                     <Text variant="caption" tone="secondary" numberOfLines={2}>

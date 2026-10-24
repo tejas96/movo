@@ -2,7 +2,6 @@ import type { FlatAccount } from '@movo/contracts';
 import {
   ArtCard,
   Button,
-  Chip,
   Coin,
   EmptyState,
   Glass,
@@ -11,6 +10,7 @@ import {
   Row,
   Screen,
   SectionLabel,
+  Segmented,
   Skeleton,
   Text,
   theme,
@@ -32,6 +32,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { formatFlat, useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { SummaryHero } from '../../core/ui/SummaryHero';
 import { day, shortMonth } from '../../core/util/date';
 import { money } from '../../core/util/money';
 import { useCollection, useGenerateBills, useMyDues } from './api';
@@ -71,20 +72,6 @@ export function MoneyScreen() {
             <Text variant="h1" className="flex-1" numberOfLines={1}>
               {t('money:title')}
             </Text>
-            {showSociety ? (
-              <View style={styles.tabs}>
-                <Chip
-                  label={t('money:myDues')}
-                  selected={tab === 'mine'}
-                  onPress={() => setTab('mine')}
-                />
-                <Chip
-                  label={t('money:society')}
-                  selected={tab === 'society'}
-                  onPress={() => setTab('society')}
-                />
-              </View>
-            ) : null}
             {hasFlat && !showSociety ? (
               <IconSquare
                 icon="receipt"
@@ -94,6 +81,17 @@ export function MoneyScreen() {
               />
             ) : null}
           </View>
+          {showSociety ? (
+            <Segmented
+              className="mt-4"
+              options={[
+                { value: 'mine', label: t('money:myDues') },
+                { value: 'society', label: t('money:society') },
+              ]}
+              value={tab}
+              onChange={setTab}
+            />
+          ) : null}
         </Rise>
 
         {tab === 'mine' ? (
@@ -312,20 +310,21 @@ function SocietyCollection({
   return (
     <>
       <Rise>
-        <Glass style={styles.collected}>
-          <Text variant="caption" tone="secondary">
-            {t('collection.fy', { fy: data.financialYear })}
-          </Text>
-          <Text style={styles.collectedAmount} className="font-medium">
-            {data.collectedPaise !== null
+        <SummaryHero
+          art="meadow"
+          label={t('collection.fy', { fy: data.financialYear })}
+          value={
+            data.collectedPaise !== null
               ? money(data.collectedPaise)
-              : t('glow.flatsPaid', { paid: data.counts.paid, total: data.counts.flats })}
-          </Text>
+              : t('glow.flatsPaid', { paid: data.counts.paid, total: data.counts.flats })
+          }
+          icon={{ name: 'wallet', motion: 'bob' }}
+        >
           <View style={styles.track}>
             <View style={[styles.fill, { width: `${Math.round(share * 100)}%` }]} />
           </View>
           <View style={styles.trackLabels}>
-            <Text variant="caption" tone="secondary">
+            <Text variant="caption" tone="soft">
               {t('glow.flatsPaid', { paid: data.counts.paid, total: data.counts.flats })}
             </Text>
             <Text variant="caption" className="font-semibold">
@@ -334,11 +333,11 @@ function SocietyCollection({
           </View>
           {/* Society totals for whoever may see amounts (the server sends null otherwise). */}
           {data.outstandingPaise !== null ? (
-            <Text variant="label" tone="secondary" className="mt-2">
+            <Text variant="label" tone="soft" className="mt-2">
               {`${t('collection.billed')} ${money(data.billedPaise ?? 0)} · ${t('collection.outstanding')} ${money(data.outstandingPaise)}`}
             </Text>
           ) : null}
-        </Glass>
+        </SummaryHero>
       </Rise>
       <Rise delay={80}>
         <View style={styles.stats}>
@@ -474,7 +473,6 @@ function TreasurerTools() {
 const styles = StyleSheet.create({
   stack: { gap: 14 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  tabs: { flexDirection: 'row', gap: 6 },
   heroContent: { padding: 20 },
   coinBig: { position: 'absolute', top: 18, right: 26 },
   coinSmall: { position: 'absolute', top: 70, right: 90 },
@@ -503,14 +501,6 @@ const styles = StyleSheet.create({
   bars: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, height: 130, marginTop: 16 },
   barCol: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 6, height: '100%' },
   bar: { width: '100%', borderRadius: 999, transformOrigin: 'bottom' },
-  collected: { padding: 22 },
-  collectedAmount: {
-    fontSize: 40,
-    lineHeight: 46,
-    letterSpacing: -1,
-    marginTop: 4,
-    color: theme.color.text.primary,
-  },
   track: {
     height: 12,
     borderRadius: 999,

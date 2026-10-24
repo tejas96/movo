@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import { Pressable, type PressableProps, View, type ViewProps } from 'react-native';
-import type { BoldIconName } from '../icons';
+import type { IconName } from '../icons';
+import type { TintName } from '../tokens';
 import { cn } from './cn';
 import { InGlass, useInGlass } from './glow/in-glass';
 import { Icon } from './Icon';
-import { IconSquare } from './IconButtons';
+import { TintDisc, tintFor } from './IconGrid';
 import { Press } from './Press';
 import { Text } from './Text';
 import { theme } from './theme';
@@ -52,8 +53,10 @@ export function SectionLabel({ children, className }: { children: string; classN
 export interface RowProps extends Omit<PressableProps, 'children' | 'style'> {
   title: string;
   subtitle?: string | undefined;
-  /** Leading icon in a small gray square. */
-  icon?: BoldIconName;
+  /** Leading line icon on a soft tint circle. */
+  icon?: IconName;
+  /** Tint of the icon circle. Default: a steady tint picked from the icon name. */
+  tint?: TintName | string;
   /** Any leading node instead of the icon square (avatar, date block). */
   leading?: ReactNode;
   /** Trailing node (amount, status pill). A chevron is shown when pressable and nothing else is given. */
@@ -73,6 +76,7 @@ export function Row({
   title,
   subtitle,
   icon,
+  tint,
   leading,
   trailing,
   onGray,
@@ -92,7 +96,7 @@ export function Row({
               <Icon name={icon} size={20} color={theme.color.status.danger.fg} />
             </View>
           ) : (
-            <IconSquare icon={icon} variant="linear" size="sm" tone="white" />
+            <TintDisc icon={icon} tint={tint ?? tintFor(icon)} size={44} />
           )
         ) : null)}
       <View className="flex-1 min-w-0">

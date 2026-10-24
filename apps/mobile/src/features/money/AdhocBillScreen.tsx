@@ -2,6 +2,7 @@ import { maintenanceContract } from '@movo/contracts';
 import {
   BottomBar,
   Button,
+  Card,
   DateTimeSheet,
   Input,
   Screen,
@@ -13,7 +14,6 @@ import {
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { bodyResolver, formMessage } from '../../core/forms/contract-form';
 import { useNav } from '../../core/navigation/types';
@@ -73,7 +73,7 @@ export function AdhocBillScreen() {
     <>
       <Screen bottomBar>
         <TitleBar title={t('money:adhoc.title')} onBack={() => nav.goBack()} />
-        <View className="mt-6 gap-3">
+        <Card className="mt-6 gap-3">
           <Controller
             control={form.control}
             name="title"
@@ -113,7 +113,7 @@ export function AdhocBillScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

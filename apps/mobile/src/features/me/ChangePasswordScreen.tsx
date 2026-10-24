@@ -1,4 +1,13 @@
-import { Button, Card, PasswordInput, Screen, Text, TitleBar, useToast } from '@movo/design-system';
+import {
+  BottomBar,
+  Button,
+  Card,
+  PasswordInput,
+  Screen,
+  Text,
+  TitleBar,
+  useToast,
+} from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useErrorMessage } from '../../core/api/use-error-message';
@@ -30,31 +39,38 @@ export function ChangePasswordScreen() {
   };
 
   return (
-    <Screen>
-      <TitleBar title={t('auth:changePassword')} onBack={() => nav.goBack()} />
-      <Card className="mt-5 gap-3.5">
-        <PasswordInput
-          label={t('auth:currentPassword')}
-          value={current}
-          onChangeText={setCurrent}
-        />
-        <PasswordInput label={t('auth:newPassword')} value={next} onChangeText={setNext} />
-        <PasswordInput
-          label={t('auth:confirmPassword')}
-          value={confirm}
-          onChangeText={setConfirm}
-        />
-        {error ? (
-          <Text variant="caption" tone="danger">
-            {error}
-          </Text>
-        ) : null}
-        <Button
-          label={t('common:actions.save')}
-          onPress={() => void save()}
-          loading={change.isPending}
-        />
-      </Card>
-    </Screen>
+    <>
+      <Screen bottomBar>
+        <TitleBar title={t('auth:changePassword')} onBack={() => nav.goBack()} />
+        <Card className="mt-5 gap-3.5">
+          <PasswordInput
+            label={t('auth:currentPassword')}
+            value={current}
+            onChangeText={setCurrent}
+          />
+          <PasswordInput label={t('auth:newPassword')} value={next} onChangeText={setNext} />
+          <PasswordInput
+            label={t('auth:confirmPassword')}
+            value={confirm}
+            onChangeText={setConfirm}
+          />
+          {error ? (
+            <Text variant="caption" tone="danger">
+              {error}
+            </Text>
+          ) : null}
+        </Card>
+      </Screen>
+      <BottomBar
+        action={
+          <Button
+            inline
+            label={t('common:actions.save')}
+            onPress={() => void save()}
+            loading={change.isPending}
+          />
+        }
+      />
+    </>
   );
 }

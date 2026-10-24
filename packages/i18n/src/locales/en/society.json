@@ -39,6 +39,7 @@
     "allWings": "All wings",
     "glow": {
       "title": "Members",
+      "memberTitle": "Member",
       "search": "Search name or flat…",
       "everyone": "Everyone",
       "you": "you",

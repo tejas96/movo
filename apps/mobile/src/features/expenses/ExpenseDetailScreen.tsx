@@ -24,6 +24,7 @@ import { useSocietyId } from '../../core/tenant/hooks';
 import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { Line } from '../../core/ui/Line';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { SummaryHero } from '../../core/ui/SummaryHero';
 import { day, relative } from '../../core/util/date';
 import { money } from '../../core/util/money';
 import { useDecideExpense, useExpense, useRemoveExpense } from './api';
@@ -81,23 +82,22 @@ export function ExpenseDetailScreen() {
           <Skeleton className="mt-6 h-64 rounded-xl" />
         ) : (
           <>
-            <Card className="mt-6">
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
-                  <IconSquare icon={CATEGORY_ICON[e.category.icon]} size="sm" tone="white" />
-                  <Text variant="label" tone="secondary">
-                    {expenseCategoryLabel(e.category)}
+            <View className="mt-6">
+              <SummaryHero
+                art="dusk"
+                label={expenseCategoryLabel(e.category)}
+                value={money(e.amountPaise)}
+                icon={{ name: CATEGORY_ICON[e.category.icon], motion: 'wobble' }}
+                pills={<ExpenseStatusPill status={e.status} />}
+              >
+                {e.description ? (
+                  <Text variant="h3" className="mt-3" numberOfLines={3}>
+                    {e.description}
                   </Text>
-                </View>
-                <ExpenseStatusPill status={e.status} />
-              </View>
-              {e.description ? (
-                <Text variant="h2" className="mt-3">
-                  {e.description}
-                </Text>
-              ) : null}
-              <Text variant="display">{money(e.amountPaise)}</Text>
-              <Divider />
+                ) : null}
+              </SummaryHero>
+            </View>
+            <Card className="mt-4">
               <View className="gap-2">
                 <Line label={t('expenses:detail.paidTo')} value={e.payeeName} />
                 <Line label={t('expenses:detail.paidOn')} value={day(e.incurredOn)} />

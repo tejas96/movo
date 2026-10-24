@@ -2,13 +2,13 @@ import {
   BottomBar,
   Button,
   Card,
+  Coin,
   EmptyState,
-  Pill,
   Screen,
   SectionHeader,
   Skeleton,
-  Text,
   TitleBar,
+  theme,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
@@ -16,7 +16,9 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { HeroPill } from '../../core/ui/DetailHero';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { SummaryHero } from '../../core/ui/SummaryHero';
 import { day } from '../../core/util/date';
 import { money } from '../../core/util/money';
 import { useFlatAccount } from './api';
@@ -46,32 +48,34 @@ export function FlatAccountScreen() {
           <Skeleton className="mt-6 h-40 rounded-xl" />
         ) : (
           <>
-            <Card className="mt-6">
-              <Text variant="label" tone="secondary">
-                {t('money:totalDue', { flat: formatFlat(a.flat) })}
-              </Text>
-              <Text variant="display">
-                {a.outstandingPaise > 0 ? money(a.outstandingPaise) : t('money:allPaid')}
-              </Text>
-              <View className="mt-2.5 flex-row flex-wrap gap-2">
-                {a.nextDueDate ? (
-                  <Pill
-                    icon="calendar"
-                    label={
-                      a.overdue
-                        ? t('money:overdueSince', { date: day(a.nextDueDate, 'short') })
-                        : t('money:dueOn', { date: day(a.nextDueDate, 'short') })
-                    }
-                  />
-                ) : null}
-                {a.creditPaise > 0 ? (
-                  <Pill
-                    icon="wallet"
-                    label={t('money:advance', { amount: money(a.creditPaise) })}
-                  />
-                ) : null}
-              </View>
-            </Card>
+            <View className="mt-6">
+              <SummaryHero
+                art="sunset"
+                label={t('money:totalDue', { flat: formatFlat(a.flat) })}
+                value={a.outstandingPaise > 0 ? money(a.outstandingPaise) : t('money:allPaid')}
+                drawing={<Coin size={56} />}
+                pills={
+                  <>
+                    {a.nextDueDate ? (
+                      <HeroPill
+                        dotColor={a.overdue ? theme.color.status.danger.fg : undefined}
+                        label={
+                          a.overdue
+                            ? t('money:overdueSince', { date: day(a.nextDueDate, 'short') })
+                            : t('money:dueOn', { date: day(a.nextDueDate, 'short') })
+                        }
+                      />
+                    ) : null}
+                    {a.creditPaise > 0 ? (
+                      <HeroPill
+                        dot={false}
+                        label={t('money:advance', { amount: money(a.creditPaise) })}
+                      />
+                    ) : null}
+                  </>
+                }
+              />
+            </View>
             {a.openBills.length > 0 ? (
               <>
                 <SectionHeader title={t('money:status.DUE')} />

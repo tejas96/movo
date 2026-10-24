@@ -223,8 +223,16 @@ export function MarketScreen() {
         visible={menu}
         onClose={() => setMenu(false)}
         options={[
-          { value: 'mine' as MenuKey, label: t('market:myListings') },
-          ...(canModerate ? [{ value: 'reports' as MenuKey, label: t('market:reportsLink') }] : []),
+          { value: 'mine' as MenuKey, label: t('market:myListings'), icon: 'box' as const },
+          ...(canModerate
+            ? [
+                {
+                  value: 'reports' as MenuKey,
+                  label: t('market:reportsLink'),
+                  icon: 'flag' as const,
+                },
+              ]
+            : []),
         ]}
         onSelect={(k) =>
           k === 'mine' ? nav.navigate('MyListings') : nav.navigate('MarketReports')

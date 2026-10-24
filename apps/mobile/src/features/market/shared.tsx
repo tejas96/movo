@@ -7,7 +7,15 @@ import {
   MarketplaceSettingsSchema,
   type OrderStatus,
 } from '@movo/contracts';
-import { type BoldIconName, Icon, photos, Text, theme } from '@movo/design-system';
+import {
+  type BoldIconName,
+  Icon,
+  photos,
+  Text,
+  TintDisc,
+  theme,
+  tintFor,
+} from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { Image, type ImageSourcePropType, Pressable, View } from 'react-native';
 import { fileUri } from '../../core/api/client';
@@ -126,7 +134,7 @@ export function DietPill({
   );
 }
 
-/** 44 rounded thumbnail for rows. */
+/** 44 rounded thumbnail for rows: the cover photo, or the kind's icon on a tint circle. */
 export function Thumb({
   cover,
   kind,
@@ -136,9 +144,11 @@ export function Thumb({
   kind: ListingKind;
   size?: number;
 }) {
+  // No photo: the kind's icon on a tint circle, not a stock photo.
+  if (!cover) return <TintDisc icon={KIND_ICON[kind]} tint={tintFor(kind)} size={size} />;
   return (
     <Image
-      source={coverSource(cover, kind)}
+      source={{ uri: fileUri(cover) }}
       resizeMode="cover"
       style={{ width: size, height: size, borderRadius: theme.radius.sm }}
       className="bg-card-deep"

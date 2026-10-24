@@ -75,6 +75,21 @@ export const art = {
 
 export type ArtName = keyof typeof art;
 
+/** Soft solid tints for the round icon circles (Society grid, list rows). From the mockup. */
+export const tint = {
+  peach: '#FDE6DA',
+  lavender: '#EEE6FB',
+  sage: '#E6F1E3',
+  blue: '#E6E9FA',
+  sand: '#FBEBD3',
+  pink: '#FBE2E2',
+} as const;
+
+export type TintName = keyof typeof tint;
+
+/** Tints in the order a list uses them, so neighbours differ. */
+export const tintCycle: readonly TintName[] = ['peach', 'lavender', 'sage', 'blue', 'sand', 'pink'];
+
 /** One background glow blob. Sizes and offsets in dp on a 390 wide screen. */
 export interface GlowBlob {
   readonly color: string;

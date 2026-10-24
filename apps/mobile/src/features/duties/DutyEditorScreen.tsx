@@ -7,6 +7,7 @@ import {
 import {
   BottomBar,
   Button,
+  Card,
   DateTimeSheet,
   Input,
   Screen,
@@ -136,7 +137,7 @@ export function DutyEditorScreen() {
     <>
       <Screen bottomBar>
         <TitleBar title={t('duties:new')} onBack={() => nav.goBack()} />
-        <View className="mt-6 gap-3">
+        <Card className="mt-6 gap-3">
           <Controller
             control={form.control}
             name="title"
@@ -243,7 +244,7 @@ export function DutyEditorScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

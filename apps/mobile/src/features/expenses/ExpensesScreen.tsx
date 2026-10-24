@@ -19,7 +19,9 @@ import {
   Sheet,
   Skeleton,
   Text,
+  TintDisc,
   TitleBar,
+  tintFor,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
@@ -293,7 +295,7 @@ function Bar({
     <View className="rounded-[22px] bg-card border-[1.5px] border-glass px-4 py-3">
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1 flex-row items-center gap-2">
-          <IconSquare icon={icon ?? 'receipt'} size="sm" tone="white" />
+          <TintDisc icon={icon ?? 'receipt'} tint={tintFor(icon ?? 'receipt')} size={40} />
           <Text variant="bodyMedium" numberOfLines={1} className="flex-1">
             {label}
           </Text>

@@ -1,11 +1,11 @@
 import type { Listing, OrderFulfilment } from '@movo/contracts';
 import {
-  type BoldIconName,
   BottomBar,
   Button,
   Card,
   CircleButton,
   Glass,
+  type IconName,
   IconSquare,
   Input,
   OptionSheet,
@@ -22,6 +22,7 @@ import {
   TextArea,
   Tile,
   theme,
+  tintCycle,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
@@ -357,7 +358,7 @@ export function ListingDetailScreen() {
 
 function Facts({ listing: l }: { listing: Listing }) {
   const { t } = useTranslation('market');
-  const facts: { key: string; icon: BoldIconName; label: string; hint: string }[] = [
+  const facts: { key: string; icon: IconName; label: string; hint: string }[] = [
     {
       key: 'handover',
       icon: l.fulfilment === 'PICKUP' ? 'bag' : 'truck',
@@ -402,8 +403,15 @@ function Facts({ listing: l }: { listing: Listing }) {
     <View className="mt-5 gap-3">
       {rows.map((row) => (
         <View key={row.map((f) => f.key).join()} className="flex-row gap-3">
-          {row.map((f) => (
-            <Tile key={f.key} icon={f.icon} label={f.label} hint={f.hint} disabled />
+          {row.map((f, i) => (
+            <Tile
+              key={f.key}
+              icon={f.icon}
+              label={f.label}
+              hint={f.hint}
+              tint={tintCycle[i % tintCycle.length]}
+              disabled
+            />
           ))}
           {Array.from({ length: 3 - row.length }, (_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: spacers have no identity

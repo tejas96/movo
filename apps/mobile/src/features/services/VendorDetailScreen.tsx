@@ -5,6 +5,7 @@ import {
   Card,
   CircleButton,
   IconSquare,
+  Rise,
   Row,
   Screen,
   Skeleton,
@@ -20,6 +21,7 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
 import { CATEGORY_ICON } from '../../core/ui/category-icon';
+import { DetailHero, HeroPill } from '../../core/ui/DetailHero';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
 import { formatPhone } from '../../core/util/phone';
@@ -58,44 +60,46 @@ export function VendorDetailScreen() {
   return (
     <>
       <Screen bottomBar={Boolean(v && v.status !== 'BLOCKED')}>
-        <TitleBar
-          title={v ? categoryLabel(v.category) : t('services:title')}
-          onBack={() => nav.goBack()}
-          trailing={
-            v?.canManage ? (
-              <IconSquare
-                icon="edit"
-                variant="linear"
-                accessibilityLabel={t('common:actions.edit')}
-                onPress={() => nav.navigate('VendorEditor', { vendorId })}
-              />
-            ) : undefined
-          }
-        />
         {loadFailed(vendor) ? (
-          <QueryError query={vendor} className="mt-6" />
+          <>
+            <TitleBar title={t('services:title')} onBack={() => nav.goBack()} />
+            <QueryError query={vendor} className="mt-6" />
+          </>
         ) : !v ? (
-          <View className="mt-6 gap-3">
-            <Skeleton className="h-16 w-16 self-center" />
+          <View className="gap-3">
+            <Skeleton className="h-[300px] rounded-[40px]" />
             <Skeleton className="h-40 rounded-xl" />
           </View>
         ) : (
           <>
-            <View className="mt-6 items-center">
-              <IconSquare icon={CATEGORY_ICON[icon]} />
-              <Text variant="h2" center className="mt-3">
-                {v.name}
-              </Text>
-              {v.status !== 'APPROVED' ? (
-                <StatusPill
-                  value={v.status}
-                  tones={STATUS_TONE}
-                  labels="services:status"
-                  className="mt-2 self-center"
-                />
-              ) : null}
-            </View>
-            <Card tight className="mt-6 gap-2">
+            <Rise>
+              <DetailHero
+                art="sand"
+                onBack={() => nav.goBack()}
+                trailing={
+                  v.canManage ? (
+                    <IconSquare
+                      icon="edit"
+                      variant="linear"
+                      diameter={46}
+                      accessibilityLabel={t('common:actions.edit')}
+                      onPress={() => nav.navigate('VendorEditor', { vendorId })}
+                    />
+                  ) : undefined
+                }
+                icon={{ name: CATEGORY_ICON[icon], motion: 'wobble' }}
+                pills={
+                  <>
+                    <HeroPill label={categoryLabel(v.category)} />
+                    {v.status !== 'APPROVED' ? (
+                      <StatusPill value={v.status} tones={STATUS_TONE} labels="services:status" />
+                    ) : null}
+                  </>
+                }
+                title={v.name}
+              />
+            </Rise>
+            <Card tight className="mt-4 gap-2">
               <Row
                 icon="call"
                 title={formatPhone(v.phone)}

@@ -104,7 +104,7 @@ export function MemberDetailScreen() {
   return (
     <Screen>
       <TitleBar
-        title={t('society:directory.glow.title')}
+        title={t('society:directory.glow.memberTitle')}
         onBack={() => nav.goBack()}
         className="mb-4"
       />

@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { IconName } from '../icons';
+import { Card, Row } from './Card';
+import { Icon } from './Icon';
 import { Text } from './Text';
 import { theme } from './theme';
 import { useKeyboardHeight } from './useKeyboardHeight';
@@ -69,12 +72,13 @@ export interface OptionSheetProps<T extends string> {
   visible: boolean;
   onClose: () => void;
   title?: string;
-  options: readonly { value: T; label: string; hint?: string }[];
+  /** `icon` puts a tinted icon circle in front, for menus of places to go. */
+  options: readonly { value: T; label: string; hint?: string; icon?: IconName }[];
   value?: T | undefined;
   onSelect: (value: T) => void;
 }
 
-/** A list of choices in a sheet. Used by SelectField. */
+/** Pick one: the options as rows in one glass card, an orange tick on the chosen one. */
 export function OptionSheet<T extends string>({
   visible,
   onClose,
@@ -85,40 +89,28 @@ export function OptionSheet<T extends string>({
 }: OptionSheetProps<T>) {
   return (
     <Sheet visible={visible} onClose={onClose} title={title}>
-      <View className="gap-2">
+      <Card tight>
         {options.map((o) => {
           const on = o.value === value;
           return (
-            <Pressable
+            <Row
               key={o.value}
               accessibilityRole="radio"
               accessibilityState={{ checked: on }}
+              icon={o.icon}
+              title={o.label}
+              subtitle={o.hint}
               onPress={() => {
                 onSelect(o.value);
                 onClose();
               }}
-              className={
-                on
-                  ? 'flex-row items-center justify-between rounded-[22px] bg-ink px-4 py-3.5'
-                  : 'flex-row items-center justify-between rounded-[22px] bg-card-nested px-4 py-3.5 active:bg-card'
+              trailing={
+                on ? <Icon name="check" size={22} color={theme.color.accent.fg} /> : <View />
               }
-            >
-              <View className="flex-1 min-w-0">
-                <Text variant="bodyMedium" tone={on ? 'inverse' : 'primary'}>
-                  {o.label}
-                </Text>
-                {o.hint ? (
-                  <Text variant="label" tone={on ? 'inverse' : 'secondary'}>
-                    {o.hint}
-                  </Text>
-                ) : null}
-              </View>
-              {/* biome-ignore lint/style/noJsxLiterals: a tick mark, not words */}
-              {on ? <Text tone="inverse">✓</Text> : null}
-            </Pressable>
+            />
           );
         })}
-      </View>
+      </Card>
     </Sheet>
   );
 }
