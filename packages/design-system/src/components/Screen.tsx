@@ -35,10 +35,12 @@ export interface ScreenProps {
   gray?: boolean;
   /** The soft glow behind the screen. `false` for plain mist. Default `soft`. */
   glow?: GlowSceneName | false;
+  /** Let the glow drift. Default off: a drifting glow redraws the screen every frame. */
+  glowMotion?: boolean;
   className?: string;
 }
 
-/** Mist page with the drifting glow behind it, safe area, 18 gutter. Every screen starts here. */
+/** Mist page with the still glow behind it, safe area, 18 gutter. Every screen starts here. */
 export function Screen({
   children,
   scroll = true,
@@ -48,6 +50,7 @@ export function Screen({
   onRefresh,
   bleed,
   glow = 'soft',
+  glowMotion = false,
   className,
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
@@ -84,7 +87,7 @@ export function Screen({
   const bg = 'bg-transparent';
   return (
     <View className="flex-1 bg-canvas">
-      {glow ? <Backdrop scene={glow} /> : null}
+      {glow ? <Backdrop scene={glow} animate={glowMotion} /> : null}
       <KeyboardAvoidingView
         // Padding on both platforms: edge to edge, Android no longer resizes the window itself.
         behavior="padding"

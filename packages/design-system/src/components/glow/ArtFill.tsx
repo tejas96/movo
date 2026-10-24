@@ -29,12 +29,17 @@ export interface ArtFillProps extends ViewProps {
   blur?: number;
   /** One drift there or back, in ms. Default 14 s. */
   drift?: number;
+  /**
+   * Let the colours drift. Default off: drifting art re-blurs the card every frame, which kept
+   * the app at full CPU while idle. The still art looks the same.
+   */
+  animate?: boolean;
   children?: ReactNode;
 }
 
 /**
- * Dreamy moving colour art: the mockup's blurred `radial-gradient` spots on a box 1.7x the
- * card, drifting (−8%, 6%), turning 10° and growing 1.15x over 14 s and back.
+ * Dreamy colour art: the mockup's blurred `radial-gradient` spots on a box 1.7x the card. With
+ * `animate` it drifts (−8%, 6%), turning 10° and growing 1.15x over 14 s and back.
  * Content goes on top as children.
  */
 export function ArtFill({
@@ -44,6 +49,7 @@ export function ArtFill({
   radius = 0,
   blur = blurToken.art,
   drift = 14000,
+  animate = false,
   style,
   children,
   onLayout,
@@ -64,7 +70,14 @@ export function ArtFill({
     >
       {size.w > 0 ? (
         <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
-          <Spots preset={preset} w={size.w} h={size.h} blur={blur} drift={drift} />
+          <Spots
+            preset={preset}
+            w={size.w}
+            h={size.h}
+            blur={blur}
+            drift={drift}
+            animate={animate}
+          />
           {fade > 0 ? (
             <Rect x={0} y={0} width={size.w} height={size.h}>
               <LinearGradient
@@ -88,19 +101,21 @@ function Spots({
   h,
   blur,
   drift,
+  animate,
 }: {
   preset: ArtPreset;
   w: number;
   h: number;
   blur: number;
   drift: number;
+  animate: boolean;
 }) {
   // The mockup draws on `inset: -35%`: a box 1.7x the card, centred on it.
   const bw = w * 1.7;
   const bh = h * 1.7;
   const bx = -0.35 * w;
   const by = -0.35 * h;
-  const p = useLoop(drift);
+  const p = useLoop(drift, 0, animate);
   const transform = useDerivedValue(() => [
     { translateX: -0.08 * bw * p.value },
     { translateY: 0.06 * bh * p.value },

@@ -6,7 +6,6 @@ import {
   initialsOf,
   Orb,
   Press,
-  Ripple,
   Rise,
   Screen,
   SectionLabel,
@@ -69,8 +68,6 @@ export function MeScreen() {
               <Image source={{ uri: avatarUri }} style={styles.photo} accessibilityLabel={name} />
             ) : (
               <View style={styles.avatar}>
-                {/* Mockup: one coral ring that grows to 1.7x and fades every 3.2 s. */}
-                <Ripple size={AVATAR} color="#F0735A" from={0.3} to={1.7} period={3200} />
                 <Orb size={AVATAR}>
                   <Text style={styles.initials}>{initialsOf(name || '?')}</Text>
                 </Orb>

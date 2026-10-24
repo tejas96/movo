@@ -95,8 +95,24 @@ export function HoldOrb({ disabled, loading, onConfirm, hint }: HoldOrbProps) {
       <View style={styles.box}>
         {!reduced ? (
           <View style={styles.pulses} pointerEvents="none">
-            <Ripple size={ORB} color="#EE4B3F" from={0.35} to={1.6} period={2200} delay={0} />
-            <Ripple size={ORB} color="#EE4B3F" from={0.35} to={1.6} period={2200} delay={1100} />
+            <Ripple
+              size={ORB}
+              color="#EE4B3F"
+              from={0.35}
+              to={1.6}
+              period={2200}
+              delay={0}
+              animate
+            />
+            <Ripple
+              size={ORB}
+              color="#EE4B3F"
+              from={0.35}
+              to={1.6}
+              period={2200}
+              delay={1100}
+              animate
+            />
           </View>
         ) : null}
         <Svg width={BOX} height={BOX} style={styles.ring} pointerEvents="none">

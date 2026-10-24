@@ -1,17 +1,18 @@
 import { Canvas, Circle, RadialGradient, Shadow, vec } from '@shopify/react-native-skia';
 import type { ReactNode } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
-import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion } from 'react-native-reanimated';
 import { orb } from '../../tokens/glow';
 import { Loop, useCycle } from './motion';
+import { loopRuns } from './motion-policy';
 
 export interface OrbProps {
   size: number;
   /** `alert` = the red orb on the Emergency screen. */
   tone?: 'brand' | 'alert';
-  /** Grows and shrinks slowly. Default on. */
+  /** Grows and shrinks slowly. Default off: it is a forever loop, so ask for it on purpose. */
   breathe?: boolean;
-  /** Soft rings spreading out behind it. */
+  /** Soft rings spreading out behind it. Default off, for the same reason. */
   ripple?: boolean;
   /** Text or an icon on the orb (initials on an avatar). */
   children?: ReactNode;
@@ -22,7 +23,14 @@ export interface OrbProps {
  * The glossy coral orb, Soft Glow's mark: a radial gradient lit from the top left, an inner
  * shadow at the bottom right and a soft coloured shadow under it.
  */
-export function Orb({ size, tone = 'brand', breathe = true, ripple, children, style }: OrbProps) {
+export function Orb({
+  size,
+  tone = 'brand',
+  breathe = false,
+  ripple = false,
+  children,
+  style,
+}: OrbProps) {
   const stops = tone === 'alert' ? orb.alert : orb.stops;
   const shadowColor = tone === 'alert' ? 'rgba(214, 59, 59, 0.38)' : orb.shadow;
   // Mockup shadows: 30 → 0 6px 14px, 64 → 0 14px 30px, 180 → 0 24px 50px.
@@ -76,12 +84,12 @@ export function Orb({ size, tone = 'brand', breathe = true, ripple, children, st
     <View style={[{ width: size, height: size }, style]}>
       {ripple ? (
         <>
-          <Ripple size={size} color={stops[2]?.color ?? '#F0735A'} delay={0} />
-          <Ripple size={size} color="#CDB2F0" delay={1500} />
+          <Ripple size={size} color={stops[2]?.color ?? '#F0735A'} delay={0} animate />
+          <Ripple size={size} color="#CDB2F0" delay={1500} animate />
         </>
       ) : null}
       {breathe ? (
-        <Loop kind="breathe" period={4500}>
+        <Loop kind="breathe" period={4500} animate>
           {body}
         </Loop>
       ) : (
@@ -91,7 +99,10 @@ export function Orb({ size, tone = 'brand', breathe = true, ripple, children, st
   );
 }
 
-/** A disc that grows to 2.4x and fades, again and again (mockup: `ripple 3s`). */
+/**
+ * A disc that grows to 2.4x and fades, again and again (mockup: `ripple 3s`). Draws nothing
+ * unless `animate`: a still ripple is invisible, and a running one redraws every frame.
+ */
 export function Ripple({
   size,
   color,
@@ -99,6 +110,7 @@ export function Ripple({
   to = 2.4,
   from = 0.4,
   period = 3000,
+  animate = false,
 }: {
   size: number;
   color: string;
@@ -106,12 +118,16 @@ export function Ripple({
   to?: number;
   from?: number;
   period?: number;
+  animate?: boolean;
 }) {
-  const p = useCycle(period, delay);
+  const reduced = useReducedMotion();
+  const runs = loopRuns({ animate, reduced });
+  const p = useCycle(period, delay, undefined, runs);
   const animated = useAnimatedStyle(() => ({
     opacity: from * (1 - p.value),
     transform: [{ scale: 1 + (to - 1) * p.value }],
   }));
+  if (!runs) return null;
   return (
     <Animated.View
       pointerEvents="none"

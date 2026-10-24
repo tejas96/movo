@@ -11,6 +11,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+import { loopMode, settleRepeats } from './motion-policy';
 
 /** CSS `ease-in-out`, used by every looping motion in the mockup. */
 export const easeInOut = Easing.bezier(0.42, 0, 0.58, 1);
@@ -18,38 +19,55 @@ export const easeInOut = Easing.bezier(0.42, 0, 0.58, 1);
 export const easeRise = Easing.bezier(0.2, 0.8, 0.2, 1);
 
 /**
- * A value that goes 0 → 1 → 0 forever, `half` ms each way, eased like CSS `alternate` loops.
- * Stays at 0 when the phone asks for less motion.
+ * A value that goes 0 → 1 → 0, `half` ms each way, eased like CSS `alternate` loops.
+ * `animate` (see motion-policy): unset = play for about 4 s then rest at 0, true = for good,
+ * false = still. Also still when the phone asks for less motion.
  */
-export function useLoop(half: number, delay = 0): SharedValue<number> {
+export function useLoop(half: number, delay = 0, animate?: boolean): SharedValue<number> {
   const reduced = useReducedMotion();
   const p = useSharedValue(0);
   useEffect(() => {
-    if (reduced) {
+    const mode = loopMode({ animate, reduced });
+    if (mode === 'off') {
       p.value = 0;
       return;
     }
+    const repeats = mode === 'forever' ? -1 : settleRepeats(half, true);
     p.value = withDelay(
       delay,
-      withRepeat(withTiming(1, { duration: half, easing: easeInOut }), -1, true),
+      withRepeat(withTiming(1, { duration: half, easing: easeInOut }), repeats, true),
     );
     return () => cancelAnimation(p);
-  }, [reduced, half, delay, p]);
+  }, [reduced, half, delay, animate, p]);
   return p;
 }
 
-/** A value that goes 0 → 1 every `period` ms and starts again (pulses, ripples, sparks). */
-export function useCycle(period: number, delay = 0, easing = Easing.out(Easing.ease)) {
+/**
+ * A value that goes 0 → 1 every `period` ms and starts again (pulses, ripples, sparks). Same
+ * `animate` rule as useLoop; a settled cycle rests at 1, which every drawing draws as its rest
+ * pose (or not at all).
+ */
+export function useCycle(
+  period: number,
+  delay = 0,
+  easing = Easing.out(Easing.ease),
+  animate?: boolean,
+) {
   const reduced = useReducedMotion();
   const p = useSharedValue(0);
   useEffect(() => {
-    if (reduced) {
+    const mode = loopMode({ animate, reduced });
+    if (mode === 'off') {
       p.value = 0;
       return;
     }
-    p.value = withDelay(delay, withRepeat(withTiming(1, { duration: period, easing }), -1, false));
+    const repeats = mode === 'forever' ? -1 : settleRepeats(period, false);
+    p.value = withDelay(
+      delay,
+      withRepeat(withTiming(1, { duration: period, easing }), repeats, false),
+    );
     return () => cancelAnimation(p);
-  }, [reduced, period, delay, easing, p]);
+  }, [reduced, period, delay, easing, animate, p]);
   return p;
 }
 
@@ -75,6 +93,8 @@ export interface LoopProps {
   /** Override the speed: one full cycle in ms. */
   period?: number;
   delay?: number;
+  /** Unset = play for about 4 s then rest; true = loop for good; false = still. */
+  animate?: boolean;
   style?: StyleProp<ViewStyle>;
   children: ReactNode;
 }
@@ -88,9 +108,9 @@ const DEFAULT_AMOUNT: Record<LoopKind, number> = {
 };
 
 /** Wraps a drawing in one of the mockup's gentle loops. */
-export function Loop({ kind, amount, period, delay = 0, style, children }: LoopProps) {
+export function Loop({ kind, amount, period, delay = 0, animate, style, children }: LoopProps) {
   const half = period ? period / 2 : LOOPS[kind].half;
-  const p = useLoop(half, delay);
+  const p = useLoop(half, delay, animate);
   const a = amount ?? DEFAULT_AMOUNT[kind];
   const animated = useAnimatedStyle(() => {
     switch (kind) {

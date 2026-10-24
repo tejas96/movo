@@ -29,12 +29,23 @@ Commit only the files of your change. Commit messages: short imperative subject,
 
 ## Rules that do not change
 
-- Look: **Soft Glow** (chosen by the user on 2026-10-23): mist page with a drifting pastel glow,
-  frosted glass cards, moving colour art in rimmed cards, the glowing orb, small animated
-  drawings, Poppins (light headline + one bold word), ink buttons, orange only for small
+- Look: **Soft Glow** (chosen by the user on 2026-10-23): mist page with a soft pastel glow,
+  frosted glass cards, colour art in rimmed cards, the glowing orb, small drawings that animate
+  in once, Poppins (light headline + one bold word), ink buttons, orange only for small
   accents, red only for urgent. Iconsax icons. Match the mockup in `docs/design/soft-glow`
   pixel for pixel (`capture.sh` makes the reference PNGs). No other colour themes or icon packs.
-  See `docs/06-design-system.md`.
+  Motion obeys the **Motion settles** rule below. See `docs/06-design-system.md`.
+- **Motion settles, it never loops.** Beauty comes from motion that plays once and then stops,
+  not from animation that runs forever. Every animation renders to a resting pose and then stops
+  scheduling frames. Allowed: entrances (`Rise`), count-ups, and press/gesture responses that end
+  when the touch ends. **Forbidden by default:** perpetual loops that redraw while the screen is
+  idle — `withRepeat(…, -1)`, self-rescheduling `requestAnimationFrame`, looping Lottie, and
+  breathe / drift / pulse / ripple / shimmer / endless spinners. They peg the UI and RenderThread
+  and heat the device. If one screen truly needs a loop, it must be opt-in through a prop
+  (default **off**), time-boxed (stop after a few seconds and when off-screen), and honour
+  `useReducedMotion`. Test: sit on any screen and touch nothing; after ~1 s,
+  `adb shell top -H -b -n 1 | grep -iE 'movo|RenderThread'` must show the app and RenderThread
+  near idle, not pegged.
 - Languages: English, Hindi, Marathi for every user-facing string (`packages/i18n`). No
   per-language test runs. Instead, at planning time write the en, hi and mr text in the plan:
   - **Wording:** plain spoken words a resident uses, not a word-for-word translation. Keep
