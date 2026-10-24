@@ -1,7 +1,6 @@
-import { Button, PasswordInput, Screen, Text, TitleBar } from '@movo/design-system';
+import { Button, Card, PasswordInput, Screen, Text, TitleBar } from '@movo/design-system';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { signOutLocally } from '../../core/api/client';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
@@ -24,7 +23,7 @@ export function DeleteAccountScreen() {
   return (
     <Screen>
       <TitleBar title={t('me:deleteAccount')} onBack={() => nav.goBack()} />
-      <View className="mt-6 gap-4">
+      <Card className="mt-5 gap-4">
         <Text variant="h2">{t('me:deleteTitle')}</Text>
         <Text variant="body" tone="secondary">
           {t('me:deleteBody')}
@@ -38,7 +37,7 @@ export function DeleteAccountScreen() {
           loading={del.isPending}
         />
         <Button label={t('common:actions.cancel')} variant="ghost" onPress={() => nav.goBack()} />
-      </View>
+      </Card>
     </Screen>
   );
 }

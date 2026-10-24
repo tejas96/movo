@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Members</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A2E;--muted:#706F76;--accent:#F06A2E}
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.scroll::-webkit-scrollbar{display:none}
+.hs::-webkit-scrollbar{display:none}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.art{position:relative;overflow:hidden}
+.art::before{content:"";position:absolute;inset:-35%;background:var(--g);filter:blur(14px);animation:flow 12s ease-in-out infinite alternate}
+.art > *{position:relative;z-index:1}
+.ibtn{width:50px;height:50px;border-radius:50%;background:#FFFFFF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(70,40,70,.06)}
+.chip{height:38px;padding:0 15px;border-radius:999px;border:1.5px solid rgba(255,255,255,.95);background:rgba(255,255,255,.3);font-family:Poppins,sans-serif;font-size:13px;font-weight:500;color:#2B2A2E;cursor:pointer;flex-shrink:0}
+.chip.on{background:#FFFFFF}
+.field{transition:box-shadow .25s}
+.field:focus-within{box-shadow:0 0 0 4px rgba(240,106,46,.18),0 4px 14px rgba(70,40,70,.06)}
+.field input{all:unset;flex-grow:1;min-width:0;font-family:Poppins,sans-serif;font-size:15px;color:#2B2A2E}
+.field input::placeholder{color:#8C8B91}
+@keyframes flow{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(-10%,8%) rotate(20deg) scale(1.15)}}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-30px) scale(1.15)}}
+@keyframes aur2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-20px)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slide{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
+@keyframes ring{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.4);opacity:0}}
+.rise{opacity:0;animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+.row{opacity:0;animation:slide .6s cubic-bezier(.2,.8,.2,1) forwards}
+.press{transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.press:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}.rise,.row{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: var(--ink);">
+  <div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+    <div style="position: absolute; width: 360px; height: 300px; border-radius: 50%; background: #CDB2F0; filter: blur(80px); opacity: .75; bottom: -90px; left: -120px; animation: aur1 16s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 340px; height: 300px; border-radius: 50%; background: #F4B3C2; filter: blur(80px); opacity: .7; bottom: -110px; right: -120px; animation: aur2 18s ease-in-out infinite;"></div>
+  </div>
+
+  <div class="scroll" style="position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; padding: 58px 18px 130px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+    <div class="rise" style="display: flex; align-items: baseline; gap: 12px;">
+      <h1 style="margin: 0; flex-grow: 1; font-weight: 600; font-size: 26px; letter-spacing: -0.4px;">Members</h1>
+      <span style="font-size: 13px; color: var(--muted);">68 flats · 142 people</span>
+    </div>
+
+    <div class="rise" style="display: flex; gap: 10px; animation-delay: .06s;">
+      <label class="field" style="flex-grow: 1; min-width: 0; height: 50px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 4px 14px rgba(70,40,70,.06); display: flex; align-items: center; gap: 10px; padding: 0 18px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#706F76" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search members</span>
+        <input type="search" placeholder="Search name or flat…" onInput="{{onSearch}}">
+      </label>
+      <button class="ibtn press" aria-label="Filter members">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+      </button>
+    </div>
+
+    <div class="rise hs" role="group" aria-label="Show" style="display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -18px; padding: 0 18px; animation-delay: .1s;">
+      <button class="chip on press" aria-pressed="true">All</button>
+      <button class="chip press" aria-pressed="false">Committee</button>
+      <button class="chip press" aria-pressed="false">Wing A</button>
+      <button class="chip press" aria-pressed="false">Wing B</button>
+      <button class="chip press" aria-pressed="false">Tenants</button>
+    </div>
+
+    <div class="rise" style="animation-delay: .14s;">
+      <div style="font-size: 12px; letter-spacing: .6px; color: var(--muted); margin: 4px 4px 10px;">COMMITTEE</div>
+      <div class="hs" style="display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; margin: 0 -18px; padding: 0 18px 4px;">
+        <sc-for list="{{committee}}" as="c" hint-placeholder-count="4">
+          <a href="#" class="glass press" style="flex-shrink: 0; width: 118px; border-radius: 28px; padding: 16px 10px 14px; box-sizing: border-box; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <span style="position: relative; width: 58px; height: 58px;">
+              <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: 50%; border: 2px solid #F0A58A; animation: ring 2.4s ease-out infinite; animation-delay: {{c.delay}};"></span>
+              <span class="art" style="position: absolute; inset: 0; border-radius: 50%; --g: {{c.g}}; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 18px rgba(70,40,70,.12);"><span style="font-weight: 600; font-size: 17px; color: #2B2A2E;">{{c.ini}}</span></span>
+            </span>
+            <span style="font-size: 13px; font-weight: 500; text-align: center;">{{c.name}}</span>
+            <span style="font-size: 11px; color: var(--muted);">{{c.role}}</span>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+
+    <div class="glass rise" style="border-radius: 28px; padding: 8px; animation-delay: .2s;">
+      <div style="padding: 10px 12px 6px; font-size: 12px; letter-spacing: .6px; color: var(--muted);">EVERYONE</div>
+      <sc-for list="{{people}}" as="p" hint-placeholder-count="6">
+        <div class="row" style="animation-delay: {{p.delay}}; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 22px;">
+          <span class="art" style="width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; --g: {{p.g}}; display: flex; align-items: center; justify-content: center;"><span style="font-weight: 600; font-size: 14px;">{{p.ini}}</span></span>
+          <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;">
+            <span style="font-weight: 500; font-size: 15px;">{{p.name}}</span>
+            <span style="font-size: 12px; color: var(--muted);">{{p.flat}} <span style="opacity: .4;">|</span> {{p.note}}</span>
+          </span>
+          <a href="#" aria-label="Call {{p.name}}" class="press" style="width: 44px; height: 44px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(70,40,70,.06);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"></path></svg>
+          </a>
+        </div>
+      </sc-for>
+      <sc-if value="{{none}}" hint-placeholder-val="{{no}}">
+        <div style="padding: 24px; text-align: center; font-size: 14px; color: var(--muted);">No one matches “{{q}}”.</div>
+      </sc-if>
+    </div>
+  </div>
+
+  <nav aria-label="Main" class="glass" style="position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; gap: 4px; padding: 7px; border-radius: 999px; background: rgba(255,255,255,.72);">
+    <a href="Main.dc.html" aria-label="Home" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="2"></rect><rect x="13" y="4" width="7" height="7" rx="2"></rect><rect x="4" y="13" width="7" height="7" rx="2"></rect><rect x="13" y="13" width="7" height="7" rx="2"></rect></svg></a>
+    <a href="Notices.dc.html" aria-label="Notices" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"></path><path d="M17 9a4 4 0 010 6"></path></svg></a>
+    <a href="Money.dc.html" aria-label="Money" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M3 10h18M16 15h2"></path></svg></a>
+    <a href="Members.dc.html" aria-label="Members" aria-current="page" class="press" style="height: 50px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(70,40,70,.08);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 4.5a3.5 3.5 0 010 7M21 20c0-2.6-1.6-4.8-4-5.6"></path></svg>Members</a>
+    <a href="Me.dc.html" aria-label="Me" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { q: '' };
+  }
+  renderVals() {
+    var self = this;
+    var gs = [
+      'radial-gradient(at 30% 30%, #F5A3C7, transparent 60%), radial-gradient(at 70% 70%, #F8CDB0, transparent 60%), #F3E1E6',
+      'radial-gradient(at 30% 30%, #8FA8E0, transparent 60%), radial-gradient(at 70% 70%, #CDB2F0, transparent 60%), #E3DCEB',
+      'radial-gradient(at 30% 30%, #F7B48A, transparent 60%), radial-gradient(at 70% 70%, #F6D35B, transparent 60%), #F4E6DA',
+      'radial-gradient(at 30% 30%, #BFDDB0, transparent 60%), radial-gradient(at 70% 70%, #F6C7A0, transparent 60%), #EDEADF'
+    ];
+    var committee = [
+      { ini: 'RS', name: 'Rajesh Shah', role: 'Chair' },
+      { ini: 'MK', name: 'Meera Kulkarni', role: 'Secretary' },
+      { ini: 'AP', name: 'Anil Patil', role: 'Treasurer' },
+      { ini: 'SD', name: 'Sunita Desai', role: 'Member' }
+    ].map(function (c, i) { return Object.assign({}, c, { g: gs[i % 4], delay: (i * 0.6) + 's' }); });
+    var all = [
+      { ini: 'AJ', name: 'Amit Joshi', flat: 'A-101', note: 'Owner' },
+      { ini: 'PN', name: 'Priya Nair', flat: 'B-102', note: 'Owner · you' },
+      { ini: 'VR', name: 'Vikram Rao', flat: 'B-201', note: 'Tenant' },
+      { ini: 'NK', name: 'Neha Kapoor', flat: 'A-304', note: 'Owner' },
+      { ini: 'SG', name: 'Sameer Gupta', flat: 'B-402', note: 'Owner' },
+      { ini: 'FS', name: 'Fatima Shaikh', flat: 'A-502', note: 'Tenant' }
+    ];
+    var q = this.state.q.trim().toLowerCase();
+    var people = all.filter(function (p) {
+      return !q || p.name.toLowerCase().indexOf(q) >= 0 || p.flat.toLowerCase().indexOf(q) >= 0;
+    }).map(function (p, i) { return Object.assign({}, p, { g: gs[(i + 1) % 4], delay: (0.25 + i * 0.07) + 's' }); });
+    return {
+      no: false,
+      committee: committee,
+      people: people,
+      none: people.length === 0,
+      q: this.state.q,
+      onSearch: function (e) { self.setState({ q: e.target.value }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,5 @@
 import type { Invitation } from '@movo/contracts';
 import {
-  Card,
   EmptyState,
   IconSquare,
   OptionSheet,
@@ -39,23 +38,21 @@ const InvitationRow = memo(function InvitationRow({
 }) {
   const { t } = useTranslation(['manage', 'common']);
   return (
-    <Card tight className="mb-2">
-      <Row
-        icon="send"
-        title={`${item.inviteeName} · ${item.code}`}
-        subtitle={[
-          item.flat
-            ? item.flat.buildingName
-              ? `${item.flat.buildingName}-${item.flat.number}`
-              : item.flat.number
-            : t('manage:invite.noFlat'),
-          item.role.name,
-          t('manage:invite.expires', { date: shortDate(item.expiresAt) }),
-        ].join(' · ')}
-        trailing={<StatusPill value={item.status} tones={TONE} labels="common:status" />}
-        onPress={item.canRevoke ? () => onSelect(item) : undefined}
-      />
-    </Card>
+    <Row
+      icon="send"
+      title={`${item.inviteeName} · ${item.code}`}
+      subtitle={[
+        item.flat
+          ? item.flat.buildingName
+            ? `${item.flat.buildingName}-${item.flat.number}`
+            : item.flat.number
+          : t('manage:invite.noFlat'),
+        item.role.name,
+        t('manage:invite.expires', { date: shortDate(item.expiresAt) }),
+      ].join(' · ')}
+      trailing={<StatusPill value={item.status} tones={TONE} labels="common:status" />}
+      onPress={item.canRevoke ? () => onSelect(item) : undefined}
+    />
   );
 });
 
@@ -100,6 +97,7 @@ export function InvitationsScreen() {
         }
       />
       <PagedList
+        glass
         list={list}
         loading={
           <View className="mt-4 gap-3">

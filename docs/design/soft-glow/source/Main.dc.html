@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A2E;--muted:#706F76;--accent:#F06A2E;--accent-soft:#FDE6DA;--red:#D63B3B}
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.scroll::-webkit-scrollbar{display:none}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.rim{padding:5px;background:rgba(255,255,255,.75);box-shadow:0 10px 30px rgba(70,40,70,.08)}
+.art{position:relative;overflow:hidden}
+.art::before{content:"";position:absolute;inset:-35%;background:var(--g);filter:blur(26px);animation:flow 14s ease-in-out infinite alternate}
+.art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.8) 100%)}
+.art > *{position:relative;z-index:1}
+.orb{border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF3EC 0%,#FBB59D 16%,#F0735A 46%,#D9465A 76%,#B8457A 100%);box-shadow:0 14px 30px rgba(217,70,90,.32),inset -6px -8px 16px rgba(120,20,60,.22),inset 4px 6px 10px rgba(255,255,255,.45);animation:breathe 4.5s ease-in-out infinite}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(43,42,46,.12) 1px,transparent 1.3px);background-size:9px 9px;-webkit-mask-image:radial-gradient(circle at 50% 28%,#000 0%,transparent 72%);mask-image:radial-gradient(circle at 50% 28%,#000 0%,transparent 72%);pointer-events:none}
+.ibtn{width:46px;height:46px;border-radius:50%;background:#FFFFFF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(70,40,70,.06)}
+.arrow{width:40px;height:40px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(70,40,70,.08)}
+.chip{height:40px;padding:0 16px;border-radius:999px;border:1.5px solid rgba(255,255,255,.95);background:rgba(255,255,255,.3);font-family:Poppins,sans-serif;font-size:14px;font-weight:500;color:#2B2A2E;cursor:pointer}
+.chip.on{background:#FFFFFF}
+@keyframes flow{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(-8%,6%) rotate(10deg) scale(1.15)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-30px) scale(1.15)}}
+@keyframes aur2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-20px)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ripple{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.4);opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shadow{0%,100%{transform:scaleX(1);opacity:.16}50%{transform:scaleX(.8);opacity:.08}}
+@keyframes blink{0%,100%{fill:#F6D35B}48%{fill:#F6D35B}50%{fill:#8C6B7A}52%{fill:#F6D35B}}
+@keyframes ping{0%{transform:scale(.6);opacity:.6}100%{transform:scale(2.2);opacity:0}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes seg{from{fill:rgba(43,42,46,.08)}to{fill:#F06A2E}}
+@keyframes coin{0%,100%{transform:translateY(0) rotate(-10deg)}50%{transform:translateY(-8px) rotate(10deg)}}
+@keyframes wob{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
+.win{fill:#8C6B7A;opacity:.28}
+.lit{fill:#F6D35B;opacity:1;animation:blink 6s infinite}
+.on{animation:seg .4s ease forwards}
+.rise{opacity:0;animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+.press{transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.press:active{transform:scale(.97)}
+.press:hover{transform:translateY(-2px)}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}.rise{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: var(--ink);">
+  <div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+    <div style="position: absolute; width: 360px; height: 300px; border-radius: 50%; background: #F4B3C2; filter: blur(80px); opacity: .7; bottom: -90px; left: -120px; animation: aur1 16s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 340px; height: 300px; border-radius: 50%; background: #CDB2F0; filter: blur(80px); opacity: .75; bottom: -110px; right: -120px; animation: aur2 18s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 260px; height: 220px; border-radius: 50%; background: #F8CDB0; filter: blur(80px); opacity: .55; bottom: 160px; left: 60px; animation: aur2 20s ease-in-out infinite reverse;"></div>
+  </div>
+
+  <div class="scroll" style="position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; padding: 58px 18px 130px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+
+    <div class="rise" style="display: flex; align-items: center; gap: 10px;">
+      <label style="flex-grow: 1; min-width: 0; height: 46px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; gap: 10px; padding: 0 16px; box-shadow: 0 4px 14px rgba(70,40,70,.06);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#706F76" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search</span>
+        <input type="search" placeholder="Search…" style="all: unset; flex-grow: 1; min-width: 0; font-size: 14px; color: #2B2A2E;">
+      </label>
+      <button class="ibtn press" aria-label="Alerts, 2 new" style="position: relative;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15z"></path><path d="M10 20.5a2 2 0 004 0"></path></svg>
+        <span style="position: absolute; top: 11px; right: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></span>
+      </button>
+      <a href="Me.dc.html" class="ibtn press" aria-label="My profile">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>
+      </a>
+    </div>
+
+    <div class="rise" role="group" aria-label="Show" style="display: flex; gap: 8px; animation-delay: .06s;">
+      <button class="chip on press" aria-pressed="true">Today</button>
+      <button class="chip press" aria-pressed="false">My flat</button>
+      <button class="chip press" aria-pressed="false">Society</button>
+    </div>
+
+    <div class="glass rise" style="position: relative; overflow: hidden; border-radius: 32px; padding: 30px 22px 28px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; animation-delay: .12s;">
+      <span class="dots" aria-hidden="true"></span>
+      <div style="position: relative; font-size: 27px; font-weight: 400; line-height: 1.2; letter-spacing: -0.4px;">Good evening <strong style="font-weight: 600;">Priya,</strong> here is your home today</div>
+      <div style="position: relative; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+        <span style="font-size: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.75);">Water on</span>
+        <span style="font-size: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.75);">Lift working</span>
+        <span style="font-size: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.75);">1 visitor</span>
+      </div>
+    </div>
+
+    <a href="Event.dc.html" class="glass press rise" style="border-radius: 999px; padding: 8px 8px 8px 8px; display: flex; align-items: center; gap: 12px; text-decoration: none; animation-delay: .18s;">
+      <span class="art" aria-hidden="true" style="width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0; --g: radial-gradient(at 30% 30%, #8FA8E0, transparent 55%), radial-gradient(at 70% 70%, #F3A6B9, transparent 55%), radial-gradient(at 50% 90%, #F6B07A, transparent 60%), #E9DCE6;"></span>
+      <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;">
+        <span style="font-weight: 500; font-size: 15px;">Society meeting</span>
+        <span style="font-size: 12px; color: var(--muted);">Sun 26 Oct <span style="opacity: .4;">|</span> 10 AM · Clubhouse</span>
+      </span>
+      <span class="arrow" style="width: 44px; height: 44px; margin-right: 2px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#F06A2E" aria-hidden="true"><path d="M8 5.5v13a1 1 0 001.5.86l10.5-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z"></path></svg></span>
+    </a>
+
+    <div class="rim rise" style="border-radius: 34px; animation-delay: .21s;">
+      <div class="art" style="height: 214px; border-radius: 29px; --g: radial-gradient(at 75% 25%, #CDB2F0, transparent 55%), radial-gradient(at 25% 75%, #F8CDB0, transparent 55%), radial-gradient(at 85% 85%, #F4B3C2, transparent 55%), #EFE8EE; padding: 18px; box-sizing: border-box;">
+        <div style="width: 160px; display: flex; flex-direction: column; gap: 8px;">
+          <span style="align-self: flex-start; font-size: 12px; font-weight: 500; background: rgba(255,255,255,.85); border-radius: 999px; padding: 5px 11px; display: flex; align-items: center; gap: 6px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #4E9A55;"></span>All good</span>
+          <span style="font-size: 20px; font-weight: 400; line-height: 1.25;">Your home, <strong style="font-weight: 600;">Flat B-102</strong></span>
+          <span style="font-size: 12px; color: #4D4C52;">Wing B · 1st floor</span>
+        </div>
+        <div style="position: absolute; right: -2px; bottom: 0; width: 180px; height: 214px;">
+          <div aria-hidden="true" style="position: absolute; left: 28px; bottom: 8px; width: 124px; height: 20px; border-radius: 50%; background: #6B4A5A; filter: blur(8px); animation: shadow 5s ease-in-out infinite;"></div>
+          <div style="position: absolute; inset: 0; animation: float 5s ease-in-out infinite;">
+            <svg width="180" height="214" viewBox="0 0 200 240" role="img" aria-label="Your building, Wing B">
+              <polygon points="100,20 160,50 100,80 40,50" fill="#FFFFFF"></polygon>
+              <polygon points="40,50 100,80 100,220 40,190" fill="#F7C9B6"></polygon>
+              <polygon points="100,80 160,50 160,190 100,220" fill="#EBA48F"></polygon>
+              <g transform="matrix(1 0.5 0 1 40 50)">
+                <rect class="win" x="8" y="14" width="10" height="13" rx="2"></rect><rect class="win lit" x="26" y="14" width="10" height="13" rx="2" style="animation-delay: 1s;"></rect><rect class="win" x="44" y="14" width="10" height="13" rx="2"></rect>
+                <rect class="win lit" x="8" y="36" width="10" height="13" rx="2" style="animation-delay: 2.5s;"></rect><rect class="win" x="26" y="36" width="10" height="13" rx="2"></rect><rect class="win" x="44" y="36" width="10" height="13" rx="2"></rect>
+                <rect class="win" x="8" y="58" width="10" height="13" rx="2"></rect><rect class="win" x="26" y="58" width="10" height="13" rx="2"></rect><rect class="win lit" x="44" y="58" width="10" height="13" rx="2" style="animation-delay: 4s;"></rect>
+                <rect class="win" x="8" y="80" width="10" height="13" rx="2"></rect><rect class="win lit" x="26" y="80" width="10" height="13" rx="2" style="animation-delay: .4s;"></rect><rect class="win" x="44" y="80" width="10" height="13" rx="2"></rect>
+                <rect class="win lit" x="8" y="102" width="10" height="13" rx="2" style="animation-delay: 3.2s;"></rect><rect class="win" x="26" y="102" width="10" height="13" rx="2"></rect><rect class="win" x="44" y="102" width="10" height="13" rx="2"></rect>
+              </g>
+              <g transform="matrix(1 -0.5 0 1 100 80)">
+                <rect class="win" x="6" y="14" width="10" height="13" rx="2"></rect><rect class="win" x="24" y="14" width="10" height="13" rx="2"></rect><rect class="win lit" x="42" y="14" width="10" height="13" rx="2" style="animation-delay: 1.8s;"></rect>
+                <rect class="win" x="6" y="36" width="10" height="13" rx="2"></rect><rect class="win lit" x="24" y="36" width="10" height="13" rx="2" style="animation-delay: 5s;"></rect><rect class="win" x="42" y="36" width="10" height="13" rx="2"></rect>
+                <rect class="win lit" x="6" y="58" width="10" height="13" rx="2" style="animation-delay: 2.2s;"></rect><rect class="win" x="24" y="58" width="10" height="13" rx="2"></rect><rect class="win" x="42" y="58" width="10" height="13" rx="2"></rect>
+                <rect class="win" x="6" y="80" width="10" height="13" rx="2"></rect><rect class="win" x="24" y="80" width="10" height="13" rx="2"></rect><rect class="win lit" x="42" y="80" width="10" height="13" rx="2" style="animation-delay: .9s;"></rect>
+                <rect class="win" x="6" y="102" width="10" height="13" rx="2"></rect><rect class="win lit" x="24" y="102" width="10" height="13" rx="2" style="animation-delay: 3.7s;"></rect><rect class="win" x="42" y="102" width="10" height="13" rx="2"></rect>
+              </g>
+            </svg>
+            <div style="position: absolute; left: 46px; top: 82px; animation: bob 2.4s ease-in-out infinite;">
+              <div style="position: relative; width: 34px; height: 34px;">
+                <span aria-hidden="true" style="position: absolute; inset: 0; border-radius: 50%; background: #F06A2E; animation: ping 2s ease-out infinite;"></span>
+                <span style="position: absolute; inset: 0; border-radius: 50%; background: #2B2A2E; color: #FFFFFF; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 3px solid #FFFFFF;">102</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass rise" style="border-radius: 30px; padding: 18px 18px 16px; display: flex; flex-direction: column; align-items: center; animation-delay: .24s;">
+      <div style="align-self: stretch; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: 500; font-size: 16px;">Maintenance</span>
+        <span style="font-size: 12px; color: var(--muted);">9 of 12 months paid</span>
+      </div>
+      <div style="position: relative; width: 240px; height: 130px;">
+        <svg width="240" height="140" viewBox="0 0 200 116" aria-hidden="true" style="position: absolute; left: 0; top: 0;">
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(-99 100 104)" style="animation-delay: .7s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(-81 100 104)" style="animation-delay: .78s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(-63 100 104)" style="animation-delay: .86s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(-45 100 104)" style="animation-delay: .94s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(-27 100 104)" style="animation-delay: 1.02s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(-9 100 104)" style="animation-delay: 1.1s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(9 100 104)" style="animation-delay: 1.18s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(27 100 104)" style="animation-delay: 1.26s;"></rect>
+          <rect class="on" x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(45 100 104)" style="animation-delay: 1.34s;"></rect>
+          <rect x="91" y="6" width="18" height="30" rx="9" fill="#F5A3C7" transform="rotate(63 100 104)"></rect>
+          <rect x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(81 100 104)"></rect>
+          <rect x="91" y="6" width="18" height="30" rx="9" fill="rgba(43,42,46,.08)" transform="rotate(99 100 104)"></rect>
+        </svg>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center;">
+          <span style="font-size: 12px; color: var(--muted);">Due by 31 Oct</span>
+          <span style="font-weight: 500; font-size: 38px; line-height: 1.1; letter-spacing: -1px;">₹{{amount}}</span>
+        </div>
+      </div>
+      <a href="Money.dc.html" class="press" style="margin-top: 12px; align-self: stretch; height: 54px; border-radius: 999px; background: #2B2A2E; color: #FFFFFF; text-decoration: none; font-weight: 500; font-size: 15px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 22px;">Pay ₹2,400
+        <span style="width: 42px; height: 42px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>
+      </a>
+    </div>
+
+    <a href="Notices.dc.html" class="rim press rise" style="border-radius: 34px; text-decoration: none; display: block; animation-delay: .27s;">
+      <div class="art" style="height: 150px; border-radius: 29px; --g: radial-gradient(at 25% 35%, #F5A3C7, transparent 50%), radial-gradient(at 75% 30%, #C9B6F2, transparent 55%), radial-gradient(at 50% 85%, #FFD3C0, transparent 60%), #F1E3EC; display: flex; align-items: flex-end; justify-content: space-between; padding: 18px; box-sizing: border-box;">
+        <span aria-hidden="true" style="position: absolute; top: 16px; right: 16px; width: 54px; height: 54px; border-radius: 18px; background: rgba(255,255,255,.75); display: flex; align-items: center; justify-content: center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C2457A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="animation: wob 1.8s ease-in-out infinite; transform-origin: 30% 60%;"><path d="M4 10v4h3l6 4V6L7 10z"></path><path d="M17 9a4 4 0 010 6"></path><path d="M19.5 7a7 7 0 010 10"></path></svg></span>
+        <span style="display: flex; flex-direction: column;"><span style="font-size: 20px; font-weight: 500;">Notices</span><span style="font-size: 12px; color: #4D4C52;">3 new · water cut tomorrow</span></span>
+        <span class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>
+      </div>
+    </a>
+
+    <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px;">
+      <a href="Money.dc.html" class="rim press rise" style="border-radius: 30px; text-decoration: none; display: block; animation-delay: .3s;">
+        <div class="art" style="height: 150px; border-radius: 25px; --g: radial-gradient(at 20% 30%, #F7B48A, transparent 50%), radial-gradient(at 60% 55%, #A8D69F, transparent 50%), radial-gradient(at 85% 20%, #F6C2C9, transparent 55%), #F3E7DE; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end;">
+          <svg width="46" height="46" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; top: 14px; right: 14px; animation: coin 3s ease-in-out infinite;"><circle cx="12" cy="12" r="10" fill="#F6D35B"></circle><circle cx="12" cy="12" r="7" fill="none" stroke="#B5501F" stroke-width=".8" stroke-dasharray="2 2"></circle><text x="12" y="15.5" text-anchor="middle" font-family="Poppins" font-weight="600" font-size="9" fill="#8A3E14">₹</text></svg>
+          <span style="font-size: 18px; font-weight: 500;">Bills</span>
+          <span style="font-size: 12px; color: #4D4C52;">Receipts &amp; history</span>
+        </div>
+      </a>
+      <a href="#" class="rim press rise" style="border-radius: 30px; text-decoration: none; display: block; animation-delay: .36s;">
+        <div class="art" style="height: 150px; border-radius: 25px; --g: radial-gradient(at 40% 30%, #8FA8E0, transparent 55%), radial-gradient(at 70% 70%, #F3A6B9, transparent 55%), #E3DCEB; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end;">
+          <span aria-hidden="true" style="position: absolute; top: 16px; left: 16px; width: 40px; height: 40px;">
+            <span style="position: absolute; left: 10px; top: 30px; width: 20px; height: 6px; border-radius: 50%; background: rgba(43,42,46,.18);"></span>
+            <svg width="40" height="40" viewBox="0 0 24 24" style="position: absolute; inset: 0; animation: bob 2s ease-in-out infinite;"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z" fill="#FFFFFF"></path><circle cx="12" cy="10" r="3" fill="#6C7FD8"></circle></svg>
+          </span>
+          <span style="font-size: 18px; font-weight: 500;">Find way</span>
+          <span style="font-size: 12px; color: #4D4C52;">AR guide</span>
+        </div>
+      </a>
+    </div>
+
+    <a href="Members.dc.html" class="rim press rise" style="border-radius: 34px; text-decoration: none; display: block; animation-delay: .42s;">
+      <div class="art" style="height: 120px; border-radius: 29px; --g: radial-gradient(at 30% 60%, #F6C7A0, transparent 50%), radial-gradient(at 65% 35%, #D8E8C8, transparent 55%), #EFEADF; display: flex; align-items: flex-end; justify-content: space-between; padding: 18px; box-sizing: border-box;">
+        <span aria-hidden="true" style="position: absolute; top: 16px; right: 16px; display: flex;">
+          <span style="width: 34px; height: 34px; border-radius: 50%; border: 3px solid #FFFFFF; background: radial-gradient(circle at 30% 30%, #F5A3C7, #F8CDB0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; animation: bob 2.6s ease-in-out infinite;">AJ</span>
+          <span style="width: 34px; height: 34px; margin-left: -10px; border-radius: 50%; border: 3px solid #FFFFFF; background: radial-gradient(circle at 30% 30%, #8FA8E0, #CDB2F0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; animation: bob 2.6s ease-in-out .3s infinite;">NK</span>
+          <span style="width: 34px; height: 34px; margin-left: -10px; border-radius: 50%; border: 3px solid #FFFFFF; background: radial-gradient(circle at 30% 30%, #BFDDB0, #F6C7A0); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; animation: bob 2.6s ease-in-out .6s infinite;">VR</span>
+          <span style="width: 34px; height: 34px; margin-left: -10px; border-radius: 50%; border: 3px solid #FFFFFF; background: #2B2A2E; color: #FFFFFF; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; animation: bob 2.6s ease-in-out .9s infinite;">+139</span>
+        </span>
+        <span style="display: flex; flex-direction: column;"><span style="font-size: 20px; font-weight: 500;">Members</span><span style="font-size: 12px; color: #4D4C52;">68 flats · 142 people</span></span>
+        <span class="arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>
+      </div>
+    </a>
+  </div>
+
+  <nav aria-label="Main" class="glass" style="position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; gap: 4px; padding: 7px; border-radius: 999px; background: rgba(255,255,255,.72);">
+    <a href="Main.dc.html" aria-label="Home" aria-current="page" class="press" style="height: 50px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(70,40,70,.08);"><svg width="20" height="20" viewBox="0 0 24 24" fill="#F06A2E" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="2"></rect><rect x="13" y="4" width="7" height="7" rx="2"></rect><rect x="4" y="13" width="7" height="7" rx="2"></rect><rect x="13" y="13" width="7" height="7" rx="2"></rect></svg>Home</a>
+    <a href="Notices.dc.html" aria-label="Notices" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"></path><path d="M17 9a4 4 0 010 6"></path></svg></a>
+    <a href="Money.dc.html" aria-label="Money" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="3"></rect><path d="M3 10h18M16 15h2"></path></svg></a>
+    <a href="Members.dc.html" aria-label="Members" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 4.5a3.5 3.5 0 010 7M21 20c0-2.6-1.6-4.8-4-5.6"></path></svg></a>
+    <a href="Me.dc.html" aria-label="Me" class="press" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg></a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { n: 0 };
+  }
+  componentDidMount() {
+    var start = null;
+    var self = this;
+    var step = function (t) {
+      if (start === null) start = t + 700;
+      var p = Math.max(0, Math.min(1, (t - start) / 1300));
+      self.setState({ n: Math.round(2400 * (1 - Math.pow(1 - p, 3))) });
+      if (p < 1) self.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+  componentWillUnmount() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+  }
+  renderVals() {
+    return { amount: this.state.n.toLocaleString('en-IN') };
+  }
+}
+</script>
+</body>
+</html>

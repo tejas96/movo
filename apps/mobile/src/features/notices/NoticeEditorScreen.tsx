@@ -7,6 +7,7 @@ import {
 import {
   BottomBar,
   Button,
+  Card,
   Input,
   OptionSheet,
   Screen,
@@ -126,7 +127,7 @@ export function NoticeEditorScreen() {
           title={noticeId ? t('common:actions.edit') : t('notices:new')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6 gap-3">
+        <Card className="mt-5 gap-3.5">
           <Controller
             control={form.control}
             name="title"
@@ -159,7 +160,7 @@ export function NoticeEditorScreen() {
             onPress={() => setCategoryOpen(true)}
           />
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('notices:form.priority')}
             </Text>
             <Segmented
@@ -172,7 +173,7 @@ export function NoticeEditorScreen() {
               ]}
             />
           </View>
-          <View className="flex-row items-center justify-between rounded-md bg-card px-[18px] py-3">
+          <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
             <Text variant="body">{t('notices:form.pin')}</Text>
             <Toggle value={pinned} onValueChange={(v) => form.setValue('pinned', v)} />
           </View>
@@ -184,7 +185,7 @@ export function NoticeEditorScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={
@@ -194,7 +195,6 @@ export function NoticeEditorScreen() {
                 label={t('notices:form.saveDraft')}
                 variant="gray"
                 inline
-                size="sm"
                 onPress={() => void save(false)}
                 disabled={busy}
               />

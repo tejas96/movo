@@ -5,10 +5,10 @@ import { Icon } from './Icon';
 import { Text } from './Text';
 import { type StatusTone, theme } from './theme';
 
-/** The icon is bold unless `iconVariant="linear"`; a bold icon must be a BoldIconName. */
+/** Line icon, as in the mockup. `iconVariant="bold"` needs a BoldIconName. */
 type PillIcon =
-  | { icon?: BoldIconName; iconVariant?: IconStyle }
-  | { icon?: IconName; iconVariant: 'linear' };
+  | { icon?: IconName; iconVariant?: 'linear' }
+  | { icon?: BoldIconName; iconVariant: IconStyle };
 
 export type PillProps = ViewProps &
   PillIcon & {
@@ -29,7 +29,7 @@ const TONE: Record<'white' | 'gray' | 'overlay', string> = {
 export function Pill({
   label,
   icon,
-  iconVariant = 'bold',
+  iconVariant = 'linear',
   tone = 'white',
   size = 'md',
   className,

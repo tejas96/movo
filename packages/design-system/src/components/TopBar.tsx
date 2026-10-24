@@ -62,7 +62,7 @@ export interface TitleBarProps {
   className?: string;
 }
 
-/** Centred header with back square, or a large left title for tab roots. */
+/** Soft Glow header: round back button, big left title, an action on the right. */
 export function TitleBar({ title, onBack, trailing, large, subtitle, className }: TitleBarProps) {
   if (large) {
     return (
@@ -84,14 +84,25 @@ export function TitleBar({ title, onBack, trailing, large, subtitle, className }
   return (
     <View className={cn('flex-row items-center gap-3 min-h-[52px]', className)}>
       {onBack ? (
-        <IconSquare icon="back" variant="linear" onPress={onBack} accessibilityLabel="Back" />
-      ) : (
-        <View className="w-icon-btn" />
-      )}
-      <Text variant="h3" center numberOfLines={1} className="flex-1">
-        {title}
-      </Text>
-      {trailing ?? <View className="w-icon-btn" />}
+        <IconSquare
+          icon="back"
+          variant="linear"
+          diameter={46}
+          onPress={onBack}
+          accessibilityLabel="Back"
+        />
+      ) : null}
+      <View className="flex-1 min-w-0">
+        <Text variant="h1" numberOfLines={1}>
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text variant="label" tone="secondary" numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
+      {trailing}
     </View>
   );
 }

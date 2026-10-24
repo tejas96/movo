@@ -1,16 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Input, PasswordInput, Text } from '@movo/design-system';
+import { Button, Input, PasswordInput, Text, WavingHand } from '@movo/design-system';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Linking, Pressable, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { z } from 'zod';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { signIn } from '../../core/auth/auth';
 import { PRIVACY_POLICY_URL } from '../../core/env';
 import { useNav } from '../../core/navigation/types';
-import { AuthShell } from './AuthShell';
+import { AuthShell } from '../../core/ui/AuthShell';
 
+const COUNTRY = '+91';
+/** Only digits and spaces so far: show +91 in front so it reads as a phone number. */
+const looksLikePhone = (v: string) => /^\d[\d ]*$/.test(v);
+
+/** Soft Glow log in, laid out like docs/design/soft-glow/source/Login.dc.html. */
 export function LoginScreen() {
   const { t } = useTranslation(['auth', 'common']);
   const nav = useNav();
@@ -28,7 +33,9 @@ export function LoginScreen() {
     resolver: zodResolver(schema),
     defaultValues: { identifier: '', password: '' },
   });
+  const busy = form.formState.isSubmitting;
 
+  // The server takes a 10-digit Indian number or an email in the same field.
   const submit = form.handleSubmit(async (values) => {
     setError(null);
     try {
@@ -40,16 +47,29 @@ export function LoginScreen() {
 
   return (
     <AuthShell
-      title={t('auth:welcomeBack')}
-      subtitle={t('auth:welcomeBackBody')}
+      title={t('auth:glow.loginA')}
+      titleBold={t('auth:glow.loginB')}
+      subtitle={t('auth:glow.loginBody')}
+      art={<WavingHand />}
+      onBack={nav.canGoBack() ? () => nav.goBack() : undefined}
+      action={
+        <Button
+          size="xl"
+          arrow
+          sheen
+          label={busy ? t('auth:glow.loggingIn') : t('auth:login')}
+          onPress={() => void submit()}
+          loading={busy}
+        />
+      }
       footer={
         <>
-          <View className="flex-row items-center gap-1.5">
-            <Text variant="caption" tone="secondary">
+          <View style={styles.newRow}>
+            <Text variant="body" tone="secondary" style={styles.small}>
               {t('auth:noAccount')}
             </Text>
             <Pressable onPress={() => nav.navigate('Register')} hitSlop={8}>
-              <Text variant="caption" className="font-semibold">
+              <Text variant="body" className="font-semibold" style={styles.small}>
                 {t('auth:register')}
               </Text>
             </Pressable>
@@ -58,7 +78,7 @@ export function LoginScreen() {
             variant="micro"
             tone="tertiary"
             center
-            className="mt-2 font-normal"
+            className="font-normal"
             onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
           >
             {t('auth:termsNote')}
@@ -66,61 +86,66 @@ export function LoginScreen() {
         </>
       }
     >
-      <View className="gap-3">
-        <Controller
-          control={form.control}
-          name="identifier"
-          render={({ field, fieldState }) => (
-            <Input
-              icon="mail"
-              placeholder={t('auth:identifier')}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              textContentType="username"
-              returnKeyType="next"
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-              error={fieldState.error?.message}
-              helper={fieldState.error ? undefined : t('auth:identifierHint')}
-            />
-          )}
-        />
-        <Controller
-          control={form.control}
-          name="password"
-          render={({ field, fieldState }) => (
-            <PasswordInput
-              icon="lock"
-              placeholder={t('auth:password')}
-              textContentType="password"
-              value={field.value}
-              onChangeText={field.onChange}
-              onBlur={field.onBlur}
-              error={fieldState.error?.message}
-              onSubmitEditing={() => void submit()}
-              returnKeyType="go"
-            />
-          )}
-        />
-        {error ? (
-          <Text variant="caption" tone="danger">
-            {error}
-          </Text>
-        ) : null}
-        <Pressable onPress={() => nav.navigate('ForgotPassword')} className="self-end" hitSlop={8}>
-          <Text variant="caption" tone="secondary" className="font-medium">
-            {t('auth:forgotPassword')}
-          </Text>
-        </Pressable>
-        <Button
-          label={t('auth:login')}
-          onPress={() => void submit()}
-          loading={form.formState.isSubmitting}
-          className="mt-1"
-        />
-      </View>
+      <Controller
+        control={form.control}
+        name="identifier"
+        render={({ field, fieldState }) => (
+          <Input
+            label={t('auth:identifier')}
+            placeholder={t('auth:glow.identifierHint')}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="username"
+            autoComplete="username"
+            returnKeyType="next"
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            error={fieldState.error?.message}
+            prefix={looksLikePhone(field.value) ? COUNTRY : undefined}
+          />
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="password"
+        render={({ field, fieldState }) => (
+          <PasswordInput
+            label={t('auth:password')}
+            placeholder={t('auth:glow.passwordHint')}
+            textContentType="password"
+            autoComplete="current-password"
+            value={field.value}
+            onChangeText={field.onChange}
+            onBlur={field.onBlur}
+            error={fieldState.error?.message}
+            onSubmitEditing={() => void submit()}
+            returnKeyType="go"
+          />
+        )}
+      />
+      {error ? (
+        <Text variant="caption" tone="danger">
+          {error}
+        </Text>
+      ) : null}
+      <Pressable
+        onPress={() => nav.navigate('ForgotPassword')}
+        style={styles.forgot}
+        hitSlop={8}
+        accessibilityRole="button"
+      >
+        <Text variant="caption" className="font-medium">
+          {t('auth:forgotPassword')}
+        </Text>
+      </Pressable>
     </AuthShell>
   );
 }
+
+const styles = StyleSheet.create({
+  forgot: { alignSelf: 'flex-end', paddingHorizontal: 6, paddingVertical: 2 },
+  newRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  small: { fontSize: 14 },
+});

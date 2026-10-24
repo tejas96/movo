@@ -86,7 +86,7 @@ function OrderRow({ order: o }: { order: OrderSummary }) {
       trailing={
         <View className="items-end gap-1.5">
           <OrderStatusPill status={o.status} />
-          {o.unreadMessages > 0 ? <View className="h-2 w-2 rounded-full bg-ink" /> : null}
+          {o.unreadMessages > 0 ? <View className="h-2 w-2 rounded-full bg-accent" /> : null}
         </View>
       }
       onPress={() => nav.navigate('OrderDetail', { orderId: o.id })}

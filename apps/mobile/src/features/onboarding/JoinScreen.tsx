@@ -1,23 +1,25 @@
 import {
+  ArtFill,
+  Building,
   Button,
-  Card,
+  Icon,
   IconSquare,
-  photos,
+  Press,
   Row,
-  Screen,
-  Segmented,
   StatusPill,
   Text,
+  theme,
   useToast,
 } from '@movo/design-system';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { signOut } from '../../core/auth/auth';
 import { useNav } from '../../core/navigation/types';
 import { useMeContext } from '../../core/tenant/hooks';
+import { AuthShell } from '../../core/ui/AuthShell';
 import { useAcceptInvite, useJoinPreview } from './api';
 import { CodeInput } from './CodeInput';
 
@@ -72,56 +74,71 @@ export function JoinScreen() {
     }
   };
 
+  const modes: Mode[] = ['invite', 'society'];
+
   return (
-    <Screen>
-      <View className="flex-row items-center justify-between">
-        {hasSociety ? (
-          <IconSquare icon="back" variant="linear" onPress={() => nav.goBack()} />
-        ) : (
+    <AuthShell
+      title={t(mode === 'invite' ? 'onboarding:glow.inviteA' : 'onboarding:glow.societyA')}
+      titleBold={t(mode === 'invite' ? 'onboarding:glow.inviteB' : 'onboarding:glow.societyB')}
+      subtitle={t(mode === 'invite' ? 'onboarding:inviteBody' : 'onboarding:societyBody')}
+      art={<Building width={96} />}
+      onBack={hasSociety ? () => nav.goBack() : undefined}
+      leading={
+        hasSociety ? undefined : (
           <IconSquare
             icon="logout"
             variant="linear"
+            diameter={46}
             onPress={() => void signOut()}
             accessibilityLabel={t('common:actions.signOut')}
           />
-        )}
+        )
+      }
+      action={
+        mode === 'invite' ? (
+          <Button
+            size="xl"
+            arrow
+            label={t('onboarding:join')}
+            onPress={() => void joinWithInvite(code)}
+            disabled={!complete}
+            loading={accept.isPending}
+          />
+        ) : (
+          <Button
+            size="xl"
+            arrow
+            label={t('onboarding:pickFlatCta')}
+            onPress={() => nav.navigate('PickFlat', { joinCode: code })}
+            disabled={!found}
+            loading={complete && preview.isFetching}
+          />
+        )
+      }
+      footer={
+        <Text variant="caption" tone="secondary" center>
+          {t(mode === 'invite' ? 'onboarding:noInviteCode' : 'onboarding:noSocietyCode')}
+        </Text>
+      }
+    >
+      <View style={styles.modes} accessibilityRole="radiogroup">
+        {modes.map((m) => (
+          <Press
+            key={m}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: mode === m }}
+            onPress={() => switchMode(m)}
+            scaleTo={0.97}
+            style={[styles.mode, mode === m && styles.modeOn]}
+          >
+            <Text variant="bodyMedium" numberOfLines={1}>
+              {m === 'invite' ? t('onboarding:inviteCode') : t('onboarding:societyCode')}
+            </Text>
+          </Press>
+        ))}
       </View>
-      <Text variant="h1" className="mt-6">
-        {t(mode === 'invite' ? 'onboarding:inviteTitle' : 'onboarding:societyTitle')}
-      </Text>
-      <Text variant="body" tone="secondary" className="mt-1">
-        {t(mode === 'invite' ? 'onboarding:inviteBody' : 'onboarding:societyBody')}
-      </Text>
 
-      {pending.length > 0 ? (
-        <Card tight className="mt-6">
-          {pending.map((p) => (
-            <Row
-              key={p.id}
-              icon="clock"
-              title={p.society.name}
-              subtitle={t('onboarding:pendingBody', {
-                society: p.society.name,
-                flat: p.buildingName ? `${p.buildingName}-${p.flatNumber}` : p.flatNumber,
-              })}
-              trailing={<StatusPill label={t(`common:status.${p.status}`)} tone="warning" />}
-              onPress={() => nav.navigate('Pending')}
-            />
-          ))}
-        </Card>
-      ) : null}
-
-      <Segmented
-        className="mt-6"
-        value={mode}
-        onChange={switchMode}
-        options={[
-          { value: 'invite', label: t('onboarding:inviteCode') },
-          { value: 'society', label: t('onboarding:societyCode') },
-        ]}
-      />
-
-      <View className="mt-5">
+      <View>
         <CodeInput
           key={mode}
           length={LENGTH[mode]}
@@ -144,10 +161,12 @@ export function JoinScreen() {
 
       {found ? (
         <Animated.View entering={FadeInDown.duration(320)} exiting={FadeOut.duration(150)}>
-          <View className="mt-5 flex-row items-center gap-3 rounded-lg bg-card p-2.5">
-            <View style={styles.thumb}>
-              <Image source={photos.society} resizeMode="cover" style={styles.photo} />
-            </View>
+          <View style={styles.found}>
+            <ArtFill art="home" radius={18} fade={0} blur={14} style={styles.thumb}>
+              <View style={styles.thumbIcon}>
+                <Icon name="building" size={24} color={theme.color.icon.primary} />
+              </View>
+            </ArtFill>
             <View className="flex-1 gap-0.5">
               <Text variant="title" numberOfLines={1}>
                 {found.society.name}
@@ -165,31 +184,55 @@ export function JoinScreen() {
         </Animated.View>
       ) : null}
 
-      <View className="mt-6 gap-3">
-        {mode === 'invite' ? (
-          <Button
-            label={t('onboarding:join')}
-            onPress={() => void joinWithInvite(code)}
-            disabled={!complete}
-            loading={accept.isPending}
-          />
-        ) : (
-          <Button
-            label={t('onboarding:pickFlatCta')}
-            onPress={() => nav.navigate('PickFlat', { joinCode: code })}
-            disabled={!found}
-            loading={complete && preview.isFetching}
-          />
-        )}
-        <Text variant="micro" tone="tertiary" center className="font-normal">
-          {t(mode === 'invite' ? 'onboarding:noInviteCode' : 'onboarding:noSocietyCode')}
-        </Text>
-      </View>
-    </Screen>
+      {pending.length > 0 ? (
+        <View style={styles.pending}>
+          {pending.map((p) => (
+            <Row
+              key={p.id}
+              onGray
+              icon="clock"
+              title={p.society.name}
+              subtitle={t('onboarding:pendingBody', {
+                society: p.society.name,
+                flat: p.buildingName ? `${p.buildingName}-${p.flatNumber}` : p.flatNumber,
+              })}
+              trailing={<StatusPill label={t(`common:status.${p.status}`)} tone="warning" />}
+              onPress={() => nav.navigate('Pending')}
+            />
+          ))}
+        </View>
+      ) : null}
+    </AuthShell>
   );
 }
 
 const styles = StyleSheet.create({
-  thumb: { width: 64, height: 64, borderRadius: 18, overflow: 'hidden' },
-  photo: { width: '100%', height: '100%' },
+  modes: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.95)',
+  },
+  mode: {
+    flex: 1,
+    height: 42,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  modeOn: { backgroundColor: '#FFFFFF', boxShadow: '0 4px 12px rgba(70,40,70,0.1)' },
+  found: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 10,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.75)',
+  },
+  thumb: { width: 64, height: 64 },
+  thumbIcon: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  pending: { marginHorizontal: -8 },
 });

@@ -1,6 +1,8 @@
 import { type Invitation, type OccupancyRelation, OccupancyRelationSchema } from '@movo/contracts';
 import {
+  BottomBar,
   Button,
+  Card,
   Input,
   OptionSheet,
   Screen,
@@ -97,94 +99,100 @@ export function InviteMemberScreen() {
     );
 
   return (
-    <Screen>
-      <TitleBar title={t('manage:invite.title')} onBack={() => nav.goBack()} />
-      <View className="mt-6 gap-3">
-        <Input label={t('manage:invite.name')} value={name} onChangeText={setName} />
-        <Input
-          label={t('manage:invite.phone')}
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
+    <>
+      <Screen bottomBar>
+        <TitleBar title={t('manage:invite.title')} onBack={() => nav.goBack()} />
+        <Card className="mt-5 gap-3.5">
+          <Input label={t('manage:invite.name')} value={name} onChangeText={setName} />
+          <Input
+            label={t('manage:invite.phone')}
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+          />
+          <Input
+            label={t('manage:invite.email')}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <SelectField
+            label={t('manage:invite.flat')}
+            value={flatOptions.find((o) => o.value === flatId)?.label}
+            onPress={() => setOpen('flat')}
+          />
+          <SelectField
+            label={t('manage:invite.role')}
+            value={roleOptions.find((o) => o.value === effectiveRoleId)?.label}
+            onPress={() => setOpen('role')}
+          />
+          <SelectField
+            label={t('manage:invite.relation')}
+            value={t(`common:relation.${relation}`)}
+            onPress={() => setOpen('relation')}
+          />
+          {error ? (
+            <Text variant="caption" tone="danger">
+              {error}
+            </Text>
+          ) : null}
+        </Card>
+        <OptionSheet
+          visible={open === 'flat'}
+          onClose={() => setOpen(null)}
+          title={t('manage:invite.flat')}
+          options={flatOptions}
+          value={flatId}
+          onSelect={setFlatId}
         />
-        <Input
-          label={t('manage:invite.email')}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
+        <OptionSheet
+          visible={open === 'role'}
+          onClose={() => setOpen(null)}
+          title={t('manage:invite.role')}
+          options={roleOptions}
+          value={effectiveRoleId}
+          onSelect={setRoleId}
         />
-        <SelectField
-          label={t('manage:invite.flat')}
-          value={flatOptions.find((o) => o.value === flatId)?.label}
-          onPress={() => setOpen('flat')}
+        <OptionSheet
+          visible={open === 'relation'}
+          onClose={() => setOpen(null)}
+          title={t('manage:invite.relation')}
+          options={relationOptions}
+          value={relation}
+          onSelect={setRelation}
         />
-        <SelectField
-          label={t('manage:invite.role')}
-          value={roleOptions.find((o) => o.value === effectiveRoleId)?.label}
-          onPress={() => setOpen('role')}
-        />
-        <SelectField
-          label={t('manage:invite.relation')}
-          value={t(`common:relation.${relation}`)}
-          onPress={() => setOpen('relation')}
-        />
-        {error ? (
-          <Text variant="caption" tone="danger">
-            {error}
+        <Sheet
+          visible={Boolean(created)}
+          onClose={() => {
+            setCreated(null);
+            nav.goBack();
+          }}
+          title={t('manage:invite.created')}
+          footer={<Button label={t('common:actions.share')} icon="share" onPress={share} />}
+        >
+          <Text variant="body" tone="secondary">
+            {created
+              ? t('manage:invite.shareText', { society: tenant.society.name, code: created.code })
+              : ''}
           </Text>
-        ) : null}
-        <Button
-          label={t('manage:invite.create')}
-          onPress={() => void submit()}
-          loading={create.isPending}
-          className="mt-2"
-        />
-      </View>
-      <OptionSheet
-        visible={open === 'flat'}
-        onClose={() => setOpen(null)}
-        title={t('manage:invite.flat')}
-        options={flatOptions}
-        value={flatId}
-        onSelect={setFlatId}
+          <View className="mt-4 items-center rounded-md bg-card-nested py-5">
+            <Text variant="display" className="tracking-[6px]">
+              {created?.code}
+            </Text>
+          </View>
+        </Sheet>
+      </Screen>
+      <BottomBar
+        action={
+          <Button
+            inline
+            label={t('manage:invite.create')}
+            onPress={() => void submit()}
+            loading={create.isPending}
+          />
+        }
       />
-      <OptionSheet
-        visible={open === 'role'}
-        onClose={() => setOpen(null)}
-        title={t('manage:invite.role')}
-        options={roleOptions}
-        value={effectiveRoleId}
-        onSelect={setRoleId}
-      />
-      <OptionSheet
-        visible={open === 'relation'}
-        onClose={() => setOpen(null)}
-        title={t('manage:invite.relation')}
-        options={relationOptions}
-        value={relation}
-        onSelect={setRelation}
-      />
-      <Sheet
-        visible={Boolean(created)}
-        onClose={() => {
-          setCreated(null);
-          nav.goBack();
-        }}
-        title={t('manage:invite.created')}
-        footer={<Button label={t('common:actions.share')} icon="share" onPress={share} />}
-      >
-        <Text variant="body" tone="secondary">
-          {created
-            ? t('manage:invite.shareText', { society: tenant.society.name, code: created.code })
-            : ''}
-        </Text>
-        <View className="mt-4 items-center rounded-md bg-card-nested py-5">
-          <Text variant="display" className="tracking-[6px]">
-            {created?.code}
-          </Text>
-        </View>
-      </Sheet>
-    </Screen>
+    </>
   );
 }

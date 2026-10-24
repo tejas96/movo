@@ -17,7 +17,8 @@
     "wordmark": "python3 scripts/build-wordmark.py",
     "fonts": "node scripts/sync-fonts.mjs",
     "preview": "node scripts/build-icons.mjs && node scripts/build-preview.mjs",
-    "check:preset": "node scripts/check-preset.mjs"
+    "check:preset": "node scripts/check-preset.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "clsx": "2.1.1",
@@ -29,22 +30,25 @@
     "@movo/config": "workspace:*",
     "@react-navigation/bottom-tabs": "7.19.2",
     "@react-navigation/native": "7.4.1",
+    "@shopify/react-native-skia": "2.14.0",
     "@types/node": "22.20.1",
     "@types/react": "19.2.17",
     "iconsax": "0.1.1",
     "nativewind": "4.2.7",
     "react": "19.2.3",
     "react-native": "0.87.1",
+    "react-native-reanimated": "4.7.0",
     "react-native-safe-area-context": "5.10.0",
     "react-native-svg": "15.15.5",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "5.0.2"
   },
   "peerDependencies": {
+    "@react-navigation/bottom-tabs": ">=7",
     "nativewind": ">=4.1",
     "react": ">=19",
     "react-native": ">=0.80",
     "react-native-safe-area-context": ">=5",
-    "react-native-svg": ">=15",
-    "@react-navigation/bottom-tabs": ">=7"
+    "react-native-svg": ">=15"
   }
 }

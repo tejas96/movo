@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><title>MOVO app icon, background layer</title>
+<defs>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="110"/></filter>
+  <radialGradient id="orb" cx="34%" cy="28%" r="80%">
+    <stop offset="0" stop-color="#FFF3EC"/><stop offset=".18" stop-color="#FBB59D"/><stop offset=".5" stop-color="#F0735A"/><stop offset=".8" stop-color="#D9465A"/><stop offset="1" stop-color="#B8457A"/>
+  </radialGradient>
+  <radialGradient id="shine" cx="50%" cy="0%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <filter id="drop" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="34" stdDeviation="34" flood-color="#D9465A" flood-opacity=".35"/></filter>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="22"/></filter>
+<filter id="blur60" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="60"/></filter>
+</defs>
+<rect width="1024" height="1024" fill="#F4EEF0"/>
+<g transform="translate(512 512) scale(0.6667) translate(-512 -512)">
+<g filter="url(#soft)"><circle cx="230" cy="830" r="380" fill="#F4B3C2"/><circle cx="830" cy="850" r="380" fill="#CDB2F0"/><circle cx="760" cy="170" r="300" fill="#F8CDB0"/></g>
+</g>
+</svg>

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { Avatar } from './Avatar';
 import { cn } from './cn';
+import { useInGlass } from './glow/in-glass';
 import { Icon } from './Icon';
 import { Text } from './Text';
 
@@ -17,7 +18,7 @@ export interface PersonCardProps {
   className?: string;
 }
 
-/** The reference's agent row: avatar, name with badge, role, black round actions. */
+/** A person on glass: glowing avatar, name with badge, role, round actions on the right. */
 export function PersonCard({
   name,
   role,
@@ -30,7 +31,7 @@ export function PersonCard({
 }: PersonCardProps) {
   const body = (
     <>
-      <Avatar name={name} uri={avatarUri} tone={white ? 'gray' : 'white'} />
+      <Avatar name={name} uri={avatarUri} />
       <View className="flex-1 min-w-0">
         <View className="flex-row items-center gap-1.5">
           <Text variant="title" numberOfLines={1} className="shrink">
@@ -47,9 +48,10 @@ export function PersonCard({
       {actions ? <View className="flex-row items-center gap-2">{actions}</View> : null}
     </>
   );
+  const inGlass = useInGlass();
   const cls = cn(
-    'flex-row items-center gap-3 rounded-lg p-3',
-    white ? 'bg-card-nested' : 'bg-card',
+    'flex-row items-center gap-3 rounded-[24px] p-2.5 pr-3',
+    white ? 'bg-card-nested' : inGlass ? 'bg-transparent' : 'bg-card border-[1.5px] border-glass',
     className,
   );
   if (!onPress) return <View className={cls}>{body}</View>;

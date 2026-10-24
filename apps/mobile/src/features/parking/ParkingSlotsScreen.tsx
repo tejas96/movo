@@ -131,6 +131,7 @@ export function ParkingSlotsScreen() {
             <IconSquare
               icon="add"
               variant="linear"
+              tone="ink"
               accessibilityLabel={t('parking:slots.add')}
               onPress={() => {
                 setAddError(null);
@@ -176,30 +177,34 @@ export function ParkingSlotsScreen() {
       ) : (
         <FlatList
           className="mt-4"
-          data={slots.data ?? []}
-          keyExtractor={(s) => s.id}
+          // One glass card for the whole list: stacked glass rows leave seams on Android.
+          data={[slots.data ?? []]}
+          keyExtractor={() => 'glass-list'}
           refreshing={slots.isRefetching}
           onRefresh={() => void slots.refetch()}
           contentContainerStyle={{ paddingBottom: 40 }}
-          renderItem={({ item }) => (
-            <Card tight className="mb-2">
-              <Row
-                icon={slotIcon(item.type)}
-                title={item.code}
-                subtitle={subtitle(item) || undefined}
-                onPress={item.canManage ? () => setSelected(item) : undefined}
-                trailing={
-                  item.status === 'BLOCKED' ? (
-                    <StatusPill label={t('parking:slotStatus.BLOCKED')} tone="danger" />
-                  ) : item.status === 'VISITOR' ? (
-                    <StatusPill label={t('parking:slotStatus.VISITOR')} tone="info" />
-                  ) : item.allocation ? (
-                    <StatusPill label={formatFlat(item.allocation.flat)} tone="ink" />
-                  ) : (
-                    <StatusPill label={t('parking:free')} tone="success" />
-                  )
-                }
-              />
+          renderItem={({ item: list }) => (
+            <Card tight>
+              {list.map((item) => (
+                <Row
+                  key={item.id}
+                  icon={slotIcon(item.type)}
+                  title={item.code}
+                  subtitle={subtitle(item) || undefined}
+                  onPress={item.canManage ? () => setSelected(item) : undefined}
+                  trailing={
+                    item.status === 'BLOCKED' ? (
+                      <StatusPill label={t('parking:slotStatus.BLOCKED')} tone="danger" />
+                    ) : item.status === 'VISITOR' ? (
+                      <StatusPill label={t('parking:slotStatus.VISITOR')} tone="info" />
+                    ) : item.allocation ? (
+                      <StatusPill label={formatFlat(item.allocation.flat)} tone="ink" />
+                    ) : (
+                      <StatusPill label={t('parking:free')} tone="success" />
+                    )
+                  }
+                />
+              ))}
             </Card>
           )}
         />
@@ -328,7 +333,7 @@ export function ParkingSlotsScreen() {
             />
           </View>
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('parking:form.type')}
             </Text>
             <View className="flex-row flex-wrap gap-2">

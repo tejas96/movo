@@ -22,7 +22,9 @@ import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { MemberPickerSheet } from '../../core/members/MemberPickerSheet';
 import { useNav } from '../../core/navigation/types';
 import { useCan, useSocietyId, useTenant } from '../../core/tenant/hooks';
+import { HeroPill } from '../../core/ui/DetailHero';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
+import { SummaryHero } from '../../core/ui/SummaryHero';
 import { relative } from '../../core/util/date';
 import { useAdjustPoints, useLeaderboard, useMyPoints } from './api';
 
@@ -87,23 +89,25 @@ export function RewardsScreen() {
         <Skeleton className="mt-6 h-40 rounded-xl" />
       ) : (
         <>
-          <Card className="mt-6">
-            <Text variant="label" tone="secondary">
-              {t('rewards:thisYear', { fy: m.financialYear })}
-            </Text>
-            <Text variant="display">{m.points}</Text>
-            <Text variant="label" tone="secondary">
-              {[
-                t('rewards:allTime', { count: m.allTimePoints }),
-                m.rank ? t('rewards:rank', { rank: m.rank }) : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </Text>
-            <Text variant="label" tone="tertiary" className="mt-3">
-              {t('rewards:redeemLater')}
-            </Text>
-          </Card>
+          <View className="mt-6">
+            <SummaryHero
+              art="tileFlame"
+              label={t('rewards:thisYear', { fy: m.financialYear })}
+              value={String(m.points)}
+              countTo={m.points}
+              icon={{ name: 'rewards', motion: 'wobble' }}
+              pills={
+                <>
+                  <HeroPill label={t('rewards:allTime', { count: m.allTimePoints })} dot={false} />
+                  {m.rank ? <HeroPill label={t('rewards:rank', { rank: m.rank })} /> : null}
+                </>
+              }
+            >
+              <Text variant="label" tone="soft" className="mt-3">
+                {t('rewards:redeemLater')}
+              </Text>
+            </SummaryHero>
+          </View>
 
           {showBoard && leaders.data && leaders.data.rows.length > 0 ? (
             <>

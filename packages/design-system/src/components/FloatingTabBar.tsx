@@ -1,9 +1,10 @@
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useEffect } from 'react';
-import { LayoutAnimation, Pressable, View } from 'react-native';
+import { LayoutAnimation, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BoldIconName } from '../icons';
 import { Icon } from './Icon';
+import { Press } from './Press';
 import { Text } from './Text';
 import { theme } from './theme';
 
@@ -14,7 +15,8 @@ export interface TabSpec {
 }
 
 /**
- * Floating pill tab bar. The active tab is a black pill with a filled icon and its label.
+ * Glass tab bar, centred above the bottom edge. The open tab is a white pill with an orange
+ * filled icon and its name; the others are ink outline icons.
  * Pass it to <Tab.Navigator tabBar={(p) => <FloatingTabBar {...p} tabs={tabs} />} />.
  */
 export function FloatingTabBar({
@@ -24,7 +26,8 @@ export function FloatingTabBar({
 }: BottomTabBarProps & { tabs: TabSpec[] }) {
   const insets = useSafeAreaInsets();
   const specs = new Map(tabs.map((t) => [t.name, t]));
-  // The black pill grows on the new tab and shrinks on the old one in one eased move.
+  const { tabBar } = theme.layout;
+  // The white pill grows on the new tab and shrinks on the old one in one eased move.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs on tab change only
   useEffect(() => {
     LayoutAnimation.configureNext({
@@ -38,16 +41,17 @@ export function FloatingTabBar({
     <View
       pointerEvents="box-none"
       className="absolute left-0 right-0 items-center"
-      style={{ bottom: Math.max(insets.bottom, theme.layout.tabBar.bottom) }}
+      style={{ bottom: Math.max(insets.bottom, tabBar.bottom) }}
     >
       <View
-        className="flex-row items-center justify-between rounded-full p-1.5"
+        className="flex-row items-center rounded-full"
         style={[
           {
-            height: theme.layout.tabBar.height,
-            marginHorizontal: theme.layout.tabBar.inset,
-            alignSelf: 'stretch',
+            padding: tabBar.padding,
+            gap: 4,
             backgroundColor: theme.color.bg.tabBar,
+            borderWidth: 1.5,
+            borderColor: theme.color.border.glass,
           },
           theme.shadow.tabBar,
         ]}
@@ -65,30 +69,40 @@ export function FloatingTabBar({
             if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
           };
           return (
-            <Pressable
+            <Press
               key={route.key}
+              scaleTo={0.94}
               accessibilityRole="tab"
               accessibilityState={{ selected: focused }}
               accessibilityLabel={spec.label}
               onPress={onPress}
-              className={
+              className="flex-row items-center justify-center rounded-full"
+              style={
                 focused
-                  ? 'h-12 flex-row items-center gap-2 rounded-full bg-ink pl-3.5 pr-[18px]'
-                  : 'h-12 w-12 items-center justify-center rounded-full'
+                  ? [
+                      {
+                        height: tabBar.item,
+                        paddingHorizontal: 18,
+                        gap: 8,
+                        backgroundColor: theme.color.bg.nested,
+                      },
+                      theme.shadow.lifted,
+                    ]
+                  : { width: tabBar.item, height: tabBar.item }
               }
             >
               <Icon
                 name={spec.icon}
                 variant={focused ? 'bold' : 'linear'}
-                size={focused ? 22 : 24}
-                color={focused ? theme.color.icon.onInk : theme.color.icon.inactive}
+                size={focused ? 20 : 21}
+                color={focused ? theme.color.accent.fg : theme.color.icon.inactive}
               />
               {focused ? (
-                <Text variant="bodyMedium" tone="inverse">
+                <Text variant="bodyMedium" className="font-semibold" numberOfLines={1}>
                   {spec.label}
                 </Text>
               ) : null}
-            </Pressable>
+            </Press>
           );
         })}
       </View>

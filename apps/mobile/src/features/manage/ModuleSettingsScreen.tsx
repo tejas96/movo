@@ -1,6 +1,7 @@
 import {
   BottomBar,
   Button,
+  Card,
   Chip,
   Input,
   OptionSheet,
@@ -111,7 +112,7 @@ export function ModuleSettingsScreen() {
     switch (f.kind) {
       case 'toggle':
         return (
-          <View className="flex-row items-center justify-between rounded-md bg-card px-[18px] py-3">
+          <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
             <View className="flex-1 pr-3">
               <Text variant="body">{label(f)}</Text>
               <Text variant="caption" tone="secondary">
@@ -159,7 +160,7 @@ export function ModuleSettingsScreen() {
         };
         return (
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {label(f)}
             </Text>
             <View className="flex-row flex-wrap gap-2">
@@ -188,7 +189,7 @@ export function ModuleSettingsScreen() {
         };
         return (
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {label(f)}
             </Text>
             <View className="flex-row flex-wrap gap-2">
@@ -219,11 +220,11 @@ export function ModuleSettingsScreen() {
         ) : !current ? (
           <Skeleton className="mt-6 h-64 rounded-xl" />
         ) : (
-          <View className="mt-6 gap-4">
+          <Card className="mt-5 gap-4">
             {fields.filter(visible).map((f) => (
               <View key={f.key}>{renderField(f)}</View>
             ))}
-          </View>
+          </Card>
         )}
         {error ? (
           <Text variant="caption" tone="danger" className="mt-3">

@@ -1,30 +1,28 @@
 import type { MeetingUpdate } from '@movo/contracts';
 import {
   Button,
-  Card,
-  Divider,
-  Icon,
+  Glass,
   IconSquare,
   OptionSheet,
+  Rise,
   Screen,
-  SectionHeader,
+  SectionLabel,
   Sheet,
   Skeleton,
   Text,
   TextArea,
-  TitleBar,
-  theme,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { MeetingStatusPill } from '../../core/calendar/MeetingStatusPill';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { DetailHero, HeroPill } from '../../core/ui/DetailHero';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { dateTime, relative, whenRange } from '../../core/util/date';
 import { type MeetingAction, useMeeting, useMeetingAction } from './api';
@@ -103,57 +101,62 @@ export function MeetingDetailScreen() {
 
   return (
     <Screen>
-      <TitleBar
-        title={t('meetings:title')}
-        onBack={() => nav.goBack()}
-        trailing={
-          options.length > 0 ? (
-            <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
-          ) : undefined
-        }
-      />
       {loadFailed(meeting) ? (
         <QueryError query={meeting} className="mt-6" />
       ) : meeting.isLoading || !m ? (
-        <View className="mt-6 gap-3">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-48 rounded-xl" />
+        <View className="gap-3">
+          <Skeleton className="h-[312px] rounded-[40px]" />
+          <Skeleton className="h-48 rounded-[30px]" />
         </View>
       ) : (
-        <>
-          <Card className="mt-6">
-            <View className="flex-row flex-wrap gap-2">
-              <MeetingStatusPill status={m.status} />
-            </View>
-            <Text variant="h1" className={m.status === 'SCHEDULED' ? '' : 'mt-3'}>
-              {m.title}
-            </Text>
-            <View className="mt-4 gap-2.5">
-              <Fact icon="calendar" text={whenRange(m.startsAt, m.endsAt)} />
-              {m.location ? <Fact icon="location" text={m.location} /> : null}
-            </View>
-            <Divider />
-            <Text variant="h3" className="mb-2">
-              {t('meetings:agenda')}
-            </Text>
-            <Text variant="body" tone={m.agenda ? 'primary' : 'secondary'} className="leading-6">
-              {m.agenda ?? t('meetings:noAgenda')}
-            </Text>
-            <Text variant="label" tone="secondary" className="mt-5">
-              {t('meetings:scheduledBy', { name: m.createdBy.displayName })}
-            </Text>
-          </Card>
+        <View style={styles.page}>
+          <Rise>
+            <DetailHero
+              art="meeting"
+              onBack={() => nav.goBack()}
+              trailing={
+                options.length > 0 ? (
+                  <IconSquare
+                    icon="more"
+                    variant="linear"
+                    diameter={46}
+                    onPress={() => setMenu(true)}
+                    accessibilityLabel={t('common:actions.more')}
+                  />
+                ) : undefined
+              }
+              icon={{ name: 'meetings', motion: 'bob' }}
+              pills={
+                <>
+                  <HeroPill label={t('meetings:scheduledBy', { name: m.createdBy.displayName })} />
+                  <MeetingStatusPill status={m.status} />
+                </>
+              }
+              title={m.title}
+              meta={[whenRange(m.startsAt, m.endsAt), m.location].filter(Boolean).join('  |  ')}
+            />
+          </Rise>
+          <Rise delay={80}>
+            <Glass radius={30} style={styles.card}>
+              <SectionLabel className="px-0 pt-0 pb-2">{t('meetings:agenda')}</SectionLabel>
+              <Text variant="body" tone={m.agenda ? 'primary' : 'secondary'} style={styles.text}>
+                {m.agenda ?? t('meetings:noAgenda')}
+              </Text>
+            </Glass>
+          </Rise>
           {m.updates.length > 0 ? (
-            <>
-              <SectionHeader title={t('meetings:updates')} />
-              <Card tight className="gap-3 px-4 py-3">
-                {m.updates.map((u) => (
-                  <UpdateRow key={u.id} update={u} />
-                ))}
-              </Card>
-            </>
+            <Rise delay={120}>
+              <Glass radius={28} style={styles.card}>
+                <SectionLabel className="px-0 pt-0 pb-2">{t('meetings:updates')}</SectionLabel>
+                <View className="gap-3">
+                  {m.updates.map((u) => (
+                    <UpdateRow key={u.id} update={u} />
+                  ))}
+                </View>
+              </Glass>
+            </Rise>
           ) : null}
-        </>
+        </View>
       )}
       <OptionSheet
         visible={menu}
@@ -191,17 +194,6 @@ export function MeetingDetailScreen() {
   );
 }
 
-function Fact({ icon, text }: { icon: 'calendar' | 'location'; text: string }) {
-  return (
-    <View className="flex-row items-center gap-2.5">
-      <Icon name={icon} size={20} color={theme.color.text.secondary} />
-      <Text variant="body" className="flex-1">
-        {text}
-      </Text>
-    </View>
-  );
-}
-
 function UpdateRow({ update }: { update: MeetingUpdate }) {
   const { t } = useTranslation('meetings');
   const head =
@@ -222,3 +214,9 @@ function UpdateRow({ update }: { update: MeetingUpdate }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  page: { gap: 14, marginHorizontal: -4 },
+  card: { padding: 18 },
+  text: { lineHeight: 24 },
+});

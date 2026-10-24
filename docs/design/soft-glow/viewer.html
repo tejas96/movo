@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soft Glow reference viewer</title>
+<!--
+  Renders one mockup screen from ./source/<name>.dc.html as a plain page, so headless Chrome can
+  take the reference PNG. Use: viewer.html?f=Main  (see capture.sh).
+  It understands the small template language the mockups use: {{path}} holes, <sc-for>, <sc-if>,
+  <helmet>, and a `class Component extends DCLogic` with state, setState and lifecycle.
+-->
+<style>
+/* Poppins from the app's own font files, so captures never wait on (or miss) Google Fonts. */
+@font-face{font-family:'Poppins';font-weight:400;src:url(../../../packages/design-system/assets/fonts/Poppins-Regular.ttf)}
+@font-face{font-family:'Poppins';font-weight:500;src:url(../../../packages/design-system/assets/fonts/Poppins-Medium.ttf)}
+@font-face{font-family:'Poppins';font-weight:600;src:url(../../../packages/design-system/assets/fonts/Poppins-SemiBold.ttf)}
+@font-face{font-family:'Poppins';font-weight:700;src:url(../../../packages/design-system/assets/fonts/Poppins-Bold.ttf)}
+html,body{margin:0;padding:0;background:#EEEDEC}
+/* The mockups stack cards in a flex column; cards must keep their own height and not shrink. */
+.scroll > *{flex-shrink:0}
+/* ?full=1 renders the whole scrolling page instead of the first screen. */
+.full #root > div{height:auto !important;min-height:844px}
+.full .scroll{position:relative !important;overflow:visible !important}
+/* ?still=1 jumps every CSS animation 60 s ahead: cards have risen, rings have filled, and
+   looping motion sits at a fixed point, so captures are complete and repeatable. */
+.still *,.still *::before,.still *::after{animation-delay:-60s !important}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function () {
+  var query = new URLSearchParams(location.search);
+  var name = query.get('f') || 'Main';
+  var classes = [];
+  if (query.get('full')) classes.push('full');
+  if (query.get('still')) classes.push('still');
+  document.documentElement.className = classes.join(' ');
+
+  function DCLogic(props) { this.props = props || {}; this.state = {}; }
+  DCLogic.prototype.setState = function (p) {
+    Object.assign(this.state, typeof p === 'function' ? p(this.state) : p);
+    schedule();
+  };
+  DCLogic.prototype.forceUpdate = function () { schedule(); };
+
+  var tpl, comp, queued = false;
+
+  function lookup(path, scope) {
+    path = path.trim();
+    if (path === 'true') return true;
+    if (path === 'false') return false;
+    if (/^-?\d+(\.\d+)?$/.test(path)) return Number(path);
+    var v = scope;
+    var parts = path.split('.');
+    for (var i = 0; i < parts.length; i++) {
+      if (v == null) return undefined;
+      v = v[parts[i]];
+    }
+    return v;
+  }
+  function interp(s, scope) {
+    return s.replace(/\{\{([^}]+)\}\}/g, function (_, p) {
+      var v = lookup(p, scope);
+      return v == null ? '' : String(v);
+    });
+  }
+
+  function renderInto(src, out, scope) {
+    src.childNodes.forEach(function (n) {
+      if (n.nodeType === 3) { out.appendChild(document.createTextNode(interp(n.nodeValue, scope))); return; }
+      if (n.nodeType !== 1) return;
+      var tag = n.tagName.toLowerCase();
+      if (tag === 'helmet') return;
+      if (tag === 'sc-for') {
+        var list = lookup(n.getAttribute('list').replace(/[{}]/g, ''), scope) || [];
+        var as = n.getAttribute('as');
+        list.forEach(function (item, i) {
+          var s = Object.create(scope); s[as] = item; s.$index = i;
+          renderInto(n, out, s);
+        });
+        return;
+      }
+      if (tag === 'sc-if') {
+        if (lookup(n.getAttribute('value').replace(/[{}]/g, ''), scope)) renderInto(n, out, scope);
+        return;
+      }
+      var el = n.namespaceURI === 'http://www.w3.org/2000/svg'
+        ? document.createElementNS(n.namespaceURI, n.tagName)
+        : document.createElement(n.tagName);
+      for (var a = 0; a < n.attributes.length; a++) {
+        var at = n.attributes[a];
+        if (/^on[A-Z]/.test(at.name) || /^on/.test(at.name) && /\{\{/.test(at.value)) continue;
+        el.setAttribute(at.name, interp(at.value, scope));
+      }
+      renderInto(n.content || n, el, scope);
+      out.appendChild(el);
+    });
+  }
+
+  function render() {
+    queued = false;
+    var vals = comp.renderVals ? comp.renderVals() : {};
+    var root = document.getElementById('root');
+    var frag = document.createDocumentFragment();
+    renderInto(tpl, frag, vals);
+    root.replaceChildren(frag);
+  }
+  function schedule() { if (!queued) { queued = true; requestAnimationFrame(render); } }
+
+  fetch('source/' + name + '.dc.html').then(function (r) { return r.text(); }).then(function (text) {
+    var doc = new DOMParser().parseFromString(text, 'text/html');
+    tpl = doc.querySelector('x-dc');
+    var helmet = tpl.querySelector('helmet');
+    if (helmet) Array.prototype.slice.call(helmet.children).forEach(function (c) { document.head.appendChild(c.cloneNode(true)); });
+    var script = doc.querySelector('script[data-dc-script]');
+    var props = {};
+    try {
+      var decl = JSON.parse(script.getAttribute('data-props') || '{}');
+      Object.keys(decl).forEach(function (k) { if (k[0] !== '$' && 'default' in decl[k]) props[k] = decl[k].default; });
+    } catch (e) {}
+    var Component = new Function('DCLogic', script.textContent + '\nreturn Component;')(DCLogic);
+    comp = new Component(props);
+    if (!comp.state) comp.state = {};
+    render();
+    if (comp.componentDidMount) comp.componentDidMount();
+  });
+})();
+</script>
+</body>
+</html>

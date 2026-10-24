@@ -5,7 +5,7 @@ export const directoryHome: FeatureHome = {
     {
       key: 'directory',
       icon: 'directory',
-      label: (t) => t('home:quick.directory'),
+      label: (t) => t('home:glow.members.title'),
       go: (nav) => nav.navigate('Directory'),
     },
   ],

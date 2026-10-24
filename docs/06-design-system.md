@@ -1,101 +1,120 @@
 # Design system
 
-Name: **MOVO DS**. Version 0.3. Light theme. Source of truth: `packages/design-system/src/tokens/` and `src/icons/`.
+Name: **MOVO DS**. Version 1.0, **Soft Glow**. Light theme. Source of truth: `packages/design-system/src/tokens/` and `src/icons/`.
 Preview: run `pnpm design:preview` and open `packages/design-system/preview/dist/index.html`.
+Visual reference: `docs/design/soft-glow/` — the mockup source (`source/*.dc.html`), a local viewer and
+`capture.sh`, which renders the reference PNGs in `ref/` at 390 × 844 pt, 3x. Screens must match them.
 
 ## 1. Feel
 
-A copy of the reference real-estate app's language, applied to society life:
+Calm, light and premium, inspired by the "Sense" meditation app. Chosen by the user on 2026-10-23.
 
-- **Photos bring the colour.** The UI is white, gray and black; warm daylight photos carry the life. Home, the Society hub, every module screen, empty states and sign-in show a photo. Bundled stock photos live in `packages/design-system/assets/photos/` (free licences, credits in `CREDITS.md`) and are used through `photos.<name>`. A society's own photos replace them when uploads exist.
-- **White canvas, gray blocks.** Screens are white. Lists are gray rows (radius 24) straight on the white screen, with a white icon square. No white row inside a gray card inside a white screen. A white row appears only inside a real gray card (the dues card, the listing card).
-- **No borders, no shadows.** Depth comes from photos and fills. The floating tab bar and sheets are the only things with a shadow.
-- **Black is the only action color.** Filled buttons, the filter square, the active tab pill, and the call and chat circles are near-black. Everything else is gray or white.
-- **Big radii.** 20 for chips, tiles, icon squares and inputs. 24 for photos inside cards. 28 for cards and sheets. Full pills for buttons, info pills and the tab bar.
-- **Poppins.** Titles SemiBold, gray labels Regular, chips and buttons Medium. Poppins covers Devanagari, so Hindi and Marathi look identical in weight and rhythm.
-- **Iconsax icons.** Outline (`linear`) by default. Filled (`bold`) for the active tab, header icons, tiles and pills.
-- **Status color stays small.** Paid, Pending, Overdue live in small soft pills. Nothing else is coloured.
+- **Mist and glow.** Pages are mist `#EEEDEC`. A soft pink and lavender glow drifts slowly at the bottom (`Backdrop`, scenes in `tokens/glow.ts`). `Screen` draws it by default.
+- **Frosted glass.** Cards are white at 50% with a bright white rim, a white top highlight and a wide plum-tinted shadow (`Glass`, `Card`). Lists are rows inside one glass card, with no fill per row.
+- **Moving colour art.** Big cards are dreamy blurred gradients that drift slowly inside a thick white rim (`ArtCard`, `ArtFill`, presets in `tokens/glow.ts`). A white fade at the bottom keeps text readable.
+- **The orb.** A glossy coral sphere that breathes is the brand mark and the avatar style (`Orb`). Do not add it where a drawing already fills the card.
+- **Small animated drawings.** The building, dues ring, coins, diya, water drop, megaphone, map pin and avatars move gently. Everything rises into place on open (`Rise`) and all motion stops when the phone asks for less motion.
+- **Ink for actions, orange for accents.** Main buttons are ink pills with a white circle and an orange arrow (`Button arrow`). Orange marks only small things: unread dots, the selected tab icon, arrows, play buttons. Red is only for urgent things.
+- **Big radii.** 30 for glass cards, 34 outside / 29 inside for rimmed art cards, 28 for glass lists, 22 for rows, full pills for buttons, chips, search and the tab bar.
+- **Poppins.** Headlines are Regular with one SemiBold word (`Strong`). Screen titles SemiBold, card titles Medium, labels Regular, section labels in small capitals. Poppins covers Devanagari, so Hindi and Marathi keep the same weight and rhythm.
+- **App icon.** The glowing orb with the roof M on the pastel glow. Sources and the build script are in `docs/design/app-icon/`.
+- **Iconsax icons.** Outline (`linear`) by default; filled (`bold`) and orange for the selected tab.
 
 ## 2. Tokens
+
+Values below are copied from `packages/design-system/src/tokens/` (checked 2026-10-23). If they ever differ, the TypeScript tokens win.
 
 ### Color
 
 | Token | Value | Use |
 | --- | --- | --- |
-| bg.canvas | `#FFFFFF` | screen background |
-| bg.card | `#F5F5F5` | cards, chips, search bar, tiles, icon squares |
-| bg.cardDeep | `#EFEFEF` | tiles inside a gray card |
-| bg.nested | `#FFFFFF` | pills, rows, icon boxes inside a gray card |
-| bg.alt | `#F6F6F6` | sheet background |
-| bg.ink | `#151515` | filled buttons, filter square, active tab pill, action circles |
-| bg.inkPressed | `#000000` | pressed state |
-| bg.overlay | `rgba(255,255,255,0.92)` | pills over photos |
-| bg.tabBar | `rgba(255,255,255,0.88)` | floating tab bar, with 20px blur |
-| overlay.base | `#111111` | behind a full-screen photo before it paints (Welcome) |
-| overlay.shade | `#000000` | gradient shade on photos; each stop sets its opacity |
-| overlay.textStrong / textSoft / textDim | white at 0.82 / 0.78 / 0.72 | white text on photos |
-| overlay.glass | `rgba(255,255,255,0.18)` | small control on a photo (Skip) |
-| overlay.darken | `rgba(0,0,0,0.28)` | fill of a held HoldButton |
-| text.primary | `#151515` | titles, values |
-| text.secondary | `#767676` | labels, meta, "See all", placeholders |
-| text.tertiary | `#AFAFAF` | hints |
-| text.disabled | `#C8C8C8` | disabled |
-| text.onInk | `#FFFFFF` | text on black |
-| icon.inactive | `#5C5C5C` | inactive tab icons |
-| border.divider | `#EAEAEA` | 1px separator inside a card |
-| border.focus | `#151515` | focused input outline |
-| status.success | `#157543` on `#E8F6EE` | Paid, Approved, Done |
-| status.warning | `#9B6400` on `#FFF4E0` | Pending, Due |
-| status.danger | `#A83030` on `#FDECEC` | Overdue, Missed, Emergency |
-| status.info | `#2B4F9E` on `#EAF0FD` | Scheduled |
-| status.neutral | `#5C5C5C` on `#EFEFEF` | Draft, Trial |
+| bg.canvas | `#EEEDEC` (mist) | page background, under the glow |
+| bg.card | white at 0.5 | glass cards, glass chips, rows on the page |
+| bg.cardDeep | white at 0.75 | rim of art cards, pills on art |
+| bg.nested | `#FFFFFF` | inputs, selected chip, white buttons, icon buttons |
+| bg.alt | `#EEEDEC` | sheet background |
+| bg.ink | `#2B2A2E` | main buttons, + buttons, picked flat |
+| bg.inkPressed | `#1C1B1E` | pressed ink |
+| bg.overlay | white at 0.85 | pills on art and photos |
+| bg.scrim | ink at 0.4 | behind sheets |
+| bg.tabBar | `#FDFCFD` | tab bar and bottom bar (solid: no live blur on Android) |
+| text.primary | `#2B2A2E` | titles, values |
+| text.soft | `#4D4C52` | text on art cards |
+| text.secondary | `#6A6970` | labels, meta, placeholders |
+| text.tertiary | `#9C9BA1` | hints |
+| text.disabled | `#C3C2C7` | disabled |
+| text.onInk | `#FFFFFF` | text on ink |
+| border.glass | white at 0.95 | 1.5 rim of glass cards |
+| border.divider | ink at 0.08 | line inside a card |
+| border.focus | `#F06A2E` | focus ring (drawn as a 4 px orange glow at 0.18) |
+| accent | `#F06A2E` on `#FDE6DA` | unread dots, arrows, selected tab icon, links ("See all"), switch on |
+| status.success | `#3F7A45` on `#E6F1E3` | Paid, Done |
+| status.warning | `#8A5410` on `#FBEBD3` | Due, In progress |
+| status.danger | `#B52E2E` on `#FBE2E2` | Overdue, urgent, Sign out; red fill `#D63B3B` only for call 112 and Remove |
+| status.info | `#3F51A8` on `#E6E9FA` | Scheduled |
+| status.neutral | `#4D4C52` on `#F4F3F2` | Draft, Cancelled |
 
-Tailwind names: `bg-canvas`, `bg-card`, `bg-card-deep`, `bg-card-nested`, `bg-ink`, `text-ink`, `text-ink-secondary`, `text-ink-tertiary`, `text-on-ink`, `text-icon-inactive`, `border-divider`, `bg-success-soft text-success`, and so on. The raw `gray-*` scale exists as an escape hatch. No hex values in screens.
+Pastel glow and art colours (pink `#F4B3C2`, lavender `#CDB2F0`, peach `#F8CDB0`, the art presets and the orb stops) live in `tokens/glow.ts`.
+
+Tailwind names: `bg-canvas`, `bg-card`, `bg-card-deep`, `bg-card-nested`, `bg-ink`, `bg-accent`, `text-ink`, `text-ink-secondary`, `border-glass`, `bg-success-soft text-success`, and so on. No hex values in screens.
 
 ### Typography
 
-Family: **Poppins** (400, 500, 600, 700). One family for English, Hindi and Marathi. Screens never set `fontFamily`; the `Text` primitive does.
+Poppins only. Line heights are about 1.3 to 1.45 because Poppins has tall Devanagari ascenders.
 
 | Variant | Size / line | Weight | Use |
 | --- | --- | --- | --- |
-| display | 30 / 38 | 600 | prices, big numbers |
-| h1 | 26 / 34 | 600 | detail and module title |
-| h2 | 21 / 29 | 600 | section title ("Real estate suggestion") |
-| h3 | 18 / 26 | 600 | card title, centred screen title |
-| title | 16 / 24 | 600 | header value ("New york city"), person name |
+| display | 46 / 52 | 500, tracking -1.2 | money on hero cards |
+| greet | 27 / 34 | 400, tracking -0.4 | headlines with one bold word (`Strong`) |
+| h1 | 26 / 34 | 600, tracking -0.4 | screen title |
+| h2 | 20 / 27 | 500 | title on an art card |
+| h3 | 16 / 23 | 500 | card title |
+| title | 15 / 22 | 500 | row title, person name |
 | body | 15 / 22 | 400 | paragraphs, placeholders |
-| bodyMedium | 15 / 22 | 500 | chips, buttons, pills, tab label |
-| caption | 14 / 20 | 400 | descriptions, meta rows, tile labels (500) |
-| label | 13 / 18 | 400 | small gray labels ("Location", "Property Agent") |
-| micro | 12 / 16 | 500 | badges, counters |
-
-Line heights are about 1.4 because Poppins has tall Devanagari ascenders. Tailwind: `text-h2`, `text-body-medium`, `font-semibold`.
+| bodyMedium | 14 / 20 | 500 | chips, buttons, pills, tab label |
+| caption | 13 / 19 | 400 | subtitles, meta; field labels (500) |
+| label | 12 / 17 | 400 | small labels and tags |
+| section | 12 / 17 | 400, tracking 0.6, capitals | section labels (THIS WEEK, GENERAL) |
+| micro | 11 / 15 | 500 | badges, counters |
 
 ### Radius, spacing, sizes
 
 | Token | Value |
 | --- | --- |
-| radius xs / sm / md / lg / xl / full | 10 / 14 / 20 / 24 / 28 / pill |
-| gutter | 20 |
-| card padding, photo inset | 20, 8 |
-| icon square (header actions) | 52, radius 20. Small variant 44, radius 14 |
-| circle button (call, chat, heart) | 44 |
-| search bar | 56 pill. Filter square 56, radius 20, black |
-| category chip | 52 high, radius 20, white 40 icon box with radius 14 inside |
-| buttons sm / md / lg | 44 / 52 / 56, full pill |
-| input | 56, radius 20, gray fill, 1.5px black outline on focus |
-| info pill / small pill | 40 / 34, full pill |
-| status pill | 26 |
-| tile | 3 columns, radius 20, padding 16, min height 96 |
-| tab bar | 60 high, inset 24, bottom 20, active pill 48 |
-| avatars | 32 / 44 / 56 / 64 |
-| icons | 24 default, 22 in chips and tabs, 20 in circles, 18 in pills, 16 next to text |
-| touch target | 48 minimum |
+| radius xs / sm / md / lg / xl / 2xl / 3xl / rim / full | 10 / 14 / 20 / 24 / 28 / 30 / 32 / 34 / pill |
+| gutter | 18 (Event detail: 14) |
+| page top | safe area + 8 (58 pt on the 390 × 844 mockup); Event detail 4 higher |
+| gap between cards | 14 |
+| glass card | radius 30, padding 18, rim 1.5 |
+| glass list | radius 28, padding 8; rows 54 to 66 high, radius 22, no fill |
+| art card | rim 5 white at 0.75, outer radius 34 (40 on heroes), art radius 5 less |
+| controls sm / md / lg / xl | 40 / 50 / 54 / 60, full pill |
+| input, select | 54 white pill, label above (caption 500), focus = 4 px orange glow |
+| icon button | 46 white circle (44 small) |
+| circle button (call) | 44 |
+| chip | 40 glass pill; selected = white |
+| switch | 50 × 30 track, 24 knob |
+| tab bar | items 50, padding 7, 24 above the bottom |
+| avatars | 32 / 44 / 56 / 64; profile orb 92 |
+| icons | 24 default, 21 in list rows, 20 in buttons, 17 in call buttons |
+| touch target | 44 minimum |
 
 ### Elevation and motion
 
-- Cards: none. Tab bar: `0 8px 24px rgba(17,17,17,0.10)` plus 20px backdrop blur. Sheet: `0 -8px 24px rgba(17,17,17,0.06)`.
-- Durations 150 / 250 / 400 ms. Pressed state: opacity 0.85 or `inkPressed`.
+Shadows are soft and plum-tinted, never gray-black. Same string on web and in React Native `boxShadow`.
+
+| Token | Value | Use |
+| --- | --- | --- |
+| glass | `inset 0 1px 0 rgba(255,255,255,.8), 0 10px 30px rgba(70,40,70,.06)` | glass cards, tab bar |
+| rim | `0 10px 30px rgba(70,40,70,.08)` | art cards |
+| control | `0 4px 14px rgba(70,40,70,.06)` | inputs, icon buttons, search |
+| lifted | `0 4px 12px rgba(70,40,70,.08)` | selected segment, active tab |
+| sheet | `0 -8px 30px rgba(70,40,70,.08)` | sheets, bottom bar |
+
+- Blur: glass 22 (where supported), art 26, glow 80.
+- Durations 150 / 250 / 400 ms; cards rise over 800 ms with `cubic-bezier(.2,.8,.2,1)`, 60 ms apart. Presses spring with `cubic-bezier(.3,1.5,.5,1)`.
+- Pressed state: scale 0.97 (`Press`) or opacity 0.85. Disabled: opacity 0.4.
+- All motion stops when the phone asks for reduced motion.
 
 ## 3. Fonts in React Native
 
@@ -113,65 +132,61 @@ Files: `packages/design-system/assets/fonts/Poppins-{Regular,Medium,SemiBold,Bol
 - React Native: an `Icon` component renders the nodes with `react-native-svg` (`<Icon name="bell" variant="bold" size={24} />`). Web and the preview use `iconSvgMarkup()`.
 - Adding an icon: add one line to the map, use it, run the script. When TypeScript says a name is not a `BoldIconName`, add it to `boldIcons` and run the script again. Never import an icon from another package.
 
-## 5. Primitives (built with the mobile scaffold)
+## 5. Primitives
 
 | Component | Notes |
 | --- | --- |
-| Screen | white canvas, safe area, optional scroll and keyboard avoiding |
-| TopBar | icon square + label/value block + trailing icon square (Home header). Or back square + centred h3 title + optional action square |
-| Text | variant, tone (primary, secondary, tertiary, inverse, status), Poppins weights |
-| Button | ink (default), gray, white, ghost, danger; sm 44, md 52, lg 56; icon; loading; disabled; full width by default |
-| IconSquare | 52 or 44; gray, white, ink; optional dot |
-| CircleButton | 44; ink or white |
-| SearchBar + FilterButton | 56 pill and 56 black square |
-| Chip | 52 with white icon box; `plain` without icon; selected = ink |
-| Pill | 40 or 34; white on gray, gray on white, overlay on photos; icon 18 |
-| StatusPill | 26; success, warning, danger, info, neutral, ink |
-| Card | gray 28; `tight` (padding 8) for row lists; `white` when the canvas is gray |
-| Row | white 20 inside a gray card; 68 min height; leading icon square 44 or avatar; title, subtitle; trailing value, pill or chevron |
-| MediaCard | gray 28, photo 24 with 8 inset, overlay pills and heart, info block with title, meta, divider, pills, price |
-| Tile | 3-column grid; gray or deep gray; bold icon, label, hint, optional count badge |
-| PersonCard | gray 24; avatar 44, name with verified badge, role; ink circles for chat and call |
-| DateBlock | 56 x 60 white block with day and month |
-| DateTimeSheet | bottom sheet with a day strip, an hour strip and quarter-hour minutes. `mode="date"` hides the time; `pastDays` allows past dates. Pure JS, phone time zone |
-| Input, Select | 56, radius 20; label above in gray 13; helper and error below |
-| TextArea | multi-line Input, text at the top, grows from `minHeight` (96 default) |
-| Segmented | gray pill track 48, ink active pill |
-| Toggle | ink when on |
-| FloatingTabBar | 60 pill, blur, shadow; active item is an ink pill with bold icon and label |
-| BottomBar | white, value left (label + 24 bold), ink button right; used on detail screens instead of the tab bar |
-| Sheet | radius 28 top, grabber, white inputs on the `alt` background |
-| Toast | ink, radius 20 |
-| EmptyState | icon square, title, one line, optional white button |
-| Avatar | circle; image or initials on white or gray |
-| Skeleton | gray blocks matching the layout |
+| Screen | mist page with the `Backdrop` glow (`glow` picks the scene), safe area, scroll, keyboard avoiding |
+| Glass | frosted card; children inside it know they are in glass (`useInGlass`), so rows drop their own fill |
+| Card | glass card, radius 30, padding 18. `tight` = a glass list (radius 28, padding 8) |
+| ArtCard, ArtFill | moving colour art in a white rim; presets in `tokens/glow.ts` |
+| Orb, Ripple, DotTexture | the coral orb, its ripple, the fading dot grid |
+| Drawings | Building, DuesRing, Coin, Diya + Sparks, WaterDrop, MovingIcon, MapPin, GlowAvatar, AvatarStack, WavingHand |
+| Rise | cards rising into place, 60 ms apart |
+| Text | variants above; tones primary, secondary, soft, accent, inverse, status; `Strong` for the bold word |
+| TitleBar, ModuleHeader | 46 round back button, h1 title on the left, action on the right |
+| Button | ink (default), white, gray, ghost, danger, dangerText; sm 40, md 50, lg 54, xl 60; `arrow` adds the white circle with the orange arrow; `sheen` adds the moving light band |
+| IconSquare | round 46 or 44 icon button; white, gray or ink; optional orange dot |
+| CircleButton | 44; ink, white or `accent` |
+| SearchBar | 50 white pill |
+| Chip | 40 glass pill; selected = white |
+| Pill, StatusPill | info pills and soft status pills |
+| Row | glass pill on the page, plain inside a glass card; leading icon or avatar, title, subtitle, trailing |
+| PersonCard | glowing avatar, name with badge, role, actions |
+| Tile, DateBlock | glass tile; white date block |
+| Input, SelectField, TextArea, PasswordInput | 54 white pill, label above, orange focus glow, `prefix` (+91); password eye in a gray circle |
+| Segmented | glass track, white selected pill |
+| Toggle | 50 × 30, orange when on, springy knob |
+| FloatingTabBar | solid pill; active item is a white pill with an orange icon and a label |
+| BottomBar | solid near-white bar with round top corners; value left, ink button right |
+| Sheet, OptionSheet | radius 32 top on mist |
+| EmptyState | glass card, icon on a colour-art disc, title, one line, optional button |
+| Avatar | photo, or initials on a soft colour glow |
+| Skeleton | soft blocks matching the layout |
+| DetailHero (app, `core/ui`) | top of detail screens: art, back and options buttons, a moving icon or drawing, pills, big title, meta |
+| PagedList `glass` (app, `core/ui`) | puts all rows of a paged list in one glass card |
 
 ## 6. Screen patterns
 
-- **Home**: top bar (society block + bell), search + filter, chip row, then sections "Needs you today", "Upcoming", "Notices". Each section is an h2 with "See all".
-- **Hub**: title + search square, 3-column tiles, then a person card list.
-- **List**: centred header, search + filter, chip row, cards.
-- **Detail**: centred header with back and more squares, hero card, row lists, bottom bar with value and one ink button.
-- **Form**: sheet or screen with gray inputs, labels above, one ink button at the bottom.
+- **Home**: search pill + bell + profile, chips, greeting card with facts, next-up pill, art cards (home, dues ring, notices, shortcuts, members), then a glass "Needs you" list.
+- **Hub (Society)**: title + search, the society on a building art card, modules as moving art tiles, committee in a glass list.
+- **List**: back + title + ink "+", chips or a segmented switch, then all rows in one glass card.
+- **Detail**: `DetailHero` art header, content in glass cards below, one main action (ink, with arrow) or a bottom bar.
+- **Form**: back + title, all fields in one glass card, the save button in the bottom bar.
+- **Front door (Welcome, Log in, Join)**: `AuthShell`: back · MOVO header, a dotted glass card with a small drawing and a split headline, the main button with arrow at the bottom.
 
 ## 7. Rules
 
 1. Classes come from the preset. No hex values, no magic numbers in screens.
 2. New visual needs become a primitive or a token first.
-3. One ink button per screen.
+3. One ink button per screen. Red fills only for urgent or final actions.
 4. Never show an action the user cannot perform.
 5. Every screen is reviewed in English, Hindi and Marathi before merge.
 6. Changing a token or an icon means running `pnpm design:preview` and checking the preview.
 
-## Photo components (v0.3)
+## Photo components
 
-| Component | Use |
-| --- | --- |
-| `ModuleHeader` | module screens: 200 high photo, white back square and action on it, h1 title under it |
-| `PhotoHeader` | the photo part alone, with up to three stat pills along the bottom |
-| `PhotoCard` | the reference listing card: gray card, inset photo with a pill top left and an action top right, content under it (Home upcoming, Society hero, dues card) |
-| `PhotoTile` | Society hub grid, two per row, label in a white pill on the photo |
-| `EmptyState photo` | full-screen empty states show `photos.empty` above the text |
+`PhotoHeader` and `PhotoCard` remain for real photos (market listings, orders). They use the white rim and glass. `ModuleHeader` no longer draws a photo. Stock photos (`photos.*`) are not used in Soft Glow screens.
 
 ## Keyboard (Android edge to edge)
 

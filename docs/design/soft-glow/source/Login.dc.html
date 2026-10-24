@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Log in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A2E;--muted:#706F76;--accent:#F06A2E}
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.orb{border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF3EC 0%,#FBB59D 16%,#F0735A 46%,#D9465A 76%,#B8457A 100%);box-shadow:0 14px 30px rgba(217,70,90,.32),inset -6px -8px 16px rgba(120,20,60,.22),inset 4px 6px 10px rgba(255,255,255,.45);animation:breathe 4.5s ease-in-out infinite}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(43,42,46,.12) 1px,transparent 1.3px);background-size:9px 9px;-webkit-mask-image:radial-gradient(circle at 50% 22%,#000 0%,transparent 60%);mask-image:radial-gradient(circle at 50% 22%,#000 0%,transparent 60%);pointer-events:none}
+.ibtn{width:46px;height:46px;border-radius:50%;background:#FFFFFF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(70,40,70,.06)}
+.field{transition:box-shadow .25s}
+.field:focus-within{box-shadow:0 0 0 4px rgba(240,106,46,.18),0 4px 14px rgba(70,40,70,.06)}
+.field input{all:unset;flex-grow:1;min-width:0;font-family:Poppins,sans-serif;font-size:15px;color:#2B2A2E}
+.field input::placeholder{color:#8C8B91}
+.seg{transition:background .25s,box-shadow .25s}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-30px) scale(1.15)}}
+@keyframes aur2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-20px)}}
+@keyframes ripple{0%{transform:scale(1);opacity:.35}100%{transform:scale(2.2);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(260%)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes wave{0%,100%{transform:rotate(0)}20%{transform:rotate(16deg)}40%{transform:rotate(-8deg)}60%{transform:rotate(14deg)}80%{transform:rotate(-4deg)}}
+.rise{opacity:0;animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+.press{transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.press:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}.rise{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: var(--ink);">
+  <div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+    <div style="position: absolute; width: 380px; height: 320px; border-radius: 50%; background: #F4B3C2; filter: blur(80px); opacity: .7; bottom: -90px; left: -130px; animation: aur1 16s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 360px; height: 320px; border-radius: 50%; background: #CDB2F0; filter: blur(80px); opacity: .75; bottom: -110px; right: -130px; animation: aur2 18s ease-in-out infinite;"></div>
+  </div>
+
+  <div style="position: absolute; inset: 0; padding: 58px 18px 30px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+    <div class="rise" style="display: flex; justify-content: space-between; align-items: center;">
+      <a href="Join.dc.html" aria-label="Back" class="ibtn press"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+      <span style="font-size: 20px; font-weight: 500;">Movo</span>
+      <span style="width: 46px;"></span>
+    </div>
+
+    <div class="glass rise" style="position: relative; overflow: hidden; border-radius: 32px; padding: 28px 18px 20px; display: flex; flex-direction: column; gap: 16px; animation-delay: .08s;">
+      <span class="dots" aria-hidden="true"></span>
+      <svg width="64" height="64" viewBox="0 0 24 24" aria-hidden="true" style="position: relative; align-self: center; animation: wave 2.4s ease-in-out .6s infinite; transform-origin: 70% 80%;"><path d="M7 11V6.5a1.5 1.5 0 013 0V10m0-4.5v-1a1.5 1.5 0 013 0V10m0-4a1.5 1.5 0 013 0v5m0-3a1.5 1.5 0 013 0V14a7 7 0 01-7 7h-1a6 6 0 01-5.2-3L4.3 13.8a1.5 1.5 0 012.6-1.5L7 12.5" fill="#FBD9C4" stroke="#2B2A2E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <div style="position: relative; text-align: center;">
+        <h1 style="margin: 0; font-weight: 400; font-size: 27px; letter-spacing: -0.4px;">Good to see you <strong style="font-weight: 600;">again</strong></h1>
+        <p style="margin: 6px 0 0; font-size: 14px; color: var(--muted);">Log in to see what is new in your society.</p>
+      </div>
+
+      <div role="group" aria-label="Log in with" style="position: relative; display: flex; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.95);">
+        <button class="seg" onClick="{{byPhone}}" aria-pressed="{{phonePressed}}" style="flex: 1; height: 42px; border: none; border-radius: 999px; cursor: pointer; font-family: Poppins, sans-serif; font-size: 14px; font-weight: 500; color: #2B2A2E; background: {{phoneBg}}; box-shadow: {{phoneSh}};">By phone</button>
+        <button class="seg" onClick="{{byEmail}}" aria-pressed="{{emailPressed}}" style="flex: 1; height: 42px; border: none; border-radius: 999px; cursor: pointer; font-family: Poppins, sans-serif; font-size: 14px; font-weight: 500; color: #2B2A2E; background: {{emailBg}}; box-shadow: {{emailSh}};">By email</button>
+      </div>
+
+      <label style="position: relative; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; font-weight: 500; padding-left: 6px;">{{idLabel}}</span>
+        <span class="field" style="height: 54px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; gap: 10px; padding: 0 18px; box-shadow: 0 4px 14px rgba(70,40,70,.06);">
+          <sc-if value="{{phone}}" hint-placeholder-val="{{yes}}">
+            <span style="font-weight: 500; padding-right: 10px; border-right: 1px solid rgba(43,42,46,.12);">+91</span>
+          </sc-if>
+          <input type="text" placeholder="{{idHint}}" autocomplete="username">
+        </span>
+      </label>
+      <label style="position: relative; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13px; font-weight: 500; padding-left: 6px;">Password</span>
+        <span class="field" style="height: 54px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 18px; box-shadow: 0 4px 14px rgba(70,40,70,.06);">
+          <input type="{{pwType}}" placeholder="Your password" autocomplete="current-password">
+          <button onClick="{{togglePw}}" aria-label="{{pwLabel}}" style="width: 44px; height: 44px; border: none; border-radius: 50%; background: #F4F3F2; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#706F76" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </span>
+      </label>
+      <a href="#" style="position: relative; align-self: flex-end; font-size: 13px; font-weight: 500; padding: 2px 6px;">Forgot password?</a>
+    </div>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div class="rise" style="display: flex; flex-direction: column; gap: 14px; animation-delay: .2s;">
+      <button onClick="{{submit}}" class="press" style="position: relative; overflow: hidden; height: 60px; border: none; border-radius: 999px; background: #2B2A2E; color: #FFFFFF; cursor: pointer; font-family: Poppins, sans-serif; font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 7px 0 26px;">
+        <span aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.14), rgba(255,255,255,0)); animation: sheen 3.6s ease-in-out infinite;"></span>
+        <span>{{btnText}}</span>
+        <span style="width: 46px; height: 46px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;">
+          <sc-if value="{{loading}}" hint-placeholder-val="{{no}}">
+            <span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid #F06A2E; border-top-color: transparent; animation: spin .7s linear infinite;"></span>
+          </sc-if>
+          <sc-if value="{{notLoading}}" hint-placeholder-val="{{yes}}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg>
+          </sc-if>
+        </span>
+      </button>
+      <p style="margin: 0; text-align: center; font-size: 14px; color: var(--muted);">New to Movo? <a href="Join.dc.html" style="font-weight: 600;">Create account</a></p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'phone', show: false, loading: false };
+  }
+  componentWillUnmount() {
+    if (this.t) clearTimeout(this.t);
+  }
+  renderVals() {
+    var self = this;
+    var phone = this.state.mode === 'phone';
+    var sh = '0 4px 12px rgba(70,40,70,.1)';
+    return {
+      yes: true, no: false,
+      phone: phone,
+      phonePressed: phone ? 'true' : 'false',
+      emailPressed: phone ? 'false' : 'true',
+      phoneBg: phone ? '#FFFFFF' : 'transparent', phoneSh: phone ? sh : 'none',
+      emailBg: phone ? 'transparent' : '#FFFFFF', emailSh: phone ? 'none' : sh,
+      idLabel: phone ? 'Mobile number' : 'Email',
+      idHint: phone ? '98765 43210' : 'you@example.com',
+      pwType: this.state.show ? 'text' : 'password',
+      pwLabel: this.state.show ? 'Hide password' : 'Show password',
+      loading: this.state.loading,
+      notLoading: !this.state.loading,
+      btnText: this.state.loading ? 'Logging in…' : 'Log in',
+      byPhone: function () { self.setState({ mode: 'phone' }); },
+      byEmail: function () { self.setState({ mode: 'email' }); },
+      togglePw: function () { self.setState({ show: !self.state.show }); },
+      submit: function () {
+        self.setState({ loading: true });
+        self.t = setTimeout(function () { self.setState({ loading: false }); }, 1600);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

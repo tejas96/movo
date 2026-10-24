@@ -8,7 +8,7 @@ import { View } from 'react-native';
 import { api } from '../../core/api/client';
 import { useErrorMessage } from '../../core/api/use-error-message';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
-import { AuthShell } from './AuthShell';
+import { AuthShell } from '../../core/ui/AuthShell';
 
 export function ResetPasswordScreen() {
   const { t } = useTranslation(['auth', 'common']);
@@ -44,14 +44,24 @@ export function ResetPasswordScreen() {
 
   return (
     <AuthShell
-      title={t('auth:resetTitle')}
+      title={t('auth:glow.resetA')}
+      titleBold={t('auth:glow.resetB')}
       subtitle={t('auth:resetBody')}
       onBack={() => nav.goBack()}
+      action={
+        <Button
+          size="xl"
+          arrow
+          label={t('common:actions.continue')}
+          onPress={() => void submit()}
+          loading={busy}
+        />
+      }
     >
       <View className="gap-3">
         <Input
-          icon="mail"
-          placeholder={t('auth:identifier')}
+          label={t('auth:identifier')}
+          placeholder={t('auth:glow.phoneHint')}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="email-address"
@@ -60,7 +70,7 @@ export function ResetPasswordScreen() {
           onChangeText={setIdentifier}
         />
         <Input
-          icon="key"
+          label={t('auth:resetCode')}
           placeholder={t('auth:resetCode')}
           autoCapitalize="characters"
           autoCorrect={false}
@@ -69,8 +79,8 @@ export function ResetPasswordScreen() {
           onChangeText={setCode}
         />
         <PasswordInput
-          icon="lock"
-          placeholder={t('auth:newPassword')}
+          label={t('auth:newPassword')}
+          placeholder={t('auth:glow.passwordHint')}
           textContentType="newPassword"
           value={password}
           onChangeText={setPassword}
@@ -82,7 +92,6 @@ export function ResetPasswordScreen() {
             {error}
           </Text>
         ) : null}
-        <Button label={t('common:actions.continue')} onPress={() => void submit()} loading={busy} />
       </View>
     </AuthShell>
   );

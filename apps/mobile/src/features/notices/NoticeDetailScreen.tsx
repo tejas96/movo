@@ -1,44 +1,32 @@
-import type { NoticeCategory } from '@movo/contracts';
 import {
+  Glass,
   IconSquare,
   OptionSheet,
-  PhotoHeader,
-  type PhotoName,
-  photos,
+  Rise,
   Screen,
   Skeleton,
   StatusPill as SoftPill,
   Text,
   useToast,
+  WaterDrop,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { useSocietyId } from '../../core/tenant/hooks';
+import { DetailHero, HeroPill } from '../../core/ui/DetailHero';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { StatusPill } from '../../core/ui/StatusPill';
 import { mediumDate } from '../../core/util/date';
 import { useNotice, useNoticeAction } from './api';
+import { CATEGORY_LOOK } from './look';
 import { PRIORITY_TONE } from './NoticesScreen';
 
 type Action = 'edit' | 'pin' | 'unpin' | 'publish' | 'archive';
-
-/** The photo at the top follows the category, so a water notice does not look like a party. */
-const CATEGORY_PHOTO: Record<NoticeCategory, PhotoName> = {
-  GENERAL: 'notices',
-  WATER: 'notices',
-  ELECTRICITY: 'services',
-  MAINTENANCE: 'tasks',
-  SECURITY: 'duties',
-  EVENT: 'events',
-  FINANCE: 'money',
-  EMERGENCY: 'emergency',
-  OTHER: 'notices',
-};
 
 export function NoticeDetailScreen() {
   const { t } = useTranslation(['notices', 'common']);
@@ -86,54 +74,68 @@ export function NoticeDetailScreen() {
       ]
     : [];
 
+  const look = n ? CATEGORY_LOOK[n.category] : CATEGORY_LOOK.GENERAL;
+  const menuButton = canEdit ? (
+    <IconSquare
+      icon="more"
+      variant="linear"
+      diameter={46}
+      onPress={() => setMenu(true)}
+      accessibilityLabel={t('common:actions.more')}
+    />
+  ) : undefined;
+
   return (
     <Screen>
-      <PhotoHeader
-        source={photos[n ? CATEGORY_PHOTO[n.category] : 'notices']}
-        height={220}
-        onBack={() => nav.goBack()}
-        trailing={
-          canEdit ? (
-            <IconSquare icon="more" variant="linear" tone="white" onPress={() => setMenu(true)} />
-          ) : undefined
-        }
-        pills={n ? [{ icon: 'notices', label: t(`notices:category.${n.category}`) }] : undefined}
-      />
       {loadFailed(notice) ? (
         <QueryError query={notice} className="mt-6" />
       ) : notice.isLoading || !n ? (
-        <View className="mt-6 gap-3">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-48 rounded-xl" />
+        <View className="gap-3">
+          <Skeleton className="h-[312px] rounded-[40px]" />
+          <Skeleton className="h-48 rounded-[30px]" />
         </View>
       ) : (
-        <View className="mt-5">
-          {n.priority !== 'NORMAL' || n.isPinned || n.status === 'DRAFT' ? (
-            <View className="mb-3 flex-row flex-wrap gap-2">
-              {n.priority !== 'NORMAL' ? (
-                <StatusPill
-                  value={n.priority}
-                  tones={PRIORITY_TONE}
-                  labels="notices:priority"
-                  dot
-                />
+        <View style={styles.page}>
+          <Rise>
+            <DetailHero
+              art={n.category === 'WATER' ? 'water' : look.tile}
+              onBack={() => nav.goBack()}
+              trailing={menuButton}
+              drawing={n.category === 'WATER' ? <WaterDrop /> : undefined}
+              icon={{ name: look.icon, motion: look.motion }}
+              pills={
+                <>
+                  <HeroPill label={t(`notices:category.${n.category}`)} />
+                  {n.priority !== 'NORMAL' ? (
+                    <StatusPill
+                      value={n.priority}
+                      tones={PRIORITY_TONE}
+                      labels="notices:priority"
+                      dot
+                    />
+                  ) : null}
+                  {n.isPinned ? <SoftPill label={t('notices:pinned')} tone="ink" /> : null}
+                  {n.status === 'DRAFT' ? (
+                    <SoftPill label={t('notices:draft')} tone="neutral" />
+                  ) : null}
+                </>
+              }
+              title={n.title}
+              meta={[n.createdBy.displayName, mediumDate(n.publishedAt ?? n.createdAt)].join(' · ')}
+            />
+          </Rise>
+          <Rise delay={80}>
+            <Glass radius={30} style={styles.body}>
+              <Text variant="body" style={styles.text}>
+                {n.body}
+              </Text>
+              {n.readCount !== null ? (
+                <Text variant="label" tone="secondary" className="mt-4">
+                  {t('notices:readBy', { count: n.readCount })}
+                </Text>
               ) : null}
-              {n.isPinned ? <SoftPill label={t('notices:pinned')} tone="ink" /> : null}
-              {n.status === 'DRAFT' ? <SoftPill label={t('notices:draft')} tone="neutral" /> : null}
-            </View>
-          ) : null}
-          <Text variant="h1">{n.title}</Text>
-          <Text variant="label" tone="secondary" className="mt-1.5">
-            {[n.createdBy.displayName, mediumDate(n.publishedAt ?? n.createdAt)].join(' · ')}
-          </Text>
-          <Text variant="body" className="mt-5 leading-6">
-            {n.body}
-          </Text>
-          {n.readCount !== null ? (
-            <Text variant="label" tone="tertiary" className="mt-6">
-              {t('notices:readBy', { count: n.readCount })}
-            </Text>
-          ) : null}
+            </Glass>
+          </Rise>
         </View>
       )}
       <OptionSheet
@@ -145,3 +147,9 @@ export function NoticeDetailScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  page: { gap: 14, marginHorizontal: -4 },
+  body: { padding: 18 },
+  text: { lineHeight: 24 },
+});

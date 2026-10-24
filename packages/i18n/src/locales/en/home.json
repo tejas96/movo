@@ -6,15 +6,10 @@
   },
   "quick": {
     "services": "Services",
-    "directory": "Directory",
     "emergency": "Emergency",
-    "market": "Market",
-    "manage": "Manage",
-    "ar": "AR guide"
+    "manage": "Manage"
   },
   "needsYou": "Needs you today",
-  "allClearBody": "No dues, no duties, no alerts.",
-  "upcoming": "Upcoming",
   "notices": "Notices",
   "attention": {
     "MARKET_ORDERS_WAITING": {
@@ -74,12 +69,7 @@
       "sub": "Accept the work to give points"
     }
   },
-  "upcomingKind": {
-    "MEETING": "Meeting",
-    "EVENT": "Event"
-  },
   "contribution": {
-    "title": "My contribution",
     "points": "{{count}} point this year",
     "points_other": "{{count}} points this year",
     "openTasks": "{{count}} task in progress",
@@ -104,15 +94,63 @@
     "task": {
       "label": "Your task",
       "cta": "Open task"
-    },
-    "clear": {
-      "label": "All clear today",
-      "cta": "See what is next",
-      "next": "Next: {{title}} · {{when}}"
     }
   },
   "tiles": {
-    "noticesEmpty": "Nothing new",
-    "upcomingEmpty": "Nothing planned"
+    "noticesEmpty": "Nothing new"
+  },
+  "glow": {
+    "searchHint": "Search people and flats…",
+    "profile": "My profile",
+    "chips": {
+      "today": "Today",
+      "myFlat": "My flat",
+      "society": "Society"
+    },
+    "greetTail": "here is your home today",
+    "facts": {
+      "newNotices_one": "{{count}} new notice",
+      "newNotices_other": "{{count}} new notices",
+      "noNotices": "No new notices",
+      "due": "{{amount}} due",
+      "allPaid": "Dues paid",
+      "alerts_one": "{{count}} alert",
+      "alerts_other": "{{count}} alerts",
+      "noAlerts": "No alerts"
+    },
+    "home": {
+      "yours": "Your home,",
+      "flat": "Flat {{flat}}",
+      "good": "All good",
+      "alert": "Alert active",
+      "overdue": "Dues overdue",
+      "label": "Your building, {{flat}}"
+    },
+    "dues": {
+      "title": "Maintenance",
+      "openBills_one": "{{count}} bill open",
+      "openBills_other": "{{count}} bills open",
+      "allPaid": "All paid",
+      "dueBy": "Due by {{date}}",
+      "overdueSince": "Overdue since {{date}}",
+      "nothingDue": "Nothing to pay",
+      "pay": "Pay {{amount}}",
+      "history": "See payments",
+      "ring": "This year: {{paid}} months paid, {{due}} due"
+    },
+    "notices": {
+      "sub": "{{count}} new · {{title}}"
+    },
+    "bills": {
+      "title": "Bills"
+    },
+    "findWay": {
+      "title": "Find way"
+    },
+    "members": {
+      "title": "Members",
+      "sub": "{{flats}} flats · {{people}} people"
+    },
+    "more": "MORE"
   }
 }

@@ -1,33 +1,36 @@
 import {
   Button,
   Card,
+  Coin,
   Divider,
+  Glass,
   IconSquare,
   Input,
   OptionSheet,
+  Rise,
   Row,
   Screen,
-  SectionHeader,
+  SectionLabel,
   Sheet,
   Skeleton,
   Text,
-  TitleBar,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
 import { formatFlat, useSocietyId } from '../../core/tenant/hooks';
+import { DetailHero, HeroPill } from '../../core/ui/DetailHero';
 import { Line } from '../../core/ui/Line';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { day } from '../../core/util/date';
 import { money } from '../../core/util/money';
 import { useBill, useBillAction } from './api';
-import { BillStatusPill, billName } from './shared';
+import { ArtIcon, BillStatusPill, billName } from './shared';
 
 type Action = 'waive' | 'waiveLateFee';
 
@@ -66,58 +69,79 @@ export function BillScreen() {
 
   return (
     <Screen>
-      <TitleBar
-        title={t('money:bill.title')}
-        onBack={() => nav.goBack()}
-        trailing={
-          options.length > 0 ? (
-            <IconSquare icon="more" variant="linear" onPress={() => setMenu(true)} />
-          ) : undefined
-        }
-      />
       {loadFailed(bill) ? (
         <QueryError query={bill} className="mt-6" />
       ) : bill.isLoading || !b ? (
-        <Skeleton className="mt-6 h-64 rounded-xl" />
+        <View className="gap-3">
+          <Skeleton className="h-[312px] rounded-[40px]" />
+          <Skeleton className="h-48 rounded-[30px]" />
+        </View>
       ) : (
-        <>
-          <Card className="mt-6">
-            <View className="flex-row items-center justify-between">
-              <Text variant="label" tone="secondary">
-                {`${formatFlat(b.flat)} · ${t('money:dueOn', { date: day(b.dueDate) })}`}
-              </Text>
-              <BillStatusPill status={b.status} />
-            </View>
-            <Text variant="h2" className="mt-2">
-              {billName(b)}
-            </Text>
-            <Text variant="display">{money(open ? b.outstandingPaise : b.totalPaise)}</Text>
-            <Divider />
-            <View className="gap-2">
-              {b.lines.map((l) => (
-                <Line
-                  key={l.type}
-                  label={l.type === 'LATE_FEE' ? t('money:lateFee') : l.label}
-                  value={money(l.amountPaise)}
-                />
-              ))}
-              <Line label={t('money:bill.total')} value={money(b.totalPaise)} strong />
-              {b.paidPaise > 0 ? (
-                <Line label={t('money:bill.paid')} value={`− ${money(b.paidPaise)}`} />
+        <View style={styles.page}>
+          <Rise>
+            <DetailHero
+              art="sunset"
+              height={280}
+              onBack={() => nav.goBack()}
+              trailing={
+                options.length > 0 ? (
+                  <IconSquare
+                    icon="more"
+                    variant="linear"
+                    diameter={46}
+                    onPress={() => setMenu(true)}
+                    accessibilityLabel={t('common:actions.more')}
+                  />
+                ) : undefined
+              }
+              drawing={
+                <View style={styles.coins}>
+                  <Coin size={70} />
+                  <Coin size={38} tone="pale" delay={400} style={styles.coinSmall} />
+                </View>
+              }
+              pills={
+                <>
+                  <HeroPill label={billName(b)} />
+                  <BillStatusPill status={b.status} />
+                </>
+              }
+              title={money(open ? b.outstandingPaise : b.totalPaise)}
+              meta={`${formatFlat(b.flat)} · ${t('money:dueOn', { date: day(b.dueDate) })}`}
+            />
+          </Rise>
+          <Rise delay={80}>
+            <Glass radius={30} style={styles.card}>
+              <SectionLabel className="px-0 pt-0 pb-2">{t('money:bill.title')}</SectionLabel>
+              <View className="gap-2">
+                {b.lines.map((l) => (
+                  <Line
+                    key={l.type}
+                    label={l.type === 'LATE_FEE' ? t('money:lateFee') : l.label}
+                    value={money(l.amountPaise)}
+                  />
+                ))}
+                <Divider className="my-2" />
+                <Line label={t('money:bill.total')} value={money(b.totalPaise)} strong />
+                {b.paidPaise > 0 ? (
+                  <Line label={t('money:bill.paid')} value={`− ${money(b.paidPaise)}`} />
+                ) : null}
+                {open ? (
+                  <Line label={t('money:bill.left')} value={money(b.outstandingPaise)} strong />
+                ) : null}
+              </View>
+              {b.waivedReason ? (
+                <Text variant="label" tone="secondary" className="mt-4">
+                  {t('money:bill.waivedNote', { reason: b.waivedReason })}
+                </Text>
               ) : null}
-              {open ? (
-                <Line label={t('money:bill.left')} value={money(b.outstandingPaise)} strong />
-              ) : null}
-            </View>
-            {b.waivedReason ? (
-              <Text variant="label" tone="secondary" className="mt-4">
-                {t('money:bill.waivedNote', { reason: b.waivedReason })}
-              </Text>
-            ) : null}
-            {b.canPay ? (
+            </Glass>
+          </Rise>
+          {b.canPay ? (
+            <Rise delay={120}>
               <Button
-                className="mt-5"
-                icon="upi"
+                size="xl"
+                arrow
                 label={t('money:howToPay')}
                 onPress={() =>
                   nav.navigate('HowToPay', {
@@ -126,20 +150,20 @@ export function BillScreen() {
                   })
                 }
               />
-            ) : null}
-          </Card>
+            </Rise>
+          ) : null}
           {b.payments.length > 0 ? (
-            <>
-              <SectionHeader title={t('money:bill.payments')} />
-              <Card tight className="gap-2">
+            <Rise delay={160}>
+              <Card tight>
+                <SectionLabel>{t('money:bill.payments')}</SectionLabel>
                 {b.payments.map((p) => (
                   <Row
                     key={p.paymentId}
-                    icon="receipt"
+                    leading={<ArtIcon art="tileSage" icon="receipt" />}
                     title={day(p.paidOn)}
                     subtitle={`${t(`money:method.${p.method}`)} · ${p.receiptNo}`}
                     trailing={
-                      <Text variant="bodyMedium" className="font-semibold">
+                      <Text variant="title" numberOfLines={1}>
                         {money(p.amountPaise)}
                       </Text>
                     }
@@ -147,9 +171,9 @@ export function BillScreen() {
                   />
                 ))}
               </Card>
-            </>
+            </Rise>
           ) : null}
-        </>
+        </View>
       )}
       <OptionSheet
         visible={menu}
@@ -185,3 +209,10 @@ export function BillScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  page: { gap: 14, marginHorizontal: -4 },
+  card: { padding: 18 },
+  coins: { width: 140, height: 90, alignItems: 'center' },
+  coinSmall: { position: 'absolute', right: 6, top: 48 },
+});

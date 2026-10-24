@@ -1,7 +1,18 @@
-import { Button, IconSquare, photos, Screen, Text, theme } from '@movo/design-system';
+import {
+  ArtCard,
+  Building,
+  Button,
+  Glass,
+  IconSquare,
+  Rise,
+  Screen,
+  Strong,
+  Text,
+  theme,
+} from '@movo/design-system';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,7 +20,6 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useNav } from '../../core/navigation/types';
 import { useMeContext } from '../../core/tenant/hooks';
@@ -40,64 +50,80 @@ export function PendingScreen() {
 
   return (
     <Screen refreshing={ctx.isFetching} onRefresh={() => void ctx.refetch()}>
-      <View className="flex-row items-center gap-3">
-        <IconSquare icon="back" variant="linear" onPress={() => nav.navigate('Join')} />
-        <Text variant="h3">{t('onboarding:pendingHeadline')}</Text>
-      </View>
-
-      <View style={styles.photoCard} className="mt-6">
-        <Image source={photos.society2} resizeMode="cover" style={styles.photo} />
-        <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" pointerEvents="none">
-          <Defs>
-            <LinearGradient id="pendingScrim" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0.3" stopColor={theme.color.overlay.shade} stopOpacity="0" />
-              <Stop offset="1" stopColor={theme.color.overlay.shade} stopOpacity="0.72" />
-            </LinearGradient>
-          </Defs>
-          <Rect x="0" y="0" width="100%" height="100%" fill="url(#pendingScrim)" />
-        </Svg>
-        <View style={styles.photoText}>
-          <Text variant="h3" tone="inverse" numberOfLines={1}>
-            {pending?.society.name ?? t('onboarding:pendingTitle')}
-          </Text>
-          {pending ? (
-            <Text variant="label" style={styles.photoSub} numberOfLines={1}>
-              {t('onboarding:pendingRequested', { flat, when: dateTime(pending.createdAt) })}
+      <View style={styles.page}>
+        <Rise>
+          <View style={styles.titleRow}>
+            <IconSquare
+              icon="back"
+              variant="linear"
+              diameter={46}
+              onPress={() => nav.navigate('Join')}
+              accessibilityLabel={t('common:actions.back')}
+            />
+            <Text variant="greet" className="flex-1" numberOfLines={1}>
+              {t('onboarding:glow.pendingA')} <Strong>{t('onboarding:glow.pendingB')}</Strong>
             </Text>
-          ) : null}
-        </View>
-      </View>
+          </View>
+        </Rise>
 
-      <View className="mt-7">
-        <Step
-          state="done"
-          title={t('onboarding:steps.sent')}
-          hint={pending ? dateTime(pending.createdAt) : undefined}
-        />
-        <Connector done />
-        <Step
-          state="live"
-          title={t('onboarding:steps.review')}
-          hint={t('onboarding:steps.reviewHint')}
-        />
-        <Connector />
-        <Step state="next" title={t('onboarding:steps.in')} hint={t('onboarding:steps.inHint')} />
-      </View>
+        {/* The society asked for, with the requested flat on the building's pin. */}
+        <Rise delay={60}>
+          <ArtCard art="dusk" height={200} contentStyle={styles.hero}>
+            <View style={styles.heroText}>
+              <Text variant="h2" numberOfLines={2}>
+                {pending?.society.name ?? t('onboarding:pendingTitle')}
+              </Text>
+              {pending ? (
+                <Text variant="caption" tone="soft" numberOfLines={2}>
+                  {t('onboarding:pendingRequested', { flat, when: dateTime(pending.createdAt) })}
+                </Text>
+              ) : null}
+            </View>
+            <View style={styles.heroArt} pointerEvents="none">
+              <Building width={120} pin={pending?.flatNumber} />
+            </View>
+          </ArtCard>
+        </Rise>
 
-      <View className="mt-8 gap-3">
-        <Button
-          label={t('onboarding:orInvite')}
-          variant="gray"
-          onPress={() => nav.navigate('Join')}
-        />
-        {pending ? (
-          <Button
-            label={t('onboarding:cancelRequest')}
-            variant="ghost"
-            onPress={() => void withdraw()}
-            loading={cancel.isPending}
-          />
-        ) : null}
+        <Rise delay={120}>
+          <Glass radius={30} style={styles.steps}>
+            <Step
+              state="done"
+              title={t('onboarding:steps.sent')}
+              hint={pending ? dateTime(pending.createdAt) : undefined}
+            />
+            <Connector done />
+            <Step
+              state="live"
+              title={t('onboarding:steps.review')}
+              hint={t('onboarding:steps.reviewHint')}
+            />
+            <Connector />
+            <Step
+              state="next"
+              title={t('onboarding:steps.in')}
+              hint={t('onboarding:steps.inHint')}
+            />
+          </Glass>
+        </Rise>
+
+        <Rise delay={180}>
+          <View style={styles.actions}>
+            <Button
+              label={t('onboarding:orInvite')}
+              variant="white"
+              onPress={() => nav.navigate('Join')}
+            />
+            {pending ? (
+              <Button
+                label={t('onboarding:cancelRequest')}
+                variant="ghost"
+                onPress={() => void withdraw()}
+                loading={cancel.isPending}
+              />
+            ) : null}
+          </View>
+        </Rise>
       </View>
     </Screen>
   );
@@ -161,15 +187,13 @@ function Pulse() {
 const DOT = 24;
 
 const styles = StyleSheet.create({
-  photoCard: {
-    height: 168,
-    borderRadius: theme.radius.xl,
-    overflow: 'hidden',
-    backgroundColor: theme.color.bg.card,
-  },
-  photo: { width: '100%', height: '100%' },
-  photoText: { position: 'absolute', left: 16, right: 16, bottom: 14, gap: 2 },
-  photoSub: { color: theme.color.overlay.textStrong },
+  page: { gap: 14 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  hero: { flexDirection: 'row', alignItems: 'flex-end' },
+  heroText: { flex: 1, gap: 4, paddingBottom: 2 },
+  heroArt: { marginRight: -6, marginBottom: -10 },
+  steps: { padding: 18 },
+  actions: { gap: 8 },
   step: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
   stepText: { paddingTop: 1 },
   dotWrap: { width: DOT, height: DOT, alignItems: 'center', justifyContent: 'center' },
@@ -177,15 +201,15 @@ const styles = StyleSheet.create({
     width: DOT,
     height: DOT,
     borderRadius: DOT / 2,
-    backgroundColor: theme.color.bg.cardDeep,
+    backgroundColor: 'rgba(43,42,46,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   dotDone: { backgroundColor: theme.color.bg.ink },
   dotLive: {
-    backgroundColor: theme.color.bg.canvas,
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    borderColor: theme.color.bg.ink,
+    borderColor: theme.color.accent.fg,
   },
   tick: {
     width: 6,
@@ -196,14 +220,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     transform: [{ rotate: '45deg' }],
   },
-  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.color.bg.ink },
+  core: { width: 8, height: 8, borderRadius: 4, backgroundColor: theme.color.accent.fg },
   pulse: {
     position: 'absolute',
     width: DOT,
     height: DOT,
     borderRadius: DOT / 2,
     borderWidth: 2,
-    borderColor: theme.color.bg.ink,
+    borderColor: theme.color.accent.fg,
   },
   connector: {
     width: 2,
@@ -211,7 +235,7 @@ const styles = StyleSheet.create({
     marginLeft: DOT / 2 - 1,
     marginVertical: 4,
     borderRadius: 1,
-    backgroundColor: theme.color.bg.cardDeep,
+    backgroundColor: 'rgba(43,42,46,0.12)',
   },
   connectorDone: { backgroundColor: theme.color.bg.ink },
 });

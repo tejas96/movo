@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 onlyBuiltDependencies:
   - "@prisma/engines"
+  - "@shopify/react-native-skia"
   - "@swc/core"
   - argon2
   - esbuild

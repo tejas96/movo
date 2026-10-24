@@ -11,7 +11,6 @@
     "CANCELLED": "रद्द"
   },
   "about": "विवरण",
-  "postedBy": "{{name}} ने पोस्ट किया",
   "going": "{{count}} आ रहे हैं",
   "rsvp": {
     "question": "क्या आप आ रहे हैं?",
@@ -58,5 +57,15 @@
     "cancelledTitle": "कार्यक्रम रद्द: {{title}}",
     "cancelledBody": "यह {{when}} को था",
     "reminderTitle": "कल: {{title}}"
+  },
+  "glow": {
+    "by": "कार्यक्रम · {{name}} द्वारा",
+    "areYou": "क्या आप",
+    "goingQ": "आ रहे हैं?",
+    "goingCount": "{{count}} आ रहे हैं",
+    "maybeCount": "· {{count}} शायद",
+    "options": "और विकल्प",
+    "lessGuest": "एक मेहमान कम",
+    "moreGuest": "एक मेहमान ज़्यादा"
   }
 }

@@ -1,12 +1,11 @@
-import { Image, View } from 'react-native';
-import { cn } from './cn';
-import { Text } from './Text';
+import { Image } from 'react-native';
+import { GlowAvatar, toneFor } from './drawings/GlowAvatar';
 
 export interface AvatarProps {
   name: string;
   uri?: string | null | undefined;
   size?: 32 | 40 | 44 | 56 | 64;
-  /** gray when the avatar sits on white. */
+  /** Old option, no longer used: initials always sit on a soft colour glow. */
   tone?: 'white' | 'gray';
   className?: string;
 }
@@ -18,29 +17,9 @@ export function initialsOf(name: string): string {
   return (first + second).toUpperCase();
 }
 
-const FONT: Record<NonNullable<AvatarProps['size']>, string> = {
-  32: 'text-[12px]',
-  40: 'text-[13px]',
-  44: 'text-[14px]',
-  56: 'text-[16px]',
-  64: 'text-[18px]',
-};
-
-export function Avatar({ name, uri, size = 44, tone = 'white', className }: AvatarProps) {
+/** The photo when there is one, else the initials on a soft colour glow (Soft Glow avatar). */
+export function Avatar({ name, uri, size = 44 }: AvatarProps) {
   const dims = { width: size, height: size, borderRadius: size / 2 };
   if (uri) return <Image source={{ uri }} style={dims} accessibilityLabel={name} />;
-  return (
-    <View
-      style={dims}
-      className={cn(
-        'items-center justify-center',
-        tone === 'white' ? 'bg-card-nested' : 'bg-card',
-        className,
-      )}
-    >
-      <Text variant="bodyMedium" className={cn('font-semibold', FONT[size])}>
-        {initialsOf(name)}
-      </Text>
-    </View>
-  );
+  return <GlowAvatar initials={initialsOf(name)} size={size} tone={toneFor(name)} />;
 }

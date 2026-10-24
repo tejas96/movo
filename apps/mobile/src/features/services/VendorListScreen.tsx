@@ -40,6 +40,7 @@ export function VendorListScreen() {
             <IconSquare
               icon="add"
               variant="linear"
+              tone="ink"
               accessibilityLabel={canManage ? t('services:add') : t('services:suggest')}
               onPress={() => nav.navigate('VendorEditor', { categoryId })}
             />
@@ -65,14 +66,17 @@ export function VendorListScreen() {
       ) : (
         <FlatList
           className="mt-4"
-          data={items}
-          keyExtractor={(v) => v.id}
+          // One glass card for the whole list: stacked glass rows leave seams on Android.
+          data={[items]}
+          keyExtractor={() => 'glass-list'}
           refreshing={list.isRefetching}
           onRefresh={() => void list.refetch()}
           contentContainerStyle={{ paddingBottom: 40 }}
           renderItem={({ item }) => (
-            <Card tight className="mb-2">
-              <VendorRow vendor={item} showCategory={!categoryId} />
+            <Card tight>
+              {item.map((v) => (
+                <VendorRow key={v.id} vendor={v} showCategory={!categoryId} />
+              ))}
             </Card>
           )}
         />

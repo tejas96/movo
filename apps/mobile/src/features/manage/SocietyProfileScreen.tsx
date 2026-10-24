@@ -2,6 +2,7 @@ import { type Locale, type SocietyProfile, societyContract } from '@movo/contrac
 import {
   BottomBar,
   Button,
+  Card,
   IconSquare,
   Input,
   OptionSheet,
@@ -147,7 +148,7 @@ export function SocietyProfileScreen() {
         ) : !p ? (
           <Skeleton className="mt-6 h-96 rounded-xl" />
         ) : (
-          <View className="mt-6 gap-3">
+          <Card className="mt-5 gap-3.5">
             <SinglePhotoField
               title={t('manage:profile.logo')}
               help={t('manage:profile.logoHelp')}
@@ -246,7 +247,7 @@ export function SocietyProfileScreen() {
               value={monthName(fyStart)}
               onPress={() => setSheet('fy')}
             />
-            <View className="flex-row items-center justify-between rounded-md bg-card px-[18px] py-3">
+            <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
               <View className="flex-1 pr-3">
                 <Text variant="body">{t('manage:profile.joinRequests')}</Text>
                 <Text variant="caption" tone="secondary">
@@ -263,7 +264,7 @@ export function SocietyProfileScreen() {
                 {error}
               </Text>
             ) : null}
-          </View>
+          </Card>
         )}
       </Screen>
       <BottomBar

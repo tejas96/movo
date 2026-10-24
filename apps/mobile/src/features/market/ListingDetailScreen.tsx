@@ -1,9 +1,11 @@
 import type { Listing, OrderFulfilment } from '@movo/contracts';
 import {
-  type BoldIconName,
   BottomBar,
   Button,
+  Card,
   CircleButton,
+  Glass,
+  type IconName,
   IconSquare,
   Input,
   OptionSheet,
@@ -12,20 +14,22 @@ import {
   Pill,
   Row,
   Screen,
-  SectionHeader,
+  SectionLabel,
   Segmented,
   Sheet,
   Skeleton,
   Text,
   TextArea,
   Tile,
+  theme,
+  tintCycle,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Image, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { fileUri } from '../../core/api/client';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { type RootStackParamList, useNav } from '../../core/navigation/types';
@@ -160,7 +164,7 @@ export function ListingDetailScreen() {
             >
               <PhotoHeader
                 source={coverSource(l.images[0] ?? l.cover, l.kind)}
-                height={260}
+                height={280}
                 onBack={() => nav.goBack()}
                 trailing={
                   menuOptions.length > 0 ? (
@@ -168,6 +172,8 @@ export function ListingDetailScreen() {
                       icon={l.canEdit || l.canModerate ? 'menu' : 'flag'}
                       variant="linear"
                       tone="white"
+                      diameter={46}
+                      accessibilityLabel={t('common:actions.more')}
                       onPress={() => setMenu(true)}
                     />
                   ) : undefined
@@ -214,70 +220,66 @@ export function ListingDetailScreen() {
               <Row className="mt-4" icon="pause" title={t('market:listing.pausedTitle')} />
             ) : null}
 
-            <View className="mt-4 flex-row flex-wrap gap-2">
-              <Pill
-                icon={KIND_ICON[l.kind]}
-                label={t(`market:kindOne.${l.kind}`)}
-                tone="gray"
-                size="sm"
-              />
-              {l.diet ? <DietPill diet={l.diet} /> : null}
-              {l.rating ? (
-                <Pill icon="star" label={ratingLabel(l.rating)} tone="gray" size="sm" />
-              ) : null}
-              {l.soldOut ? (
-                <Pill label={t('market:card.soldOut')} tone="gray" size="sm" />
-              ) : l.quantityAvailable != null ? (
-                <Pill
-                  icon="box"
-                  label={t('market:card.left', { count: l.quantityAvailable })}
-                  tone="gray"
-                  size="sm"
-                />
-              ) : null}
-              {l.canEdit && l.status !== 'ACTIVE' ? <ListingStatusPill status={l.status} /> : null}
-            </View>
-            <Text variant="h1" className="mt-3">
-              {l.title}
-            </Text>
-            <Text variant="h3" tone="secondary" className="mt-0.5">
-              {priceLabel(l)}
-            </Text>
+            <Glass radius={30} style={styles.head}>
+              <View className="flex-row flex-wrap gap-2">
+                <Pill icon={KIND_ICON[l.kind]} label={t(`market:kindOne.${l.kind}`)} size="sm" />
+                {l.diet ? <DietPill diet={l.diet} /> : null}
+                {l.rating ? <Pill icon="star" label={ratingLabel(l.rating)} size="sm" /> : null}
+                {l.soldOut ? (
+                  <Pill label={t('market:card.soldOut')} size="sm" />
+                ) : l.quantityAvailable != null ? (
+                  <Pill
+                    icon="box"
+                    label={t('market:card.left', { count: l.quantityAvailable })}
+                    size="sm"
+                  />
+                ) : null}
+                {l.canEdit && l.status !== 'ACTIVE' ? (
+                  <ListingStatusPill status={l.status} />
+                ) : null}
+              </View>
+              <Text style={styles.title} className="mt-3">
+                {l.title}
+              </Text>
+              <Text variant="h2" className="mt-0.5">
+                {priceLabel(l)}
+              </Text>
+            </Glass>
 
             <Facts listing={l} />
 
             {l.description ? (
-              <>
-                <SectionHeader title={t('market:listing.about')} />
-                <Text variant="body" className="leading-6">
+              <Glass radius={30} style={styles.block}>
+                <SectionLabel className="px-0 pt-0 pb-2">{t('market:listing.about')}</SectionLabel>
+                <Text variant="body" style={styles.text}>
                   {l.description}
                 </Text>
-              </>
+              </Glass>
             ) : null}
 
-            <SectionHeader title={t('market:listing.seller')} />
-            <PersonCard
-              name={l.seller.displayName}
-              role={
-                l.isMine
-                  ? `${t('market:listing.seller')} · ${t('market:listing.you')}`
-                  : t('market:listing.seller')
-              }
-            />
+            <Card tight className="mt-3.5">
+              <SectionLabel>{t('market:listing.seller')}</SectionLabel>
+              <PersonCard
+                name={l.seller.displayName}
+                role={
+                  l.isMine
+                    ? `${t('market:listing.seller')} · ${t('market:listing.you')}`
+                    : t('market:listing.seller')
+                }
+              />
+            </Card>
 
-            <SectionHeader title={t('market:listing.reviews')} />
-            {l.reviews.length === 0 ? (
-              <Text variant="label" tone="secondary">
-                {t('market:listing.noReviews')}
-              </Text>
-            ) : (
-              <View className="gap-2">
-                {l.reviews.map((r) => (
-                  <View key={r.id} className="rounded-lg bg-card p-4">
+            <Card tight className="mt-3.5">
+              <SectionLabel>{t('market:listing.reviews')}</SectionLabel>
+              {l.reviews.length === 0 ? (
+                <Text variant="caption" tone="secondary" className="px-3 pb-3">
+                  {t('market:listing.noReviews')}
+                </Text>
+              ) : (
+                l.reviews.map((r) => (
+                  <View key={r.id} style={styles.review}>
                     <View className="flex-row items-center justify-between">
-                      <Text variant="bodyMedium" className="font-semibold">
-                        {r.by}
-                      </Text>
+                      <Text variant="title">{r.by}</Text>
                       <Stars value={r.rating} />
                     </View>
                     {r.text ? (
@@ -289,9 +291,9 @@ export function ListingDetailScreen() {
                       {relative(r.createdAt)}
                     </Text>
                   </View>
-                ))}
-              </View>
-            )}
+                ))
+              )}
+            </Card>
           </>
         )}
       </Screen>
@@ -356,7 +358,7 @@ export function ListingDetailScreen() {
 
 function Facts({ listing: l }: { listing: Listing }) {
   const { t } = useTranslation('market');
-  const facts: { key: string; icon: BoldIconName; label: string; hint: string }[] = [
+  const facts: { key: string; icon: IconName; label: string; hint: string }[] = [
     {
       key: 'handover',
       icon: l.fulfilment === 'PICKUP' ? 'bag' : 'truck',
@@ -401,8 +403,15 @@ function Facts({ listing: l }: { listing: Listing }) {
     <View className="mt-5 gap-3">
       {rows.map((row) => (
         <View key={row.map((f) => f.key).join()} className="flex-row gap-3">
-          {row.map((f) => (
-            <Tile key={f.key} icon={f.icon} label={f.label} hint={f.hint} disabled />
+          {row.map((f, i) => (
+            <Tile
+              key={f.key}
+              icon={f.icon}
+              label={f.label}
+              hint={f.hint}
+              tint={tintCycle[i % tintCycle.length]}
+              disabled
+            />
           ))}
           {Array.from({ length: 3 - row.length }, (_, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: spacers have no identity
@@ -493,7 +502,7 @@ function OrderSheet({
           </View>
         </View>
         <View>
-          <Text variant="label" tone="secondary" className="mb-1.5">
+          <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
             {t('market:orderSheet.handover')}
           </Text>
           {options.length > 1 ? (
@@ -527,3 +536,18 @@ function OrderSheet({
     </Sheet>
   );
 }
+
+const styles = StyleSheet.create({
+  head: { padding: 18, marginTop: 14 },
+  title: {
+    fontFamily: 'Poppins',
+    fontWeight: '500',
+    fontSize: 26,
+    lineHeight: 34,
+    letterSpacing: -0.4,
+    color: theme.color.text.primary,
+  },
+  block: { padding: 18, marginTop: 14 },
+  text: { lineHeight: 24 },
+  review: { padding: 10, paddingTop: 4 },
+});

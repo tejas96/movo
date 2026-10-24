@@ -94,7 +94,7 @@ export function MemberFlatsSheet({
       )}
       {chosen.map((f) => (
         <View key={f.id} className="mt-4">
-          <Text variant="label" tone="secondary" className="mb-1.5">
+          <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
             {`${formatFlat({ number: f.number, buildingName: f.buildingName })} · ${t('manage:member.relation')}`}
           </Text>
           <View className="flex-row flex-wrap gap-2">

@@ -70,9 +70,6 @@
   },
   "collection": {
     "fy": "वित्त वर्ष {{fy}}",
-    "paidOf": "{{total}} में से चुकाया",
-    "pending": "बाकी",
-    "collected": "वसूल",
     "billed": "बिल किया",
     "outstanding": "बकाया",
     "lastPaid": "पिछला भुगतान {{date}}"
@@ -208,5 +205,16 @@
     "reversedBody": "रसीद {{receipt}} · {{reason}}",
     "waivedTitle": "बिल माफ़: {{name}}",
     "waivedBody": "फ़्लैट {{flat}} · {{reason}}"
+  },
+  "glow": {
+    "pay": "{{amount}} भरें",
+    "openBills": "बाकी बिल",
+    "paid": "आपने कितना भरा",
+    "months": "पिछले 6 महीने",
+    "flatsPaid": "{{total}} में से {{paid}} फ्लैट ने भरा",
+    "due": "बाकी",
+    "flatsCount_one": "{{count}} फ्लैट",
+    "flatsCount_other": "{{count}} फ्लैट",
+    "flats": "फ्लैट"
   }
 }

@@ -11,7 +11,6 @@
     "CANCELLED": "रद्द"
   },
   "about": "माहिती",
-  "postedBy": "{{name}} यांनी पोस्ट केले",
   "going": "{{count}} येत आहेत",
   "rsvp": {
     "question": "तुम्ही येणार का?",
@@ -58,5 +57,15 @@
     "cancelledTitle": "कार्यक्रम रद्द: {{title}}",
     "cancelledBody": "तो {{when}} रोजी होता",
     "reminderTitle": "उद्या: {{title}}"
+  },
+  "glow": {
+    "by": "कार्यक्रम · {{name}} यांच्याकडून",
+    "areYou": "तुम्ही",
+    "goingQ": "येताय का?",
+    "goingCount": "{{count}} येत आहेत",
+    "maybeCount": "· {{count}} कदाचित",
+    "options": "आणखी पर्याय",
+    "lessGuest": "एक पाहुणा कमी",
+    "moreGuest": "एक पाहुणा जास्त"
   }
 }

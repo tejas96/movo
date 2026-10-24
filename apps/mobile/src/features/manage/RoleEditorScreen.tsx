@@ -123,7 +123,7 @@ export function RoleEditorScreen() {
           title={roleId ? t('manage:rolesScreen.edit') : t('manage:rolesScreen.new')}
           onBack={() => nav.goBack()}
         />
-        <View className="mt-6">
+        <Card className="mt-5">
           <Controller
             control={form.control}
             name="name"
@@ -137,7 +137,7 @@ export function RoleEditorScreen() {
               />
             )}
           />
-        </View>
+        </Card>
         {isAdminRole ? (
           <Text variant="label" tone="secondary" className="mt-4">
             {t('manage:rolesScreen.adminLocked')}
@@ -150,14 +150,11 @@ export function RoleEditorScreen() {
             {PERMISSION_GROUPS.map((g) => (
               <View key={g.key}>
                 <SectionHeader title={t(`manage:permissionGroups.${g.key}`)} />
-                <Card tight className="gap-2">
+                <Card tight>
                   {g.permissions.map((p) => {
                     const locked = !mine.has(p);
                     return (
-                      <View
-                        key={p}
-                        className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3"
-                      >
+                      <View key={p} className="flex-row items-center justify-between px-3 py-3">
                         <View className="flex-1 pr-3">
                           <Text variant="body" tone={locked ? 'secondary' : 'primary'}>
                             {t(`manage:permissions.${i18nKey(p)}`)}

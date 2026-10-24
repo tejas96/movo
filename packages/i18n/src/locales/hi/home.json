@@ -6,15 +6,10 @@
   },
   "quick": {
     "services": "सेवाएँ",
-    "directory": "सदस्य",
     "emergency": "आपातकाल",
-    "market": "मार्केट",
-    "manage": "प्रबंधन",
-    "ar": "AR गाइड"
+    "manage": "प्रबंधन"
   },
   "needsYou": "आज आपके लिए",
-  "allClearBody": "कोई बकाया, ज़िम्मेदारी या अलर्ट नहीं।",
-  "upcoming": "आगामी",
   "notices": "नोटिस",
   "attention": {
     "MARKET_ORDERS_WAITING": {
@@ -74,12 +69,7 @@
       "sub": "काम स्वीकार करें ताकि पॉइंट्स मिलें"
     }
   },
-  "upcomingKind": {
-    "MEETING": "बैठक",
-    "EVENT": "कार्यक्रम"
-  },
   "contribution": {
-    "title": "मेरा योगदान",
     "points": "इस साल {{count}} पॉइंट",
     "points_other": "इस साल {{count}} पॉइंट्स",
     "openTasks": "{{count}} काम चल रहा है",
@@ -104,15 +94,63 @@
     "task": {
       "label": "आपका काम",
       "cta": "काम खोलें"
-    },
-    "clear": {
-      "label": "आज सब ठीक है",
-      "cta": "आगे क्या है देखें",
-      "next": "आगे: {{title}} · {{when}}"
     }
   },
   "tiles": {
-    "noticesEmpty": "कुछ नया नहीं",
-    "upcomingEmpty": "कुछ तय नहीं"
+    "noticesEmpty": "कुछ नया नहीं"
+  },
+  "glow": {
+    "searchHint": "लोग या फ्लैट खोजें…",
+    "profile": "मेरी प्रोफ़ाइल",
+    "chips": {
+      "today": "आज",
+      "myFlat": "मेरा फ्लैट",
+      "society": "सोसाइटी"
+    },
+    "greetTail": "आज आपके घर का हाल",
+    "facts": {
+      "newNotices_one": "{{count}} नई सूचना",
+      "newNotices_other": "{{count}} नई सूचनाएँ",
+      "noNotices": "कोई नई सूचना नहीं",
+      "due": "{{amount}} बाकी",
+      "allPaid": "बिल भरा हुआ",
+      "alerts_one": "{{count}} अलर्ट",
+      "alerts_other": "{{count}} अलर्ट",
+      "noAlerts": "कोई अलर्ट नहीं"
+    },
+    "home": {
+      "yours": "आपका घर,",
+      "flat": "फ्लैट {{flat}}",
+      "good": "सब ठीक है",
+      "alert": "अलर्ट चालू है",
+      "overdue": "बकाया बिल",
+      "label": "आपकी बिल्डिंग, {{flat}}"
+    },
+    "dues": {
+      "title": "मेंटेनेंस",
+      "openBills_one": "{{count}} बिल बाकी",
+      "openBills_other": "{{count}} बिल बाकी",
+      "allPaid": "सब भरा हुआ",
+      "dueBy": "{{date}} तक भरें",
+      "overdueSince": "{{date}} से बाकी",
+      "nothingDue": "कुछ भरना नहीं",
+      "pay": "{{amount}} भरें",
+      "history": "भुगतान देखें",
+      "ring": "इस साल: {{paid}} महीने भरे, {{due}} बाकी"
+    },
+    "notices": {
+      "sub": "{{count}} नई · {{title}}"
+    },
+    "bills": {
+      "title": "बिल"
+    },
+    "findWay": {
+      "title": "रास्ता खोजें"
+    },
+    "members": {
+      "title": "सदस्य",
+      "sub": "{{flats}} फ्लैट · {{people}} लोग"
+    },
+    "more": "और"
   }
 }

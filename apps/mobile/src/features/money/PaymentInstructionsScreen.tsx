@@ -181,7 +181,7 @@ export function PaymentInstructionsScreen() {
             maxLength={60}
             white
           />
-          <View className="flex-row items-center justify-between rounded-md bg-card-nested px-[18px] py-3">
+          <View className="flex-row items-center justify-between rounded-[22px] bg-card-nested px-[18px] py-3">
             <Text variant="body">{t('money:instructions.show')}</Text>
             <Toggle value={show} onValueChange={setShow} />
           </View>

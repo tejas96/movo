@@ -164,6 +164,13 @@ export function monthName(month: number): string {
   );
 }
 
+/** Short month name for month 1–12, e.g. "Apr", for chart labels. */
+export function shortMonth(month: number): string {
+  return new Intl.DateTimeFormat(localeTag(), { month: 'short', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(2026, month - 1, 1)),
+  );
+}
+
 /** Billing period label: "Oct 2026", "Q1 2026-27", "2026-27". */
 export function periodLabel(key: string): string {
   return formatPeriod(key, currentLocale());

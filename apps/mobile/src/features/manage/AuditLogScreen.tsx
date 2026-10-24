@@ -1,6 +1,5 @@
 import { type AuditArea, AuditAreaSchema, type AuditEntry, ModuleKeySchema } from '@movo/contracts';
 import {
-  Card,
   Chip,
   EmptyState,
   photos,
@@ -80,14 +79,12 @@ const AuditRow = memo(function AuditRow({
 }) {
   const { title, who } = useEntryLabels();
   return (
-    <Card tight className="mb-2">
-      <Row
-        icon="audit"
-        title={title(item)}
-        subtitle={`${who(item)} · ${relative(item.createdAt)}`}
-        onPress={() => onOpen(item)}
-      />
-    </Card>
+    <Row
+      icon="audit"
+      title={title(item)}
+      subtitle={`${who(item)} · ${relative(item.createdAt)}`}
+      onPress={() => onOpen(item)}
+    />
   );
 });
 
@@ -128,6 +125,7 @@ export function AuditLogScreen() {
         </ScrollView>
       </View>
       <PagedList
+        glass
         list={list}
         loading={
           <View className="mt-4 gap-3">

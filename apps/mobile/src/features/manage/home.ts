@@ -24,8 +24,7 @@ export const manageHome: FeatureHome = {
       key: 'manage',
       icon: 'settings',
       label: (t) => t('home:quick.manage'),
-      // The last slot: Market when it is on, otherwise Manage for people who can manage.
-      visible: (q) => !q.moduleOn('marketplace') && q.canManage,
+      visible: (q) => q.canManage,
       go: (nav) => nav.navigate('Manage'),
     },
   ],

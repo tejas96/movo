@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Event</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A2E;--muted:#706F76;--accent:#F06A2E}
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.scroll::-webkit-scrollbar{display:none}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.rim{padding:6px;background:rgba(255,255,255,.8);box-shadow:0 14px 34px rgba(70,40,70,.1)}
+.art{position:relative;overflow:hidden}
+.art::before{content:"";position:absolute;inset:-35%;background:var(--g);filter:blur(24px);animation:flow 10s ease-in-out infinite alternate}
+.art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0) 50%,rgba(255,255,255,.55) 100%)}
+.art > *{position:relative;z-index:1}
+.ibtn{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(70,40,70,.06)}
+.opt{transition:background .25s,box-shadow .25s}
+@keyframes flow{0%{transform:translate(0,0) rotate(0) scale(1)}100%{transform:translate(-10%,8%) rotate(14deg) scale(1.2)}}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-30px) scale(1.15)}}
+@keyframes aur2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-20px)}}
+@keyframes spark{0%{opacity:0;transform:translateY(0) scale(.4)}30%{opacity:1}100%{opacity:0;transform:translateY(-110px) scale(1)}}
+@keyframes flick{0%,100%{transform:scale(1,1) rotate(-2deg)}25%{transform:scale(.92,1.08) rotate(3deg)}50%{transform:scale(1.05,.95) rotate(-3deg)}75%{transform:scale(.96,1.06) rotate(2deg)}}
+@keyframes halo{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.9;transform:scale(1.15)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes burst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(.4)}}
+@keyframes bounce{0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)}}
+.rise{opacity:0;animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+.press{transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.press:active{transform:scale(.97)}
+.chosen{animation:bounce .4s cubic-bezier(.3,1.6,.5,1)}
+.bit{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;animation:burst .9s cubic-bezier(.1,.7,.3,1) forwards}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}.rise{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: var(--ink);">
+  <div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+    <div style="position: absolute; width: 360px; height: 300px; border-radius: 50%; background: #F8CDB0; filter: blur(80px); opacity: .75; bottom: -90px; left: -120px; animation: aur1 16s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 340px; height: 300px; border-radius: 50%; background: #CDB2F0; filter: blur(80px); opacity: .7; bottom: -110px; right: -120px; animation: aur2 18s ease-in-out infinite;"></div>
+  </div>
+
+  <div class="scroll" style="position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; padding: 54px 14px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+    <div class="rim rise" style="border-radius: 40px;">
+      <div class="art" style="height: 330px; border-radius: 34px; --g: radial-gradient(at 50% 60%, #F59A4A, transparent 45%), radial-gradient(at 40% 40%, #F6D35B, transparent 40%), radial-gradient(at 70% 30%, #E8B4D0, transparent 50%), radial-gradient(at 20% 80%, #8FA8E0, transparent 50%), #EDE3E8; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between;">
+          <a href="Notices.dc.html" aria-label="Back" class="ibtn press"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+          <a href="#" aria-label="Save event" class="ibtn press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"></path></svg></a>
+        </div>
+        <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none;">
+          <span style="position: absolute; left: 50%; top: 70px; width: 160px; height: 160px; margin-left: -80px; border-radius: 50%; background: radial-gradient(circle, rgba(255,236,190,.95), rgba(255,236,190,0) 65%); animation: halo 2.4s ease-in-out infinite;"></span>
+          <svg width="170" height="170" viewBox="0 0 200 200" style="position: absolute; left: 50%; top: 66px; margin-left: -85px;">
+            <g style="transform-origin: 100px 110px; animation: flick 1.2s ease-in-out infinite;">
+              <path d="M100 40c18 26 24 44 24 58a24 24 0 01-48 0c0-14 6-32 24-58z" fill="#F59A4A"></path>
+              <path d="M100 70c9 13 11 21 11 28a11 11 0 01-22 0c0-7 2-15 11-28z" fill="#FFF4DC"></path>
+            </g>
+            <path d="M40 132h120c0 30-27 50-60 50s-60-20-60-50z" fill="#EBA48F"></path>
+            <path d="M40 132h120" stroke="#C9705A" stroke-width="6" stroke-linecap="round"></path>
+            <circle cx="70" cy="152" r="4.5" fill="#FFFFFF"></circle><circle cx="100" cy="160" r="4.5" fill="#FFFFFF"></circle><circle cx="130" cy="152" r="4.5" fill="#FFFFFF"></circle>
+          </svg>
+          <span style="position: absolute; left: 46%; top: 60%; width: 6px; height: 6px; border-radius: 50%; background: #FFFFFF; animation: spark 2.4s ease-out infinite;"></span>
+          <span style="position: absolute; left: 56%; top: 62%; width: 5px; height: 5px; border-radius: 50%; background: #FFF3C4; animation: spark 2.8s ease-out .6s infinite;"></span>
+          <span style="position: absolute; left: 40%; top: 66%; width: 5px; height: 5px; border-radius: 50%; background: #FFFFFF; animation: spark 2.2s ease-out 1.2s infinite;"></span>
+          <span style="position: absolute; left: 62%; top: 58%; width: 4px; height: 4px; border-radius: 50%; background: #FFF3C4; animation: spark 3s ease-out 1.8s infinite;"></span>
+        </div>
+        <div>
+          <span style="font-size: 12px; font-weight: 500; background: rgba(255,255,255,.85); border-radius: 999px; padding: 5px 11px; display: inline-flex; align-items: center; gap: 6px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent);"></span>Event · by committee</span>
+          <h1 style="margin: 10px 0 0; font-weight: 500; font-size: 30px; letter-spacing: -0.6px;">Diwali night</h1>
+          <div style="font-size: 13px; color: #4D4C52;">Sun 2 Nov <span style="opacity: .4;">|</span> 7 PM · Society garden</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass rise" style="border-radius: 999px; padding: 8px 18px 8px 8px; display: flex; align-items: center; gap: 12px; animation-delay: .08s;">
+      <div style="display: flex;">
+        <span style="width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #F5A3C7, #F8CDB0); border: 3px solid #FFFFFF; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;">AJ</span>
+        <span style="width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #8FA8E0, #CDB2F0); border: 3px solid #FFFFFF; margin-left: -12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;">NK</span>
+        <span style="width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #BFDDB0, #F6C7A0); border: 3px solid #FFFFFF; margin-left: -12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center;">VR</span>
+      </div>
+      <span style="font-size: 14px;"><strong style="font-weight: 600;">{{going}} going</strong> <span style="color: var(--muted);">· 12 maybe</span></span>
+    </div>
+
+    <div class="glass rise" style="position: relative; border-radius: 30px; padding: 18px; animation-delay: .14s;">
+      <div style="font-weight: 400; font-size: 20px;">Are you <strong style="font-weight: 600;">going?</strong></div>
+      <div role="group" aria-label="Your answer" style="display: flex; gap: 6px; margin-top: 12px; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.55); border: 1.5px solid rgba(255,255,255,.95); position: relative;">
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+          <button class="opt {{o.cls}}" onClick="{{o.pick}}" aria-pressed="{{o.pressed}}" style="flex: 1; height: 44px; border: none; border-radius: 999px; cursor: pointer; font-family: Poppins, sans-serif; font-size: 14px; font-weight: 500; color: #2B2A2E; background: {{o.bg}}; box-shadow: {{o.sh}};">{{o.label}}</button>
+        </sc-for>
+        <sc-if value="{{party}}" hint-placeholder-val="{{no}}">
+          <span aria-hidden="true" style="position: absolute; left: 16%; top: 50%; width: 0; height: 0; pointer-events: none;">
+            <sc-for list="{{bits}}" as="b" hint-placeholder-count="0">
+              <span class="bit" style="background: {{b.c}}; --x: {{b.x}}; --y: {{b.y}};"></span>
+            </sc-for>
+          </span>
+        </sc-if>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px;">
+        <span style="font-size: 14px; color: var(--muted);">Guests with you</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button onClick="{{less}}" aria-label="One less guest" class="press" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: #FFFFFF; color: #2B2A2E; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(70,40,70,.06);">−</button>
+          <span style="font-weight: 600; font-size: 18px; min-width: 18px; text-align: center;">{{guests}}</span>
+          <button onClick="{{more}}" aria-label="One more guest" class="press" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: #2B2A2E; color: #FFFFFF; font-size: 20px; cursor: pointer;">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass rise" style="border-radius: 30px; padding: 18px; animation-delay: .2s;">
+      <div style="font-size: 12px; letter-spacing: .6px; color: var(--muted);">ABOUT</div>
+      <p style="margin: 8px 0 0; font-size: 14px; line-height: 1.6;">Lights, food stalls and a rangoli contest for kids. Bring one sweet from home to share. Tell us if you come by 30 Oct.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { ans: null, guests: 0, burst: 0 };
+  }
+  componentWillUnmount() {
+    if (this.t) clearTimeout(this.t);
+  }
+  renderVals() {
+    var self = this;
+    var defs = [['GOING', 'Going'], ['MAYBE', 'Maybe'], ['NOT', 'Can’t go']];
+    var opts = defs.map(function (d) {
+      var on = self.state.ans === d[0];
+      return {
+        label: d[1],
+        pressed: on ? 'true' : 'false',
+        cls: on ? 'chosen' : '',
+        bg: on ? '#FFFFFF' : 'transparent',
+        sh: on ? '0 4px 12px rgba(70,40,70,.1)' : 'none',
+        pick: function () {
+          self.setState({ ans: d[0], burst: d[0] === 'GOING' ? self.state.burst + 1 : 0 });
+          if (self.t) clearTimeout(self.t);
+          self.t = setTimeout(function () { self.setState({ burst: 0 }); }, 1000);
+        }
+      };
+    });
+    var colors = ['#F06A2E', '#F5A3C7', '#CDB2F0', '#F6D35B', '#8FA8E0'];
+    var bits = [];
+    for (var i = 0; i < 18; i++) {
+      var a = (i / 18) * Math.PI * 2;
+      var r = 60 + (i % 3) * 22;
+      bits.push({ c: colors[i % 5], x: Math.round(Math.cos(a) * r) + 'px', y: Math.round(Math.sin(a) * r - 30) + 'px' });
+    }
+    return {
+      no: false,
+      opts: opts,
+      party: this.state.burst > 0,
+      bits: bits,
+      going: 38 + (this.state.ans === 'GOING' ? 1 : 0),
+      guests: this.state.guests,
+      less: function () { self.setState({ guests: Math.max(0, self.state.guests - 1) }); },
+      more: function () { self.setState({ guests: Math.min(9, self.state.guests + 1) }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

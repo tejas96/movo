@@ -6,7 +6,6 @@
   "pinned": "पिन केलेली",
   "draft": "मसुदा",
   "drafts": "मसुदे",
-  "emergency": "आणीबाणी",
   "form": {
     "title": "शीर्षक",
     "body": "संदेश",
@@ -37,5 +36,18 @@
   "readBy": "{{count}} जणांनी वाचले",
   "archive": "संग्रहित करा",
   "archived": "नोटीस संग्रहित झाली",
-  "unpin": "पिन काढा"
+  "unpin": "पिन काढा",
+  "glow": {
+    "titleA": "नोटीस",
+    "titleB": "फलक",
+    "newCount": "{{count}} नव्या",
+    "all": "सगळ्या",
+    "urgent": "तातडीच्या",
+    "open": "उघडा",
+    "gotIt": "ठीक आहे",
+    "thisWeek": "या आठवड्यात",
+    "earlier": "आधीच्या",
+    "rowSub": "{{category}} · {{author}}",
+    "nothing": "सध्या इथे काही नाही."
+  }
 }

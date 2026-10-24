@@ -97,6 +97,7 @@ export function VendorCategoriesScreen() {
           <IconSquare
             icon="add"
             variant="linear"
+            tone="ink"
             accessibilityLabel={t('services:categories.add')}
             onPress={() => open()}
           />
@@ -148,7 +149,7 @@ export function VendorCategoriesScreen() {
           onChangeText={(name) => setDraft((d) => (d ? { ...d, name } : d))}
           maxLength={40}
         />
-        <Text variant="label" tone="secondary" className="mb-1.5 mt-4">
+        <Text variant="caption" className="mb-1.5 mt-4 pl-1.5 font-medium">
           {t('services:categories.icon')}
         </Text>
         <View className="flex-row flex-wrap gap-2">

@@ -31,7 +31,7 @@ export function PrivacyScreen() {
         <Skeleton className="mt-6 h-40 rounded-xl" />
       ) : (
         <Card tight className="mt-6 gap-2">
-          <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
+          <View className="flex-row items-center justify-between px-3 py-3.5">
             <View className="flex-1 pr-3">
               <Text variant="body">{t('privacyShowPhone')}</Text>
               {!p.phoneOptInAllowed ? (
@@ -46,7 +46,7 @@ export function PrivacyScreen() {
               onValueChange={(v) => void change({ showPhone: v })}
             />
           </View>
-          <View className="flex-row items-center justify-between rounded-lg bg-card px-4 py-3.5">
+          <View className="flex-row items-center justify-between px-3 py-3.5">
             <Text variant="body" className="flex-1 pr-3">
               {t('privacyShowEmail')}
             </Text>

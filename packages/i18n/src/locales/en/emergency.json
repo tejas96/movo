@@ -1,17 +1,13 @@
 {
   "title": "Emergency",
-  "raise": "Raise an alert",
   "raiseHelp": "Pick what is happening, then press and hold the button.",
   "hold": "Hold to send alert",
-  "holding": "Keep holding…",
   "sent": "Alert sent to your society",
   "shareNote": "Your name, flat and mobile number go to everyone alerted.",
   "message": "Short message (optional)",
   "messageHint": "For example: smoke near the lift room",
   "activeAlerts": "Active alerts",
   "contacts": "Emergency contacts",
-  "publicNumbers": "Public numbers",
-  "societyContacts": "Society contacts",
   "noContacts": "No contacts yet",
   "noContactsBody": "Your committee has not added emergency contacts.",
   "history": "Past alerts",
@@ -65,5 +61,11 @@
     "raisedBodyNoMessage": "Raised by {{name}}. Open MOVO to help or call.",
     "closedTitle": "✅ {{type}} alert closed",
     "closedBody": "{{place}} · {{outcome}}"
+  },
+  "glow": {
+    "what": "What is happening?",
+    "hold": "Hold to alert",
+    "keep": "Keep holding",
+    "left": "{{count}} s left"
   }
 }

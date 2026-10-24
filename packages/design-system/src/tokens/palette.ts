@@ -1,24 +1,31 @@
 /**
  * Raw scales. Screens never use these directly.
- * MOVO is monochrome: white canvas, soft gray cards, black actions. Color is reserved for status.
+ * Soft Glow: a misty light page, frosted white glass, ink for text and main buttons,
+ * orange only for small accents, red only for urgent things. Pastel glow colours live in glow.ts.
+ * Reference: docs/design/soft-glow (mockup source and reference PNGs).
  */
 export const palette = {
   white: '#FFFFFF',
-  black: '#151515',
+  /** Page background. */
+  mist: '#EEEDEC',
+  /** Text, icons and the main button. `black` is the old name for the same colour. */
+  ink: '#2B2A2E',
+  black: '#2B2A2E',
   gray: {
-    50: '#F8F8F8',
-    100: '#F5F5F5',
-    200: '#EFEFEF',
-    300: '#E4E4E4',
-    400: '#C4C4C4',
-    500: '#9A9A9A',
-    600: '#7A7A7A',
-    700: '#5C5C5C',
-    800: '#3A3A3A',
-    900: '#1F1F1F',
+    50: '#F7F6F5',
+    100: '#F4F3F2',
+    200: '#EEEDEC',
+    300: '#E3E1E0',
+    400: '#C3C2C7',
+    500: '#9C9BA1',
+    600: '#6A6970',
+    700: '#4D4C52',
+    800: '#3A393E',
+    900: '#2B2A2E',
   },
-  green: { 50: '#E8F6EE', 500: '#1F9D5B', 700: '#157543' },
-  amber: { 50: '#FFF4E0', 500: '#D98E0B', 700: '#9B6400' },
-  red: { 50: '#FDECEC', 500: '#DA4B4B', 700: '#A83030' },
-  blue: { 50: '#EAF0FD', 500: '#3D6FD8', 700: '#2B4F9E' },
+  orange: { 50: '#FDE6DA', 500: '#F06A2E', 700: '#B5501F' },
+  green: { 50: '#E6F1E3', 500: '#4E9A55', 700: '#3F7A45' },
+  amber: { 50: '#FBEBD3', 500: '#E0962F', 700: '#8A5410' },
+  red: { 50: '#FBE2E2', 500: '#D63B3B', 700: '#B52E2E' },
+  blue: { 50: '#E6E9FA', 500: '#6C7FD8', 700: '#3F51A8' },
 } as const;

@@ -1,13 +1,17 @@
-import { Image, type ImageSourcePropType, View } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
+import { View } from 'react-native';
 import type { BoldIconName } from '../icons';
 import { Button } from './Button';
 import { cn } from './cn';
-import { IconSquare } from './IconButtons';
+import { ArtFill } from './glow/ArtFill';
+import { Glass } from './glow/Glass';
+import { Icon } from './Icon';
 import { Text } from './Text';
+import { theme } from './theme';
 
 export interface EmptyStateProps {
   icon: BoldIconName;
-  /** A soft photo above the text. Replaces the icon square. */
+  /** Old photo option. Soft Glow draws a colour-art disc instead, so it is ignored. */
   photo?: ImageSourcePropType;
   title: string;
   body?: string | undefined;
@@ -18,10 +22,9 @@ export interface EmptyStateProps {
   className?: string;
 }
 
-/** Photo or icon square, title, one line of help, optional button. */
+/** A glass card: the icon on a moving colour-art disc, title, one line of help, a button. */
 export function EmptyState({
   icon,
-  photo,
   title,
   body,
   actionLabel,
@@ -30,16 +33,12 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   return (
-    <View className={cn('items-center px-5 py-7', className)}>
-      {photo ? (
-        <Image
-          source={photo}
-          resizeMode="cover"
-          style={{ height: 150, width: '100%', borderRadius: 28 }}
-        />
-      ) : (
-        <IconSquare icon={icon} tone="gray" />
-      )}
+    <Glass radius={30} className={cn('items-center px-5 py-7', className)}>
+      <ArtFill art="tilePink" radius={32} fade={0} blur={14} style={{ width: 64, height: 64 }}>
+        <View className="flex-1 items-center justify-center">
+          <Icon name={icon} variant="linear" size={26} color={theme.color.icon.primary} />
+        </View>
+      </ArtFill>
       <Text variant="title" center className="mt-3.5">
         {title}
       </Text>
@@ -51,7 +50,7 @@ export function EmptyState({
       {actionLabel && onAction ? (
         <Button
           label={actionLabel}
-          variant={photo ? 'ink' : 'white'}
+          variant="white"
           size="sm"
           inline
           loading={actionLoading}
@@ -59,6 +58,6 @@ export function EmptyState({
           className="mt-3"
         />
       ) : null}
-    </View>
+    </Glass>
   );
 }

@@ -1,12 +1,13 @@
 import {
   Card,
   Icon,
-  IconSquare,
   Screen,
   Skeleton,
   Text,
+  TintDisc,
   TitleBar,
   Toggle,
+  tintFor,
   useToast,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
@@ -48,22 +49,19 @@ export function ModulesScreen() {
       ) : loadFailed(modules) ? (
         <QueryError query={modules} className="mt-6" />
       ) : (
-        <Card tight className="mt-4 gap-2">
+        <Card tight className="mt-4">
           {MANAGED_MODULES.map((key) => {
             const m = byKey.get(key);
             if (!m) return null;
             const hasSettings = Boolean(MODULE_SETTINGS[key]?.length);
             return (
-              <View
-                key={key}
-                className="flex-row items-center gap-3 rounded-lg bg-card px-3 py-2.5"
-              >
+              <View key={key} className="flex-row items-center gap-3 px-2 py-2.5">
                 <Pressable
                   className="flex-1 flex-row items-center gap-3"
                   disabled={!hasSettings || !m.enabled}
                   onPress={() => nav.navigate('ModuleSettings', { moduleKey: key })}
                 >
-                  <IconSquare icon={MODULE_ICON[key]} variant="linear" tone="white" size="sm" />
+                  <TintDisc icon={MODULE_ICON[key]} tint={tintFor(key)} size={44} />
                   <View className="flex-1 min-w-0">
                     <Text variant="bodyMedium">{t(`society:modules.${key}`)}</Text>
                     <Text variant="caption" tone="secondary" numberOfLines={2}>

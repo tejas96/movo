@@ -88,14 +88,14 @@ export function SocietySwitcherScreen() {
       </Card>
       <Button
         label={t('onboarding:title')}
-        variant="gray"
+        variant="white"
         onPress={() => nav.navigate('Join')}
         className="mt-4"
       />
       {current ? (
         <Button
           label={t('society:leave.button')}
-          variant="danger"
+          variant="dangerText"
           icon="logout"
           loading={leave.isPending}
           onPress={confirmLeave}

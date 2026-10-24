@@ -4,12 +4,13 @@ import {
   Card,
   CircleButton,
   EmptyState,
-  IconSquare,
   photos,
   Screen,
   Skeleton,
   Text,
+  TintDisc,
   TitleBar,
+  tintFor,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
@@ -75,7 +76,11 @@ export function HowToPayScreen() {
           {items.map((i) => (
             <Card key={i.id}>
               <View className="flex-row items-center gap-3">
-                <IconSquare icon={i.kind === 'UPI' ? 'upi' : 'bank'} tone="white" size="sm" />
+                <TintDisc
+                  icon={i.kind === 'UPI' ? 'upi' : 'bank'}
+                  tint={tintFor(i.kind)}
+                  size={44}
+                />
                 <View className="min-w-0 flex-1">
                   <Text variant="h3">{i.label}</Text>
                   {i.payeeName ? (

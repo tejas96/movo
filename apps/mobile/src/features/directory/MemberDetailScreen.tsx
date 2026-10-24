@@ -4,23 +4,28 @@ import {
   Card,
   Chip,
   CircleButton,
-  Divider,
+  DotTexture,
+  Glass,
+  GlowAvatar,
+  initialsOf,
   Pill,
-  photos,
+  Rise,
   Row,
   Screen,
+  SectionHeader,
   Sheet,
   Skeleton,
   StatusPill,
   Text,
   TitleBar,
+  toneFor,
   useToast,
 } from '@movo/design-system';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Image, Linking, View } from 'react-native';
+import { Alert, Linking, StyleSheet, View } from 'react-native';
 import { photoUri } from '../../core/api/client';
 import { useMutationToast } from '../../core/api/use-mutation-toast';
 import { useRoles } from '../../core/members/api';
@@ -97,46 +102,53 @@ export function MemberDetailScreen() {
 
   return (
     <Screen>
-      <TitleBar title={t('society:directory.title')} onBack={() => nav.goBack()} />
+      <TitleBar
+        title={t('society:directory.glow.memberTitle')}
+        onBack={() => nav.goBack()}
+        className="mb-4"
+      />
       {loadFailed(member) ? (
         <QueryError query={member} className="mt-6" />
       ) : !m ? (
         <View className="mt-6 gap-3">
-          <Skeleton className="h-16 w-16 self-center rounded-full" />
+          <Skeleton className="h-56 rounded-[32px]" />
           <Skeleton className="h-40 rounded-xl" />
         </View>
       ) : (
         <>
-          <View className="mt-4 h-[120px] overflow-hidden rounded-xl bg-card">
-            <Image
-              source={photos.directory}
-              resizeMode="cover"
-              style={{ width: '100%', height: '100%' }}
-            />
-          </View>
-          <View className="-mt-8 items-center">
-            <View className="rounded-full bg-canvas p-[3px]">
-              <Avatar name={m.displayName} uri={photoUri(m.avatarUrl)} size={64} tone="gray" />
-            </View>
-            <Text variant="h2" className="mt-2">
-              {m.displayName}
-            </Text>
-            <View className="mt-2 flex-row flex-wrap justify-center gap-2">
-              {m.roles.map((r) => (
-                <Pill
-                  key={r.id}
-                  label={r.name}
-                  tone="gray"
-                  size="sm"
-                  icon={r.key === 'admin' ? 'verified' : undefined}
+          <Rise>
+            <Glass radius={32} style={styles.profile}>
+              <DotTexture center={{ x: 0.5, y: 0.3 }} reach={0.7} />
+              {photoUri(m.avatarUrl) ? (
+                <Avatar name={m.displayName} uri={photoUri(m.avatarUrl)} size={64} />
+              ) : (
+                <GlowAvatar
+                  initials={initialsOf(m.displayName)}
+                  tone={toneFor(m.displayName)}
+                  size={84}
+                  pulse
                 />
-              ))}
-              {m.status !== 'ACTIVE' ? (
-                <StatusPill label={t(`common:status.${m.status}`)} tone="neutral" />
-              ) : null}
-            </View>
-          </View>
-          <Card tight className="mt-6 gap-2">
+              )}
+              <Text variant="greet" center numberOfLines={2} style={styles.name}>
+                {m.displayName}
+              </Text>
+              <View style={styles.pills}>
+                {m.roles.map((r) => (
+                  <Pill
+                    key={r.id}
+                    label={r.name}
+                    tone="white"
+                    size="sm"
+                    icon={r.key === 'admin' ? 'verified' : undefined}
+                  />
+                ))}
+                {m.status !== 'ACTIVE' ? (
+                  <StatusPill label={t(`common:status.${m.status}`)} tone="neutral" />
+                ) : null}
+              </View>
+            </Glass>
+          </Rise>
+          <Card tight className="mt-3.5">
             {m.flats.map((f) => (
               <Row
                 key={f.id}
@@ -175,10 +187,8 @@ export function MemberDetailScreen() {
           </Card>
           {m.vehicles && m.vehicles.length > 0 ? (
             <>
-              <Text variant="h3" className="mb-3 mt-6">
-                {t('society:directory.vehicles')}
-              </Text>
-              <Card tight className="gap-2">
+              <SectionHeader title={t('society:directory.vehicles')} />
+              <Card tight>
                 {m.vehicles.map((v) => (
                   <Row
                     key={v.id}
@@ -194,41 +204,42 @@ export function MemberDetailScreen() {
           ) : null}
           {m.canManage ? (
             <>
-              <Divider className="my-6" />
-              <View className="gap-3">
-                <Button label={t('manage:member.roles')} variant="gray" onPress={openRoles} />
-                <Button
-                  label={t('manage:member.editFlats')}
-                  variant="gray"
+              <Card tight className="mt-6">
+                <Row icon="shield" title={t('manage:member.roles')} onPress={openRoles} />
+                <Row
+                  icon="flat"
+                  title={t('manage:member.editFlats')}
                   onPress={() => setFlatsOpen(true)}
                 />
                 {m.status === 'ACTIVE' ? (
-                  <Button
-                    label={t('manage:member.suspend')}
-                    variant="gray"
+                  <Row
+                    icon="pause"
+                    title={t('manage:member.suspend')}
+                    disabled={update.isPending}
                     onPress={() => confirmStatus('SUSPENDED')}
-                    loading={update.isPending}
                   />
                 ) : (
-                  <Button
-                    label={t('manage:member.activate')}
-                    variant="gray"
+                  <Row
+                    icon="play"
+                    title={t('manage:member.activate')}
+                    disabled={update.isPending}
                     onPress={() => void setStatus('ACTIVE')}
-                    loading={update.isPending}
                   />
                 )}
-                <Button
-                  label={t('manage:member.resetCode')}
-                  variant="gray"
+                <Row
+                  icon="key"
+                  title={t('manage:member.resetCode')}
+                  disabled={reset.isPending}
                   onPress={() => void issueCode()}
-                  loading={reset.isPending}
                 />
-                <Button
-                  label={t('manage:member.remove')}
-                  variant="danger"
-                  onPress={() => confirmStatus('LEFT')}
-                />
-              </View>
+              </Card>
+              <Button
+                label={t('manage:member.remove')}
+                variant="dangerText"
+                icon="logout"
+                className="mt-4"
+                onPress={() => confirmStatus('LEFT')}
+              />
             </>
           ) : null}
         </>
@@ -286,3 +297,16 @@ export function MemberDetailScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  profile: {
+    overflow: 'hidden',
+    alignItems: 'center',
+    gap: 10,
+    paddingTop: 26,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  name: { fontSize: 24, lineHeight: 32 },
+  pills: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
+});

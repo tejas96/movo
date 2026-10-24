@@ -163,7 +163,7 @@ export function OrderDetailScreen() {
             {o.review ? (
               <>
                 <SectionHeader title={t('market:order.yourReview')} />
-                <View className="rounded-lg bg-card p-4">
+                <Card>
                   <Stars value={o.review.rating} />
                   {o.review.text ? (
                     <Text variant="body" className="mt-2">
@@ -173,7 +173,7 @@ export function OrderDetailScreen() {
                   <Text variant="label" tone="secondary" className="mt-1">
                     {`${o.review.by} · ${relative(o.review.createdAt)}`}
                   </Text>
-                </View>
+                </Card>
               </>
             ) : o.canReview ? (
               <ReviewForm
@@ -346,8 +346,8 @@ function Bubble({ message: m }: { message: OrderMessage }) {
     <View
       className={
         m.mine
-          ? 'max-w-[80%] self-end rounded-lg rounded-br-sm bg-ink px-4 py-2.5'
-          : 'max-w-[80%] self-start rounded-lg rounded-bl-sm bg-card px-4 py-2.5'
+          ? 'max-w-[80%] self-end rounded-[22px] rounded-br-md bg-ink px-4 py-2.5'
+          : 'max-w-[80%] self-start rounded-[22px] rounded-bl-md bg-card-nested px-4 py-2.5'
       }
     >
       <Text variant="body" tone={m.mine ? 'inverse' : 'primary'}>
@@ -377,23 +377,25 @@ function ReviewForm({
   return (
     <>
       <SectionHeader title={t('order.review')} />
-      <Stars value={rating} size={22} onChange={setRating} />
-      <TextArea
-        containerClassName="mt-3"
-        placeholder={t('order.reviewPlaceholder')}
-        value={text}
-        onChangeText={setText}
-        maxLength={500}
-        minHeight={72}
-      />
-      <Button
-        className="mt-3"
-        variant="gray"
-        label={t('order.sendReview')}
-        loading={busy}
-        disabled={rating === 0}
-        onPress={() => onSubmit(rating, text.trim() || null)}
-      />
+      <Card>
+        <Stars value={rating} size={22} onChange={setRating} />
+        <TextArea
+          containerClassName="mt-3"
+          placeholder={t('order.reviewPlaceholder')}
+          value={text}
+          onChangeText={setText}
+          maxLength={500}
+          minHeight={72}
+        />
+        <Button
+          className="mt-3"
+          variant="ink"
+          label={t('order.sendReview')}
+          loading={busy}
+          disabled={rating === 0}
+          onPress={() => onSubmit(rating, text.trim() || null)}
+        />
+      </Card>
     </>
   );
 }

@@ -7,6 +7,7 @@ import {
 import {
   BottomBar,
   Button,
+  Card,
   Chip,
   DateTimeSheet,
   Input,
@@ -135,7 +136,7 @@ export function RecordPaymentScreen() {
     <>
       <Screen bottomBar>
         <TitleBar title={t('money:record.title')} onBack={() => nav.goBack()} />
-        <View className="mt-6 gap-3">
+        <Card className="mt-5 gap-3.5">
           <SelectField
             label={t('money:record.flat')}
             value={selected ? formatFlat(selected.flat) : undefined}
@@ -168,7 +169,7 @@ export function RecordPaymentScreen() {
             )}
           />
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('money:record.paidOn')}
             </Text>
             <View className="flex-row gap-2">
@@ -195,14 +196,14 @@ export function RecordPaymentScreen() {
             </View>
           </View>
           <View>
-            <Text variant="label" tone="secondary" className="mb-1.5">
+            <Text variant="caption" className="mb-1.5 pl-1.5 font-medium">
               {t('money:record.method')}
             </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              className="-mx-5"
-              contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
+              className="-mx-[18px]"
+              contentContainerStyle={{ paddingHorizontal: 18, gap: 8 }}
             >
               {PaymentMethodSchema.options.map((m) => (
                 <Chip
@@ -249,7 +250,7 @@ export function RecordPaymentScreen() {
               {error}
             </Text>
           ) : null}
-        </View>
+        </Card>
       </Screen>
       <BottomBar
         action={

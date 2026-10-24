@@ -11,6 +11,7 @@ import {
   SectionHeader,
   Skeleton,
   Text,
+  TintDisc,
 } from '@movo/design-system';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -89,7 +90,7 @@ function FlatParking({
       <SectionHeader title={t('parking:mySlots')} className={showFlat ? 'mt-3' : undefined} />
       {entry.slots.length === 0 ? (
         <Card className="flex-row items-center gap-4">
-          <IconSquare icon="parking" tone="white" />
+          <TintDisc icon="parking" tint="blue" size={48} />
           <View className="flex-1">
             <Text variant="title">{t('parking:noSlot')}</Text>
             <Text variant="label" tone="secondary">

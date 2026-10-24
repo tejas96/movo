@@ -1,8 +1,8 @@
-import type { VendorCategory } from '@movo/contracts';
 import {
   Button,
   Card,
   EmptyState,
+  IconGrid,
   IconSquare,
   ModuleHeader,
   photos,
@@ -11,7 +11,6 @@ import {
   SearchBar,
   SectionHeader,
   Skeleton,
-  Tile,
 } from '@movo/design-system';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,8 +21,6 @@ import { CATEGORY_ICON } from '../../core/ui/category-icon';
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useVendorCategories, useVendors } from './api';
 import { categoryLabel, VendorRow } from './shared';
-
-const PADS = ['pad-a', 'pad-b'] as const;
 
 export function ServicesScreen() {
   const { t } = useTranslation(['services', 'common']);
@@ -45,9 +42,7 @@ export function ServicesScreen() {
   const suggestions = useVendors(societyId, { status: 'SUGGESTED' }, canManage);
   const suggestionCount = suggestions.data?.length ?? 0;
 
-  const rows: VendorCategory[][] = [];
   const list = categories.data ?? [];
-  for (let i = 0; i < list.length; i += 3) rows.push(list.slice(i, i + 3));
 
   return (
     <Screen refreshing={categories.isRefetching} onRefresh={() => void categories.refetch()}>
@@ -60,6 +55,7 @@ export function ServicesScreen() {
             <IconSquare
               icon="add"
               variant="linear"
+              tone="ink"
               accessibilityLabel={canManage ? t('services:add') : t('services:suggest')}
               onPress={() => nav.navigate('VendorEditor')}
             />
@@ -122,28 +118,19 @@ export function ServicesScreen() {
               body={t('services:emptyBody')}
             />
           ) : (
-            <View className="gap-3">
-              {rows.map((row) => (
-                <View key={row.map((c) => c.id).join('-')} className="flex-row gap-3">
-                  {row.map((c) => (
-                    <Tile
-                      key={c.id}
-                      icon={CATEGORY_ICON[c.icon]}
-                      label={categoryLabel(c)}
-                      hint={t('services:vendorCount', { count: c.vendorCount })}
-                      onPress={() =>
-                        nav.navigate('VendorList', { categoryId: c.id, title: categoryLabel(c) })
-                      }
-                    />
-                  ))}
-                  {row.length < 3
-                    ? PADS.slice(0, 3 - row.length).map((pad) => (
-                        <View key={pad} className="flex-1" />
-                      ))
-                    : null}
-                </View>
-              ))}
-            </View>
+            <Card tight className="py-4">
+              <IconGrid
+                columns={3}
+                items={list.map((c) => ({
+                  key: c.id,
+                  icon: CATEGORY_ICON[c.icon],
+                  label: categoryLabel(c),
+                  hint: t('services:vendorCount', { count: c.vendorCount }),
+                  onPress: () =>
+                    nav.navigate('VendorList', { categoryId: c.id, title: categoryLabel(c) }),
+                }))}
+              />
+            </Card>
           )}
           {canManage ? (
             <Button

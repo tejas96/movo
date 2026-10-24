@@ -12,7 +12,6 @@
     "seeAll": "See all",
     "back": "Back",
     "close": "Close",
-    "search": "Search",
     "share": "Share",
     "call": "Call",
     "edit": "Edit",
@@ -21,7 +20,8 @@
     "approve": "Approve",
     "reject": "Reject",
     "signOut": "Sign out",
-    "showMore": "Show more"
+    "showMore": "Show more",
+    "more": "More options"
   },
   "tabs": {
     "home": "Home",

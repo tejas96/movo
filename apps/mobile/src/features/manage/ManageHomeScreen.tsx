@@ -1,10 +1,10 @@
 import {
-  type BoldIconName,
   Button,
   Card,
+  IconGrid,
+  type IconName,
   Screen,
   Text,
-  Tile,
   TitleBar,
   useToast,
 } from '@movo/design-system';
@@ -18,12 +18,9 @@ import { useCan, useModuleEnabled, useSocietyId, useTenant } from '../../core/te
 import { loadFailed, QueryError } from '../../core/ui/QueryError';
 import { useRotateJoinCode } from './api';
 
-/** Keeps the last row's tiles the same width as the rows above. */
-const PADS = ['pad-a', 'pad-b'] as const;
-
 interface ManageTile {
   key: string;
-  icon: BoldIconName;
+  icon: IconName;
   label: string;
   hint?: string | undefined;
   count?: number | undefined;
@@ -124,9 +121,6 @@ export function ManageHomeScreen() {
       },
     ] as (ManageTile | false)[]
   ).filter((x): x is ManageTile => Boolean(x));
-  const rows = Array.from({ length: Math.ceil(tiles.length / 3) }, (_, i) =>
-    tiles.slice(i * 3, i * 3 + 3),
-  );
 
   const share = () => {
     if (!joinCode) return;
@@ -144,26 +138,19 @@ export function ManageHomeScreen() {
   return (
     <Screen refreshing={profile.isRefetching} onRefresh={() => void profile.refetch()}>
       <TitleBar title={t('manage:title')} onBack={() => nav.goBack()} />
-      {rows.map((row, i) => (
-        <View
-          key={row.map((r) => r.key).join()}
-          className={i === 0 ? 'mt-6 flex-row gap-3' : 'mt-3 flex-row gap-3'}
-        >
-          {row.map((tile) => (
-            <Tile
-              key={tile.key}
-              icon={tile.icon}
-              label={tile.label}
-              hint={tile.hint}
-              count={tile.count}
-              onPress={tile.onPress}
-            />
-          ))}
-          {PADS.slice(0, 3 - row.length).map((pad) => (
-            <View key={pad} className="flex-1" />
-          ))}
-        </View>
-      ))}
+      <Card tight className="mt-6 py-4">
+        <IconGrid
+          columns={3}
+          items={tiles.map((tile) => ({
+            key: tile.key,
+            icon: tile.icon,
+            label: tile.label,
+            hint: tile.hint,
+            count: tile.count,
+            onPress: tile.onPress,
+          }))}
+        />
+      </Card>
 
       {canMembers && loadFailed(profile) ? (
         <QueryError query={profile} className="mt-6" />

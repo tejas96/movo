@@ -36,7 +36,16 @@
     "phoneHidden": "नंबर छिपा है",
     "staff": "स्टाफ़",
     "vehicles": "वाहन",
-    "allWings": "सभी विंग"
+    "allWings": "सभी विंग",
+    "glow": {
+      "title": "सदस्य",
+      "memberTitle": "सदस्य",
+      "search": "नाम या फ्लैट खोजें…",
+      "everyone": "सभी",
+      "you": "आप",
+      "call": "{{name}} को कॉल करें",
+      "noMatch": "“{{q}}” से कोई नहीं मिला।"
+    }
   },
   "explore": "देखें",
   "wings_one": "{{count}} विंग",
@@ -44,5 +53,12 @@
   "flats_one": "{{count}} फ़्लैट",
   "flats_other": "{{count}} फ़्लैट",
   "members_one": "{{count}} सदस्य",
-  "members_other": "{{count}} सदस्य"
+  "members_other": "{{count}} सदस्य",
+  "hub": {
+    "now": "अभी क्या हो रहा है",
+    "alerts_one": "{{count}} चालू अलर्ट",
+    "alerts_other": "{{count}} चालू अलर्ट",
+    "newNotices_one": "{{count}} नया नोटिस",
+    "newNotices_other": "{{count}} नए नोटिस"
+  }
 }

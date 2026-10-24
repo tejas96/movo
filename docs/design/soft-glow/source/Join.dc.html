@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Join</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A2E;--muted:#706F76;--accent:#F06A2E}
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.orb{border-radius:50%;background:radial-gradient(circle at 34% 28%,#FFF3EC 0%,#FBB59D 16%,#F0735A 46%,#D9465A 76%,#B8457A 100%);box-shadow:0 24px 50px rgba(217,70,90,.32),inset -14px -18px 34px rgba(120,20,60,.22),inset 10px 12px 22px rgba(255,255,255,.45);animation:breathe 5s ease-in-out infinite}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(43,42,46,.12) 1px,transparent 1.3px);background-size:10px 10px;-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 0%,transparent 65%);mask-image:radial-gradient(circle at 50% 50%,#000 0%,transparent 65%);pointer-events:none}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-30px) scale(1.15)}}
+@keyframes aur2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-20px)}}
+@keyframes ripple{0%{transform:scale(1);opacity:.3}100%{transform:scale(1.8);opacity:0}}
+@keyframes pop{0%{opacity:0;transform:scale(.6) translateY(10px)}70%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes shadow{0%,100%{transform:scaleX(1);opacity:.18}50%{transform:scaleX(.8);opacity:.09}}
+@keyframes blink{0%,100%{fill:#F6D35B}48%{fill:#F6D35B}50%{fill:#8C6B7A}52%{fill:#F6D35B}}
+.win{fill:#8C6B7A;opacity:.28}
+.lit{fill:#F6D35B;opacity:1;animation:blink 5s infinite}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes swap{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(260%)}}
+.rise{opacity:0;animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+.tag{opacity:0;animation:pop .6s cubic-bezier(.2,1.4,.4,1) forwards}
+.float{animation:drift 4s ease-in-out infinite}
+.swap{animation:swap .5s cubic-bezier(.2,.8,.2,1)}
+.press{transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.press:active{transform:scale(.97)}
+.dot{transition:width .35s cubic-bezier(.2,.8,.2,1),background .35s}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}.rise,.tag{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: var(--ink);">
+  <div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+    <div style="position: absolute; width: 380px; height: 320px; border-radius: 50%; background: #F4B3C2; filter: blur(80px); opacity: .75; bottom: -80px; left: -130px; animation: aur1 16s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 360px; height: 320px; border-radius: 50%; background: #CDB2F0; filter: blur(80px); opacity: .8; bottom: -100px; right: -130px; animation: aur2 18s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 260px; height: 220px; border-radius: 50%; background: #F8CDB0; filter: blur(80px); opacity: .55; top: 260px; left: 70px; animation: aur2 20s ease-in-out infinite reverse;"></div>
+  </div>
+
+  <div class="rise" style="position: absolute; top: 58px; left: 22px; right: 22px; display: flex; justify-content: space-between; align-items: center;">
+    <span style="display: flex; align-items: center; gap: 10px;"><span class="orb" aria-hidden="true" style="width: 30px; height: 30px; box-shadow: 0 6px 14px rgba(217,70,90,.3);"></span><span style="font-size: 22px; font-weight: 500;">Movo</span></span>
+    <a href="Main.dc.html" style="font-size: 14px; font-weight: 500; text-decoration: none; padding: 10px 16px; border-radius: 999px; background: rgba(255,255,255,.75);">Skip</a>
+  </div>
+
+  <div style="position: absolute; top: 120px; left: 0; right: 0; height: 380px;">
+    <span class="dots" aria-hidden="true"></span>
+    <div aria-hidden="true" style="position: absolute; left: 112px; top: 336px; width: 166px; height: 24px; border-radius: 50%; background: #6B4A5A; filter: blur(10px); animation: shadow 5s ease-in-out infinite;"></div>
+    <div style="position: absolute; left: 85px; top: 70px; width: 220px; height: 264px; animation: float 5s ease-in-out infinite;">
+      <svg width="220" height="264" viewBox="0 0 200 240" role="img" aria-label="Laxmi-Pushp building">
+        <polygon points="100,20 160,50 100,80 40,50" fill="#FFFFFF"></polygon>
+        <polygon points="40,50 100,80 100,220 40,190" fill="#F7C9B6"></polygon>
+        <polygon points="100,80 160,50 160,190 100,220" fill="#EBA48F"></polygon>
+        <g transform="matrix(1 0.5 0 1 40 50)">
+          <rect class="win" x="8" y="14" width="10" height="13" rx="2"></rect><rect class="win lit" x="26" y="14" width="10" height="13" rx="2" style="animation-delay: 1s;"></rect><rect class="win" x="44" y="14" width="10" height="13" rx="2"></rect>
+          <rect class="win lit" x="8" y="36" width="10" height="13" rx="2" style="animation-delay: 2.5s;"></rect><rect class="win" x="26" y="36" width="10" height="13" rx="2"></rect><rect class="win" x="44" y="36" width="10" height="13" rx="2"></rect>
+          <rect class="win" x="8" y="58" width="10" height="13" rx="2"></rect><rect class="win" x="26" y="58" width="10" height="13" rx="2"></rect><rect class="win lit" x="44" y="58" width="10" height="13" rx="2" style="animation-delay: 4s;"></rect>
+          <rect class="win" x="8" y="80" width="10" height="13" rx="2"></rect><rect class="win lit" x="26" y="80" width="10" height="13" rx="2" style="animation-delay: .4s;"></rect><rect class="win" x="44" y="80" width="10" height="13" rx="2"></rect>
+          <rect class="win lit" x="8" y="102" width="10" height="13" rx="2" style="animation-delay: 3.2s;"></rect><rect class="win" x="26" y="102" width="10" height="13" rx="2"></rect><rect class="win" x="44" y="102" width="10" height="13" rx="2"></rect>
+        </g>
+        <g transform="matrix(1 -0.5 0 1 100 80)">
+          <rect class="win" x="6" y="14" width="10" height="13" rx="2"></rect><rect class="win" x="24" y="14" width="10" height="13" rx="2"></rect><rect class="win lit" x="42" y="14" width="10" height="13" rx="2" style="animation-delay: 1.8s;"></rect>
+          <rect class="win" x="6" y="36" width="10" height="13" rx="2"></rect><rect class="win lit" x="24" y="36" width="10" height="13" rx="2" style="animation-delay: 5s;"></rect><rect class="win" x="42" y="36" width="10" height="13" rx="2"></rect>
+          <rect class="win lit" x="6" y="58" width="10" height="13" rx="2" style="animation-delay: 2.2s;"></rect><rect class="win" x="24" y="58" width="10" height="13" rx="2"></rect><rect class="win" x="42" y="58" width="10" height="13" rx="2"></rect>
+          <rect class="win" x="6" y="80" width="10" height="13" rx="2"></rect><rect class="win" x="24" y="80" width="10" height="13" rx="2"></rect><rect class="win lit" x="42" y="80" width="10" height="13" rx="2" style="animation-delay: .9s;"></rect>
+          <rect class="win" x="6" y="102" width="10" height="13" rx="2"></rect><rect class="win lit" x="24" y="102" width="10" height="13" rx="2" style="animation-delay: 3.7s;"></rect><rect class="win" x="42" y="102" width="10" height="13" rx="2"></rect>
+        </g>
+      </svg>
+    </div>
+
+    <div class="tag" style="position: absolute; left: 18px; top: 40px; animation-delay: .6s;">
+      <div class="glass float" style="border-radius: 999px; padding: 6px 14px 6px 6px; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.75);">
+        <span style="width: 30px; height: 30px; border-radius: 50%; background: #FDE6DA; display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 01-1 1H5a1 1 0 01-1-1z"></path></svg></span>
+        <span style="font-size: 13px; font-weight: 500;">Flat B-102</span>
+      </div>
+    </div>
+    <div class="tag" style="position: absolute; right: 18px; top: 92px; animation-delay: .85s;">
+      <div class="glass float" style="border-radius: 999px; padding: 6px 14px 6px 6px; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.75); animation-delay: 1s;">
+        <span style="width: 30px; height: 30px; border-radius: 50%; background: #E6F1E3; display: flex; align-items: center; justify-content: center;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4E9A55;"></span></span>
+        <span style="font-size: 13px; font-weight: 500;">Lift working</span>
+      </div>
+    </div>
+    <div class="tag" style="position: absolute; left: 34px; top: 296px; animation-delay: 1.1s;">
+      <div class="glass float" style="border-radius: 999px; padding: 6px 14px 6px 6px; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.75); animation-delay: 2s;">
+        <span style="width: 30px; height: 30px; border-radius: 50%; background: #EEE6FB; display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7B5CC4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l6 4V6L7 10z"></path></svg></span>
+        <span style="font-size: 13px; font-weight: 500;">3 new notices</span>
+      </div>
+    </div>
+    <div class="tag" style="position: absolute; right: 30px; top: 262px; animation-delay: 1.3s;">
+      <div class="glass float" style="border-radius: 999px; padding: 6px 14px 6px 6px; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.75); animation-delay: 3s;">
+        <span style="width: 30px; height: 30px; border-radius: 50%; background: #FDE6DA; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #B5501F;">₹</span>
+        <span style="font-size: 13px; font-weight: 500;">Dues paid</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 22px; right: 22px; bottom: 38px; display: flex; flex-direction: column; gap: 14px;">
+    <sc-if value="{{s0}}" hint-placeholder-val="{{true}}">
+      <div class="swap" style="display: flex; flex-direction: column; gap: 8px;">
+        <h1 style="margin: 0; font-weight: 400; font-size: 32px; line-height: 1.18; letter-spacing: -0.6px;">Your whole society, <strong style="font-weight: 600;">in one calm app</strong></h1>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted);">Notices, dues and visitors in one place. Nothing to learn.</p>
+      </div>
+    </sc-if>
+    <sc-if value="{{s1}}" hint-placeholder-val="{{false}}">
+      <div class="swap" style="display: flex; flex-direction: column; gap: 8px;">
+        <h1 style="margin: 0; font-weight: 400; font-size: 32px; line-height: 1.18; letter-spacing: -0.6px;">Never miss <strong style="font-weight: 600;">a notice again</strong></h1>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted);">Water cuts, lift service and events reach you first.</p>
+      </div>
+    </sc-if>
+    <sc-if value="{{s2}}" hint-placeholder-val="{{false}}">
+      <div class="swap" style="display: flex; flex-direction: column; gap: 8px;">
+        <h1 style="margin: 0; font-weight: 400; font-size: 32px; line-height: 1.18; letter-spacing: -0.6px;">Pay your dues <strong style="font-weight: 600;">in two taps</strong></h1>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted);">See what is due, pay by UPI, keep the receipt.</p>
+      </div>
+    </sc-if>
+
+    <div aria-hidden="true" style="display: flex; gap: 6px; margin: 4px 0 6px;">
+      <span class="dot" style="height: 6px; border-radius: 999px; width: {{d0w}}; background: {{d0c}};"></span>
+      <span class="dot" style="height: 6px; border-radius: 999px; width: {{d1w}}; background: {{d1c}};"></span>
+      <span class="dot" style="height: 6px; border-radius: 999px; width: {{d2w}}; background: {{d2c}};"></span>
+    </div>
+
+    <a href="Main.dc.html" class="press" style="position: relative; overflow: hidden; height: 60px; border-radius: 999px; background: #2B2A2E; color: #FFFFFF; text-decoration: none; font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 7px 0 26px;">
+      <span aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.14), rgba(255,255,255,0)); animation: sheen 3.6s ease-in-out infinite;"></span>
+      <span>Join my society</span>
+      <span style="width: 46px; height: 46px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>
+    </a>
+    <a href="Login.dc.html" style="align-self: center; font-size: 14px; font-weight: 500; padding: 8px 12px;">I already have an account</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { slide: 0 };
+  }
+  componentDidMount() {
+    var self = this;
+    this.timer = setInterval(function () {
+      self.setState({ slide: (self.state.slide + 1) % 3 });
+    }, 3400);
+  }
+  componentWillUnmount() {
+    if (this.timer) clearInterval(this.timer);
+  }
+  renderVals() {
+    var s = this.state.slide;
+    var on = '#2B2A2E', off = 'rgba(43,42,46,.2)';
+    return {
+      s0: s === 0, s1: s === 1, s2: s === 2,
+      d0w: s === 0 ? '24px' : '6px', d1w: s === 1 ? '24px' : '6px', d2w: s === 2 ? '24px' : '6px',
+      d0c: s === 0 ? on : off, d1c: s === 1 ? on : off, d2c: s === 2 ? on : off,
+      true: true, false: false
+    };
+  }
+}
+</script>
+</body>
+</html>

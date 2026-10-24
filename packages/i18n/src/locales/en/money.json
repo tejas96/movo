@@ -70,9 +70,6 @@
   },
   "collection": {
     "fy": "Financial year {{fy}}",
-    "paidOf": "paid of {{total}}",
-    "pending": "pending",
-    "collected": "collected",
     "billed": "Billed",
     "outstanding": "Outstanding",
     "lastPaid": "Last paid {{date}}"
@@ -208,5 +205,16 @@
     "reversedBody": "Receipt {{receipt}} · {{reason}}",
     "waivedTitle": "Bill waived: {{name}}",
     "waivedBody": "Flat {{flat}} · {{reason}}"
+  },
+  "glow": {
+    "pay": "Pay {{amount}}",
+    "openBills": "Open bills",
+    "paid": "What you paid",
+    "months": "Last 6 months",
+    "flatsPaid": "{{paid}} of {{total}} flats paid",
+    "due": "Due",
+    "flatsCount_one": "{{count}} flat",
+    "flatsCount_other": "{{count}} flats",
+    "flats": "Flats"
   }
 }

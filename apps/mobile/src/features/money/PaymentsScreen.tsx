@@ -29,6 +29,7 @@ export function PaymentsScreen() {
     <Screen scroll={false}>
       <TitleBar title={t('allPayments')} onBack={() => nav.goBack()} />
       <PagedList
+        glass
         list={list}
         loading={
           <View className="mt-4 gap-3">

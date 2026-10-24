@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MOVO Emergency</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A2E;--muted:#706F76;--accent:#F06A2E;--red:#D63B3B}
+body{margin:0}
+a{color:#2B2A2E}a:hover{color:#2B2A2E}
+.scroll::-webkit-scrollbar{display:none}
+.glass{background:rgba(255,255,255,.5);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border:1.5px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 10px 30px rgba(70,40,70,.06)}
+.ibtn{width:46px;height:46px;border-radius:50%;background:#FFFFFF;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(70,40,70,.06)}
+.redorb{border-radius:50%;background:radial-gradient(circle at 34% 26%,#FFE9E4 0%,#FF9C8A 16%,#EE4B3F 48%,#C8242E 78%,#9E1B3A 100%);box-shadow:0 24px 50px rgba(214,59,59,.38),inset -12px -16px 30px rgba(110,10,30,.25),inset 10px 12px 20px rgba(255,255,255,.4)}
+.chip{transition:background .2s,box-shadow .2s}
+@keyframes aur1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-30px) scale(1.15)}}
+@keyframes aur2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-20px)}}
+@keyframes pulse{0%{transform:scale(1);opacity:.35}100%{transform:scale(1.6);opacity:0}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+.rise{opacity:0;animation:rise .8s cubic-bezier(.2,.8,.2,1) forwards}
+.press{transition:transform .2s cubic-bezier(.3,1.5,.5,1)}
+.press:active{transform:scale(.97)}
+.ring{position:absolute;inset:0;border-radius:50%;background:#EE4B3F;animation:pulse 2.2s ease-out infinite}
+.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}.rise{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #EEEDEC; font-family: Poppins, sans-serif; color: var(--ink);">
+  <div aria-hidden="true" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none;">
+    <div style="position: absolute; width: 360px; height: 320px; border-radius: 50%; background: #F6A7A0; filter: blur(80px); opacity: .7; top: 220px; left: -120px; animation: aur1 14s ease-in-out infinite;"></div>
+    <div style="position: absolute; width: 340px; height: 300px; border-radius: 50%; background: #F4B3C2; filter: blur(80px); opacity: .7; bottom: -110px; right: -120px; animation: aur2 16s ease-in-out infinite;"></div>
+  </div>
+
+  <div class="scroll" style="position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; padding: 58px 18px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+    <div class="rise" style="display: flex; align-items: center; gap: 12px;">
+      <a href="Main.dc.html" aria-label="Back to Home" class="ibtn press"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A2E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+      <h1 style="margin: 0; font-weight: 600; font-size: 26px; letter-spacing: -0.4px;">Emergency</h1>
+    </div>
+
+    <div class="glass rise" style="border-radius: 30px; padding: 14px; animation-delay: .06s;">
+      <p style="margin: 2px 4px 12px; font-size: 14px; color: var(--muted);">What is happening?</p>
+      <div role="group" aria-label="Alert type" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+        <sc-for list="{{types}}" as="t" hint-placeholder-count="6">
+          <button class="chip press" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="height: 74px; border: none; border-radius: 22px; cursor: pointer; background: {{t.bg}}; box-shadow: {{t.sh}}; color: #2B2A2E; font-family: Poppins, sans-serif; font-size: 12px; font-weight: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{t.ic}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
+            {{t.label}}
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div class="rise" style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 6px 0; animation-delay: .14s;">
+      <sc-if value="{{notSent}}" hint-placeholder-val="{{yes}}">
+        <div style="position: relative; width: 210px; height: 210px;">
+          <span class="ring" aria-hidden="true" style="inset: 20px;"></span>
+          <span class="ring" aria-hidden="true" style="inset: 20px; animation-delay: 1.1s;"></span>
+          <svg width="210" height="210" viewBox="0 0 210 210" aria-hidden="true" style="position: absolute; inset: 0; transform: rotate(-90deg);">
+            <circle cx="105" cy="105" r="100" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="6"></circle>
+            <circle cx="105" cy="105" r="100" fill="none" stroke="#D63B3B" stroke-width="6" stroke-linecap="round" stroke-dasharray="629" stroke-dashoffset="{{offset}}"></circle>
+          </svg>
+          <button class="redorb" onPointerDown="{{startHold}}" onPointerUp="{{stopHold}}" onPointerLeave="{{stopHold}}" aria-label="Hold to send alert" style="position: absolute; inset: 20px; border: none; cursor: pointer; color: #FFFFFF; font-family: Poppins, sans-serif; font-weight: 500; font-size: 17px; line-height: 1.3; transform: scale({{scale}}); transition: transform .2s; animation: breathe 3s ease-in-out infinite;">{{holdText}}</button>
+        </div>
+        <span style="font-size: 13px; color: var(--muted);">{{hint}}</span>
+      </sc-if>
+      <sc-if value="{{sent}}" hint-placeholder-val="{{no}}">
+        <div class="pop glass" style="width: 200px; height: 200px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,.75);">
+          <span style="width: 56px; height: 56px; border-radius: 50%; background: #E6F1E3; display: flex; align-items: center; justify-content: center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3F8A47" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+          <span style="font-weight: 600; font-size: 17px;">Alert sent</span>
+          <span style="font-size: 12px; color: var(--muted);">Guard and committee told</span>
+        </div>
+        <button onClick="{{reset}}" class="press" style="height: 42px; padding: 0 18px; border-radius: 999px; border: none; background: #FFFFFF; font-family: Poppins, sans-serif; font-size: 14px; cursor: pointer;">Start again (demo)</button>
+      </sc-if>
+    </div>
+
+    <div class="glass rise" style="border-radius: 28px; padding: 8px; animation-delay: .22s;">
+      <div style="padding: 10px 12px 6px; font-size: 12px; letter-spacing: .6px; color: var(--muted);">EMERGENCY CONTACTS</div>
+      <a href="#" class="press" style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 22px;">
+        <span style="width: 48px; height: 48px; border-radius: 50%; background: #FBE2E2; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: #A82626;">112</span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-weight: 500; font-size: 15px;">Emergency services</span><span style="font-size: 12px; color: var(--muted);">Police · Fire · Ambulance</span></span>
+        <span style="width: 44px; height: 44px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"></path></svg></span>
+      </a>
+      <a href="#" class="press" style="text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 22px;">
+        <span style="width: 48px; height: 48px; border-radius: 50%; background: #FDE6DA; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5501F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"></path></svg></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column;"><span style="font-weight: 500; font-size: 15px;">Security desk</span><span style="font-size: 12px; color: var(--muted);">Main gate</span></span>
+        <span style="width: 44px; height: 44px; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(70,40,70,.06);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F06A2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2"></path></svg></span>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { type: 'MEDICAL', p: 0, holding: false, sent: false };
+  }
+  componentWillUnmount() {
+    if (this.iv) clearInterval(this.iv);
+  }
+  renderVals() {
+    var self = this;
+    var defs = [
+      ['MEDICAL', 'Medical', 'M12 5v14M5 12h14'],
+      ['FIRE', 'Fire', 'M12 3c3 4 5 6.5 5 10a5 5 0 01-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 1-8.5z'],
+      ['SECURITY', 'Security', 'M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z'],
+      ['LIFT', 'Stuck in lift', 'M6 3h12v18H6zM10 8l2-2 2 2M10 16l2 2 2-2'],
+      ['GAS', 'Gas leak', 'M8 21h8M12 17v4M7 7a5 5 0 0110 0v5a5 5 0 01-10 0z'],
+      ['OTHER', 'Other', 'M12 8v5M12 16.5v.5M10.3 3.9L2.5 18a2 2 0 001.7 3h15.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z']
+    ];
+    var types = defs.map(function (d) {
+      var on = self.state.type === d[0];
+      return {
+        label: d[1], icon: d[2],
+        pressed: on ? 'true' : 'false',
+        bg: on ? '#FFFFFF' : 'rgba(255,255,255,.35)',
+        sh: on ? '0 6px 16px rgba(214,59,59,.18)' : 'none',
+        ic: on ? '#D63B3B' : '#2B2A2E',
+        pick: function () { self.setState({ type: d[0] }); }
+      };
+    });
+    var p = this.state.p;
+    return {
+      yes: true, no: false,
+      types: types,
+      sent: this.state.sent,
+      notSent: !this.state.sent,
+      offset: String(Math.round(629 * (1 - p))),
+      scale: this.state.holding ? '0.94' : '1',
+      holdText: this.state.holding ? 'Keep holding' : 'Hold to alert',
+      hint: this.state.holding ? Math.ceil((1 - p) * 2) + ' s left' : 'Goes to the guard and committee',
+      startHold: function () {
+        if (self.iv) clearInterval(self.iv);
+        self.setState({ holding: true, p: 0 });
+        var start = Date.now();
+        self.iv = setInterval(function () {
+          var np = Math.min(1, (Date.now() - start) / 2000);
+          if (np >= 1) {
+            clearInterval(self.iv);
+            self.setState({ p: 1, holding: false, sent: true });
+          } else {
+            self.setState({ p: np });
+          }
+        }, 30);
+      },
+      stopHold: function () {
+        if (self.state.sent) return;
+        if (self.iv) clearInterval(self.iv);
+        self.setState({ holding: false, p: 0 });
+      },
+      reset: function () { self.setState({ sent: false, p: 0 }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
